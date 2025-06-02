@@ -1,3 +1,5 @@
+import { AttendanceShift, AttendanceStatus } from "@/types/enums";
+
 export interface AttendanceRecord {
   id: string
   employeeId: string
@@ -5,8 +7,8 @@ export interface AttendanceRecord {
   date: string
   checkIn?: string
   checkOut?: string
-  shift: "Morning" | "Afternoon" | "Evening"
-  status: "Present" | "Absent" | "Late" | "Half Day" | "Overtime"
+  shift: AttendanceShift
+  status: AttendanceStatus
   workHours: number
   overtimeHours: number
   dailyWage: number

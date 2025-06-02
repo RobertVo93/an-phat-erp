@@ -1,3 +1,5 @@
+import { ProductStatus } from "@/types/enums";
+
 export interface Product {
   id: string
   name: string
@@ -9,7 +11,7 @@ export interface Product {
   minStock: number
   sku: string
   barcode?: string
-  status: "active" | "inactive" | "lowStock" | "outOfStock"
+  status: ProductStatus
   supplier?: string
   createdAt: string
   updatedAt: string

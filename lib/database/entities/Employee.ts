@@ -1,34 +1,36 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
+import { EmployeeType, EmployeeStatus } from "../../../types/enums";
+import { AttendanceRecord } from "./AttendanceRecord";
 
 @Entity({ name: "employees" })
 export class Employee extends BaseEntity {
-  @Column()
-  name!: string;
+  @Column({ nullable: false })
+  name?: string;
 
-  @Column()
-  email!: string;
+  @Column({ nullable: true })
+  email?: string;
 
-  @Column()
-  phone!: string;
+  @Column({ nullable: false })
+  phone?: string;
 
-  @Column()
-  position!: string;
+  @Column({ nullable: true })
+  position?: string;
 
-  @Column()
-  department!: string;
+  @Column({ nullable: true })
+  department?: string;
 
-  @Column()
-  salary!: string;
+  @Column({ type: "float", nullable: true })
+  salary?: number;
 
-  @Column()
-  hireDate!: string;
+  @Column({ type: "timestamp", nullable: true })
+  hireDate?: Date;
 
-  @Column({ type: "enum", enum: ["Full-time", "Part-time", "Contract", "Intern"] })
-  employeeType!: "Full-time" | "Part-time" | "Contract" | "Intern";
+  @Column({ type: "enum", enum: EmployeeType, nullable: true })
+  employeeType?: EmployeeType;
 
-  @Column({ type: "enum", enum: ["Active", "Inactive", "On Leave"] })
-  status!: "Active" | "Inactive" | "On Leave";
+  @Column({ type: "enum", enum: EmployeeStatus, nullable: true })
+  status?: EmployeeStatus;
 
   @Column({ nullable: true })
   address?: string;
@@ -38,4 +40,8 @@ export class Employee extends BaseEntity {
 
   @Column({ nullable: true })
   notes?: string;
+
+  //////Related fields//////
+  @OneToMany(() => AttendanceRecord, (attendance) => attendance.employee, { nullable: true })
+  attendanceRecords!: AttendanceRecord[];
 } 

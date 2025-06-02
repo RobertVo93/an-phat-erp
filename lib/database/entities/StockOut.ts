@@ -1,65 +1,49 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, JoinColumn, ManyToOne } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
+import { StockOutStatus } from "../../../types/enums";
+import { Warehouse } from "./Warehouse";
 
 @Entity({ name: "stock_out" })
 export class StockOut extends BaseEntity {
-  @Column()
-  receiptNumber!: string;
+  @Column({ nullable: false })
+  receiptNumber?: string;
 
-  @Column()
-  date!: string;
+  @Column({ type: "timestamp", nullable: true })
+  date?: Date;
 
-  @Column()
-  customerId!: string;
+  @Column({ type: "jsonb", nullable: true })
+  items?: Array<{ productId: string; productName: string; productSku: string; quantity: number; unitCost: number; totalCost: number }>;
 
-  @Column()
-  customerName!: string;
+  @Column({ type: "float", nullable: true })
+  subtotal?: number;
 
-  @Column()
-  customerPhone!: string;
+  @Column({ type: "float", nullable: true })
+  tax?: number;
 
-  @Column()
-  customerAddress!: string;
+  @Column({ type: "float", nullable: true })
+  discount?: number;
 
-  @Column()
-  warehouseId!: string;
+  @Column({ type: "float", nullable: true })
+  totalAmount?: number;
 
-  @Column()
-  warehouseName!: string;
-
-  @Column({ type: "jsonb" })
-  products!: Array<{ id: string; productId: string; productName: string; sku: string; quantity: number; unitPrice: number; totalPrice: number; availableStock: number }>;
-
-  @Column({ type: "float" })
-  subtotal!: number;
-
-  @Column({ type: "float" })
-  discount!: number;
-
-  @Column({ type: "enum", enum: ["percentage", "fixed"] })
-  discountType!: "percentage" | "fixed";
-
-  @Column({ type: "float" })
-  tax!: number;
-
-  @Column({ type: "float" })
-  totalAmount!: number;
-
-  @Column({ type: "enum", enum: ["draft", "processing", "shipped", "delivered", "cancelled"] })
-  status!: "draft" | "processing" | "shipped" | "delivered" | "cancelled";
+  @Column({ type: "enum", enum: StockOutStatus, nullable: true })
+  status?: StockOutStatus;
 
   @Column({ nullable: true })
-  orderReference?: string;
+  notes?: string;
 
   @Column({ nullable: true })
-  trackingNumber?: string;
+  receivedBy?: string;
 
-  @Column()
-  shippingMethod!: string;
+  @Column({ type: "timestamp", nullable: true })
+  receivedDate?: Date;
 
-  @Column()
-  notes!: string;
+  @Column({ nullable: true })
+  referenceNumber?: string;
 
-  @Column()
-  processedBy!: string;
-} 
+
+  //////Related fields//////
+  @ManyToOne(() => Warehouse, (warehouse: Warehouse) => warehouse.stockOuts, { nullable: true })
+  @JoinColumn({ name: "warehouse_id" })
+  warehouse?: Warehouse;
+}

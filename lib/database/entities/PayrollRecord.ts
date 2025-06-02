@@ -1,5 +1,6 @@
 import { Entity, Column } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
+import { PayrollStatus } from "../../../types/enums";
 
 @Entity({ name: "payroll_records" })
 export class PayrollRecord extends BaseEntity {
@@ -30,8 +31,8 @@ export class PayrollRecord extends BaseEntity {
   @Column({ type: "float" })
   netSalary!: number;
 
-  @Column({ type: "enum", enum: ["Processed", "Pending", "Failed"] })
-  status!: "Processed" | "Pending" | "Failed";
+  @Column({ type: "enum", enum: PayrollStatus })
+  status!: PayrollStatus;
 
   @Column()
   payPeriod!: string;

@@ -1,12 +1,14 @@
+import { CollectionStatus, CollectionCategory } from "@/types/enums";
+
 export interface Collection {
   id: string
   name: string
   description: string
   productCount: number
-  status: "Active" | "Draft" | "Archived"
+  status: CollectionStatus
   createdDate: string
   totalValue: string
-  category: "Fashion" | "Electronics" | "Home" | "Office"
+  category: CollectionCategory
   products?: Product[]
   image?: string
 }
