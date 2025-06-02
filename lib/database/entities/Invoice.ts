@@ -2,6 +2,7 @@ import { Entity, Column, OneToMany } from "typeorm";
 import { UtilityReading } from "./UtilityReading";
 import { BaseEntity } from "./BaseEntity";
 import { InvoiceStatus } from "../../../types/enums";
+import { UtilityReading as IUtilityReading } from "@/types/invoice";
 
 @Entity({ name: "invoices" })
 export class Invoice extends BaseEntity {
@@ -47,5 +48,5 @@ export class Invoice extends BaseEntity {
 
   //////Related fields//////
   @OneToMany(() => UtilityReading, (reading: UtilityReading) => reading.invoice, { nullable: true })
-  readings!: UtilityReading[];
+  readings!: IUtilityReading[];
 } 

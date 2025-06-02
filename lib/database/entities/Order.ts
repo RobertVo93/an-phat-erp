@@ -3,6 +3,8 @@ import { OrderItem } from "./OrderItem";
 import { BaseEntity } from "./BaseEntity";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "../../../types/enums";
 import { Customer } from "./Customer";
+import type { Customer as ICustomer } from "@/types/customer";
+import { OrderItem as IOrderItem } from "@/types/order";
 
 @Entity({ name: "orders" })
 export class Order extends BaseEntity {
@@ -33,8 +35,8 @@ export class Order extends BaseEntity {
   //////Related fields//////
   @ManyToOne(() => Customer, (customer: Customer) => customer.orders, { nullable: true })
   @JoinColumn({ name: "customer_id" })
-  customer?: Customer;
+  customer?: ICustomer;
 
   @OneToMany(() => OrderItem, (item: OrderItem) => item.order, { cascade: true, nullable: true })
-  items!: OrderItem[];
+  items!: IOrderItem[];
 }

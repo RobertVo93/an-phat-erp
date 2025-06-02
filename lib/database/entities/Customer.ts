@@ -2,6 +2,7 @@ import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
 import { CustomerStatus, CustomerType } from "../../../types/enums";
 import { Order } from "./Order";
+import { Order as IOrder } from "@/types/order";
 
 @Entity({ name: "customers" })
 export class Customer extends BaseEntity {
@@ -43,5 +44,5 @@ export class Customer extends BaseEntity {
 
   //////Related fields//////
   @OneToMany(() => Order, (order) => order.customer, { nullable: true })
-  orders!: Order[];
+  orders!: IOrder[];
 }

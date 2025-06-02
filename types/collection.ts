@@ -1,16 +1,14 @@
 import { CollectionStatus, CollectionCategory } from "@/types/enums";
+import { IBase } from "./base.interface";
 
-export interface Collection {
-  id: string
-  name: string
-  description: string
-  productCount: number
-  status: CollectionStatus
-  createdDate: string
-  totalValue: string
-  category: CollectionCategory
-  products?: Product[]
+export interface Collection extends IBase {
+  name?: string
+  description?: string
+  status?: CollectionStatus
+  category?: CollectionCategory
   image?: string
+
+  products?: Product[]
 }
 
 export interface Product {

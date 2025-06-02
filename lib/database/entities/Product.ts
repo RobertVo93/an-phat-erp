@@ -1,8 +1,10 @@
 import { Entity, Column, ManyToMany, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
 import { ProductStatus } from "../../../types/enums";
-import { Collection } from "./Collection";
+import { CollectionEntity } from "./Collection";
 import { OrderItem } from "./OrderItem";
+import { Collection as ICollection } from "@/types/collection";
+import { OrderItem as IOrderItem } from "@/types/order";
 
 @Entity({ name: "products" })
 export class Product extends BaseEntity {
@@ -40,9 +42,9 @@ export class Product extends BaseEntity {
   image?: string;
 
   //////Related fields//////
-  @ManyToMany(() => Collection, (collection: Collection) => collection.products, { nullable: true })
-  collections?: Collection[];
+  @ManyToMany(() => CollectionEntity, (collection) => collection.products, { nullable: true })
+  collections?: ICollection[];
 
   @OneToMany(() => OrderItem, (item: OrderItem) => item.product, { nullable: true })
-  orderItems?: OrderItem[];
+  orderItems?: IOrderItem[];
 } 

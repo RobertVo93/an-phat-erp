@@ -2,6 +2,7 @@ import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
 import { EmployeeType, EmployeeStatus } from "../../../types/enums";
 import { AttendanceRecord } from "./AttendanceRecord";
+import { AttendanceRecord as IAttendanceRecord } from "@/types/attendance";
 
 @Entity({ name: "employees" })
 export class Employee extends BaseEntity {
@@ -43,5 +44,5 @@ export class Employee extends BaseEntity {
 
   //////Related fields//////
   @OneToMany(() => AttendanceRecord, (attendance) => attendance.employee, { nullable: true })
-  attendanceRecords!: AttendanceRecord[];
+  attendanceRecords!: IAttendanceRecord[];
 } 
