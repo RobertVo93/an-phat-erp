@@ -1,3 +1,5 @@
+import { CustomerStatus, CustomerType } from "@/types/enums";
+
 export interface Customer {
   id: string
   name: string
@@ -8,8 +10,8 @@ export interface Customer {
   totalOrders: number
   totalSpent: string
   lastOrder: string
-  status: "Active" | "Inactive" | "Pending"
-  customerType: "VIP" | "Premium" | "Regular"
+  status: CustomerStatus
+  customerType: CustomerType
   joinDate: string
   notes?: string
 }

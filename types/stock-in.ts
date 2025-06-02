@@ -1,3 +1,5 @@
+import { StockInStatus } from "@/types/enums";
+
 export interface StockInItem {
   productId: string
   productName: string
@@ -20,7 +22,7 @@ export interface StockIn {
   tax: number
   discount: number
   totalAmount: number
-  status: "draft" | "pending" | "in_transit" | "completed" | "cancelled"
+  status: StockInStatus
   notes?: string
   receivedBy?: string
   receivedDate?: string

@@ -1,3 +1,5 @@
+import { WarehouseStatus, WarehouseType, WarehouseTemperature } from "@/types/enums";
+
 export interface Warehouse {
   id: string
   name: string
@@ -6,10 +8,10 @@ export interface Warehouse {
   manager: string
   capacity: number
   occupied: number
-  status: "Active" | "Maintenance" | "Inactive"
-  type: "Distribution Center" | "Regional Hub" | "Cold Storage" | "Backup Storage"
+  status: WarehouseStatus
+  type: WarehouseType
   zones: number
-  temperature: "Ambient" | "Refrigerated" | "Frozen"
+  temperature: WarehouseTemperature
   phone?: string
   email?: string
   description?: string

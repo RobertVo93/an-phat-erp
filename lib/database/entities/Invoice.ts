@@ -1,66 +1,51 @@
 import { Entity, Column, OneToMany } from "typeorm";
 import { UtilityReading } from "./UtilityReading";
 import { BaseEntity } from "./BaseEntity";
+import { InvoiceStatus } from "../../../types/enums";
 
 @Entity({ name: "invoices" })
 export class Invoice extends BaseEntity {
-  @Column()
-  invoiceNumber!: string;
+  @Column({ nullable: true })
+  invoiceNumber?: string;
 
-  @Column()
-  propertyId!: string;
+  @Column({ type: "timestamp", nullable: true })
+  billingPeriod?: Date;
 
-  @Column()
-  propertyName!: string;
+  @Column({ type: "timestamp", nullable: true })
+  issueDate?: Date;
 
-  @Column()
-  propertyAddress!: string;
+  @Column({ type: "timestamp", nullable: true })
+  dueDate?: Date;
 
-  @Column()
-  tenantName!: string;
+  @Column({ type: "float", nullable: true })
+  subtotal?: number;
 
-  @Column()
-  tenantPhone!: string;
+  @Column({ type: "float", nullable: true })
+  taxRate?: number;
 
-  @Column()
-  tenantEmail!: string;
+  @Column({ type: "float", nullable: true })
+  taxAmount?: number;
 
-  @Column()
-  billingPeriod!: string;
+  @Column({ type: "float", nullable: true })
+  otherFees?: number;
 
-  @Column()
-  issueDate!: string;
+  @Column({ nullable: true })
+  otherFeesDescription?: string;
 
-  @Column()
-  dueDate!: string;
+  @Column({ type: "float", nullable: true })
+  total?: number;
 
-  @OneToMany(() => UtilityReading, (reading: UtilityReading) => reading.invoice, { cascade: true })
+  @Column({ type: "float", nullable: true })
+  paidAmount?: number;
+
+  @Column({ type: "enum", enum: InvoiceStatus, nullable: true })
+  status?: InvoiceStatus;
+
+  @Column({ nullable: true })
+  notes?: string;
+
+
+  //////Related fields//////
+  @OneToMany(() => UtilityReading, (reading: UtilityReading) => reading.invoice, { nullable: true })
   readings!: UtilityReading[];
-
-  @Column({ type: "float" })
-  subtotal!: number;
-
-  @Column({ type: "float" })
-  taxRate!: number;
-
-  @Column({ type: "float" })
-  taxAmount!: number;
-
-  @Column({ type: "float" })
-  otherFees!: number;
-
-  @Column()
-  otherFeesDescription!: string;
-
-  @Column({ type: "float" })
-  total!: number;
-
-  @Column({ type: "float" })
-  paidAmount!: number;
-
-  @Column({ type: "enum", enum: ["draft", "sent", "paid", "partial", "overdue", "cancelled"] })
-  status!: "draft" | "sent" | "paid" | "partial" | "overdue" | "cancelled";
-
-  @Column()
-  notes!: string;
 } 

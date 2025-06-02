@@ -1,13 +1,14 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { Invoice } from "./Invoice";
+import { UtilityType } from "../../../types/enums";
 
 @Entity({ name: "utility_readings" })
 export class UtilityReading {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ type: "enum", enum: ["electricity", "water", "gas", "internet", "other"] })
-  utilityType!: "electricity" | "water" | "gas" | "internet" | "other";
+  @Column({ type: "enum", enum: UtilityType })
+  utilityType!: UtilityType;
 
   @Column()
   utilityName!: string;

@@ -1,6 +1,8 @@
+import { UtilityType, InvoiceStatus } from "@/types/enums";
+
 export interface UtilityReading {
   id: string
-  utilityType: "electricity" | "water" | "gas" | "internet" | "other"
+  utilityType: UtilityType
   utilityName: string
   previousReading: number
   currentReading: number
@@ -29,7 +31,7 @@ export interface Invoice {
   otherFeesDescription: string
   total: number
   paidAmount: number
-  status: "draft" | "sent" | "paid" | "partial" | "overdue" | "cancelled"
+  status: InvoiceStatus
   notes: string
   createdAt: string
   updatedAt: string

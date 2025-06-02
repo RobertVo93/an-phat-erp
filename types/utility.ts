@@ -1,3 +1,5 @@
+import { UtilityStatus } from "@/types/enums";
+
 export interface Utility {
   id: string
   type: string
@@ -9,7 +11,7 @@ export interface Utility {
   costPerUnit: number
   monthlyCost: number
   lastReading: string
-  status: "Active" | "Inactive" | "Overdue" | "Disconnected"
+  status: UtilityStatus
   dueDate: string
   description?: string
   createdAt: string

@@ -1,41 +1,47 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
+import { CustomerStatus, CustomerType } from "../../../types/enums";
+import { Order } from "./Order";
 
 @Entity({ name: "customers" })
 export class Customer extends BaseEntity {
-  @Column()
-  name!: string;
+  @Column({ nullable: false })
+  name?: string;
 
-  @Column()
-  email!: string;
+  @Column({ nullable: true })
+  email?: string;
 
-  @Column()
-  phone!: string;
+  @Column({ nullable: true })
+  phone?: string;
 
   @Column({ nullable: true })
   company?: string;
 
-  @Column()
-  location!: string;
+  @Column({ nullable: true })
+  location?: string;
 
-  @Column({ type: "int" })
-  totalOrders!: number;
+  @Column({ type: "int", nullable: true })
+  totalOrders?: number;
 
-  @Column()
-  totalSpent!: string;
+  @Column({ type: "float", nullable: true })
+  totalSpent?: number;
 
-  @Column()
-  lastOrder!: string;
+  @Column({ type: "timestamp", nullable: true })
+  lastOrder?: Date;
 
-  @Column({ type: "enum", enum: ["Active", "Inactive", "Pending"] })
-  status!: "Active" | "Inactive" | "Pending";
+  @Column({ type: "enum", enum: CustomerStatus, nullable: true })
+  status?: CustomerStatus;
 
-  @Column({ type: "enum", enum: ["VIP", "Premium", "Regular"] })
-  customerType!: "VIP" | "Premium" | "Regular";
+  @Column({ type: "enum", enum: CustomerType, nullable: true })
+  customerType?: CustomerType;
 
-  @Column()
-  joinDate!: string;
+  @Column({ type: "timestamp", nullable: true })
+  joinDate?: Date;
 
   @Column({ nullable: true })
   notes?: string;
-} 
+
+  //////Related fields//////
+  @OneToMany(() => Order, (order) => order.customer, { nullable: true })
+  orders!: Order[];
+}

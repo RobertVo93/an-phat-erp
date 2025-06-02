@@ -1,3 +1,5 @@
+import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
+
 export interface Order {
   id: string
   customer: string
@@ -5,9 +7,9 @@ export interface Order {
   customerPhone?: string
   date: string
   amount: number
-  status: "pending" | "processing" | "shipped" | "delivered" | "completed" | "cancelled"
-  paymentStatus: "pending" | "paid" | "partial" | "failed" | "refunded"
-  paymentMethod: "creditCard" | "debitCard" | "bankTransfer" | "cash" | "paypal"
+  status: OrderStatus
+  paymentStatus: PaymentStatus
+  paymentMethod: PaymentMethod
   items: OrderItem[]
   shippingAddress?: string
   notes?: string

@@ -1,37 +1,40 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
+import { WarehouseStatus, WarehouseType, WarehouseTemperature } from "../../../types/enums";
+import { StockIn } from "./StockIn";
+import { StockOut } from "./StockOut";
 
 @Entity({ name: "warehouses" })
 export class Warehouse extends BaseEntity {
-  @Column()
-  name!: string;
+  @Column({ nullable: false })
+  name?: string;
 
-  @Column()
-  location!: string;
+  @Column({ nullable: true })
+  location?: string;
 
-  @Column()
-  address!: string;
+  @Column({ nullable: true })
+  address?: string;
 
-  @Column()
-  manager!: string;
+  @Column({ nullable: true })
+  manager?: string;
 
-  @Column({ type: "int" })
-  capacity!: number;
+  @Column({ type: "int", nullable: true })
+  capacity?: number;
 
-  @Column({ type: "int" })
-  occupied!: number;
+  @Column({ type: "int", nullable: true })
+  occupied?: number;
 
-  @Column({ type: "enum", enum: ["Active", "Maintenance", "Inactive"] })
-  status!: "Active" | "Maintenance" | "Inactive";
+  @Column({ type: "enum", enum: WarehouseStatus, nullable: true })
+  status?: WarehouseStatus;
 
-  @Column({ type: "enum", enum: ["Distribution Center", "Regional Hub", "Cold Storage", "Backup Storage"] })
-  type!: "Distribution Center" | "Regional Hub" | "Cold Storage" | "Backup Storage";
+  @Column({ type: "enum", enum: WarehouseType, nullable: true })
+  type?: WarehouseType;
 
-  @Column({ type: "int" })
-  zones!: number;
+  @Column({ type: "int", nullable: true })
+  zones?: number;
 
-  @Column({ type: "enum", enum: ["Ambient", "Refrigerated", "Frozen"] })
-  temperature!: "Ambient" | "Refrigerated" | "Frozen";
+  @Column({ type: "enum", enum: WarehouseTemperature, nullable: true })
+  temperature?: WarehouseTemperature;
 
   @Column({ nullable: true })
   phone?: string;
@@ -41,4 +44,11 @@ export class Warehouse extends BaseEntity {
 
   @Column({ nullable: true })
   description?: string;
-} 
+
+  //////Related fields//////
+  @OneToMany(() => StockIn, (stockIn: StockIn) => stockIn.warehouse, { nullable: true })
+  stockIns?: StockIn[];
+
+  @OneToMany(() => StockOut, (stockOut: StockOut) => stockOut.warehouse, { nullable: true })
+  stockOuts?: StockOut[];
+}

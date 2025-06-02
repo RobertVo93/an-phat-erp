@@ -10,7 +10,6 @@ import { Order } from "./entities/Order";
 import { OrderItem } from "./entities/OrderItem";
 import { PayrollRecord } from "./entities/PayrollRecord";
 import { Product } from "./entities/Product";
-import { ProductionRecord } from "./entities/ProductionRecord";
 import { StockIn } from "./entities/StockIn";
 import { StockOut } from "./entities/StockOut";
 import { Utility } from "./entities/Utility";
@@ -32,7 +31,6 @@ export const AppDataSource = new DataSource({
     OrderItem,
     PayrollRecord,
     Product,
-    ProductionRecord,
     StockIn,
     StockOut,
     Utility,

@@ -1,41 +1,42 @@
 import { Entity, Column } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
+import { UtilityStatus } from "../../../types/enums";
 
 @Entity({ name: "utilities" })
 export class Utility extends BaseEntity {
-  @Column()
-  type!: string;
+  @Column({ nullable: true })
+  type?: string;
 
-  @Column()
-  provider!: string;
+  @Column({ nullable: true })
+  provider?: string;
 
-  @Column()
-  accountNumber!: string;
+  @Column({ nullable: true })
+  accountNumber?: string;
 
-  @Column()
-  location!: string;
+  @Column({ nullable: true })
+  location?: string;
 
-  @Column({ type: "float" })
-  monthlyUsage!: number;
+  @Column({ type: "float", nullable: true })
+  monthlyUsage?: number;
 
-  @Column()
-  unit!: string;
+  @Column({ nullable: true })
+  unit?: string;
 
-  @Column({ type: "float" })
-  costPerUnit!: number;
+  @Column({ type: "float", nullable: true })
+  costPerUnit?: number;
 
-  @Column({ type: "float" })
-  monthlyCost!: number;
+  @Column({ type: "float", nullable: true })
+  monthlyCost?: number;
 
-  @Column()
-  lastReading!: string;
+  @Column({ nullable: true })
+  lastReading?: string;
 
-  @Column({ type: "enum", enum: ["Active", "Inactive", "Overdue", "Disconnected"] })
-  status!: "Active" | "Inactive" | "Overdue" | "Disconnected";
+  @Column({ type: "enum", enum: UtilityStatus, nullable: true })
+  status?: UtilityStatus;
 
-  @Column()
-  dueDate!: string;
+  @Column({ nullable: true })
+  dueDate?: string;
 
   @Column({ nullable: true })
   description?: string;
-} 
+}

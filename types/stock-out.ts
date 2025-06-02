@@ -1,3 +1,5 @@
+import { StockOutDiscountType, StockOutStatus } from "@/types/enums";
+
 export interface StockOutProduct {
   id: string
   productId: string
@@ -22,10 +24,10 @@ export interface StockOut {
   products: StockOutProduct[]
   subtotal: number
   discount: number
-  discountType: "percentage" | "fixed"
+  discountType: StockOutDiscountType
   tax: number
   totalAmount: number
-  status: "draft" | "processing" | "shipped" | "delivered" | "cancelled"
+  status: StockOutStatus
   orderReference?: string
   trackingNumber?: string
   shippingMethod: string

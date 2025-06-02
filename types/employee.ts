@@ -1,3 +1,5 @@
+import { EmployeeType, EmployeeStatus } from "@/types/enums";
+
 export interface Employee {
   id: string
   name: string
@@ -7,8 +9,8 @@ export interface Employee {
   department: string
   salary: string
   hireDate: string
-  employeeType: "Full-time" | "Part-time" | "Contract" | "Intern"
-  status: "Active" | "Inactive" | "On Leave"
+  employeeType: EmployeeType
+  status: EmployeeStatus
   address?: string
   emergencyContact?: string
   notes?: string

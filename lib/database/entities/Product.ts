@@ -1,41 +1,48 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, ManyToMany, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
+import { ProductStatus } from "../../../types/enums";
+import { Collection } from "./Collection";
+import { OrderItem } from "./OrderItem";
 
 @Entity({ name: "products" })
 export class Product extends BaseEntity {
-  @Column()
-  name!: string;
+  @Column({ nullable: false })
+  name?: string;
 
   @Column({ nullable: true })
   description?: string;
 
-  @Column()
-  category!: string;
+  @Column({ type: "float", nullable: true })
+  price?: number;
 
-  @Column({ type: "float" })
-  price!: number;
+  @Column({ type: "float", nullable: true })
+  cost?: number;
 
-  @Column({ type: "float" })
-  cost!: number;
+  @Column({ type: "int", nullable: true })
+  stock?: number;
 
-  @Column({ type: "int" })
-  stock!: number;
+  @Column({ type: "int", nullable: true })
+  minStock?: number;
 
-  @Column({ type: "int" })
-  minStock!: number;
-
-  @Column()
-  sku!: string;
+  @Column({ nullable: true })
+  sku?: string;
 
   @Column({ nullable: true })
   barcode?: string;
 
-  @Column({ type: "enum", enum: ["active", "inactive", "lowStock", "outOfStock"] })
-  status!: "active" | "inactive" | "lowStock" | "outOfStock";
+  @Column({ type: "enum", enum: ProductStatus, nullable: true })
+  status?: ProductStatus;
 
   @Column({ nullable: true })
   supplier?: string;
 
   @Column({ nullable: true })
   image?: string;
+
+  //////Related fields//////
+  @ManyToMany(() => Collection, (collection: Collection) => collection.products, { nullable: true })
+  collections?: Collection[];
+
+  @OneToMany(() => OrderItem, (item: OrderItem) => item.product, { nullable: true })
+  orderItems?: OrderItem[];
 } 

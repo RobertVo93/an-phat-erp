@@ -1,10 +1,12 @@
+import { ProductionStatus } from "@/types/enums";
+
 export interface ProductionRecord {
   id: string
   date: string
   product: string
   quantity: number
   unit: string
-  status: "completed" | "in-progress" | "paused" | "cancelled"
+  status: ProductionStatus
   statusText: string
   shift: string
   operator: string

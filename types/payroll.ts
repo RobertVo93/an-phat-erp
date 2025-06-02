@@ -1,3 +1,5 @@
+import { PayrollStatus } from "@/types/enums";
+
 export interface PayrollRecord {
   id: string
   employeeId: string
@@ -9,7 +11,7 @@ export interface PayrollRecord {
   bonus: number
   deductions: number
   netSalary: number
-  status: "Processed" | "Pending" | "Failed"
+  status: PayrollStatus
   payPeriod: string
   workingDays: number
   overtimeHours: number
