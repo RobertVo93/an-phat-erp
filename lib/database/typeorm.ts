@@ -9,7 +9,7 @@ import { Invoice } from "./entities/Invoice";
 import { Order } from "./entities/Order";
 import { OrderItem } from "./entities/OrderItem";
 import { PayrollRecord } from "./entities/PayrollRecord";
-import { Product } from "./entities/Product";
+import { ProductEntity } from "./entities/product.entity";
 import { StockIn } from "./entities/StockIn";
 import { StockOut } from "./entities/StockOut";
 import { Utility } from "./entities/Utility";
@@ -30,7 +30,7 @@ export const AppDataSource = new DataSource({
     Order,
     OrderItem,
     PayrollRecord,
-    Product,
+    ProductEntity,
     StockIn,
     StockOut,
     Utility,

@@ -1,5 +1,5 @@
 import { Entity, Column, ManyToMany, JoinTable } from "typeorm";
-import { Product } from "./Product";
+import { ProductEntity } from "./product.entity";
 import { BaseEntity } from "./BaseEntity";
 import { CollectionStatus, CollectionCategory } from "../../../types/enums";
 import { Product as IProduct } from "@/types/product";
@@ -23,7 +23,7 @@ export class CollectionEntity extends BaseEntity implements ICollection {
   image?: string;
 
   //////Related fields//////
-  @ManyToMany(() => Product, (product: Product) => product.collections, { nullable: true })
+  @ManyToMany(() => ProductEntity, (product: ProductEntity) => product.collections, { nullable: true })
   @JoinTable({ name: "collection_products" })
   products!: IProduct[];
 } 
