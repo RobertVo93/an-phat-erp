@@ -3,7 +3,7 @@ import "reflect-metadata";
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { CollectionEntity } from "./entities/Collection";
-import { Customer } from "./entities/Customer";
+import { CustomerEntity } from "./entities/customer.entity";
 import { Employee } from "./entities/Employee";
 import { Invoice } from "./entities/Invoice";
 import { Order } from "./entities/Order";
@@ -20,11 +20,11 @@ import { UtilityReading } from "./entities/UtilityReading";
 export const AppDataSource = new DataSource({
   type: "postgres",
   url: process.env.DATABASE_URL,
-  synchronize: false, // set to false in production and use migrations
+  synchronize: true, // set to false in production and use migrations
   logging: false,
   entities: [
     CollectionEntity,
-    Customer,
+    CustomerEntity,
     Employee,
     Invoice,
     Order,

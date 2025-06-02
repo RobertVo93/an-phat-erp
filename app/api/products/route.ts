@@ -14,8 +14,6 @@ import { CreateProductSchema } from "./product.schema";
  *           type: string
  *         description:
  *           type: string
- *         category:
- *           type: string
  *         price:
  *           type: number
  *         cost:
@@ -41,8 +39,6 @@ import { CreateProductSchema } from "./product.schema";
  *         name:
  *           type: string
  *         description:
- *           type: string
- *         category:
  *           type: string
  *         price:
  *           type: number
@@ -71,8 +67,6 @@ import { CreateProductSchema } from "./product.schema";
  *         name:
  *           type: string
  *         description:
- *           type: string
- *         category:
  *           type: string
  *         price:
  *           type: number

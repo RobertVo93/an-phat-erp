@@ -3,9 +3,10 @@ import { BaseEntity } from "./BaseEntity";
 import { CustomerStatus, CustomerType } from "../../../types/enums";
 import { Order } from "./Order";
 import { Order as IOrder } from "@/types/order";
+import { Customer as ICustomer } from "@/types/customer";
 
 @Entity({ name: "customers" })
-export class Customer extends BaseEntity {
+export class CustomerEntity extends BaseEntity implements ICustomer {
   @Column({ nullable: false })
   name?: string;
 
@@ -20,12 +21,6 @@ export class Customer extends BaseEntity {
 
   @Column({ nullable: true })
   location?: string;
-
-  @Column({ type: "int", nullable: true })
-  totalOrders?: number;
-
-  @Column({ type: "float", nullable: true })
-  totalSpent?: number;
 
   @Column({ type: "timestamp", nullable: true })
   lastOrder?: Date;
