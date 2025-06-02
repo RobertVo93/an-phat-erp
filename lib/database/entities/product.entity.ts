@@ -5,9 +5,10 @@ import { CollectionEntity } from "./Collection";
 import { OrderItem } from "./OrderItem";
 import { Collection as ICollection } from "@/types/collection";
 import { OrderItem as IOrderItem } from "@/types/order";
+import { Product as IProduct } from "@/types/product";
 
 @Entity({ name: "products" })
-export class Product extends BaseEntity {
+export class ProductEntity extends BaseEntity implements IProduct {
   @Column({ nullable: false })
   name?: string;
 
