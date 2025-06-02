@@ -3,6 +3,9 @@ import { BaseEntity } from "./BaseEntity";
 import { WarehouseStatus, WarehouseType, WarehouseTemperature } from "../../../types/enums";
 import { StockIn } from "./StockIn";
 import { StockOut } from "./StockOut";
+import { StockIn as IStockIn } from "@/types/stock-in";
+import { StockOut as IStockOut } from "@/types/stock-out";
+
 
 @Entity({ name: "warehouses" })
 export class Warehouse extends BaseEntity {
@@ -47,8 +50,8 @@ export class Warehouse extends BaseEntity {
 
   //////Related fields//////
   @OneToMany(() => StockIn, (stockIn: StockIn) => stockIn.warehouse, { nullable: true })
-  stockIns?: StockIn[];
+  stockIns?: IStockIn[];
 
   @OneToMany(() => StockOut, (stockOut: StockOut) => stockOut.warehouse, { nullable: true })
-  stockOuts?: StockOut[];
+  stockOuts?: IStockOut[];
 }

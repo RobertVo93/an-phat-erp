@@ -2,7 +2,7 @@ import { DataSource } from "typeorm";
 import "reflect-metadata";
 import * as dotenv from 'dotenv';
 dotenv.config();
-import { Collection } from "./entities/Collection";
+import { CollectionEntity } from "./entities/Collection";
 import { Customer } from "./entities/Customer";
 import { Employee } from "./entities/Employee";
 import { Invoice } from "./entities/Invoice";
@@ -23,7 +23,7 @@ export const AppDataSource = new DataSource({
   synchronize: false, // set to false in production and use migrations
   logging: false,
   entities: [
-    Collection,
+    CollectionEntity,
     Customer,
     Employee,
     Invoice,
@@ -39,5 +39,5 @@ export const AppDataSource = new DataSource({
     UtilityReading,
   ],
   ssl: { rejectUnauthorized: false }, // required for Neon
-  migrations: ['lib/database/migrations/*.ts'],
-}); 
+  migrations: [__dirname + '/migrations/*{.ts,.js}'],
+});

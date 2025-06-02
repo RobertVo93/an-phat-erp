@@ -2,6 +2,7 @@ import { Entity, Column, JoinColumn, ManyToOne } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
 import { StockOutStatus } from "../../../types/enums";
 import { Warehouse } from "./Warehouse";
+import type { Warehouse as IWarehouse } from "@/types/warehouse";
 
 @Entity({ name: "stock_out" })
 export class StockOut extends BaseEntity {
@@ -45,5 +46,5 @@ export class StockOut extends BaseEntity {
   //////Related fields//////
   @ManyToOne(() => Warehouse, (warehouse: Warehouse) => warehouse.stockOuts, { nullable: true })
   @JoinColumn({ name: "warehouse_id" })
-  warehouse?: Warehouse;
+  warehouse?: IWarehouse;
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -43,14 +44,16 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
           <div className="space-y-2">
             <Label htmlFor="status">{t("invoices.status")}</Label>
             <Select
-              value={filters.status || ""}
-              onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value || undefined }))}
+              value={filters.status || "all"}
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, status: value === "all" ? undefined : value }))
+              }
             >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Tất cả trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tất cả trạng thái</SelectItem>
+                <SelectItem value="all">Tất cả trạng thái</SelectItem>
                 <SelectItem value="draft">{t("invoices.status.draft")}</SelectItem>
                 <SelectItem value="sent">{t("invoices.status.sent")}</SelectItem>
                 <SelectItem value="paid">{t("invoices.status.paid")}</SelectItem>
@@ -66,4 +69,57 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
               <Label htmlFor="billingPeriodFrom">Kỳ hóa đơn từ</Label>
               <Input
                 id="billingPeriodFrom"
-                placeholder="MM/YYYY\
+                placeholder="MM/YYYY"
+                value={filters.billingPeriodFrom || ""}
+                onChange={(e) => setFilters((prev) => ({ ...prev, billingPeriodFrom: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="billingPeriodTo">Kỳ hóa đơn đến</Label>
+              <Input
+                id="billingPeriodTo"
+                placeholder="MM/YYYY"
+                value={filters.billingPeriodTo || ""}
+                onChange={(e) => setFilters((prev) => ({ ...prev, billingPeriodTo: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="amountFrom">Số tiền từ</Label>
+              <Input
+                id="amountFrom"
+                type="number"
+                placeholder="0"
+                value={filters.amountFrom || ""}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, amountFrom: e.target.value ? Number(e.target.value) : undefined }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="amountTo">Số tiền đến</Label>
+              <Input
+                id="amountTo"
+                type="number"
+                placeholder="0"
+                value={filters.amountTo || ""}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, amountTo: e.target.value ? Number(e.target.value) : undefined }))
+                }
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={handleReset}>
+            Đặt lại
+          </Button>
+          <Button onClick={handleApply}>Áp dụng</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
