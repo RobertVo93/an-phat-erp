@@ -1,18 +1,19 @@
 import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from "typeorm";
-import { OrderItem } from "./OrderItem";
+import { OrderItemEntity } from "./order-item.entity";
 import { BaseEntity } from "./BaseEntity";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "../../../types/enums";
 import { CustomerEntity } from "./customer.entity";
 import type { Customer as ICustomer } from "@/types/customer";
 import { OrderItem as IOrderItem } from "@/types/order";
+import { Order as IOrder } from "@/types/order";
 
 @Entity({ name: "orders" })
-export class Order extends BaseEntity {
+export class OrderEntity extends BaseEntity implements IOrder {
   @Column({ type: "timestamp", nullable: true })
-  date?: Date;
+  deliveryDate?: Date;
 
   @Column({ type: "float", nullable: true })
-  amount?: number;
+  totalAmount?: number;
 
   @Column({ type: "enum", enum: OrderStatus, nullable: true })
   status?: OrderStatus;
@@ -37,6 +38,6 @@ export class Order extends BaseEntity {
   @JoinColumn({ name: "customer_id" })
   customer?: ICustomer;
 
-  @OneToMany(() => OrderItem, (item: OrderItem) => item.order, { cascade: true, nullable: true })
+  @OneToMany(() => OrderItemEntity, (item: OrderItemEntity) => item.order, { cascade: true, nullable: true })
   items!: IOrderItem[];
 }

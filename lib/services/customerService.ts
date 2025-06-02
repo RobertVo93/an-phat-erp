@@ -21,7 +21,8 @@ export async function getAllCustomers({ page = 1, limit = 20, sortBy = "name", s
 
 export async function getCustomerById(id: string) {
   const repo = AppDataSource.getRepository(CustomerEntity);
-  return repo.findOneBy({ id });
+  const result = await repo.findOneBy({ id });
+  return result || undefined;
 }
 
 export async function createCustomer(data: Partial<CustomerEntity>) {
