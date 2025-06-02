@@ -1,0 +1,136 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { CalendarIcon, Plus, History, BarChart3 } from "lucide-react"
+import { format } from "date-fns"
+import { ERPLayout } from "@/components/erp-layout"
+import { EditProductionModal } from "@/components/modals/edit-production-modal"
+import { ProductionSummaryCards } from "@/components/production/production-summary-cards"
+import { ProductionRecords } from "@/components/production/production-records"
+import { ProductionDetailModal } from "@/components/production/production-detail-modal"
+import { ProductionHistory } from "@/components/production/production-history"
+import { NewProductionForm } from "@/components/production/new-production-form"
+import { useProduction } from "@/hooks/use-production"
+import { productionRecords } from "@/lib/production-data"
+
+export default function ProducePage() {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [activeTab, setActiveTab] = useState("today")
+  const {
+    selectedRecord,
+    isEditModalOpen,
+    editingRecord,
+    isNewProductionOpen,
+    handleViewRecord,
+    handleEditRecord,
+    handleSaveEdit,
+    closeDetailModal,
+    closeEditModal,
+    openNewProduction,
+    closeNewProduction,
+  } = useProduction()
+
+  return (
+    <ERPLayout>
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Quản Lý Sản Xuất</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              Theo dõi quy trình sản xuất, tiêu thụ nguyên liệu và chi phí
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Chọn ngày"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Button className="w-full sm:w-auto" onClick={openNewProduction}>
+              <Plus className="mr-2 h-4 w-4" />
+              Sản Xuất Mới
+            </Button>
+          </div>
+        </div>
+
+        {/* Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3">
+            <TabsTrigger value="today" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Hôm Nay</span>
+              <span className="sm:hidden">Hôm Nay</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">Lịch Sử</span>
+              <span className="sm:hidden">Lịch Sử</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab Content - Hôm Nay */}
+          <TabsContent value="today" className="space-y-4 sm:space-y-6">
+            {/* Summary Cards */}
+            <ProductionSummaryCards todayProduction={250} materialCost={6.75} utilityCost={5.75} efficiency={90} />
+
+            {/* Production Records */}
+            <ProductionRecords
+              records={productionRecords}
+              onViewRecord={handleViewRecord}
+              onEditRecord={handleEditRecord}
+            />
+          </TabsContent>
+
+          {/* Tab Content - Lịch Sử */}
+          <TabsContent value="history" className="space-y-4 sm:space-y-6">
+            <ProductionHistory onViewRecord={handleViewRecord} onEditRecord={handleEditRecord} />
+          </TabsContent>
+        </Tabs>
+
+        {/* New Production Modal */}
+        <Dialog open={isNewProductionOpen} onOpenChange={closeNewProduction}>
+          <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Tạo Đơn Sản Xuất Mới</DialogTitle>
+              <DialogDescription>
+                Ghi lại đợt sản xuất mới với thông tin tiêu thụ nguyên liệu và sản lượng
+              </DialogDescription>
+            </DialogHeader>
+            <NewProductionForm onClose={closeNewProduction} />
+          </DialogContent>
+        </Dialog>
+
+        {/* Production Detail Modal */}
+        <ProductionDetailModal record={selectedRecord} isOpen={!!selectedRecord} onClose={closeDetailModal} />
+
+        {/* Edit Production Modal */}
+        {editingRecord && (
+          <EditProductionModal
+            isOpen={isEditModalOpen}
+            onClose={closeEditModal}
+            record={editingRecord}
+            onSave={handleSaveEdit}
+          />
+        )}
+      </div>
+    </ERPLayout>
+  )
+}

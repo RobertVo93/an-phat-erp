@@ -1,0 +1,391 @@
+export const attendanceTranslations = {
+  // Page title and navigation
+  "attendance.title": {
+    en: "Attendance Management",
+    vi: "Quản Lý Chấm Công",
+  },
+  "attendance.description": {
+    en: "Track employee attendance and working hours",
+    vi: "Theo dõi chấm công và giờ làm việc của nhân viên",
+  },
+  "attendance.addRecord": {
+    en: "Add Attendance",
+    vi: "Thêm Chấm Công",
+  },
+  "attendance.editRecord": {
+    en: "Edit Attendance",
+    vi: "Sửa Chấm Công",
+  },
+  "attendance.viewRecord": {
+    en: "View Attendance",
+    vi: "Xem Chấm Công",
+  },
+  "attendance.searchPlaceholder": {
+    en: "Search by employee name...",
+    vi: "Tìm kiếm theo tên nhân viên...",
+  },
+  "attendance.filter": {
+    en: "Filter",
+    vi: "Lọc",
+  },
+  "attendance.export": {
+    en: "Export",
+    vi: "Xuất File",
+  },
+
+  // View modes
+  "attendance.listView": {
+    en: "List View",
+    vi: "Dạng Danh Sách",
+  },
+  "attendance.timesheetView": {
+    en: "Timesheet View",
+    vi: "Dạng Bảng Chấm Công",
+  },
+
+  // Statistics
+  "attendance.totalPresent": {
+    en: "Present Today",
+    vi: "Có Mặt Hôm Nay",
+  },
+  "attendance.totalAbsent": {
+    en: "Absent Today",
+    vi: "Vắng Mặt Hôm Nay",
+  },
+  "attendance.totalLate": {
+    en: "Late Arrivals",
+    vi: "Đi Muộn",
+  },
+  "attendance.totalOvertimeHours": {
+    en: "Overtime Hours",
+    vi: "Giờ Làm Thêm",
+  },
+  "attendance.totalWages": {
+    en: "Total Wages",
+    vi: "Tổng Tiền Công",
+  },
+  "attendance.outOfEmployees": {
+    en: "Out of {total} employees",
+    vi: "Trong tổng số {total} nhân viên",
+  },
+  "attendance.employeesPresent": {
+    en: "Employees present",
+    vi: "Nhân viên có mặt",
+  },
+  "attendance.employeesAbsent": {
+    en: "Employees absent",
+    vi: "Nhân viên vắng mặt",
+  },
+  "attendance.lateToday": {
+    en: "Late today",
+    vi: "Đi muộn hôm nay",
+  },
+  "attendance.totalOvertimeToday": {
+    en: "Total overtime today",
+    vi: "Tổng giờ làm thêm hôm nay",
+  },
+  "attendance.totalWagesToday": {
+    en: "Total wages today",
+    vi: "Tổng tiền công hôm nay",
+  },
+
+  // Table headers
+  "attendance.employee": {
+    en: "Employee",
+    vi: "Nhân Viên",
+  },
+  "attendance.date": {
+    en: "Date",
+    vi: "Ngày",
+  },
+  "attendance.shift": {
+    en: "Shift",
+    vi: "Ca Làm",
+  },
+  "attendance.checkIn": {
+    en: "Check In",
+    vi: "Giờ Vào",
+  },
+  "attendance.checkOut": {
+    en: "Check Out",
+    vi: "Giờ Ra",
+  },
+  "attendance.workHours": {
+    en: "Work Hours",
+    vi: "Giờ Làm",
+  },
+  "attendance.overtime": {
+    en: "Overtime",
+    vi: "Làm Thêm",
+  },
+  "attendance.dailyWage": {
+    en: "Daily Wage",
+    vi: "Tiền Công",
+  },
+  "attendance.status": {
+    en: "Status",
+    vi: "Trạng Thái",
+  },
+  "attendance.actions": {
+    en: "Actions",
+    vi: "Hành Động",
+  },
+
+  // Status values
+  "attendance.status.present": {
+    en: "Present",
+    vi: "Có Mặt",
+  },
+  "attendance.status.absent": {
+    en: "Absent",
+    vi: "Vắng Mặt",
+  },
+  "attendance.status.late": {
+    en: "Late",
+    vi: "Đi Muộn",
+  },
+  "attendance.status.halfDay": {
+    en: "Half Day",
+    vi: "Nửa Ngày",
+  },
+  "attendance.status.overtime": {
+    en: "Overtime",
+    vi: "Làm Thêm",
+  },
+
+  // Shift values
+  "attendance.shift.morning": {
+    en: "Morning",
+    vi: "Ca Sáng",
+  },
+  "attendance.shift.afternoon": {
+    en: "Afternoon",
+    vi: "Ca Chiều",
+  },
+  "attendance.shift.evening": {
+    en: "Evening",
+    vi: "Ca Tối",
+  },
+
+  // Form fields
+  "attendance.form.employee": {
+    en: "Employee",
+    vi: "Nhân Viên",
+  },
+  "attendance.form.employeeName": {
+    en: "Employee Name",
+    vi: "Tên Nhân Viên",
+  },
+  "attendance.form.employeeId": {
+    en: "Employee ID",
+    vi: "Mã Nhân Viên",
+  },
+  "attendance.form.date": {
+    en: "Date",
+    vi: "Ngày",
+  },
+  "attendance.form.selectEmployee": {
+    en: "Select Employee",
+    vi: "Chọn nhân viên",
+  },
+  "attendance.form.shift": {
+    en: "Shift",
+    vi: "Ca Làm",
+  },
+  "attendance.form.checkIn": {
+    en: "Check In Time",
+    vi: "Giờ Vào",
+  },
+  "attendance.form.checkOut": {
+    en: "Check Out Time",
+    vi: "Giờ Ra",
+  },
+  "attendance.form.workHours": {
+    en: "Work Hours",
+    vi: "Số Giờ Làm",
+  },
+  "attendance.form.overtimeHours": {
+    en: "Overtime Hours",
+    vi: "Giờ Làm Thêm",
+  },
+  "attendance.form.dailyWage": {
+    en: "Daily Wage",
+    vi: "Tiền Công Ngày",
+  },
+  "attendance.form.status": {
+    en: "Status",
+    vi: "Trạng Thái",
+  },
+  "attendance.form.notes": {
+    en: "Notes",
+    vi: "Ghi Chú",
+  },
+  "attendance.form.save": {
+    en: "Save",
+    vi: "Lưu",
+  },
+  "attendance.form.cancel": {
+    en: "Cancel",
+    vi: "Hủy",
+  },
+
+  // Form validation
+  "attendance.form.employeeRequired": {
+    en: "Employee is required",
+    vi: "Nhân viên là bắt buộc",
+  },
+  "attendance.form.dateRequired": {
+    en: "Date is required",
+    vi: "Ngày là bắt buộc",
+  },
+  "attendance.form.shiftRequired": {
+    en: "Shift is required",
+    vi: "Ca làm là bắt buộc",
+  },
+  "attendance.form.statusRequired": {
+    en: "Status is required",
+    vi: "Trạng thái là bắt buộc",
+  },
+  "attendance.form.workHoursRequired": {
+    en: "Work hours is required",
+    vi: "Số giờ làm là bắt buộc",
+  },
+  "attendance.form.dailyWageRequired": {
+    en: "Daily wage is required",
+    vi: "Tiền công là bắt buộc",
+  },
+
+  // Filter modal
+  "attendance.filter.title": {
+    en: "Filter Attendance",
+    vi: "Lọc Chấm Công",
+  },
+  "attendance.filter.employeeName": {
+    en: "Employee Name",
+    vi: "Tên Nhân Viên",
+  },
+  "attendance.filter.dateRange": {
+    en: "Date Range",
+    vi: "Khoảng Thời Gian",
+  },
+  "attendance.filter.dateFrom": {
+    en: "From Date",
+    vi: "Từ Ngày",
+  },
+  "attendance.filter.dateTo": {
+    en: "To Date",
+    vi: "Đến Ngày",
+  },
+  "attendance.filter.status": {
+    en: "Status",
+    vi: "Trạng Thái",
+  },
+  "attendance.filter.shift": {
+    en: "Shift",
+    vi: "Ca Làm",
+  },
+  "attendance.filter.all": {
+    en: "All",
+    vi: "Tất Cả",
+  },
+  "attendance.filter.apply": {
+    en: "Apply",
+    vi: "Áp Dụng",
+  },
+  "attendance.filter.reset": {
+    en: "Reset",
+    vi: "Đặt Lại",
+  },
+
+  // Delete modal
+  "attendance.delete.title": {
+    en: "Delete Attendance Record",
+    vi: "Xóa Bản Ghi Chấm Công",
+  },
+  "attendance.delete.message": {
+    en: "Are you sure you want to delete this attendance record? This action cannot be undone.",
+    vi: "Bạn có chắc chắn muốn xóa bản ghi chấm công này? Hành động này không thể hoàn tác.",
+  },
+  "attendance.delete.confirm": {
+    en: "Delete",
+    vi: "Xóa",
+  },
+  "attendance.delete.cancel": {
+    en: "Cancel",
+    vi: "Hủy",
+  },
+
+  // Timesheet
+  "attendance.timesheet.title": {
+    en: "Monthly Timesheet",
+    vi: "Bảng Chấm Công Tháng",
+  },
+  "attendance.timesheet.employee": {
+    en: "Employee",
+    vi: "Nhân Viên",
+  },
+  "attendance.timesheet.shift": {
+    en: "Shift",
+    vi: "Ca",
+  },
+  "attendance.timesheet.total": {
+    en: "Total",
+    vi: "Tổng",
+  },
+  "attendance.timesheet.save": {
+    en: "Save",
+    vi: "Lưu",
+  },
+  "attendance.timesheet.month": {
+    en: "Month",
+    vi: "Tháng",
+  },
+  "attendance.timesheet.year": {
+    en: "Year",
+    vi: "Năm",
+  },
+
+  // Pagination
+  "attendance.pagination.showing": {
+    en: "Showing",
+    vi: "Hiển thị",
+  },
+  "attendance.pagination.of": {
+    en: "of",
+    vi: "trong tổng số",
+  },
+  "attendance.pagination.records": {
+    en: "records",
+    vi: "bản ghi",
+  },
+  "attendance.pagination.itemsPerPage": {
+    en: "per page",
+    vi: "mỗi trang",
+  },
+  "attendance.pagination.previous": {
+    en: "Previous",
+    vi: "Trước",
+  },
+  "attendance.pagination.next": {
+    en: "Next",
+    vi: "Tiếp",
+  },
+
+  // Common actions
+  "attendance.view": {
+    en: "View",
+    vi: "Xem",
+  },
+  "attendance.edit": {
+    en: "Edit",
+    vi: "Sửa",
+  },
+  "attendance.delete": {
+    en: "Delete",
+    vi: "Xóa",
+  },
+  "attendance.close": {
+    en: "Close",
+    vi: "Đóng",
+  },
+}
