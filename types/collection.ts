@@ -1,5 +1,6 @@
 import { CollectionStatus, CollectionCategory } from "@/types/enums";
 import { IBase } from "./base.interface";
+import { Product } from "./product";
 
 export interface Collection extends IBase {
   name?: string
@@ -9,15 +10,6 @@ export interface Collection extends IBase {
   image?: string
 
   products?: Product[]
-}
-
-export interface Product {
-  id: string
-  name: string
-  price: number
-  image?: string
-  category: string
-  stock: number
 }
 
 export interface CollectionFilters {

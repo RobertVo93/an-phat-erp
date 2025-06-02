@@ -2,7 +2,7 @@ import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from "typeorm";
 import { OrderItem } from "./OrderItem";
 import { BaseEntity } from "./BaseEntity";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "../../../types/enums";
-import { Customer } from "./Customer";
+import { CustomerEntity } from "./customer.entity";
 import type { Customer as ICustomer } from "@/types/customer";
 import { OrderItem as IOrderItem } from "@/types/order";
 
@@ -33,7 +33,7 @@ export class Order extends BaseEntity {
   tags?: string[];
 
   //////Related fields//////
-  @ManyToOne(() => Customer, (customer: Customer) => customer.orders, { nullable: true })
+  @ManyToOne(() => CustomerEntity, (customer: CustomerEntity) => customer.orders, { nullable: true })
   @JoinColumn({ name: "customer_id" })
   customer?: ICustomer;
 
