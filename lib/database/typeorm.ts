@@ -6,8 +6,8 @@ import { CollectionEntity } from "./entities/Collection";
 import { CustomerEntity } from "./entities/customer.entity";
 import { Employee } from "./entities/Employee";
 import { Invoice } from "./entities/Invoice";
-import { Order } from "./entities/Order";
-import { OrderItem } from "./entities/OrderItem";
+import { OrderEntity } from "./entities/order.entity";
+import { OrderItemEntity } from "./entities/order-item.entity";
 import { PayrollRecord } from "./entities/PayrollRecord";
 import { ProductEntity } from "./entities/product.entity";
 import { StockIn } from "./entities/StockIn";
@@ -27,8 +27,8 @@ export const AppDataSource = new DataSource({
     CustomerEntity,
     Employee,
     Invoice,
-    Order,
-    OrderItem,
+    OrderEntity,
+    OrderItemEntity,
     PayrollRecord,
     ProductEntity,
     StockIn,

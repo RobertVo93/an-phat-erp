@@ -1,7 +1,7 @@
 import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./BaseEntity";
 import { CustomerStatus, CustomerType } from "../../../types/enums";
-import { Order } from "./Order";
+import { OrderEntity } from "./order.entity";
 import { Order as IOrder } from "@/types/order";
 import { Customer as ICustomer } from "@/types/customer";
 
@@ -38,6 +38,6 @@ export class CustomerEntity extends BaseEntity implements ICustomer {
   notes?: string;
 
   //////Related fields//////
-  @OneToMany(() => Order, (order) => order.customer, { nullable: true })
+  @OneToMany(() => OrderEntity, (order) => order.customer, { nullable: true })
   orders!: IOrder[];
 }

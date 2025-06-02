@@ -1,14 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
-import { Order } from "./Order";
+import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
+import { OrderEntity } from "./order.entity";
 import { ProductEntity } from "./product.entity";
 import type { Product as IProduct } from "@/types/product";
 import type { Order as IOrder } from "@/types/order";
+import { OrderItem as IOrderItem } from "@/types/order";
+import { BaseEntity } from "./BaseEntity";
 
 @Entity({ name: "order_items" })
-export class OrderItem {
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
-
+export class OrderItemEntity extends BaseEntity implements IOrderItem {
   @Column({ type: "int", nullable: true })
   quantity!: number;
 
@@ -19,7 +18,7 @@ export class OrderItem {
   total!: number;
 
   //////Related fields//////
-  @ManyToOne(() => Order, (order: Order) => order.items, { nullable: true })
+  @ManyToOne(() => OrderEntity, (order: OrderEntity) => order.items, { nullable: true })
   @JoinColumn({ name: "order_id" })
   order!: IOrder;
 
