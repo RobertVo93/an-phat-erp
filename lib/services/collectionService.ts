@@ -1,9 +1,46 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { CollectionEntity } from "@/lib/database/entities/Collection";
 
-export async function getAllCollections() {
+export async function getAllCollections({
+  page = 1,
+  limit = 20,
+  sortBy = "created_at",
+  sortOrder = "desc",
+  filters = {} as Record<string, any>,
+}: {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  filters?: {
+    name?: string;
+    status?: string;
+    category?: string;
+    search?: string;
+  };
+} = {}) {
   const repo = AppDataSource.getRepository(CollectionEntity);
-  return repo.find();
+  const qb = repo.createQueryBuilder("collection");
+
+  // Filtering
+  if (filters.name) qb.andWhere("collection.name ILIKE :name", { name: `%${filters.name}%` });
+  if (filters.status) qb.andWhere("collection.status = :status", { status: filters.status });
+  if (filters.category) qb.andWhere("collection.category = :category", { category: filters.category });
+  if (filters.search) {
+    qb.andWhere(
+      "(collection.name ILIKE :search OR collection.description ILIKE :search)",
+      { search: `%${filters.search}%` }
+    );
+  }
+
+  // Sorting
+  qb.orderBy(`collection.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+
+  // Pagination
+  qb.skip((page - 1) * limit).take(limit);
+
+  const [data, total] = await qb.getManyAndCount();
+  return { data, total, page, limit };
 }
 
 export async function getCollectionById(id: string) {
