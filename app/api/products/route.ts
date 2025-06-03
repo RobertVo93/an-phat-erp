@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAllProducts, createProduct } from "@/lib/services/productService";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { CreateProductSchema } from "./product.schema";
+import { getUserFromRequest } from "@/lib/auth/jwt";
 
 /**
  * @swagger
@@ -129,7 +130,9 @@ import { CreateProductSchema } from "./product.schema";
  */
 
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const products = await getAllProducts();
@@ -140,6 +143,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const data = await req.json();

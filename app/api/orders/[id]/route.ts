@@ -3,6 +3,7 @@ import { getOrderById, updateOrder, deleteOrder } from "@/lib/services/orderServ
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { UpdateOrderSchema } from "../order.schema";
 import { OrderEntity } from "@/lib/database/entities/order.entity";
+import { getUserFromRequest } from "@/lib/auth/jwt";
 
 /**
  * @swagger
@@ -63,7 +64,9 @@ import { OrderEntity } from "@/lib/database/entities/order.entity";
  *         description: Order not found
  */
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const order = await getOrderById(params.id);
@@ -75,6 +78,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const data = await req.json();
@@ -94,7 +99,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const result = await deleteOrder(params.id);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAllCollections, createCollection } from "@/lib/services/collectionService";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { CollectionSchema } from "./collection.schema";
+import { getUserFromRequest } from "@/lib/auth/jwt";
 
 /**
  * @swagger
@@ -105,7 +106,9 @@ import { CollectionSchema } from "./collection.schema";
  */
 
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const collections = await getAllCollections();
@@ -116,6 +119,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const data = await req.json();

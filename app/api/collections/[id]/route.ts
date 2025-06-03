@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCollectionById, updateCollection, deleteCollection } from "@/lib/services/collectionService";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { CollectionSchema } from "../collection.schema";
+import { getUserFromRequest } from "@/lib/auth/jwt";
 
 /**
  * @swagger
@@ -67,6 +68,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const collection = await getCollectionById(params.id);
@@ -83,6 +86,8 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const data = await req.json();
@@ -104,6 +109,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const result = await deleteCollection(params.id);

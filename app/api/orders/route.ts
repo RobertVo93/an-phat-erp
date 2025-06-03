@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAllOrders, createOrder, type CreateOrderInput } from "@/lib/services/orderService";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { CreateOrderSchema } from "./order.schema";
+import { getUserFromRequest } from "@/lib/auth/jwt";
 
 /**
  * @swagger
@@ -157,6 +158,8 @@ import { CreateOrderSchema } from "./order.schema";
  */
 
 export async function GET(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const { searchParams } = new URL(req.url);
@@ -183,6 +186,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const data = await req.json();
