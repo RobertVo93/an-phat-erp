@@ -16,6 +16,7 @@ import { Utility } from "./entities/Utility";
 import { Warehouse } from "./entities/Warehouse";
 import { AttendanceRecord } from "./entities/AttendanceRecord";
 import { UtilityReading } from "./entities/UtilityReading";
+import { UserEntity } from "./entities/user.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -37,6 +38,7 @@ export const AppDataSource = new DataSource({
     Warehouse,
     AttendanceRecord,
     UtilityReading,
+    UserEntity,
   ],
   ssl: { rejectUnauthorized: false }, // required for Neon
   migrations: [__dirname + '/migrations/*{.ts,.js}'],

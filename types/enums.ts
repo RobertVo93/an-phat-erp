@@ -158,3 +158,11 @@ export enum InvoiceStatus {
   overdue = "overdue",
   cancelled = "cancelled"
 } 
+
+export enum UserRole {
+  super_admin = "super_admin",
+  admin = "admin",
+  manager = "manager",
+  staff = "staff",
+  customer = "customer",
+}

@@ -1,17 +1,11 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-}
+import { IUser } from "@/types/user"
 
 interface AuthContextType {
-  user: User | null
-  login: (user: User) => void
+  user: IUser | null
+  login: (user: IUser) => void
   logout: () => void
   isAuthenticated: boolean
 }
@@ -19,7 +13,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<IUser | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
@@ -35,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true)
   }, [])
 
-  const login = (userData: User) => {
+  const login = (userData: IUser) => {
     setUser(userData)
     try {
       localStorage.setItem("user", JSON.stringify(userData))

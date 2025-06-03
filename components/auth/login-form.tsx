@@ -16,27 +16,37 @@ export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const { login } = useAuth()
   const { t } = useLanguage()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    try {
+      e.preventDefault()
+      setIsLoading(true)
+      setError("")
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Accept any email/password for demo purposes
-    login({
-      id: "1",
-      name: email === "admin@anphat.com" ? "Admin User" : "Robert Vo",
-      email: email,
-      role: email === "admin@anphat.com" ? "admin" : "user",
-    })
-
-    setIsLoading(false)
-    router.push("/")
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        login(data.user)
+        router.push("/"); // or your dashboard
+      } else {
+        const data = await res.json();
+        setError(data.error || "Login failed")
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      setError("Login failed. Please try again.")
+    }
+    finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -53,6 +63,7 @@ export function LoginForm() {
           <p className="text-xs text-blue-500 mt-1">Or use any email/password to login</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
           <div className="space-y-2">
             <Label htmlFor="email">{t("login.email")}</Label>
             <Input
