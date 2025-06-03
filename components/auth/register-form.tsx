@@ -17,23 +17,38 @@ export function RegisterForm() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const { t } = useLanguage()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password !== confirmPassword) {
-      alert(t("register.passwordMismatch"))
-      return
+    try {
+      e.preventDefault()
+      setError("")
+      if (password !== confirmPassword) {
+        setError(t("register.passwordMismatch"))
+        return
+      }
+      setIsLoading(true)
+
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, username: name }),
+      });
+      if (res.ok) {
+        router.push("/login")
+      } else {
+        const data = await res.json();
+        setError(data.error || "Registration failed")
+      }
+    } catch (error) {
+      console.error("Error registering:", error);
+      setError("Registration failed. Please try again.")
     }
-
-    setIsLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    setIsLoading(false)
-    router.push("/login")
+    finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -44,6 +59,7 @@ export function RegisterForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
           <div className="space-y-2">
             <Label htmlFor="name">{t("register.name")}</Label>
             <Input
