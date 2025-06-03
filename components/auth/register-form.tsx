@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
+import { registerUser } from "@/lib/httpclient"
 
 export function RegisterForm() {
   const [name, setName] = useState("")
@@ -31,16 +32,9 @@ export function RegisterForm() {
       }
       setIsLoading(true)
 
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, username: name }),
-      });
-      if (res.ok) {
+      const res = await registerUser({ email, password, username: name })
+      if (res.success) {
         router.push("/login")
-      } else {
-        const data = await res.json();
-        setError(data.error || "Registration failed")
       }
     } catch (error) {
       console.error("Error registering:", error);
