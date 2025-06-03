@@ -3,6 +3,7 @@ import { getAllCustomers, createCustomer } from "@/lib/services/customerService"
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { CreateCustomerSchema } from "./customer.schema";
 import { CustomerEntity } from "@/lib/database/entities/customer.entity";
+import { getUserFromRequest } from "@/lib/auth/jwt";
 
 /**
  * @swagger
@@ -140,6 +141,8 @@ import { CustomerEntity } from "@/lib/database/entities/customer.entity";
  */
 
 export async function GET(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const { searchParams } = new URL(req.url);
@@ -164,6 +167,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const data = await req.json();

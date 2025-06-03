@@ -3,6 +3,7 @@ import { getCustomerById, updateCustomer, deleteCustomer } from "@/lib/services/
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { UpdateCustomerSchema } from "../customer.schema";
 import { CustomerEntity } from "@/lib/database/entities/customer.entity";
+import { getUserFromRequest } from "@/lib/auth/jwt";
 
 /**
  * @swagger
@@ -61,6 +62,8 @@ import { CustomerEntity } from "@/lib/database/entities/customer.entity";
  */
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const customer = await getCustomerById(params.id);
@@ -74,6 +77,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const data = await req.json();
@@ -96,6 +101,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const result = await deleteCustomer(params.id);
