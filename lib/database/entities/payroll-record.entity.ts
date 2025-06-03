@@ -1,9 +1,10 @@
 import { Entity, Column } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { PayrollStatus } from "../../../types/enums";
+import { PayrollRecord as IPayrollRecord } from "@/types/payroll";
 
 @Entity({ name: "payroll_records" })
-export class PayrollRecord extends BaseEntity {
+export class PayrollRecordEntity extends BaseEntity implements IPayrollRecord {
   @Column()
   employeeId!: string;
 

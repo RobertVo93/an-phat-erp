@@ -4,7 +4,7 @@ import { ProductEntity } from "./product.entity";
 import type { Product as IProduct } from "@/types/product";
 import type { Order as IOrder } from "@/types/order";
 import { OrderItem as IOrderItem } from "@/types/order";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 
 @Entity({ name: "order_items" })
 export class OrderItemEntity extends BaseEntity implements IOrderItem {

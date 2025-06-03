@@ -2,20 +2,20 @@ import { DataSource } from "typeorm";
 import "reflect-metadata";
 import * as dotenv from 'dotenv';
 dotenv.config();
-import { CollectionEntity } from "./entities/Collection";
+import { CollectionEntity } from "./entities/collection.entity";
 import { CustomerEntity } from "./entities/customer.entity";
-import { Employee } from "./entities/Employee";
-import { Invoice } from "./entities/Invoice";
+import { EmployeeEntity } from "./entities/employee.entity";
+import { InvoiceEntity } from "./entities/invoice.entity";
 import { OrderEntity } from "./entities/order.entity";
 import { OrderItemEntity } from "./entities/order-item.entity";
-import { PayrollRecord } from "./entities/PayrollRecord";
+import { PayrollRecordEntity } from "./entities/payroll-record.entity";
 import { ProductEntity } from "./entities/product.entity";
-import { StockIn } from "./entities/StockIn";
-import { StockOut } from "./entities/StockOut";
-import { Utility } from "./entities/Utility";
-import { Warehouse } from "./entities/Warehouse";
-import { AttendanceRecord } from "./entities/AttendanceRecord";
-import { UtilityReading } from "./entities/UtilityReading";
+import { StockInEntity } from "./entities/stock-in.entity";
+import { StockOutEntity } from "./entities/stock-out.entity";
+import { UtilityEntity } from "./entities/utility.entity";
+import { WarehouseEntity } from "./entities/warehouse.entity";
+import { AttendanceRecordEntity } from "./entities/attendance-record.entity";
+import { UtilityReading } from "./entities/utility-reading.entity";
 import { UserEntity } from "./entities/user.entity";
 
 export const AppDataSource = new DataSource({
@@ -26,17 +26,17 @@ export const AppDataSource = new DataSource({
   entities: [
     CollectionEntity,
     CustomerEntity,
-    Employee,
-    Invoice,
+    EmployeeEntity,
+    InvoiceEntity,
     OrderEntity,
     OrderItemEntity,
-    PayrollRecord,
+    PayrollRecordEntity,
     ProductEntity,
-    StockIn,
-    StockOut,
-    Utility,
-    Warehouse,
-    AttendanceRecord,
+    StockInEntity,
+    StockOutEntity,
+    UtilityEntity,
+    WarehouseEntity,
+    AttendanceRecordEntity,
     UtilityReading,
     UserEntity,
   ],

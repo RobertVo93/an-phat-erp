@@ -1,21 +1,19 @@
 import { UtilityStatus } from "@/types/enums";
+import { IBase } from "./base.interface";
 
-export interface Utility {
-  id: string
-  type: string
-  provider: string
-  accountNumber: string
-  location: string
-  monthlyUsage: number
-  unit: string
-  costPerUnit: number
-  monthlyCost: number
-  lastReading: string
-  status: UtilityStatus
-  dueDate: string
+export interface Utility extends IBase{
+  type?: string
+  provider?: string
+  accountNumber?: string
+  location?: string
+  monthlyUsage?: number
+  unit?: string
+  costPerUnit?: number
+  monthlyCost?: number
+  lastReading?: string
+  status?: UtilityStatus
+  dueDate?: string
   description?: string
-  createdAt: string
-  updatedAt: string
 }
 
 export interface UtilityFilters {

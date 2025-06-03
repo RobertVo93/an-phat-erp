@@ -1,5 +1,5 @@
 import { UtilityType, InvoiceStatus } from "@/types/enums";
-
+import { IBase } from "./base.interface";
 export interface UtilityReading {
   id: string
   utilityType: UtilityType
@@ -11,30 +11,22 @@ export interface UtilityReading {
   total: number
 }
 
-export interface Invoice {
-  id: string
-  invoiceNumber: string
-  propertyId: string
-  propertyName: string
-  propertyAddress: string
-  tenantName: string
-  tenantPhone: string
-  tenantEmail: string
-  billingPeriod: string // "MM/YYYY"
-  issueDate: string
-  dueDate: string
-  readings: UtilityReading[]
-  subtotal: number
-  taxRate: number
-  taxAmount: number
-  otherFees: number
-  otherFeesDescription: string
-  total: number
-  paidAmount: number
-  status: InvoiceStatus
-  notes: string
-  createdAt: string
-  updatedAt: string
+export interface Invoice extends IBase{
+  invoiceNumber?: string
+  billingPeriod?: Date
+  issueDate?: Date
+  dueDate?: Date
+  subtotal?: number
+  taxRate?: number
+  taxAmount?: number
+  otherFees?: number
+  otherFeesDescription?: string
+  total?: number
+  paidAmount?: number
+  status?: InvoiceStatus
+  notes?: string
+
+  readings?: UtilityReading[]
 }
 
 export interface InvoiceFilters {

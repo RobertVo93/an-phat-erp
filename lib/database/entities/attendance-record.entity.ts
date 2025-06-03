@@ -1,11 +1,12 @@
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { AttendanceShift, AttendanceStatus } from "../../../types/enums";
-import { Employee } from "./Employee";
+import { EmployeeEntity } from "./employee.entity";
 import type { Employee as IEmployee } from "@/types/employee";
+import { AttendanceRecord as IAttendanceRecord } from "@/types/attendance";
 
 @Entity({ name: "attendance_records" })
-export class AttendanceRecord extends BaseEntity {
+export class AttendanceRecordEntity extends BaseEntity implements IAttendanceRecord {
   @Column({ nullable: true })
   date?: string;
 
@@ -34,7 +35,7 @@ export class AttendanceRecord extends BaseEntity {
   notes?: string;
 
   //////Related fields//////
-  @ManyToOne(() => Employee, (employee: Employee) => employee.attendanceRecords, { nullable: true })
+  @ManyToOne(() => EmployeeEntity, (employee: EmployeeEntity) => employee.attendanceRecords, { nullable: true })
   @JoinColumn({ name: "employee_id" })
   employee?: IEmployee;
 }
