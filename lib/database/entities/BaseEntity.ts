@@ -5,14 +5,14 @@ export abstract class BaseEntity {
   id!: string;
 
   @CreateDateColumn({ name: "created_at" })
-  created_at!: Date;
+  createdAt!: Date;
 
   @Column({ name: "created_by", nullable: true })
-  created_by!: string;
+  createdBy!: string;
 
   @UpdateDateColumn({ name: "updated_at" })
-  updated_at!: Date;
+  updatedAt!: Date;
 
   @Column({ name: "updated_by", nullable: true })
-  updated_by!: string;
+  updatedBy!: string;
 } 

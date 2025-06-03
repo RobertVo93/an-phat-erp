@@ -13,9 +13,12 @@ export interface Collection extends IBase {
 }
 
 export interface CollectionFilters {
-  search: string
-  status: string
-  category: string
-  dateFrom: string
-  dateTo: string
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  name?: string;
+  status?: string;
+  category?: string;
+  search?: string;
 }
