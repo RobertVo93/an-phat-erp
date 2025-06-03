@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { useLanguage } from "@/contexts/language-context"
 import type { Collection } from "@/types/collection"
 import { ImageUpload } from "@/components/ui/image-upload"
+import { CollectionCategory, CollectionStatus } from "@/types/enums"
 
 interface CollectionFormModalProps {
   collection?: Collection | null
@@ -26,23 +27,19 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
     name: "",
     description: "",
     category: "",
-    status: "Draft",
-    totalValue: "$0.00",
-    productCount: 0,
-    createdDate: new Date().toISOString().split("T")[0],
-    image: "", // Add image field
+    status: CollectionStatus.draft,
+    createdAt: new Date().toISOString().split("T")[0],
+    image: "",
   })
 
   useEffect(() => {
     if (collection) {
       setFormData({
-        name: collection.name,
-        description: collection.description,
-        category: collection.category,
-        status: collection.status,
-        totalValue: collection.totalValue,
-        productCount: collection.productCount,
-        createdDate: collection.createdDate,
+        name: collection.name || "",
+        description: collection.description || "",
+        category: collection.category || "",
+        status: collection.status || CollectionStatus.draft,
+        createdAt: collection.createdAt as any || new Date().toISOString().split("T")[0],
         image: collection.image || "", // Add image field
       })
     } else {
@@ -50,11 +47,9 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
         name: "",
         description: "",
         category: "",
-        status: "Draft",
-        totalValue: "$0.00",
-        productCount: 0,
-        createdDate: new Date().toISOString().split("T")[0],
-        image: "", // Add image field
+        status: CollectionStatus.draft,
+        createdAt: new Date().toISOString().split("T")[0],
+        image: "",
       })
     }
   }, [collection, open])
@@ -64,14 +59,12 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
 
     const collectionData = {
       ...formData,
-      category: formData.category as "Fashion" | "Electronics" | "Home" | "Office",
-      status: formData.status as "Active" | "Draft" | "Archived",
     }
 
     if (collection) {
-      onSave({ ...collection, ...collectionData })
+      onSave({ ...collection, ...collectionData as any })
     } else {
-      onSave(collectionData)
+      onSave(collectionData as any)
     }
 
     onOpenChange(false)
@@ -81,48 +74,61 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{collection ? "Chỉnh Sửa Bộ Sưu Tập" : "Tạo Bộ Sưu Tập Mới"}</DialogTitle>
+          <DialogTitle>{collection ? t("collections.form.edit") : t("collections.form.create")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">{t("collections.form.name")} *</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder={t("collections.form.namePlaceholder")}
+              required
+            />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Tên Bộ Sưu Tập *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Nhập tên bộ sưu tập"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Danh Mục *</Label>
+              <Label htmlFor="category">{t("collections.form.category")} *</Label>
               <Select
                 value={formData.category}
                 onValueChange={(value) => setFormData({ ...formData, category: value })}
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn danh mục" />
+                  <SelectValue placeholder={t("collections.form.selectCategory")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Fashion">Thời Trang</SelectItem>
-                  <SelectItem value="Electronics">Điện Tử</SelectItem>
-                  <SelectItem value="Home">Gia Dụng</SelectItem>
-                  <SelectItem value="Office">Văn Phòng</SelectItem>
+                  <SelectItem value={CollectionCategory.fashion}>{t("collections.category.fashion")}</SelectItem>
+                  <SelectItem value={CollectionCategory.electronics}>{t("collections.category.electronics")}</SelectItem>
+                  <SelectItem value={CollectionCategory.home}>{t("collections.category.home")}</SelectItem>
+                  <SelectItem value={CollectionCategory.office}>{t("collections.category.office")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">{t("collections.form.status")}</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as CollectionStatus })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={CollectionStatus.active}>{t("collections.status.active")}</SelectItem>
+                    <SelectItem value={CollectionStatus.draft}>{t("collections.status.draft")}</SelectItem>
+                    <SelectItem value={CollectionStatus.archived}>{t("collections.status.archived")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Mô Tả</Label>
+            <Label htmlFor="description">{t("collections.form.description")}</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Nhập mô tả bộ sưu tập"
+              placeholder={t("collections.form.descriptionPlaceholder")}
               rows={3}
             />
           </div>
@@ -131,49 +137,14 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
           <ImageUpload
             value={formData.image}
             onChange={(value) => setFormData({ ...formData, image: value })}
-            label="Ảnh Bộ Sưu Tập"
+            label={t("collections.form.image")}
           />
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="status">Trạng Thái</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Active">Hoạt Động</SelectItem>
-                  <SelectItem value="Draft">Bản Nháp</SelectItem>
-                  <SelectItem value="Archived">Đã Lưu Trữ</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="productCount">Số Sản Phẩm</Label>
-              <Input
-                id="productCount"
-                type="number"
-                value={formData.productCount}
-                onChange={(e) => setFormData({ ...formData, productCount: Number.parseInt(e.target.value) || 0 })}
-                min="0"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="totalValue">Tổng Giá Trị</Label>
-              <Input
-                id="totalValue"
-                value={formData.totalValue}
-                onChange={(e) => setFormData({ ...formData, totalValue: e.target.value })}
-                placeholder="$0.00"
-              />
-            </div>
-          </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Hủy
+              {t("common.cancel")}
             </Button>
-            <Button type="submit">{collection ? "Cập Nhật" : "Tạo Mới"}</Button>
+            <Button type="submit">{collection ? t("common.update") : t("common.create")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

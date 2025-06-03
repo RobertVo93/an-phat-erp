@@ -1,5 +1,25 @@
 export const collectionsTranslations = {
   // Collections page translations
+  "collections.filter_modal.title": {
+    en: "Filter Collections",
+    vi: "Bộ Lọc Bộ Sưu Tập",
+  },
+  "collections.createdAt": {
+    en: "Created At",
+    vi: "Ngày Tạo",
+  },
+  "collections.exportExcel": {
+    en: "Export to Excel",
+    vi: "Xuất ra Excel",
+  },
+  "collections.collectionInfo": {
+    en: "Collection Info",
+    vi: "Thông Tin Bộ Sưu Tập",
+  },
+  "collections.productsInCollection": {
+    en: "Products in Collection",
+    vi: "Sản Phẩm Trong Bộ Sưu Tập",
+  },
   "collections.title": {
     en: "Collections",
     vi: "Bộ Sưu Tập",
@@ -11,6 +31,14 @@ export const collectionsTranslations = {
   "collections.newCollection": {
     en: "New Collection",
     vi: "Bộ Sưu Tập Mới",
+  },
+  "collections.noCollectionsFound": {
+    en: "No collections found",
+    vi: "Không tìm thấy bộ sưu tập nào",
+  },
+  "collections.noProductsInCollection": {
+    en: "No products in collection",
+    vi: "Chưa có sản phẩm nào trong bộ sưu tập này",
   },
   "collections.searchPlaceholder": {
     en: "Search collections...",
@@ -68,6 +96,10 @@ export const collectionsTranslations = {
     en: "Created",
     vi: "Tạo ngày",
   },
+  "collections.form.allStatus": {
+    en: "All Statuses",
+    vi: "Tất Cả Trạng Thái",
+  },
   "collections.status.active": {
     en: "Active",
     vi: "Hoạt Động",
@@ -79,6 +111,10 @@ export const collectionsTranslations = {
   "collections.status.archived": {
     en: "Archived",
     vi: "Đã Lưu Trữ",
+  },
+  "collections.form.allCategories": {
+    en: "All Categories",
+    vi: "Tất Cả Danh Mục",
   },
   "collections.category.fashion": {
     en: "Fashion",
@@ -98,13 +134,29 @@ export const collectionsTranslations = {
   },
 
   // Form translations
+  "collections.form.edit": {
+    en: "Edit Collection",
+    vi: "Chỉnh Sửa Bộ Sưu Tập",
+  },
+  "collections.form.create": {
+    en: "Create Collection",
+    vi: "Tạo Bộ Sưu Tập Mới",
+  },
   "collections.form.name": {
     en: "Collection Name",
     vi: "Tên Bộ Sưu Tập",
   },
+  "collections.form.namePlaceholder": {
+    en: "Enter collection name",
+    vi: "Nhập tên bộ sưu tập",
+  },
   "collections.form.description": {
     en: "Description",
     vi: "Mô Tả",
+  },
+  "collections.form.descriptionPlaceholder": {
+    en: "Enter description",
+    vi: "Nhập mô tả",
   },
   "collections.form.category": {
     en: "Category",
@@ -113,6 +165,10 @@ export const collectionsTranslations = {
   "collections.form.status": {
     en: "Status",
     vi: "Trạng Thái",
+  },
+  "collections.form.image": {
+    en: "Image for collection",
+    vi: "Ảnh Bộ Sưu Tập",
   },
   "collections.form.selectCategory": {
     en: "Select category",
@@ -215,8 +271,8 @@ export const collectionsTranslations = {
     vi: "Bạn có chắc chắn muốn xóa bộ sưu tập này không?",
   },
   "collections.deleteWarning": {
-    en: "This action cannot be undone.",
-    vi: "Hành động này không thể hoàn tác.",
+    en: "This action cannot be undone. All related data will be permanently deleted.",
+    vi: "Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn.",
   },
 
   // View modal

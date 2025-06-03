@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreVertical,
+  Loader2,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/contexts/language-context"
@@ -29,13 +30,15 @@ import { CollectionFormModal } from "@/components/collections/collection-form-mo
 import { CollectionFilterModal } from "@/components/collections/collection-filter-modal"
 import { CollectionDeleteModal } from "@/components/collections/collection-delete-modal"
 import type { Collection } from "@/types/collection"
+import { CollectionCategory, CollectionStatus } from "@/types/enums"
+import { formatDate } from "@/lib/utils"
 
 export default function CollectionsPage() {
   const { t } = useLanguage()
   const {
+    loading,
     collections,
     allCollections,
-    filteredCollections,
     filters,
     setFilters,
     currentPage,
@@ -47,7 +50,6 @@ export default function CollectionsPage() {
     createCollection,
     updateCollection,
     deleteCollection,
-    getCollection,
     resetFilters,
   } = useCollections()
 
@@ -68,11 +70,11 @@ export default function CollectionsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case CollectionStatus.active:
         return "bg-green-100 text-green-800"
-      case "Draft":
+      case CollectionStatus.draft:
         return "bg-yellow-100 text-yellow-800"
-      case "Archived":
+      case CollectionStatus.archived:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -81,13 +83,13 @@ export default function CollectionsPage() {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case "Fashion":
+      case CollectionCategory.fashion:
         return "bg-pink-100 text-pink-800"
-      case "Electronics":
+      case CollectionCategory.electronics:
         return "bg-blue-100 text-blue-800"
-      case "Home":
+      case CollectionCategory.home:
         return "bg-green-100 text-green-800"
-      case "Office":
+      case CollectionCategory.office:
         return "bg-purple-100 text-purple-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -96,11 +98,11 @@ export default function CollectionsPage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "Active":
+      case CollectionStatus.active:
         return t("collections.status.active")
-      case "Draft":
+      case CollectionStatus.draft:
         return t("collections.status.draft")
-      case "Archived":
+      case CollectionStatus.archived:
         return t("collections.status.archived")
       default:
         return status
@@ -109,13 +111,13 @@ export default function CollectionsPage() {
 
   const getCategoryText = (category: string) => {
     switch (category) {
-      case "Fashion":
+      case CollectionCategory.fashion:
         return t("collections.category.fashion")
-      case "Electronics":
+      case CollectionCategory.electronics:
         return t("collections.category.electronics")
-      case "Home":
+      case CollectionCategory.home:
         return t("collections.category.home")
-      case "Office":
+      case CollectionCategory.office:
         return t("collections.category.office")
       default:
         return category
@@ -140,7 +142,7 @@ export default function CollectionsPage() {
 
   const handleSave = (collectionData: any) => {
     if (formModal.collection) {
-      updateCollection(formModal.collection.id, collectionData)
+      updateCollection(formModal.collection.id!, collectionData)
     } else {
       createCollection(collectionData)
     }
@@ -148,22 +150,21 @@ export default function CollectionsPage() {
 
   const handleConfirmDelete = () => {
     if (deleteModal.collection) {
-      deleteCollection(deleteModal.collection.id)
+      deleteCollection(deleteModal.collection.id!)
     }
   }
 
   const exportToCSV = () => {
     const csvContent = [
-      ["ID", "Tên", "Mô tả", "Danh mục", "Trạng thái", "Số sản phẩm", "Giá trị", "Ngày tạo"],
+      [t("common.id"), t("common.name"), t("common.description"), t("common.category"), t("common.status"), t("common.products"), t("common.createdAt")],
       ...collections.map((col) => [
         col.id,
         col.name,
         col.description,
-        getCategoryText(col.category),
-        getStatusText(col.status),
-        col.productCount.toString(),
-        col.totalValue,
-        col.createdDate,
+        getCategoryText(col.category!),
+        getStatusText(col.status!),
+        col.products?.length,
+        col.createdAt,
       ]),
     ]
       .map((row) => row.join(","))
@@ -176,12 +177,17 @@ export default function CollectionsPage() {
     link.click()
   }
 
-  const hasActiveFilters = filters.status || filters.category || filters.dateFrom || filters.dateTo
+  const hasActiveFilters = filters.status || filters.category || filters.name || filters.search
   const startIndex = (currentPage - 1) * itemsPerPage + 1
   const endIndex = Math.min(currentPage * itemsPerPage, totalCollections)
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-4 md:space-y-6">
         {/* Header Section - Mobile Optimized */}
         <div className="space-y-4">
@@ -194,12 +200,12 @@ export default function CollectionsPage() {
               <Button variant="outline" onClick={exportToCSV} size="sm" className="flex-1 md:flex-none">
                 <Download className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">{t("collections.exportExcel")}</span>
-                <span className="sm:hidden">Xuất</span>
+                <span className="sm:hidden">{t("common.export")}</span>
               </Button>
               <Button onClick={handleCreate} size="sm" className="flex-1 md:flex-none">
                 <Plus className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">{t("collections.newCollection")}</span>
-                <span className="sm:hidden">Thêm</span>
+                <span className="sm:hidden">{t("common.add")}</span>
               </Button>
             </div>
           </div>
@@ -223,10 +229,10 @@ export default function CollectionsPage() {
             >
               <Filter className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">{t("collections.filter")}</span>
-              <span className="sm:hidden">Lọc</span>
+              <span className="sm:hidden">{t("common.filter")}</span>
               {hasActiveFilters && (
                 <Badge variant="secondary" className="ml-2">
-                  {[filters.status, filters.category, filters.dateFrom, filters.dateTo].filter(Boolean).length}
+                  {[filters.status, filters.category, filters.name, filters.search].filter(Boolean).length}
                 </Badge>
               )}
             </Button>
@@ -255,7 +261,7 @@ export default function CollectionsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl md:text-2xl font-bold">
-                {allCollections.reduce((sum, col) => sum + col.productCount, 0)}
+                {allCollections.reduce((sum, col) => sum + (col.products?.length || 0), 0)}
               </div>
               <p className="text-xs text-muted-foreground hidden md:block">{t("collections.acrossAllCollections")}</p>
             </CardContent>
@@ -275,7 +281,7 @@ export default function CollectionsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl md:text-2xl font-bold">
-                {allCollections.filter((col) => col.status === "Active").length}
+                {allCollections.filter((col) => col.status === CollectionStatus.active).length}
               </div>
               <p className="text-xs text-muted-foreground hidden md:block">{t("collections.currentlyActive")}</p>
             </CardContent>
@@ -310,7 +316,7 @@ export default function CollectionsPage() {
                       <SelectItem value="20">20</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span className="text-xs text-muted-foreground">/trang</span>
+                  <span className="text-xs text-muted-foreground">/ {t("common.page")}</span>
                 </div>
               </div>
             </div>
@@ -344,11 +350,11 @@ export default function CollectionsPage() {
                             <div className="flex-1 min-w-0">
                               <h3 className="text-sm md:text-base font-medium truncate">{collection.name}</h3>
                               <div className="flex flex-wrap items-center gap-1 mt-1">
-                                <Badge className={`${getStatusColor(collection.status)} text-xs`}>
-                                  {getStatusText(collection.status)}
+                                <Badge className={`${getStatusColor(collection.status!)} text-xs`}>
+                                  {getStatusText(collection.status!)}
                                 </Badge>
-                                <Badge variant="outline" className={`${getCategoryColor(collection.category)} text-xs`}>
-                                  {getCategoryText(collection.category)}
+                                <Badge variant="outline" className={`${getCategoryColor(collection.category!)} text-xs`}>
+                                  {getCategoryText(collection.category!)}
                                 </Badge>
                               </div>
                             </div>
@@ -363,15 +369,15 @@ export default function CollectionsPage() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => handleView(collection)}>
                                   <Eye className="mr-2 h-4 w-4" />
-                                  Xem
+                                  {t("common.view")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleEdit(collection)}>
                                   <Edit className="mr-2 h-4 w-4" />
-                                  Sửa
+                                  {t("common.edit")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleDelete(collection)} className="text-red-600">
                                   <Trash2 className="mr-2 h-4 w-4" />
-                                  Xóa
+                                  {t("common.delete")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -385,12 +391,12 @@ export default function CollectionsPage() {
                           {/* Details Grid */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
                             <div>
-                              <span className="font-medium">{collection.productCount}</span> sản phẩm
+                              <span className="font-medium">{collection.products?.length || 0}</span> {t("collections.products")}
                             </div>
-                            <div>
+                            {/* <div>
                               <span className="font-medium text-gray-900">{collection.totalValue}</span>
-                            </div>
-                            <div className="col-span-2 md:col-span-2">Tạo: {collection.createdDate}</div>
+                            </div> */}
+                            <div className="col-span-2 md:col-span-2">{t("collections.createdAt")}: {formatDate(collection.createdAt!)}</div>
                           </div>
                         </div>
                       </div>

@@ -11,3 +11,11 @@ export function formatCurrency(amount: number): string {
     currency: "VND",
   }).format(amount)
 }
+
+export function formatDate(date: string | Date): string {
+  return new Date(date).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  }).replace(/\//g, '-')
+}

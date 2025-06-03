@@ -1,5 +1,41 @@
 export const commonTranslations = {
   // Common translations
+  "common.id": {
+    en: "ID",
+    vi: "ID",
+  },
+  "common.name": {
+    en: "Name",
+    vi: "Tên",
+  },
+  "common.description": {
+    en: "Description",
+    vi: "Mô tả",
+  },
+  "common.category": {
+    en: "Category",
+    vi: "Danh mục",
+  },
+  "common.status": {
+    en: "Status",
+    vi: "Trạng thái",
+  },
+  "common.products": {
+    en: "Products",
+    vi: "Sản phẩm",
+  },
+  "common.createdAt": {
+    en: "Created At",
+    vi: "Ngày tạo",
+  },
+  "common.export": {
+    en: "Export",
+    vi: "Xuất",
+  },
+  "common.page": {
+    en: "page",
+    vi: "trang",
+  },
   "common.loading": {
     en: "Loading...",
     vi: "Đang tải...",
@@ -115,5 +151,17 @@ export const commonTranslations = {
   "common.info": {
     en: "Information",
     vi: "Thông Tin",
+  },
+  "common.uploadImage": {
+    en: "Upload Image",
+    vi: "Tải Lên Ảnh",
+  },
+  "common.dragAndDrop": {
+    en: "Drag and drop image here or click to select",
+    vi: "Kéo thả ảnh vào đây hoặc click để chọn",
+  },
+  "common.imageFormat": {
+    en: "PNG, JPG, GIF, max 10MB",
+    vi: "PNG, JPG, GIF, tối đa 10MB",
   },
 }

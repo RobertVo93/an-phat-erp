@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { AlertTriangle } from "lucide-react"
 import type { Collection } from "@/types/collection"
+import { useLanguage } from "@/contexts/language-context"
 
 interface CollectionDeleteModalProps {
   collection: Collection | null
@@ -13,6 +14,7 @@ interface CollectionDeleteModalProps {
 }
 
 export function CollectionDeleteModal({ collection, open, onOpenChange, onConfirm }: CollectionDeleteModalProps) {
+  const { t } = useLanguage()
   if (!collection) return null
 
   const handleConfirm = () => {
@@ -26,27 +28,27 @@ export function CollectionDeleteModal({ collection, open, onOpenChange, onConfir
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
-            Xác Nhận Xóa
+            {t("collections.deleteCollection")}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Bạn có chắc chắn muốn xóa bộ sưu tập <strong>"{collection.name}"</strong> không?
+            {t("collections.deleteConfirmation")} <strong>"{collection.name}"</strong>
           </p>
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
             <p className="text-sm text-red-800">
-              ⚠️ Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn.
+              ⚠️ {t("collections.deleteWarning")}
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t("common.cancel")}
           </Button>
           <Button type="button" variant="destructive" onClick={handleConfirm}>
-            Xóa Bộ Sưu Tập
+            {t("collections.deleteCollection")}
           </Button>
         </DialogFooter>
       </DialogContent>

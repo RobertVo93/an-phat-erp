@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Upload, X, ImageIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/contexts/language-context"
 
 interface ImageUploadProps {
   value?: string
@@ -18,6 +19,7 @@ interface ImageUploadProps {
 }
 
 export function ImageUpload({ value, onChange, disabled, label, className }: ImageUploadProps) {
+  const { t } = useLanguage()
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -117,11 +119,11 @@ export function ImageUpload({ value, onChange, disabled, label, className }: Ima
             <div className="mt-4">
               <Button type="button" variant="outline" disabled={disabled}>
                 <Upload className="mr-2 h-4 w-4" />
-                Tải lên ảnh
+                {t("common.uploadImage")}
               </Button>
             </div>
-            <p className="mt-2 text-sm text-gray-500">Kéo thả ảnh vào đây hoặc click để chọn</p>
-            <p className="text-xs text-gray-400">PNG, JPG, GIF tối đa 10MB</p>
+            <p className="mt-2 text-sm text-gray-500">{t("common.dragAndDrop")}</p>
+            <p className="text-xs text-gray-400">{t("common.imageFormat")}</p>
           </div>
         )}
       </div>
