@@ -1,6 +1,6 @@
 import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from "typeorm";
 import { OrderItemEntity } from "./order-item.entity";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "../../../types/enums";
 import { CustomerEntity } from "./customer.entity";
 import type { Customer as ICustomer } from "@/types/customer";

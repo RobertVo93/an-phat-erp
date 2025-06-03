@@ -1,4 +1,6 @@
-import { StockOutDiscountType, StockOutStatus } from "@/types/enums";
+import { StockOutStatus } from "@/types/enums";
+import { IBase } from "./base.interface";
+import { Warehouse as IWarehouse } from "./warehouse";
 
 export interface StockOutProduct {
   id: string
@@ -11,30 +13,21 @@ export interface StockOutProduct {
   availableStock: number
 }
 
-export interface StockOut {
-  id: string
-  receiptNumber: string
-  date: string
-  customerId: string
-  customerName: string
-  customerPhone: string
-  customerAddress: string
-  warehouseId: string
-  warehouseName: string
-  products: StockOutProduct[]
-  subtotal: number
-  discount: number
-  discountType: StockOutDiscountType
-  tax: number
-  totalAmount: number
-  status: StockOutStatus
-  orderReference?: string
-  trackingNumber?: string
-  shippingMethod: string
-  notes: string
-  processedBy: string
-  createdAt: string
-  updatedAt: string
+export interface StockOut extends IBase{
+  receiptNumber?: string
+  date?: Date
+  products?: StockOutProduct[]
+  subtotal?: number
+  tax?: number
+  discount?: number
+  totalAmount?: number
+  status?: StockOutStatus
+  notes?: string
+  receivedBy?: string
+  receivedDate?: Date
+  referenceNumber?: string
+
+  warehouse?: IWarehouse;
 }
 
 export interface StockOutFilters {

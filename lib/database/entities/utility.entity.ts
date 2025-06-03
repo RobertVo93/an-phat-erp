@@ -1,9 +1,10 @@
 import { Entity, Column } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { UtilityStatus } from "../../../types/enums";
+import { Utility as IUtility } from "@/types/utility";
 
 @Entity({ name: "utilities" })
-export class Utility extends BaseEntity {
+export class UtilityEntity extends BaseEntity implements IUtility {
   @Column({ nullable: true })
   type?: string;
 

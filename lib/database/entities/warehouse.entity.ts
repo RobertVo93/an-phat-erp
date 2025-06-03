@@ -1,14 +1,15 @@
 import { Entity, Column, OneToMany } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { WarehouseStatus, WarehouseType, WarehouseTemperature } from "../../../types/enums";
-import { StockIn } from "./StockIn";
-import { StockOut } from "./StockOut";
+import { StockInEntity } from "./stock-in.entity";
+import { StockOutEntity } from "./stock-out.entity";
 import { StockIn as IStockIn } from "@/types/stock-in";
 import { StockOut as IStockOut } from "@/types/stock-out";
+import { Warehouse as IWarehouse } from "@/types/warehouse";
 
 
 @Entity({ name: "warehouses" })
-export class Warehouse extends BaseEntity {
+export class WarehouseEntity extends BaseEntity implements IWarehouse {
   @Column({ nullable: false })
   name?: string;
 
@@ -49,9 +50,9 @@ export class Warehouse extends BaseEntity {
   description?: string;
 
   //////Related fields//////
-  @OneToMany(() => StockIn, (stockIn: StockIn) => stockIn.warehouse, { nullable: true })
+  @OneToMany(() => StockInEntity, (stockIn: StockInEntity) => stockIn.warehouse, { nullable: true })
   stockIns?: IStockIn[];
 
-  @OneToMany(() => StockOut, (stockOut: StockOut) => stockOut.warehouse, { nullable: true })
+  @OneToMany(() => StockOutEntity, (stockOut: StockOutEntity) => stockOut.warehouse, { nullable: true })
   stockOuts?: IStockOut[];
 }

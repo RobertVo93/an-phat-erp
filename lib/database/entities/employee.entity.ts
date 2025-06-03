@@ -1,11 +1,12 @@
 import { Entity, Column, OneToMany } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { EmployeeType, EmployeeStatus } from "../../../types/enums";
-import { AttendanceRecord } from "./AttendanceRecord";
+import { AttendanceRecordEntity } from "./attendance-record.entity";
 import { AttendanceRecord as IAttendanceRecord } from "@/types/attendance";
+import { Employee as IEmployee } from "@/types/employee";
 
 @Entity({ name: "employees" })
-export class Employee extends BaseEntity {
+export class EmployeeEntity extends BaseEntity implements IEmployee{
   @Column({ nullable: false })
   name?: string;
 
@@ -43,6 +44,6 @@ export class Employee extends BaseEntity {
   notes?: string;
 
   //////Related fields//////
-  @OneToMany(() => AttendanceRecord, (attendance) => attendance.employee, { nullable: true })
+  @OneToMany(() => AttendanceRecordEntity, (attendance) => attendance.employee, { nullable: true })
   attendanceRecords!: IAttendanceRecord[];
 } 

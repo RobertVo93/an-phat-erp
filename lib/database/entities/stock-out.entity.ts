@@ -1,17 +1,18 @@
-import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
-import { StockInStatus } from "../../../types/enums";
-import { Warehouse } from "./Warehouse";
+import { Entity, Column, JoinColumn, ManyToOne } from "typeorm";
+import { BaseEntity } from "./base.entity";
+import { StockOutStatus } from "../../../types/enums";
+import { WarehouseEntity } from "./warehouse.entity";
 import type { Warehouse as IWarehouse } from "@/types/warehouse";
+import { StockOut as IStockOut } from "@/types/stock-out";
 
-@Entity({ name: "stock_in" })
-export class StockIn extends BaseEntity {
+@Entity({ name: "stock_out" })
+export class StockOutEntity extends BaseEntity implements IStockOut {
   @Column({ nullable: false })
   receiptNumber?: string;
 
   @Column({ type: "timestamp", nullable: true })
   date?: Date;
-  
+
   @Column({ type: "jsonb", nullable: true })
   items?: Array<{ productId: string; productName: string; productSku: string; quantity: number; unitCost: number; totalCost: number }>;
 
@@ -27,8 +28,8 @@ export class StockIn extends BaseEntity {
   @Column({ type: "float", nullable: true })
   totalAmount?: number;
 
-  @Column({ type: "enum", enum: StockInStatus, nullable: true })
-  status?: StockInStatus;
+  @Column({ type: "enum", enum: StockOutStatus, nullable: true })
+  status?: StockOutStatus;
 
   @Column({ nullable: true })
   notes?: string;
@@ -44,7 +45,7 @@ export class StockIn extends BaseEntity {
 
 
   //////Related fields//////
-  @ManyToOne(() => Warehouse, (warehouse: Warehouse) => warehouse.stockIns, { nullable: true })
+  @ManyToOne(() => WarehouseEntity, (warehouse: WarehouseEntity) => warehouse.stockOuts, { nullable: true })
   @JoinColumn({ name: "warehouse_id" })
   warehouse?: IWarehouse;
 }

@@ -1,11 +1,12 @@
 import { Entity, Column, OneToMany } from "typeorm";
-import { UtilityReading } from "./UtilityReading";
-import { BaseEntity } from "./BaseEntity";
+import { UtilityReading } from "./utility-reading.entity";
+import { BaseEntity } from "./base.entity";
 import { InvoiceStatus } from "../../../types/enums";
 import { UtilityReading as IUtilityReading } from "@/types/invoice";
+import { Invoice as IInvoice } from "@/types/invoice";
 
 @Entity({ name: "invoices" })
-export class Invoice extends BaseEntity {
+export class InvoiceEntity extends BaseEntity implements IInvoice {
   @Column({ nullable: true })
   invoiceNumber?: string;
 

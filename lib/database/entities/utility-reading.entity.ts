@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
-import { Invoice } from "./Invoice";
+import { InvoiceEntity } from "./invoice.entity";
 import { UtilityType } from "../../../types/enums";
 import type { Invoice as IInvoice } from "@/types/invoice";
 
@@ -29,6 +29,6 @@ export class UtilityReading {
   @Column({ type: "float" })
   total!: number;
 
-  @ManyToOne(() => Invoice, (invoice: Invoice) => invoice.readings)
+  @ManyToOne(() => InvoiceEntity, (invoice: InvoiceEntity) => invoice.readings)
   invoice!: IInvoice;
 } 

@@ -1,5 +1,5 @@
 import { Entity, Column, OneToMany } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { CustomerStatus, CustomerType } from "../../../types/enums";
 import { OrderEntity } from "./order.entity";
 import { Order as IOrder } from "@/types/order";

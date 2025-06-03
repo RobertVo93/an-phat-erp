@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { CollectionEntity } from "@/lib/database/entities/Collection";
+import { CollectionEntity } from "@/lib/database/entities/collection.entity";
 
 export async function getAllCollections({
   page = 1,

@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToMany, JoinTable } from "typeorm";
 import { ProductEntity } from "./product.entity";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { CollectionStatus, CollectionCategory } from "../../../types/enums";
 import { Product as IProduct } from "@/types/product";
 import { Collection as ICollection } from "@/types/collection";

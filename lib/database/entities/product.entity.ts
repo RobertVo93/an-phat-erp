@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToMany, OneToMany } from "typeorm";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity } from "./base.entity";
 import { ProductStatus } from "../../../types/enums";
-import { CollectionEntity } from "./Collection";
+import { CollectionEntity } from "./collection.entity";
 import { OrderItemEntity } from "./order-item.entity";
 import { Collection as ICollection } from "@/types/collection";
 import { OrderItem as IOrderItem } from "@/types/order";

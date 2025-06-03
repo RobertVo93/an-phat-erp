@@ -1,20 +1,19 @@
 import { AttendanceShift, AttendanceStatus } from "@/types/enums";
+import { IBase } from "./base.interface";
+import { Employee as IEmployee } from "./employee";
 
-export interface AttendanceRecord {
-  id: string
-  employeeId: string
-  employeeName: string
-  date: string
-  checkIn?: string
-  checkOut?: string
-  shift: AttendanceShift
-  status: AttendanceStatus
-  workHours: number
-  overtimeHours: number
-  dailyWage: number
-  notes?: string
-  createdAt: string
-  updatedAt: string
+export interface AttendanceRecord extends IBase{
+  date?: string;
+  checkIn?: Date;
+  checkOut?: Date;
+  shift?: AttendanceShift;
+  status?: AttendanceStatus;
+  workHours?: number;
+  overtimeHours?: number;
+  dailyWage?: number;
+  notes?: string;
+
+  employee?: IEmployee;
 }
 
 export interface AttendanceFilters {

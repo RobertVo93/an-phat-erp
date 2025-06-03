@@ -1,4 +1,6 @@
 import { StockInStatus } from "@/types/enums";
+import { IBase } from "./base.interface";
+import { Warehouse as IWarehouse } from "./warehouse";
 
 export interface StockInItem {
   productId: string
@@ -9,26 +11,21 @@ export interface StockInItem {
   totalCost: number
 }
 
-export interface StockIn {
-  id: string
-  receiptNumber: string
-  date: string
-  supplierId: string
-  supplierName: string
-  warehouseId: string
-  warehouseName: string
-  items: StockInItem[]
-  subtotal: number
-  tax: number
-  discount: number
-  totalAmount: number
-  status: StockInStatus
+export interface StockIn extends IBase{
+  receiptNumber?: string
+  date?: Date
+  items?: StockInItem[]
+  subtotal?: number
+  tax?: number
+  discount?: number
+  totalAmount?: number
+  status?: StockInStatus
   notes?: string
   receivedBy?: string
-  receivedDate?: string
+  receivedDate?: Date
   referenceNumber?: string
-  createdAt: string
-  updatedAt: string
+
+  warehouse?: IWarehouse;
 }
 
 export interface StockInFilters {
