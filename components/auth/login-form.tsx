@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/contexts/auth-context"
 import { useLanguage } from "@/contexts/language-context"
+import { loginUser } from "@/lib/httpclient"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -27,18 +28,10 @@ export function LoginForm() {
       setIsLoading(true)
       setError("")
 
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        login(data.user)
+      const res = await loginUser({ email, password })
+      if (res.success) {
+        login(res.user!)
         router.push("/"); // or your dashboard
-      } else {
-        const data = await res.json();
-        setError(data.error || "Login failed")
       }
     } catch (error) {
       console.error("Error logging in:", error);
