@@ -48,3 +48,8 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
 
     return response.json()
 }
+
+export async function logoutUser(): Promise<boolean> {
+    await fetch("/api/auth/logout", { method: "POST" });
+    return true;
+}

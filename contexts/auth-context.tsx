@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { IUser } from "@/types/user"
+import { useRouter } from "next/navigation"
+import { logoutUser } from "@/lib/httpclient"
 
 interface AuthContextType {
   user: IUser | null
@@ -15,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<IUser | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     // Check for stored user data on mount
@@ -38,10 +41,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null)
     try {
       localStorage.removeItem("user")
+      await logoutUser()
+      router.push("/login")
     } catch (error) {
       console.error("Error removing from localStorage:", error)
     }
