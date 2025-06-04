@@ -1,28 +1,30 @@
-export interface Order {
-  id: string
-  customer: string
-  customerEmail?: string
-  customerPhone?: string
-  date: string
-  amount: number
-  status: "pending" | "processing" | "shipped" | "delivered" | "completed" | "cancelled"
-  paymentStatus: "pending" | "paid" | "partial" | "failed" | "refunded"
-  paymentMethod: "creditCard" | "debitCard" | "bankTransfer" | "cash" | "paypal"
-  items: OrderItem[]
+import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
+import { IBase } from "./base.interface";
+import { Customer as ICustomer } from "./customer";
+import { Product as IProduct } from "./product";
+
+export interface Order extends IBase {
+  deliveryDate?: Date
+  totalAmount?: number
+  status?: OrderStatus
+  paymentStatus?: PaymentStatus
+  paymentMethod?: PaymentMethod
   shippingAddress?: string
   notes?: string
   tags?: string[]
-  createdAt: string
-  updatedAt: string
+
+
+  items?: OrderItem[]
+  customer?: ICustomer
 }
 
-export interface OrderItem {
-  id: string
-  productId: string
-  productName: string
-  quantity: number
-  unitPrice: number
-  total: number
+export interface OrderItem extends IBase {
+  quantity?: number
+  unitPrice?: number
+  total?: number
+
+  product?: IProduct
+  order?: Order
 }
 
 export interface OrderFilters {

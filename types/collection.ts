@@ -1,29 +1,24 @@
-export interface Collection {
-  id: string
-  name: string
-  description: string
-  productCount: number
-  status: "Active" | "Draft" | "Archived"
-  createdDate: string
-  totalValue: string
-  category: "Fashion" | "Electronics" | "Home" | "Office"
-  products?: Product[]
-  image?: string
-}
+import { CollectionStatus, CollectionCategory } from "@/types/enums";
+import { IBase } from "./base.interface";
+import { Product } from "./product";
 
-export interface Product {
-  id: string
-  name: string
-  price: number
+export interface Collection extends IBase {
+  name?: string
+  description?: string
+  status?: CollectionStatus
+  category?: CollectionCategory
   image?: string
-  category: string
-  stock: number
+
+  products?: Product[]
 }
 
 export interface CollectionFilters {
-  search: string
-  status: string
-  category: string
-  dateFrom: string
-  dateTo: string
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  name?: string;
+  status?: string;
+  category?: string;
+  search?: string;
 }

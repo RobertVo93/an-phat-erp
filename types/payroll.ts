@@ -1,18 +1,20 @@
-export interface PayrollRecord {
-  id: string
-  employeeId: string
-  name: string
-  department: string
-  position: string
-  baseSalary: number
-  overtime: number
-  bonus: number
-  deductions: number
-  netSalary: number
-  status: "Processed" | "Pending" | "Failed"
-  payPeriod: string
-  workingDays: number
-  overtimeHours: number
+import { PayrollStatus } from "@/types/enums";
+import { IBase } from "./base.interface";
+
+export interface PayrollRecord extends IBase{
+  employeeId?: string
+  name?: string
+  department?: string
+  position?: string
+  baseSalary?: number
+  overtime?: number
+  bonus?: number
+  deductions?: number
+  netSalary?: number
+  status?: PayrollStatus
+  payPeriod?: string
+  workingDays?: number
+  overtimeHours?: number
   notes?: string
   processedDate?: string
 }

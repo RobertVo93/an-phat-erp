@@ -1,17 +1,22 @@
-export interface Employee {
-  id: string
-  name: string
-  email: string
-  phone: string
-  position: string
-  department: string
-  salary: string
-  hireDate: string
-  employeeType: "Full-time" | "Part-time" | "Contract" | "Intern"
-  status: "Active" | "Inactive" | "On Leave"
+import { EmployeeType, EmployeeStatus } from "@/types/enums";
+import { IBase } from "./base.interface";
+import { AttendanceRecord as IAttendanceRecord } from "./attendance";
+
+export interface Employee extends IBase{
+  name?: string
+  email?: string
+  phone?: string
+  position?: string
+  department?: string
+  salary?: number
+  hireDate?: Date
+  employeeType?: EmployeeType
+  status?: EmployeeStatus
   address?: string
   emergencyContact?: string
   notes?: string
+
+  attendanceRecords?: IAttendanceRecord[];
 }
 
 export interface EmployeeFilters {

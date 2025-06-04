@@ -2,11 +2,12 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { useLanguage } from "@/contexts/language-context"
 import type { CollectionFilters } from "@/types/collection"
+import { CollectionCategory, CollectionStatus } from "@/types/enums"
+import { useState } from "react"
 
 interface CollectionFilterModalProps {
   filters: CollectionFilters
@@ -23,10 +24,13 @@ export function CollectionFilterModal({
   onFiltersChange,
   onReset,
 }: CollectionFilterModalProps) {
+  const [status, setStatus] = useState<string>(filters.status || "")
+  const [category, setCategory] = useState<string>(filters.category || "")
   const { t } = useLanguage()
 
   const handleApply = () => {
     onOpenChange(false)
+    onFiltersChange({ ...filters, status, category })
   }
 
   const handleReset = () => {
@@ -38,21 +42,21 @@ export function CollectionFilterModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Bộ Lọc Bộ Sưu Tập</DialogTitle>
+          <DialogTitle>{t("collections.filter_modal.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="status">Trạng Thái</Label>
-            <Select value={filters.status} onValueChange={(value) => onFiltersChange({ ...filters, status: value })}>
+            <Label htmlFor="status">{t("collections.form.status")}</Label>
+            <Select value={status} onValueChange={(value) => setStatus(value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Tất cả trạng thái" />
+                <SelectValue placeholder={t("collections.form.allStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="Active">Hoạt Động</SelectItem>
-                <SelectItem value="Draft">Bản Nháp</SelectItem>
-                <SelectItem value="Archived">Đã Lưu Trữ</SelectItem>
+                <SelectItem value="all">{t("collections.form.allStatus")}</SelectItem>
+                <SelectItem value={CollectionStatus.active}>{t("collections.status.active")}</SelectItem>
+                <SelectItem value={CollectionStatus.draft}>{t("collections.status.draft")}</SelectItem>
+                <SelectItem value={CollectionStatus.archived}>{t("collections.status.archived")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -60,50 +64,29 @@ export function CollectionFilterModal({
           <div className="space-y-2">
             <Label htmlFor="category">Danh Mục</Label>
             <Select
-              value={filters.category}
-              onValueChange={(value) => onFiltersChange({ ...filters, category: value })}
+              value={category}
+              onValueChange={(value) => setCategory(value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Tất cả danh mục" />
+                <SelectValue placeholder={t("collections.form.allCategories")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả danh mục</SelectItem>
-                <SelectItem value="Fashion">Thời Trang</SelectItem>
-                <SelectItem value="Electronics">Điện Tử</SelectItem>
-                <SelectItem value="Home">Gia Dụng</SelectItem>
-                <SelectItem value="Office">Văn Phòng</SelectItem>
+                <SelectItem value="all">{t("collections.form.allCategories")}</SelectItem>
+                <SelectItem value={CollectionCategory.fashion}>{t("collections.category.fashion")}</SelectItem>
+                <SelectItem value={CollectionCategory.electronics}>{t("collections.category.electronics")}</SelectItem>
+                <SelectItem value={CollectionCategory.home}>{t("collections.category.home")}</SelectItem>
+                <SelectItem value={CollectionCategory.office}>{t("collections.category.office")}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="dateFrom">Từ Ngày</Label>
-              <Input
-                id="dateFrom"
-                type="date"
-                value={filters.dateFrom}
-                onChange={(e) => onFiltersChange({ ...filters, dateFrom: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dateTo">Đến Ngày</Label>
-              <Input
-                id="dateTo"
-                type="date"
-                value={filters.dateTo}
-                onChange={(e) => onFiltersChange({ ...filters, dateTo: e.target.value })}
-              />
-            </div>
           </div>
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleReset}>
-            Đặt Lại
+            {t("common.reset")}
           </Button>
           <Button type="button" onClick={handleApply}>
-            Áp Dụng
+            {t("common.apply")}
           </Button>
         </DialogFooter>
       </DialogContent>

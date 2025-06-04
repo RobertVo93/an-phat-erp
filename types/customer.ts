@@ -1,16 +1,16 @@
-export interface Customer {
-  id: string
-  name: string
-  email: string
-  phone: string
+import { CustomerStatus, CustomerType } from "@/types/enums";
+import { IBase } from "./base.interface";
+
+export interface Customer extends IBase {
+  name?: string
+  email?: string
+  phone?: string
   company?: string
-  location: string
-  totalOrders: number
-  totalSpent: string
-  lastOrder: string
-  status: "Active" | "Inactive" | "Pending"
-  customerType: "VIP" | "Premium" | "Regular"
-  joinDate: string
+  location?: string
+  lastOrder?: Date
+  status?: CustomerStatus
+  customerType?: CustomerType
+  joinDate?: Date
   notes?: string
 }
 

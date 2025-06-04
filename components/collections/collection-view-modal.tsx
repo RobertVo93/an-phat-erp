@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
 import type { Collection } from "@/types/collection"
+import { formatDate } from "@/lib/utils"
+import { CollectionCategory, CollectionStatus } from "@/types/enums"
 
 interface CollectionViewModalProps {
   collection: Collection | null
@@ -19,11 +21,11 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case CollectionStatus.active:
         return "bg-green-100 text-green-800"
-      case "Draft":
+      case CollectionStatus.draft:
         return "bg-yellow-100 text-yellow-800"
-      case "Archived":
+      case CollectionStatus.archived:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -32,11 +34,11 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "Active":
+      case CollectionStatus.active:
         return t("collections.status.active")
-      case "Draft":
+      case CollectionStatus.draft:
         return t("collections.status.draft")
-      case "Archived":
+      case CollectionStatus.archived:
         return t("collections.status.archived")
       default:
         return status
@@ -45,13 +47,13 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
 
   const getCategoryText = (category: string) => {
     switch (category) {
-      case "Fashion":
+      case CollectionCategory.fashion:
         return t("collections.category.fashion")
-      case "Electronics":
+      case CollectionCategory.electronics:
         return t("collections.category.electronics")
-      case "Home":
+      case CollectionCategory.home:
         return t("collections.category.home")
-      case "Office":
+      case CollectionCategory.office:
         return t("collections.category.office")
       default:
         return category
@@ -64,7 +66,7 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             {collection.name}
-            <Badge className={getStatusColor(collection.status)}>{getStatusText(collection.status)}</Badge>
+            <Badge className={getStatusColor(collection.status!)}>{getStatusText(collection.status!)}</Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -72,7 +74,7 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
           {/* Collection Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Thông Tin Bộ Sưu Tập</CardTitle>
+              <CardTitle>{t("collections.collectionInfo")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -82,15 +84,11 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Danh Mục</label>
-                  <p className="text-sm">{getCategoryText(collection.category)}</p>
+                  <p className="text-sm">{getCategoryText(collection.category!)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Ngày Tạo</label>
-                  <p className="text-sm">{collection.createdDate}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Tổng Giá Trị</label>
-                  <p className="text-sm font-semibold">{collection.totalValue}</p>
+                  <p className="text-sm">{formatDate(collection.createdAt!)}</p>
                 </div>
               </div>
               <div>
@@ -103,7 +101,7 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
           {/* Products in Collection */}
           <Card>
             <CardHeader>
-              <CardTitle>Sản Phẩm Trong Bộ Sưu Tập ({collection.productCount})</CardTitle>
+              <CardTitle>{t("collections.productsInCollection")} ({collection.products?.length || 0})</CardTitle>
             </CardHeader>
             <CardContent>
               {collection.products && collection.products.length > 0 ? (
@@ -112,11 +110,10 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
                     <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <span className="text-xs font-medium">{product.name.charAt(0)}</span>
+                          <span className="text-xs font-medium">{product.name?.charAt(0)}</span>
                         </div>
                         <div>
                           <h4 className="text-sm font-medium">{product.name}</h4>
-                          <p className="text-xs text-gray-500">{product.category}</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -128,7 +125,7 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <p>Chưa có sản phẩm nào trong bộ sưu tập này</p>
+                  <p>{t("collections.noProductsInCollection")}</p>
                 </div>
               )}
             </CardContent>
