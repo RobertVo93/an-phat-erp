@@ -5,6 +5,8 @@ import type { Collection, CollectionFilters } from "@/types/collection"
 import { CollectionStatus, CollectionCategory } from "@/types/enums"
 import { getCollections, createCollection as apiCreateCollection, updateCollection as apiUpdateCollection, deleteCollection as apiDeleteCollection } from "@/lib/httpclient"
 import debounce from "lodash/debounce"
+import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3"
+import { base64ToFile } from "@/lib/utils"
 
 export function useCollections() {
   const [allCollections, setAllCollections] = useState<Collection[]>([])
@@ -61,6 +63,14 @@ export function useCollections() {
   const createCollection = async (newCollection: Partial<Collection>) => {
     try {
       setLoading(true)
+      if (newCollection.image && newCollection.image.startsWith("data:")) {
+        // Convert base64 to File
+        const file = base64ToFile(newCollection.image, "collection-image.png");
+        // Upload to S3
+        const s3Url = await uploadFileToS3(file, "collections");
+        // Replace image field with S3 URL
+        newCollection.image = s3Url;
+      }
       const created = await apiCreateCollection(newCollection)
       setAllCollections([created, ...allCollections])
       setTotalCollections((prev) => prev + 1)
@@ -75,6 +85,20 @@ export function useCollections() {
   const updateCollection = async (id: string, updatedCollection: Partial<Collection>) => {
     try {
       setLoading(true)
+      const selectedCollection = allCollections.find((col) => col.id === id)
+      if (selectedCollection?.image && selectedCollection?.image !== updatedCollection.image) {
+        // Delete old image from S3
+        await deleteFileFromS3(selectedCollection.image)
+      }
+
+      if (updatedCollection.image?.startsWith("data:")) {
+        // Convert base64 to File
+        const file = base64ToFile(updatedCollection.image, "collection-image.png");
+        // Upload to S3
+        const s3Url = await uploadFileToS3(file, "collections");
+        // Replace image field with S3 URL
+        updatedCollection.image = s3Url;
+      }
       const updated = await apiUpdateCollection(id, updatedCollection)
       setAllCollections(allCollections.map((col) => (col.id === id ? { ...col, ...updated } : col)))
     } catch (err: any) {
@@ -89,6 +113,11 @@ export function useCollections() {
     try {
       setLoading(true)
       await apiDeleteCollection(id)
+      // Delete image from S3
+      const selectedCollection = allCollections.find((col) => col.id === id)
+      if (selectedCollection?.image) {
+        await deleteFileFromS3(selectedCollection.image)
+      }
       setAllCollections(allCollections.filter((col) => col.id !== id))
       setTotalCollections((prev) => prev - 1)
     } catch (err: any) {
