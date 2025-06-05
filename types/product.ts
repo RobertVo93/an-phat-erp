@@ -21,22 +21,23 @@ export interface Product extends IBase {
 }
 
 export interface ProductFormData {
-  name: string
-  description: string
-  category: string
-  price: number
-  cost: number
-  stock: number
-  minStock: number
-  sku: string
-  barcode: string
-  status: "active" | "inactive"
-  supplier: string
+  name?: string
+  description?: string
+  price?: number
+  cost?: number
+  stock?: number
+  minStock?: number
+  sku?: string
+  barcode?: string
+  status?: ProductStatus
+  supplier?: string
   image?: string
+  
+  collections?: ICollection[]
 }
 
 export interface ProductFilters {
-  category?: string
+  collectionId?: string
   status?: string
   priceRange?: {
     min: number

@@ -1,14 +1,15 @@
 import jwt from "jsonwebtoken";
 import { NextRequest } from "next/server";
-import { env } from "@/constants/env";
+
+const SECRET = process.env.JWT_SECRET || "dev_secret"; // TODO: Use env var in production
 
 export function signJwt(payload: object, options?: jwt.SignOptions) {
-  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: "7d", ...options });
+  return jwt.sign(payload, SECRET, { expiresIn: "7d", ...options });
 }
 
 export function verifyJwt(token: string) {
   try {
-    return jwt.verify(token, env.JWT_SECRET);
+    return jwt.verify(token, SECRET);
   } catch {
     return null;
   }

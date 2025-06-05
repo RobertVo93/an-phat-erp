@@ -11,8 +11,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Product, ProductFormData } from "@/types/product"
 import { useLanguage } from "@/contexts/language-context"
-import { Loader2 } from "lucide-react"
+import { Loader2, X } from "lucide-react"
 import { ImageUpload } from "@/components/ui/image-upload"
+import { Collection } from "@/types/collection"
+import { ProductStatus } from "@/types/enums";
 
 interface ProductFormModalProps {
   product?: Product | null
@@ -20,57 +22,75 @@ interface ProductFormModalProps {
   onOpenChange: (open: boolean) => void
   onSubmit: (data: ProductFormData) => Promise<void>
   loading?: boolean
+  allCollections: Collection[]
+  getAllCollections: () => void
 }
 
-export function ProductFormModal({ product, open, onOpenChange, onSubmit, loading }: ProductFormModalProps) {
+export function ProductFormModal({ product, open, onOpenChange, onSubmit, loading, allCollections, getAllCollections }: ProductFormModalProps) {
   const { t } = useLanguage()
   const isEdit = !!product
 
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     description: "",
-    category: "",
     price: 0,
     cost: 0,
     stock: 0,
     minStock: 0,
     sku: "",
     barcode: "",
-    status: "active",
+    status: ProductStatus.active,
     supplier: "",
-    image: "", // Add image field
+    image: "",
+    collections: [],
   })
 
+  const selectCollection = (collectionId: string) => {
+    const collections = formData.collections ?? [];
+
+    const exists = collections.some((col) => col.id === collectionId);
+    const updated = exists
+      ? collections.filter((col) => col.id !== collectionId)
+      : [...collections, allCollections.find((col) => col.id === collectionId)!];
+
+    setFormData((prev) => ({
+      ...prev,
+      collections: updated,
+    }));
+  };
+
+
   useEffect(() => {
+    getAllCollections()
     if (product) {
       setFormData({
         name: product.name,
-        description: product.description || "",
-        category: product.category,
-        price: product.price,
-        cost: product.cost,
-        stock: product.stock,
-        minStock: product.minStock,
+        description: product.description,
+        price: product.price || 0,
+        cost: product.cost || 0,
+        stock: product.stock || 0,
+        minStock: product.minStock || 0,
         sku: product.sku,
-        barcode: product.barcode || "",
-        status: product.status === "lowStock" || product.status === "outOfStock" ? "active" : product.status,
-        supplier: product.supplier || "",
-        image: product.image || "", // Add image field
+        barcode: product.barcode,
+        status: product.status,
+        supplier: product.supplier,
+        image: product.image,
+        collections: product.collections || [],
       })
     } else {
       setFormData({
         name: "",
         description: "",
-        category: "",
         price: 0,
         cost: 0,
         stock: 0,
         minStock: 0,
         sku: "",
         barcode: "",
-        status: "active",
+        status: ProductStatus.active,
         supplier: "",
-        image: "", // Add image field
+        image: "",
+        collections: [],
       })
     }
   }, [product, open])
@@ -80,17 +100,6 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
     await onSubmit(formData)
     onOpenChange(false)
   }
-
-  const categories = [
-    { value: "electronics", label: t("products.category.electronics") },
-    { value: "furniture", label: t("products.category.furniture") },
-    { value: "accessories", label: t("products.category.accessories") },
-    { value: "appliances", label: t("products.category.appliances") },
-    { value: "clothing", label: t("products.category.clothing") },
-    { value: "books", label: t("products.category.books") },
-    { value: "sports", label: t("products.category.sports") },
-    { value: "toys", label: t("products.category.toys") },
-  ]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,38 +149,69 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
             label={t("products.form.image")}
           />
 
-          {/* Category and Status */}
+          {/* Collections and Status */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t("products.form.category")} *</Label>
+              <Label>{t("products.form.collections")} *</Label>
               <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
+                value=""
+                onValueChange={(value) => selectCollection(value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t("products.form.selectCategory")} />
+                  <SelectValue placeholder={t("products.form.selectCollections")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
+                  {allCollections && allCollections.map((collection) => (
+                    <SelectItem key={collection.id!} value={collection.id!}>
+                      {collection.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {/* Display selected categories */}
+              {formData?.collections?.length && formData?.collections?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.collections.map((collection) => {
+                    // const categoryLabel = categories.find((c) => c.value === cat)?.label || cat
+                    return (
+                      <div
+                        key={collection.id}
+                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm"
+                      >
+                        <span>{collection.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              collections: prev.collections?.filter((c) => c.id !== collection.id),
+                            }))
+                          }}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
             </div>
             <div className="space-y-2">
               <Label>{t("products.form.status")} *</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: "active" | "inactive") => setFormData((prev) => ({ ...prev, status: value }))}
+                onValueChange={(value: ProductStatus) => setFormData((prev) => ({ ...prev, status: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">{t("products.status.active")}</SelectItem>
-                  <SelectItem value="inactive">{t("products.status.inactive")}</SelectItem>
+                  <SelectItem value={ProductStatus.active}>{t("products.status.active")}</SelectItem>
+                  <SelectItem value={ProductStatus.lowStock}>{t("products.status.lowStock")}</SelectItem>
+                  <SelectItem value={ProductStatus.outOfStock}>{t("products.status.outOfStock")}</SelectItem>
+                  <SelectItem value={ProductStatus.inactive}>{t("products.status.inactive")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

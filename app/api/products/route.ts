@@ -253,13 +253,14 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status") || undefined;
     const supplier = searchParams.get("supplier") || undefined;
     const search = searchParams.get("search") || undefined;
+    const collectionId = searchParams.get("collectionId") || undefined;
 
     const result = await getAllProducts({
       page,
       limit,
       sortBy,
       sortOrder,
-      filters: { name, status, supplier, search },
+      filters: { collectionId, name, status, supplier, search },
     });
     return NextResponse.json(result);
   } catch (error) {

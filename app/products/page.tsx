@@ -16,6 +16,7 @@ import {
   ImageIcon,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -49,6 +50,8 @@ export default function ProductsPage() {
     createProduct,
     updateProduct,
     deleteProduct,
+    allCollections,
+    getAllCollections,
   } = useProducts()
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -102,7 +105,7 @@ export default function ProductsPage() {
 
   const handleFormSubmit = async (data: ProductFormData) => {
     if (selectedProduct) {
-      await updateProduct(selectedProduct.id, data)
+      await updateProduct(selectedProduct.id!, data)
     } else {
       await createProduct(data)
     }
@@ -110,7 +113,7 @@ export default function ProductsPage() {
 
   const handleDeleteConfirm = async () => {
     if (selectedProduct) {
-      await deleteProduct(selectedProduct.id)
+      await deleteProduct(selectedProduct.id!)
     }
   }
 
@@ -120,6 +123,11 @@ export default function ProductsPage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-6">
         {/* Header Section - Mobile Optimized */}
         <div className="space-y-4">
@@ -130,7 +138,7 @@ export default function ProductsPage() {
             </div>
             <Button onClick={handleCreate} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
-              <span className="sm:hidden">Thêm</span>
+              <span className="sm:hidden">{t("products.addProduct")}</span>
               <span className="hidden sm:inline">{t("products.addProduct")}</span>
             </Button>
           </div>
@@ -152,7 +160,7 @@ export default function ProductsPage() {
               className={`w-full sm:w-auto ${hasActiveFilters ? "border-blue-500 text-blue-600" : ""}`}
             >
               <Filter className="mr-2 h-4 w-4" />
-              <span className="sm:hidden">Lọc</span>
+              <span className="sm:hidden">{t("products.filter")}</span>
               <span className="hidden sm:inline">{t("products.filter")}</span>
               {hasActiveFilters && (
                 <Badge variant="secondary" className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
@@ -194,7 +202,7 @@ export default function ProductsPage() {
                         <SelectItem value="50">50</SelectItem>
                       </SelectContent>
                     </Select>
-                    <span className="text-muted-foreground text-xs">/ trang</span>
+                    <span className="text-muted-foreground text-xs">/ {t("products.page")}</span>
                   </div>
                 </div>
               </div>
@@ -236,13 +244,10 @@ export default function ProductsPage() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <h3 className="font-medium text-sm sm:text-base truncate">{product.name}</h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
-                              {getCategoryText(product.category)}
-                            </p>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            <Badge className={`${getStatusColor(product.status)} text-xs`}>
-                              {getStatusText(product.status)}
+                            <Badge className={`${getStatusColor(product.status!)} text-xs`}>
+                              {getStatusText(product.status!)}
                             </Badge>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -275,23 +280,23 @@ export default function ProductsPage() {
                             <div className="truncate">{product.sku}</div>
                           </div>
                           <div>
-                            <span className="font-medium">Tồn kho:</span>
+                            <span className="font-medium">{t("products.stock")}:</span>
                             <div>{product.stock}</div>
                           </div>
                           <div>
-                            <span className="font-medium">Giá bán:</span>
-                            <div className="font-medium text-foreground">{formatCurrency(product.price)}</div>
+                            <span className="font-medium">{t("products.form.price")}:</span>
+                            <div className="font-medium text-foreground">{formatCurrency(product.price!)}</div>
                           </div>
                           <div>
-                            <span className="font-medium">Giá vốn:</span>
-                            <div>{formatCurrency(product.cost)}</div>
+                            <span className="font-medium">{t("products.form.cost")}:</span>
+                            <div>{formatCurrency(product.cost!)}</div>
                           </div>
                         </div>
 
                         {/* Supplier Info */}
                         {product.supplier && (
                           <div className="text-xs text-muted-foreground">
-                            <span className="font-medium">Nhà cung cấp:</span> {product.supplier}
+                            <span className="font-medium">{t("products.form.supplier")}:</span> {product.supplier}
                           </div>
                         )}
                       </div>
@@ -312,7 +317,7 @@ export default function ProductsPage() {
                   className="px-2"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-1">Trước</span>
+                  <span className="hidden sm:inline ml-1">{t("products.pagination.previous")}</span>
                 </Button>
 
                 <div className="flex items-center space-x-1">
@@ -349,7 +354,7 @@ export default function ProductsPage() {
                   disabled={currentPage === totalPages}
                   className="px-2"
                 >
-                  <span className="hidden sm:inline mr-1">Sau</span>
+                  <span className="hidden sm:inline mr-1">{t("products.pagination.next")}</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -367,6 +372,8 @@ export default function ProductsPage() {
         onOpenChange={setFormModalOpen}
         onSubmit={handleFormSubmit}
         loading={loading}
+        allCollections={allCollections}
+        getAllCollections={getAllCollections}
       />
 
       <ProductDeleteModal
@@ -382,6 +389,8 @@ export default function ProductsPage() {
         open={filterModalOpen}
         onOpenChange={setFilterModalOpen}
         onApplyFilters={setFilters}
+        allCollections={allCollections}
+        getAllCollections={getAllCollections}
       />
     </ERPLayout>
   )
