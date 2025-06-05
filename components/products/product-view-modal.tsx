@@ -86,12 +86,20 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
           {/* Category and Status */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-500">{t("products.form.category")}</label>
-              <p>{getCategoryText(product.category)}</p>
+              <label className="text-sm font-medium text-gray-500">{t("products.form.collections")}</label>
+              {product.collections &&
+                <div>
+                  {product.collections?.map((col, ind) => (
+                    <p key={ind}>
+                      {col.name}
+                    </p>
+                  ))}
+                </div>
+              }
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">{t("products.form.status")}</label>
-              <Badge className={getStatusColor(product.status)}>{getStatusText(product.status)}</Badge>
+              <Badge className={getStatusColor(product.status!)}>{getStatusText(product.status!)}</Badge>
             </div>
           </div>
 
@@ -99,11 +107,11 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-500">{t("products.form.price")}</label>
-              <p className="text-lg font-semibold text-green-600">{formatCurrency(product.price)}</p>
+              <p className="text-lg font-semibold text-green-600">{formatCurrency(product.price!)}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">{t("products.form.cost")}</label>
-              <p className="text-lg">{formatCurrency(product.cost)}</p>
+              <p className="text-lg">{formatCurrency(product.cost!)}</p>
             </div>
           </div>
 
@@ -139,11 +147,11 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
             <div>
               <label className="font-medium">{t("products.createdAt")}</label>
-              <p>{new Date(product.createdAt).toLocaleString()}</p>
+              <p>{new Date(product.createdAt!).toLocaleString()}</p>
             </div>
             <div>
               <label className="font-medium">{t("products.updatedAt")}</label>
-              <p>{new Date(product.updatedAt).toLocaleString()}</p>
+              <p>{new Date(product.updatedAt!).toLocaleString()}</p>
             </div>
           </div>
         </div>
