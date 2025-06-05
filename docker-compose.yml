@@ -8,6 +8,8 @@ services:
     container_name: anphat-erp-app-dev
     ports:
       - "3030:3000"
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/anphat_erp?sslmode=disable
       - NODE_ENV=development
