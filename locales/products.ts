@@ -20,6 +20,10 @@ export const productsTranslations = {
     en: "Filter",
     vi: "Lọc",
   },
+  "products.page": {
+    en: "Page",
+    vi: "Trang"
+  },
   "products.catalog": {
     en: "Product Catalog",
     vi: "Danh Mục Sản Phẩm",
@@ -47,38 +51,6 @@ export const productsTranslations = {
   "products.status.outOfStock": {
     en: "Out of Stock",
     vi: "Hết Hàng",
-  },
-  "products.category.electronics": {
-    en: "Electronics",
-    vi: "Điện Tử",
-  },
-  "products.category.furniture": {
-    en: "Furniture",
-    vi: "Nội Thất",
-  },
-  "products.category.accessories": {
-    en: "Accessories",
-    vi: "Phụ Kiện",
-  },
-  "products.category.appliances": {
-    en: "Appliances",
-    vi: "Thiết Bị Gia Dụng",
-  },
-  "products.category.clothing": {
-    en: "Clothing",
-    vi: "Quần Áo",
-  },
-  "products.category.books": {
-    en: "Books",
-    vi: "Sách",
-  },
-  "products.category.sports": {
-    en: "Sports",
-    vi: "Thể Thao",
-  },
-  "products.category.toys": {
-    en: "Toys",
-    vi: "Đồ Chơi",
   },
   "products.editProduct": {
     en: "Edit Product",
@@ -138,9 +110,21 @@ export const productsTranslations = {
     en: "Description",
     vi: "Mô Tả",
   },
-  "products.form.category": {
-    en: "Category",
-    vi: "Danh Mục",
+  "products.form.collections": {
+    en: "Collections",
+    vi: "Bộ sưu tập",
+  },
+  "products.form.selectCollections": {
+    en: "Select collections",
+    vi: "Chọn bộ sưu tập",
+  },
+  "products.form.selectedCollections": {
+    en: "Selected collections",
+    vi: "Chọn bộ sưu tập",
+  },
+  "products.form.image": {
+    en: "Image",
+    vi: "Ảnh",
   },
   "products.form.price": {
     en: "Price",
@@ -174,15 +158,10 @@ export const productsTranslations = {
     en: "Supplier",
     vi: "Nhà Cung Cấp",
   },
-  "products.form.selectCategory": {
-    en: "Select category",
-    vi: "Chọn danh mục",
-  },
-
   // Filter translations
-  "products.filter.allCategories": {
-    en: "All Categories",
-    vi: "Tất Cả Danh Mục",
+  "products.filter.allCollections": {
+    en: "All Collections",
+    vi: "Tất cả bộ sưu tập",
   },
   "products.filter.allStatuses": {
     en: "All Statuses",

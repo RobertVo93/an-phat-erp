@@ -8,21 +8,25 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { ProductFilters } from "@/types/product"
 import { useLanguage } from "@/contexts/language-context"
+import { Collection } from "@/types/collection"
 
 interface ProductFilterModalProps {
   filters: ProductFilters
   open: boolean
   onOpenChange: (open: boolean) => void
   onApplyFilters: (filters: ProductFilters) => void
+  allCollections: Collection[]
+  getAllCollections: () => void
 }
 
-export function ProductFilterModal({ filters, open, onOpenChange, onApplyFilters }: ProductFilterModalProps) {
+export function ProductFilterModal({ filters, open, onOpenChange, onApplyFilters, allCollections, getAllCollections }: ProductFilterModalProps) {
   const { t } = useLanguage()
 
   const [localFilters, setLocalFilters] = useState<ProductFilters>(filters)
 
   useEffect(() => {
     setLocalFilters(filters)
+    getAllCollections()
   }, [filters, open])
 
   const handleApply = () => {
@@ -36,17 +40,6 @@ export function ProductFilterModal({ filters, open, onOpenChange, onApplyFilters
     onApplyFilters(resetFilters)
     onOpenChange(false)
   }
-
-  const categories = [
-    { value: "electronics", label: t("products.category.electronics") },
-    { value: "furniture", label: t("products.category.furniture") },
-    { value: "accessories", label: t("products.category.accessories") },
-    { value: "appliances", label: t("products.category.appliances") },
-    { value: "clothing", label: t("products.category.clothing") },
-    { value: "books", label: t("products.category.books") },
-    { value: "sports", label: t("products.category.sports") },
-    { value: "toys", label: t("products.category.toys") },
-  ]
 
   const statuses = [
     { value: "active", label: t("products.status.active") },
@@ -63,26 +56,26 @@ export function ProductFilterModal({ filters, open, onOpenChange, onApplyFilters
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Category Filter */}
+          {/* Collection Filter */}
           <div className="space-y-2">
-            <Label>{t("products.form.category")}</Label>
+            <Label>{t("products.form.collections")}</Label>
             <Select
-              value={localFilters.category || ""}
+              value={localFilters.collectionId ?? "all"}
               onValueChange={(value) =>
                 setLocalFilters((prev) => ({
                   ...prev,
-                  category: value || undefined,
+                  collectionId: value || undefined,
                 }))
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("products.filter.allCategories")} />
+                <SelectValue placeholder={t("products.filter.allCollections")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("products.filter.allCategories")}</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.value} value={category.value}>
-                    {category.label}
+                <SelectItem value="all">{t("products.filter.allCollections")}</SelectItem>
+                {allCollections && allCollections.map((col, index) => (
+                  <SelectItem key={index} value={col.id!}>
+                    {col.name}
                   </SelectItem>
                 ))}
               </SelectContent>

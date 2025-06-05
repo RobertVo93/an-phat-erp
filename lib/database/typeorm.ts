@@ -17,12 +17,11 @@ import { WarehouseEntity } from "./entities/warehouse.entity";
 import { AttendanceRecordEntity } from "./entities/attendance-record.entity";
 import { UtilityReading } from "./entities/utility-reading.entity";
 import { UserEntity } from "./entities/user.entity";
-import { env } from "@/constants/env";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  url: env.DATABASE_URL,
-  synchronize: env.NODE_ENV === "development", // set to false in production and use migrations
+  url: process.env.DATABASE_URL,
+  synchronize: process.env.NODE_ENV === "development", // set to false in production and use migrations
   logging: false,
   entities: [
     CollectionEntity,

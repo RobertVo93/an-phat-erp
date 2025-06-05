@@ -1,9 +1,11 @@
 import { ProductStatus } from "@/types/enums";
 import { z } from "zod";
+import { CollectionSchema } from "../collections/collection.schema";
 
 export const CreateProductSchema = z.object({
     name: z.string(),
     description: z.string().optional(),
+    collections: z.array(CollectionSchema).optional(),
     price: z.number().optional(),
     cost: z.number().optional(),
     stock: z.number().optional(),
@@ -18,6 +20,7 @@ export const CreateProductSchema = z.object({
 export const UpdateProductSchema = z.object({
     name: z.string().optional(),
     description: z.string().optional(),
+    collections: z.array(CollectionSchema).optional(),
     price: z.number().optional(),
     cost: z.number().optional(),
     stock: z.number().optional(),
