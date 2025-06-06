@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { UserService } from "@/lib/services/user.service";
 import { getUserFromRequest } from "@/lib/auth/jwt";
 import { NextRequest } from "next/server";
+import { ensureDataSource } from "@/lib/database/ensureDataSource";
 /**
  * @swagger
  * components:
@@ -110,6 +111,7 @@ import { NextRequest } from "next/server";
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  await ensureDataSource();
 
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");

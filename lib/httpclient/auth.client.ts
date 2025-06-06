@@ -80,6 +80,14 @@ export async function getUsers(
     return response.json();
 }
 
+export async function getUserById(id: string): Promise<IUser> {
+    const response = await fetch(`/api/users/${id}`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch user');
+    }
+    return response.json();
+}
+
 export async function updateUser(id: string, data: Partial<IUser>): Promise<IUser> {
     const response = await fetch(`/api/users/${id}`, {
         method: "PUT",

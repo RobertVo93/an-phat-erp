@@ -28,9 +28,12 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async getUserById(id: string): Promise<IUser | null> {
+  async getUserById(id: string, relations?: ("roles" | "permissions")[]): Promise<IUser | null> {
     await ensureDataSource();
-    return await this.userRepository.findOneBy({ id });
+    return await this.userRepository.findOne({
+      where: { id },
+      relations: relations
+    });
   }
 
   async getUserByEmail(email: string): Promise<IUser | null> {

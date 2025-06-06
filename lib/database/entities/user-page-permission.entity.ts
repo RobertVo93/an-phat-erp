@@ -14,7 +14,7 @@ export class UserPagePermissionEntity extends BaseEntity implements IUserPagePer
   @Column({ type: "boolean", default: false, nullable: false })
   granted!: boolean;
 
-  @ManyToOne(() => UserEntity, { nullable: false })
+  @ManyToOne(() => UserEntity, { nullable: true })
   @JoinColumn({ name: "user_id" })
   user!: IUser;
-} 
+}

@@ -7,13 +7,13 @@ import { useUserPermissions } from "@/hooks/use-user-permissions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Save, ArrowLeft, Shield, Check, X, AlertTriangle } from "lucide-react"
+import { Loader2, Save, ArrowLeft, Shield, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { toast } from "@/components/ui/use-toast"
 import { navItems } from "@/constants/nav"
+import { UserRole } from "@/types"
 
 interface UserPermissionFormProps {
   userId: string
@@ -22,7 +22,7 @@ interface UserPermissionFormProps {
 export function UserPermissionForm({ userId }: UserPermissionFormProps) {
   const router = useRouter()
   const {
-    getUserById,
+    user,
     loading,
     saving,
     updateUserPagePermission,
@@ -30,33 +30,9 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
     savePermissions,
     toggleAllCategoryPermissions,
     getUserCategoryPermissionCount,
-  } = useUserPermissions()
+  } = useUserPermissions(userId)
 
   const [activeTab, setActiveTab] = useState("all")
-  const [saveSuccess, setSaveSuccess] = useState<boolean | null>(null)
-
-  const user = getUserById(userId)
-
-  const handleSave = async () => {
-    const success = await savePermissions(userId)
-    setSaveSuccess(success)
-
-    if (success) {
-      toast({
-        title: "Permissions saved",
-        description: "User permissions have been updated successfully.",
-      })
-    } else {
-      toast({
-        title: "Error saving permissions",
-        description: "There was a problem saving the permissions. Please try again.",
-        variant: "destructive",
-      })
-    }
-
-    // Reset status after 3 seconds
-    setTimeout(() => setSaveSuccess(null), 3000)
-  }
 
   if (loading) {
     return (
@@ -102,13 +78,13 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
                 variant="outline"
                 className={cn(
                   "text-xs mr-2",
-                  user.role === "super_admin"
+                  user.role === UserRole.super_admin
                     ? "bg-red-100 text-red-800 border-red-200"
-                    : user.role === "admin"
+                    : user.role === UserRole.admin
                       ? "bg-purple-100 text-purple-800 border-purple-200"
-                      : user.role === "manager"
+                      : user.role === UserRole.manager
                         ? "bg-blue-100 text-blue-800 border-blue-200"
-                        : user.role === "staff"
+                        : user.role === UserRole.staff
                           ? "bg-green-100 text-green-800 border-green-200"
                           : "bg-gray-100 text-gray-800 border-gray-200",
                 )}
@@ -123,21 +99,11 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Users
           </Button>
-          <Button onClick={handleSave} disabled={saving || user.role === "super_admin"}>
+          <Button onClick={() => savePermissions(userId)} disabled={saving || user.role === UserRole.super_admin}>
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
-              </>
-            ) : saveSuccess === true ? (
-              <>
-                <Check className="mr-2 h-4 w-4" />
-                Saved!
-              </>
-            ) : saveSuccess === false ? (
-              <>
-                <X className="mr-2 h-4 w-4" />
-                Failed!
               </>
             ) : (
               <>
@@ -150,7 +116,7 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
       </div>
 
       {/* Super Admin Warning */}
-      {user.role === "super_admin" && (
+      {user.role === UserRole.super_admin && (
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="p-4">
             <div className="flex items-center space-x-3">
@@ -184,7 +150,6 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
             {navItems.map((category) => {
               const { granted, total } = getUserCategoryPermissionCount(userId, category.id || "")
               const allGranted = granted === total
-              const someGranted = granted > 0 && granted < total
 
               return (
                 <Card key={category.id}>
@@ -200,7 +165,7 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
                         variant={allGranted ? "default" : "outline"}
                         size="sm"
                         onClick={() => toggleAllCategoryPermissions(userId, category.id || "", !allGranted)}
-                        disabled={user.role === "super_admin"}
+                        disabled={user.role === UserRole.super_admin}
                       >
                         {allGranted ? "Revoke All" : "Grant All"}
                       </Button>
@@ -225,7 +190,7 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
                           <Checkbox
                             checked={getUserPagePermission(userId, page.id || "")}
                             onCheckedChange={(checked) => updateUserPagePermission(userId, page.id || "", !!checked)}
-                            disabled={user.role === "super_admin"}
+                            disabled={user.role === UserRole.super_admin}
                           />
                         </div>
                       ))}
@@ -254,7 +219,7 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
                       const { granted, total } = getUserCategoryPermissionCount(userId, category.id || "")
                       toggleAllCategoryPermissions(userId, category.id || "", granted !== total)
                     }}
-                    disabled={user.role === "super_admin"}
+                    disabled={user.role === UserRole.super_admin}
                   >
                     Toggle All
                   </Button>
@@ -284,30 +249,12 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
                       <Checkbox
                         checked={getUserPagePermission(userId, page.id || "")}
                         onCheckedChange={(checked) => updateUserPagePermission(userId, page.id || "", !!checked)}
-                        disabled={user.role === "super_admin"}
+                        disabled={user.role === UserRole.super_admin}
                       />
                     </div>
                   ))}
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between border-t pt-6">
-                <Button variant="outline" onClick={() => setActiveTab("all")}>
-                  View All Categories
-                </Button>
-                <Button onClick={handleSave} disabled={saving || user.role === "super_admin"}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
             </Card>
           </TabsContent>
         ))}
