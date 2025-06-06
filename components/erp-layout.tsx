@@ -11,6 +11,7 @@ import type { UserPagePermission } from "@/types/user-permission"
 import type { NavItem } from "@/types/nav.interface"
 import { getUserById } from "@/lib/httpclient"
 import { Loader2 } from "lucide-react"
+import { useLanguage } from "@/contexts/language-context"
 
 interface ERPLayoutProps {
   children: React.ReactNode
@@ -28,6 +29,7 @@ function filterNavItemsByPermissions(navItems: NavItem[], permissions: UserPageP
 }
 
 export function ERPLayout({ children }: ERPLayoutProps) {
+  const { t } = useLanguage()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const { user, isAdmin } = useAuth()
   const [permissions, setPermissions] = useState<UserPagePermission[]>([])
@@ -94,13 +96,13 @@ export function ERPLayout({ children }: ERPLayoutProps) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="bg-white p-8 rounded shadow text-center">
-          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">You do not have permission to view this page.</p>
+          <h2 className="text-2xl font-bold mb-2">{t("common.accessDeniedTitle")}</h2>
+          <p className="text-gray-600 mb-4">{t("common.accessDenied")}</p>
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded"
             onClick={() => router.push("/")}
           >
-            Go Home
+            {t("common.goHome")}
           </button>
         </div>
       </div>
