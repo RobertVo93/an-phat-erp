@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { signJwt } from "@/lib/auth/jwt";
 import { UserService } from "@/lib/services/user.service";
 import { UserRole } from "@/types/enums";
+import { setUserPagePermissions } from "@/lib/services/userPermissionService";
 
 /**
  * @swagger
@@ -87,6 +88,11 @@ export async function POST(req: NextRequest) {
             username,
             role: UserRole.staff,
         });
+
+        // Create default permissions for the user
+        await setUserPagePermissions(user.id!, [
+            { pageId: "home", granted: true },
+        ]);
 
         // Generate JWT token
         const token = signJwt({ userId: user.id });

@@ -164,4 +164,16 @@ export const commonTranslations = {
     en: "PNG, JPG, GIF, max 10MB",
     vi: "PNG, JPG, GIF, tối đa 10MB",
   },
+  "common.accessDenied": {
+    en: "You do not have permission to view this page.",
+    vi: "Bạn không có quyền truy cập trang này.",
+  },
+  "common.goHome": {
+    en: "Go Home",
+    vi: "Quay Về Trang Chủ",
+  },
+  "common.accessDeniedTitle": {
+    en: "Access Denied",
+    vi: "Không Có Quyền Truy Cập",
+  },
 }
