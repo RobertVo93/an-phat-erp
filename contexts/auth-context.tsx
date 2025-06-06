@@ -4,12 +4,15 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import { IUser } from "@/types/user"
 import { useRouter } from "next/navigation"
 import { logoutUser } from "@/lib/httpclient"
+import { UserRole } from "@/types"
 
 interface AuthContextType {
   user: IUser | null
   login: (user: IUser) => void
   logout: () => void
   isAuthenticated: boolean
+  isSuperAdmin: boolean
+  isAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -18,6 +21,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<IUser | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const router = useRouter()
+  const isSuperAdmin = user?.role === UserRole.super_admin
+  const isAdmin = (user?.role === UserRole.admin) || isSuperAdmin
 
   useEffect(() => {
     // Check for stored user data on mount
@@ -58,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, isSuperAdmin, isAdmin }}>{children}</AuthContext.Provider>
   )
 }
 

@@ -14,7 +14,8 @@ import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
-import { navItems } from "@/constants/nav"
+import { navItems as defaultNavItems } from "@/constants/nav"
+import type { NavItem } from "@/types/nav.interface"
 
 // Hook để kiểm tra kích thước màn hình
 function useIsMobile() {
@@ -36,9 +37,10 @@ function useIsMobile() {
 interface SidebarProps {
   collapsed: boolean
   onToggle: () => void
+  navItems?: NavItem[]
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, navItems = defaultNavItems }: SidebarProps) {
   const { t } = useLanguage()
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
@@ -54,7 +56,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     } else {
       setExpandedItems([])
     }
-  }, [pathname])
+  }, [pathname, navItems])
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? prev.filter((item) => item !== title) : [...prev, title]))

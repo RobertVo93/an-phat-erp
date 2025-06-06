@@ -5,10 +5,17 @@ import { PermissionFilters } from "@/components/permissions/permission-filter"
 import { UsersTable } from "@/components/permissions/users-table"
 import { Card, CardContent } from "@/components/ui/card"
 import { Shield } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
+import { redirect } from "next/navigation"
 
 export default function PermissionsPage() {
+  const { isSuperAdmin } = useAuth()
   const [selectedRole, setSelectedRole] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
+
+  if (!isSuperAdmin) {
+    redirect("/")
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
