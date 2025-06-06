@@ -3,15 +3,17 @@
 import { UserPermissionForm } from "@/components/permissions/user-permission-form"
 import { useAuth } from "@/contexts/auth-context"
 import { redirect } from "next/navigation"
+import { use } from "react"
 
 interface UserPermissionsPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default function UserPermissionsPage({ params }: UserPermissionsPageProps) {
   const { user } = useAuth()
+  const resolvedParams = use(params)
 
   // // Only super admin can access this page
   // if (user?.role !== "super_admin") {
@@ -20,7 +22,7 @@ export default function UserPermissionsPage({ params }: UserPermissionsPageProps
 
   return (
     <div className="container mx-auto p-6">
-      <UserPermissionForm userId={params.id} />
+      <UserPermissionForm userId={resolvedParams.id} />
     </div>
   )
 }

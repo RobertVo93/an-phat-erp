@@ -2,93 +2,42 @@
 
 import { useState, useEffect } from "react"
 import {
+  type IUser,
   type UserPagePermission,
-} from "@/types/user-permission"
-import { type IUser } from "@/types/user"
-import { UserRole } from "@/types/enums"
-import { navItems, DEFAULT_ROLE_PERMISSIONS } from "@/constants/nav"
+} from "@/types"
+import { navItems } from "@/constants/nav"
+import { getUserById } from "@/lib/httpclient/auth.client"
+import { setUserPagePermissions as setUserPagePermissionsApi } from "@/lib/httpclient/user-permission.client"
 
-// Mock data - replace with actual API calls
-const mockUsers: IUser[] = [
-  {
-    id: "1",
-    username: "John Doe",
-    email: "admin@anphat.com",
-    role: UserRole.super_admin,
-    createdAt: new Date(),
-    lastLogin: new Date(),
-  },
-  {
-    id: "2",
-    username: "Jane Smith",
-    email: "jane@example.com",
-    role: UserRole.admin,
-    createdAt: new Date(),
-    lastLogin: new Date(),
-  },
-  {
-    id: "3",
-    username: "Mike Johnson",
-    email: "mike@example.com",
-    role: UserRole.manager,
-    createdAt: new Date(),
-    lastLogin: new Date(),
-  },
-  {
-    id: "4",
-    username: "Sarah Wilson",
-    email: "sarah@example.com",
-    role: UserRole.staff,
-    createdAt: new Date(),
-    lastLogin: new Date(),
-  },
-  {
-    id: "5",
-    username: "Tom Brown",
-    email: "tom@example.com",
-    role: UserRole.customer,
-    createdAt: new Date(),
-    lastLogin: new Date(),
-  },
-]
+export type SortField = "username" | "email" | "role" | "createdAt" | "lastLogin"
+export type SortDirection = "asc" | "desc"
 
-// Generate mock permissions based on default role permissions
-const generateMockPermissions = (): UserPagePermission[] => {
-  const permissions: UserPagePermission[] = []
-
-  mockUsers.forEach((user) => {
-    const defaultPages = DEFAULT_ROLE_PERMISSIONS[user.role as UserRole] || []
-    navItems.forEach((category) => {
-      category.children?.forEach((page) => {
-        permissions.push({
-          userId: user.id!,
-          pageId: page.id || "",
-          granted: defaultPages.includes(page.id || ""),
-        })
-      })
-    })
-  })
-
-  return permissions
-}
-
-// Mock user permissions data
-const mockUserPermissions = generateMockPermissions()
-
-export function useUserPermissions() {
-  const [users, setUsers] = useState<IUser[]>([])
+export function useUserPermissions(userId: string) {
+  const [user, setUser] = useState<IUser>()
   const [userPagePermissions, setUserPagePermissions] = useState<UserPagePermission[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setUsers(mockUsers)
-      setUserPagePermissions(mockUserPermissions)
+
+  const getUserInfo = async (id: string) => {
+    try {
+      setLoading(true)
+      const user = await getUserById(id)
+      setUser(user)
+      setUserPagePermissions(user?.permissions || [])
+    } catch (error) {
+      console.error("Error getting user info", error)
+    }
+    finally {
       setLoading(false)
-    }, 1000)
-  }, [])
+    }
+  }
+
+  useEffect(() => {
+    if (userId) {
+      getUserInfo(userId)
+    }
+  }, [userId])
 
   const updateUserPagePermission = (userId: string, pageId: string, granted: boolean) => {
     setUserPagePermissions((prev) => {
@@ -106,39 +55,23 @@ export function useUserPermissions() {
     return permission?.granted || false
   }
 
-  const savePermissions = async (userId?: string) => {
+  const savePermissions = async (userId: string) => {
     setSaving(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      // Here you would make actual API calls to save permissions
-      console.log("Saving permissions:", userId ? "for user " + userId : "for all users")
-      setSaving(false)
-      // Show success message
-      return true
+      await setUserPagePermissionsApi(userId, userPagePermissions)
     } catch (error) {
-      setSaving(false)
-      return false
+      console.error("Error saving permissions", error)
     }
-  }
-
-  const updateUserRole = (userId: string, newRole: IUser["role"]) => {
-    setUsers((prev) => prev.map((user) => (user.id === userId ? { ...user, role: newRole } : user)))
-
-    // Update permissions based on new role
-    const defaultPages = DEFAULT_ROLE_PERMISSIONS[newRole as UserRole] || []
-    navItems.forEach((category) => {
-      category.children?.forEach((page) => {
-        updateUserPagePermission(userId, page.id || "", defaultPages.includes(page.id || ""))
-      })
-    })
+    finally {
+      setSaving(false)
+    }
   }
 
   const toggleAllCategoryPermissions = (userId: string, categoryId: string, granted: boolean) => {
     const category = navItems.find((cat) => cat.id === categoryId)
     if (category) {
       category.children?.forEach((page) => {
-        updateUserPagePermission(userId, page.id || "", granted)
+        updateUserPagePermission(userId, page.id!, granted)
       })
     }
   }
@@ -147,25 +80,18 @@ export function useUserPermissions() {
     const category = navItems.find((cat) => cat.id === categoryId)
     if (!category) return { granted: 0, total: 0 }
 
-    const granted = category.children?.filter((page) => getUserPagePermission(userId, page.id || "")).length || 0
-    return { granted, total: category.children?.length || 0 }
-  }
-
-  const getUserById = (userId: string): IUser | undefined => {
-    return users.find((user) => user.id === userId)
+    const granted = category.children?.filter((page) => getUserPagePermission(userId, page.id!)).length
+    return { granted: granted || 0, total: category.children?.length || 0 }
   }
 
   return {
-    users,
-    userPagePermissions,
-    loading,
-    saving,
-    updateUserPagePermission,
-    getUserPagePermission,
-    savePermissions,
-    updateUserRole,
-    toggleAllCategoryPermissions,
-    getUserCategoryPermissionCount,
-    getUserById,
+    user: user,
+    loading: loading,
+    saving: saving,
+    updateUserPagePermission: updateUserPagePermission,
+    getUserPagePermission: getUserPagePermission,
+    savePermissions: savePermissions,
+    toggleAllCategoryPermissions: toggleAllCategoryPermissions,
+    getUserCategoryPermissionCount: getUserCategoryPermissionCount,
   }
 }

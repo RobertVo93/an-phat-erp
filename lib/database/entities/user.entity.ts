@@ -1,7 +1,9 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { UserRole } from "@/types/enums";
 import { IUser } from "@/types/user";
+import { UserPagePermissionEntity } from "./user-page-permission.entity";
+import { UserPagePermission as IUserPagePermission } from "@/types";
 
 @Entity({ name: "users" })
 export class UserEntity extends BaseEntity implements IUser {
@@ -25,4 +27,7 @@ export class UserEntity extends BaseEntity implements IUser {
 
     @Column({ type: "timestamp", nullable: true })
     lastLogin?: Date;
+
+    @OneToMany(() => UserPagePermissionEntity, (permission) => permission.user, { cascade: true, nullable: true })
+    permissions?: IUserPagePermission[];
 } 

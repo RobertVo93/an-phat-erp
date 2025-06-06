@@ -17,7 +17,7 @@ export class UserService {
 
   async createUser(userData: Partial<IUser>): Promise<IUser> {
     await ensureDataSource();
-    
+
     if (userData.password) {
       const salt = await genSalt(10);
       userData.password = await hash(userData.password, salt);
@@ -28,9 +28,12 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async getUserById(id: string): Promise<IUser | null> {
+  async getUserById(id: string, relations?: ("roles" | "permissions")[]): Promise<IUser | null> {
     await ensureDataSource();
-    return await this.userRepository.findOneBy({ id });
+    return await this.userRepository.findOne({
+      where: { id },
+      relations: relations
+    });
   }
 
   async getUserByEmail(email: string): Promise<IUser | null> {
@@ -45,7 +48,7 @@ export class UserService {
 
   async updateUser(id: string, userData: Partial<IUser>): Promise<IUser | null> {
     await ensureDataSource();
-    
+
     if (userData.password) {
       userData.password = await hash(userData.password, 10);
     }
@@ -73,5 +76,43 @@ export class UserService {
   async updateLastLogin(id: string): Promise<void> {
     await ensureDataSource();
     await this.userRepository.update(id, { lastLogin: new Date() });
+  }
+
+  async getUsersWithRelations(search?: string, role?: string, sortBy?: string, sortOrder?: "asc" | "desc", skip?: number, limit?: number, relations?: string[]): Promise<{ users: IUser[], total: number }> {
+    await ensureDataSource();
+    const queryBuilder = AppDataSource.getRepository(UserEntity)
+      .createQueryBuilder("user")
+
+    if(relations?.includes("permissions")) {
+      queryBuilder.leftJoinAndSelect("user.permissions", "permissions");
+    }
+    if(relations?.includes("roles")) {
+      queryBuilder.leftJoinAndSelect("user.roles", "roles");
+    }
+    if (search) {
+      queryBuilder.where("LOWER(user.username) LIKE LOWER(:search) OR LOWER(user.email) LIKE LOWER(:search)", { search: `%${search}%` });
+    }
+
+    if (role) {
+      queryBuilder.andWhere("user.role = :role", { role });
+    }
+
+    if (sortBy) {
+      queryBuilder.orderBy(`user.${sortBy}`, sortOrder?.toUpperCase() as "ASC" | "DESC");
+    }
+
+    if (skip !== undefined) {
+      queryBuilder.skip(skip);
+    }
+
+    if (limit !== undefined) {
+      queryBuilder.take(limit);
+    }
+
+    const [users, total] = await Promise.all([
+      queryBuilder.getMany(),
+      queryBuilder.getCount()
+    ]);
+    return { users, total };
   }
 }

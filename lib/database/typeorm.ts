@@ -17,6 +17,7 @@ import { WarehouseEntity } from "./entities/warehouse.entity";
 import { AttendanceRecordEntity } from "./entities/attendance-record.entity";
 import { UtilityReading } from "./entities/utility-reading.entity";
 import { UserEntity } from "./entities/user.entity";
+import { UserPagePermissionEntity } from "./entities/user-page-permission.entity";
 import { env } from "@/constants/env";
 
 export const AppDataSource = new DataSource({
@@ -40,6 +41,7 @@ export const AppDataSource = new DataSource({
     AttendanceRecordEntity,
     UtilityReading,
     UserEntity,
+    UserPagePermissionEntity,
   ],
   ssl: { rejectUnauthorized: false }, // required for Neon
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
