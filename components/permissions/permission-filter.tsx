@@ -4,7 +4,7 @@ import { Search, Filter, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-import { ROLE_LABELS } from "@/types/user-permission"
+import { ROLE_LABELS } from "@/constants/nav"
 
 interface PermissionFiltersProps {
   selectedRole: string

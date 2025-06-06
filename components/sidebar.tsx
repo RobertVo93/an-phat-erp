@@ -6,30 +6,15 @@ import { useState, useEffect } from "react"
 import {
   ChevronDown,
   ChevronUp,
-  User,
-  Calendar,
-  DollarSign,
-  Percent,
-  Building,
-  Package,
-  Zap,
-  FileText,
-  Clock,
-  ShoppingBag,
-  Box,
-  Users,
-  BarChart2,
   Menu,
   X,
-  Home,
-  ShoppingCart,
-  Layers,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
+import { navItems } from "@/constants/nav"
 
 // Hook để kiểm tra kích thước màn hình
 function useIsMobile() {
@@ -53,16 +38,6 @@ interface SidebarProps {
   onToggle: () => void
 }
 
-interface NavItem {
-  id?: string
-  name?: string
-  title: string
-  translationKey: string
-  icon?: React.ComponentType<{ className?: string }>
-  href?: string
-  children?: NavItem[]
-}
-
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { t } = useLanguage()
   const pathname = usePathname()
@@ -80,71 +55,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       setExpandedItems([])
     }
   }, [pathname])
-
-  const navItems: NavItem[] = [
-    {
-      id: "monitoring",
-      title: "Monitoring",
-      translationKey: "nav.monitoring",
-      children: [
-        { title: "Home", translationKey: "nav.home", icon: Home, href: "/" },
-        { title: "Orders", translationKey: "nav.orders", icon: ShoppingCart, href: "/orders" },
-        { title: "Products", translationKey: "nav.products", icon: Package, href: "/products" },
-        { title: "Collections", translationKey: "nav.collections", icon: Layers, href: "/collections" },
-        { title: "Customers", translationKey: "nav.customers", icon: Users, href: "/customers" },
-      ],
-    },
-    {
-      title: "Employee",
-      translationKey: "nav.employee",
-      children: [
-        { title: "Employee", translationKey: "nav.employee", icon: User, href: "/employee" },
-        { title: "Attendance", translationKey: "nav.attendance", icon: Calendar, href: "/attendance" },
-        { title: "Payroll", translationKey: "nav.payroll", icon: DollarSign, href: "/payroll" },
-      ],
-    },
-    {
-      title: "Marketing",
-      translationKey: "nav.marketing",
-      children: [{ title: "Discounts", translationKey: "nav.discounts", icon: Percent, href: "/discounts" }],
-    },
-    {
-      title: "Warehouses",
-      translationKey: "nav.warehouses",
-      children: [
-        { title: "Warehouse", translationKey: "nav.warehouse", icon: Building, href: "/warehouse" },
-        { title: "Stock-in", translationKey: "nav.stockIn", icon: Package, href: "/stock-in" },
-        { title: "Stock-out", translationKey: "nav.stockOut", icon: Package, href: "/stock-out" },
-        { title: "Sản Xuất", translationKey: "nav.produce", icon: Zap, href: "/produce" },
-      ],
-    },
-    {
-      title: "Utilities",
-      translationKey: "nav.utilities",
-      children: [
-        { title: "Utility", translationKey: "nav.utility", icon: Zap, href: "/utility" },
-        { title: "Invoice", translationKey: "nav.invoice", icon: FileText, href: "/invoice" },
-      ],
-    },
-    {
-      title: "Reports",
-      translationKey: "nav.reports",
-      children: [
-        { title: "Daily report", translationKey: "nav.dailyReport", icon: Clock, href: "/reports/daily" },
-        { title: "Employee report", translationKey: "nav.employeeReport", icon: User, href: "/reports/employee" },
-        { title: "Order report", translationKey: "nav.orderReport", icon: ShoppingBag, href: "/reports/order" },
-        { title: "Stock report", translationKey: "nav.stockReport", icon: Box, href: "/reports/stock" },
-        { title: "Customer report", translationKey: "nav.customerReport", icon: Users, href: "/reports/customer" },
-        {
-          title: "Operating Report",
-          translationKey: "nav.operatingReport",
-          icon: BarChart2,
-          href: "/reports/activity",
-        },
-        { title: "Utility Report", translationKey: "nav.utilityReport", icon: Zap, href: "/reports/utility" },
-      ],
-    },
-  ]
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? prev.filter((item) => item !== title) : [...prev, title]))

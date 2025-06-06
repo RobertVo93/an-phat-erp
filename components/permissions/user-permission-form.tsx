@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { PAGE_PERMISSION_CATEGORIES, ROLE_LABELS } from "@/types/user-permission"
+import { ROLE_LABELS } from "@/constants/nav"
 import { useUserPermissions } from "@/hooks/use-user-permissions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Save, ArrowLeft, Shield, Check, X, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "@/components/ui/use-toast"
+import { navItems } from "@/constants/nav"
 
 interface UserPermissionFormProps {
   userId: string
@@ -170,8 +171,8 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="all">All Permissions</TabsTrigger>
-          {PAGE_PERMISSION_CATEGORIES.map((category) => (
-            <TabsTrigger key={category.id} value={category.id}>
+          {navItems.map((category) => (
+            <TabsTrigger key={category.id} value={category.id || ""}>
               {category.title}
             </TabsTrigger>
           ))}
@@ -180,8 +181,8 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
         {/* All Permissions Tab */}
         <TabsContent value="all">
           <div className="grid gap-6">
-            {PAGE_PERMISSION_CATEGORIES.map((category) => {
-              const { granted, total } = getUserCategoryPermissionCount(userId, category.id)
+            {navItems.map((category) => {
+              const { granted, total } = getUserCategoryPermissionCount(userId, category.id || "")
               const allGranted = granted === total
               const someGranted = granted > 0 && granted < total
 
@@ -198,7 +199,7 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
                       <Button
                         variant={allGranted ? "default" : "outline"}
                         size="sm"
-                        onClick={() => toggleAllCategoryPermissions(userId, category.id, !allGranted)}
+                        onClick={() => toggleAllCategoryPermissions(userId, category.id || "", !allGranted)}
                         disabled={user.role === "super_admin"}
                       >
                         {allGranted ? "Revoke All" : "Grant All"}
@@ -207,23 +208,23 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {category.children.map((page) => (
+                      {category.children?.map((page) => (
                         <div
                           key={page.id}
                           className={cn(
                             "flex items-center justify-between p-3 rounded-md",
-                            getUserPagePermission(userId, page.id)
+                            getUserPagePermission(userId, page.id || "")
                               ? "bg-green-50 border border-green-100"
                               : "bg-gray-50 border border-gray-100",
                           )}
                         >
                           <div>
-                            <p className="font-medium text-sm">{page.label}</p>
+                            <p className="font-medium text-sm">{page.title}</p>
                             <p className="text-xs text-gray-500">{page.href}</p>
                           </div>
                           <Checkbox
-                            checked={getUserPagePermission(userId, page.id)}
-                            onCheckedChange={(checked) => updateUserPagePermission(userId, page.id, !!checked)}
+                            checked={getUserPagePermission(userId, page.id || "")}
+                            onCheckedChange={(checked) => updateUserPagePermission(userId, page.id || "", !!checked)}
                             disabled={user.role === "super_admin"}
                           />
                         </div>
@@ -237,8 +238,8 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
         </TabsContent>
 
         {/* Individual Category Tabs */}
-        {PAGE_PERMISSION_CATEGORIES.map((category) => (
-          <TabsContent key={category.id} value={category.id}>
+        {navItems.map((category) => (
+          <TabsContent key={category.id} value={category.id || ""}>
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -250,8 +251,8 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      const { granted, total } = getUserCategoryPermissionCount(userId, category.id)
-                      toggleAllCategoryPermissions(userId, category.id, granted !== total)
+                      const { granted, total } = getUserCategoryPermissionCount(userId, category.id || "")
+                      toggleAllCategoryPermissions(userId, category.id || "", granted !== total)
                     }}
                     disabled={user.role === "super_admin"}
                   >
@@ -261,28 +262,28 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {category.children.map((page) => (
+                  {category.children?.map((page) => (
                     <div
                       key={page.id}
                       className={cn(
                         "flex items-center justify-between p-4 rounded-md",
-                        getUserPagePermission(userId, page.id)
+                        getUserPagePermission(userId, page.id || "")
                           ? "bg-green-50 border border-green-100"
                           : "bg-gray-50 border border-gray-100",
                       )}
                     >
                       <div>
                         <div className="flex items-center">
-                          <h3 className="font-medium">{page.label}</h3>
-                          {getUserPagePermission(userId, page.id) && (
+                          <h3 className="font-medium">{page.title}</h3>
+                          {getUserPagePermission(userId, page.id || "") && (
                             <Badge className="ml-2 bg-green-100 text-green-800 border-green-200">Granted</Badge>
                           )}
                         </div>
                         <p className="text-sm text-gray-500 mt-1">Page path: {page.href}</p>
                       </div>
                       <Checkbox
-                        checked={getUserPagePermission(userId, page.id)}
-                        onCheckedChange={(checked) => updateUserPagePermission(userId, page.id, !!checked)}
+                        checked={getUserPagePermission(userId, page.id || "")}
+                        onCheckedChange={(checked) => updateUserPagePermission(userId, page.id || "", !!checked)}
                         disabled={user.role === "super_admin"}
                       />
                     </div>

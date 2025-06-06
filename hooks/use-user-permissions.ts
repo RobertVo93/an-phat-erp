@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react"
 import {
   type UserPagePermission,
-  PAGE_PERMISSION_CATEGORIES,
-  DEFAULT_ROLE_PERMISSIONS,
 } from "@/types/user-permission"
 import { type IUser } from "@/types/user"
 import { UserRole } from "@/types/enums"
+import { navItems, DEFAULT_ROLE_PERMISSIONS } from "@/constants/nav"
 
 // Mock data - replace with actual API calls
 const mockUsers: IUser[] = [
@@ -59,12 +58,12 @@ const generateMockPermissions = (): UserPagePermission[] => {
 
   mockUsers.forEach((user) => {
     const defaultPages = DEFAULT_ROLE_PERMISSIONS[user.role as UserRole] || []
-    PAGE_PERMISSION_CATEGORIES.forEach((category) => {
-      category.children.forEach((page) => {
+    navItems.forEach((category) => {
+      category.children?.forEach((page) => {
         permissions.push({
           userId: user.id!,
-          pageId: page.id,
-          granted: defaultPages.includes(page.id),
+          pageId: page.id || "",
+          granted: defaultPages.includes(page.id || ""),
         })
       })
     })
@@ -128,28 +127,28 @@ export function useUserPermissions() {
 
     // Update permissions based on new role
     const defaultPages = DEFAULT_ROLE_PERMISSIONS[newRole as UserRole] || []
-    PAGE_PERMISSION_CATEGORIES.forEach((category) => {
-      category.children.forEach((page) => {
-        updateUserPagePermission(userId, page.id, defaultPages.includes(page.id))
+    navItems.forEach((category) => {
+      category.children?.forEach((page) => {
+        updateUserPagePermission(userId, page.id || "", defaultPages.includes(page.id || ""))
       })
     })
   }
 
   const toggleAllCategoryPermissions = (userId: string, categoryId: string, granted: boolean) => {
-    const category = PAGE_PERMISSION_CATEGORIES.find((cat) => cat.id === categoryId)
+    const category = navItems.find((cat) => cat.id === categoryId)
     if (category) {
-      category.children.forEach((page) => {
-        updateUserPagePermission(userId, page.id, granted)
+      category.children?.forEach((page) => {
+        updateUserPagePermission(userId, page.id || "", granted)
       })
     }
   }
 
   const getUserCategoryPermissionCount = (userId: string, categoryId: string): { granted: number; total: number } => {
-    const category = PAGE_PERMISSION_CATEGORIES.find((cat) => cat.id === categoryId)
+    const category = navItems.find((cat) => cat.id === categoryId)
     if (!category) return { granted: 0, total: 0 }
 
-    const granted = category.children.filter((page) => getUserPagePermission(userId, page.id)).length
-    return { granted, total: category.children.length }
+    const granted = category.children?.filter((page) => getUserPagePermission(userId, page.id || "")).length || 0
+    return { granted, total: category.children?.length || 0 }
   }
 
   const getUserById = (userId: string): IUser | undefined => {

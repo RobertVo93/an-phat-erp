@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { PAGE_PERMISSION_CATEGORIES } from "@/types/user-permission"
+import { navItems } from "@/constants/nav"
 import { type IUser } from "@/types/user"
 import { useUserPermissions } from "@/hooks/use-user-permissions"
 import { Badge } from "@/components/ui/badge"
@@ -128,21 +128,21 @@ export function PermissionTable({ selectedRole, searchQuery }: PermissionTablePr
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-4 font-medium min-w-[250px] sticky left-0 bg-white z-10">User</th>
-                  {PAGE_PERMISSION_CATEGORIES.map((category) => (
+                  {navItems.map((category) => (
                     <th key={category.id} className="text-center p-2 font-medium min-w-[150px]">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => toggleCategory(category.id)}
+                        onClick={() => toggleCategory(category.id || "")}
                         className="font-medium flex items-center gap-1"
                       >
-                        {expandedCategories.includes(category.id) ? (
+                        {expandedCategories.includes(category.id || "") ? (
                           <ChevronDown className="h-3 w-3" />
                         ) : (
                           <ChevronRight className="h-3 w-3" />
                         )}
                         {category.title}
-                        <span className="ml-1 text-xs">({category.children.length})</span>
+                        <span className="ml-1 text-xs">({category.children?.length || 0})</span>
                       </Button>
                     </th>
                   ))}
@@ -187,8 +187,8 @@ export function PermissionTable({ selectedRole, searchQuery }: PermissionTablePr
                         </div>
                       </div>
                     </td>
-                    {PAGE_PERMISSION_CATEGORIES.map((category) => {
-                      const { granted, total } = getUserCategoryPermissionCount(user.id!, category.id)
+                    {navItems.map((category) => {
+                      const { granted, total } = getUserCategoryPermissionCount(user.id!, category.id || "")
                       const allGranted = granted === total
                       const someGranted = granted > 0 && granted < total
 
@@ -200,7 +200,7 @@ export function PermissionTable({ selectedRole, searchQuery }: PermissionTablePr
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => toggleAllCategoryPermissions(user.id!, category.id, !allGranted)}
+                                onClick={() => toggleAllCategoryPermissions(user.id!, category.id || "", !allGranted)}
                                 disabled={user.role === "super_admin"}
                                 className="h-6 px-2"
                               >
@@ -230,17 +230,17 @@ export function PermissionTable({ selectedRole, searchQuery }: PermissionTablePr
                             </Badge>
 
                             {/* Expanded Page List */}
-                            {expandedCategories.includes(category.id) && (
+                            {expandedCategories.includes(category.id || "") && (
                               <div className="space-y-1 mt-2 border-t pt-2">
-                                {category.children.map((page) => (
+                                {category.children?.map((page) => (
                                   <div key={page.id} className="flex items-center justify-between text-xs">
-                                    <span className="truncate max-w-[80px]" title={page.label}>
-                                      {page.label}
+                                    <span className="truncate max-w-[80px]" title={page.title}>
+                                      {page.title}
                                     </span>
                                     <Checkbox
-                                      checked={getUserPagePermission(user.id!, page.id)}
+                                      checked={getUserPagePermission(user.id!, page.id || "")}
                                       onCheckedChange={(checked) =>
-                                        updateUserPagePermission(user.id!, page.id, !!checked)
+                                        updateUserPagePermission(user.id!, page.id || "", !!checked)
                                       }
                                       disabled={user.role === "super_admin"}
                                       className="h-3 w-3"
