@@ -54,6 +54,8 @@ interface SidebarProps {
 }
 
 interface NavItem {
+  id?: string
+  name?: string
   title: string
   translationKey: string
   icon?: React.ComponentType<{ className?: string }>
@@ -81,6 +83,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   const navItems: NavItem[] = [
     {
+      id: "monitoring",
       title: "Monitoring",
       translationKey: "nav.monitoring",
       children: [
