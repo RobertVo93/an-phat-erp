@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
                 lastLogin: user.lastLogin,
             }
         });
+        await userService.updateLastLogin(user.id!);
         res.cookies.set("token", token, { httpOnly: true, path: "/", sameSite: "lax" });
         return res;
     } catch (error) {
