@@ -12,13 +12,12 @@ interface UserPermissionsPageProps {
 }
 
 export default function UserPermissionsPage({ params }: UserPermissionsPageProps) {
-  const { user } = useAuth()
+  const { isSuperAdmin } = useAuth()
   const resolvedParams = use(params)
 
-  // // Only super admin can access this page
-  // if (user?.role !== "super_admin") {
-  //   redirect("/")
-  // }
+  if (!isSuperAdmin) {
+    redirect("/")
+  }
 
   return (
     <div className="container mx-auto p-6">
