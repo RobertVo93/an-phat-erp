@@ -1,5 +1,6 @@
 import { IBase } from "./base.interface";
 import { UserRole } from "./enums";
+import { UserPagePermission } from "./user-permission";
 
 export interface IUser extends IBase {
   username?: string;
@@ -9,4 +10,7 @@ export interface IUser extends IBase {
   role?: UserRole;
   active?: boolean;
   lastLogin?: Date;
+
+  // Permissions
+  permissions?: UserPagePermission[];
 }
