@@ -13,12 +13,16 @@ export const customersTranslations = {
     vi: "Thêm Khách Hàng",
   },
   "customers.editCustomer": {
-    en: "Edit Customer",
-    vi: "Sửa Khách Hàng",
+    en: "Edit",
+    vi: "Sửa",
   },
   "customers.viewCustomer": {
-    en: "View Customer",
-    vi: "Xem Khách Hàng",
+    en: "View",
+    vi: "Xem",
+  },
+  "customers.deleteCustomer": {
+    en: "Delete",
+    vi: "Xóa",
   },
   "customers.searchPlaceholder": {
     en: "Search customers...",
@@ -69,8 +73,12 @@ export const customersTranslations = {
     vi: "Danh sách đầy đủ tất cả khách hàng và thông tin của họ",
   },
   "customers.orders": {
-    en: "orders",
-    vi: "đơn hàng",
+    en: "Orders",
+    vi: "Đơn hàng",
+  },
+  "customers.spending": {
+    en: "Spending",
+    vi: "Chi tiêu",
   },
   "customers.lastOrder": {
     en: "Last order",
@@ -246,8 +254,8 @@ export const customersTranslations = {
     vi: "khách hàng",
   },
   "customers.pagination.itemsPerPage": {
-    en: "per page",
-    vi: "mỗi trang",
+    en: "page",
+    vi: "trang",
   },
   "customers.pagination.previous": {
     en: "Previous",

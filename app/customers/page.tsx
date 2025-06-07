@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreVertical,
+  Loader2,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -31,6 +32,7 @@ import { CustomerViewModal } from "@/components/customers/customer-view-modal"
 import { CustomerDeleteModal } from "@/components/customers/customer-delete-modal"
 import { CustomerFilterModal } from "@/components/customers/customer-filter-modal"
 import type { Customer } from "@/types/customer"
+import { CustomerStatus, CustomerType } from "@/types/enums"
 
 export default function CustomersPage() {
   const { t } = useLanguage()
@@ -52,6 +54,7 @@ export default function CustomersPage() {
     updateCustomer,
     deleteCustomer,
     getCustomerById,
+    loading,
   } = useCustomers()
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
@@ -60,6 +63,17 @@ export default function CustomersPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
+
+  const formatDate = (dateString: string) => {
+    if(!dateString) return;
+
+    const date = new Date(dateString)
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+
+    return `${day}-${month}-${year}`
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -97,11 +111,11 @@ export default function CustomersPage() {
 
   const translateStatus = (status: string) => {
     switch (status) {
-      case "Active":
+      case "active":
         return t("customers.status.active")
-      case "Inactive":
+      case "inactive":
         return t("customers.status.inactive")
-      case "Pending":
+      case "pending":
         return t("customers.status.pending")
       default:
         return status
@@ -110,11 +124,11 @@ export default function CustomersPage() {
 
   const translateCustomerType = (type: string) => {
     switch (type) {
-      case "VIP":
+      case "vip":
         return t("customers.type.vip")
-      case "Premium":
+      case "premium":
         return t("customers.type.premium")
-      case "Regular":
+      case "regular":
         return t("customers.type.regular")
       default:
         return type
@@ -147,13 +161,13 @@ export default function CustomersPage() {
     if (formMode === "create") {
       addCustomer(customerData as Omit<Customer, "id">)
     } else if (formMode === "edit" && selectedCustomer) {
-      updateCustomer(selectedCustomer.id, customerData)
+      updateCustomer(selectedCustomer.id!, customerData)
     }
   }
 
   const handleConfirmDelete = () => {
     if (selectedCustomer) {
-      deleteCustomer(selectedCustomer.id)
+      deleteCustomer(selectedCustomer.id!)
       setIsDeleteModalOpen(false)
       setSelectedCustomer(null)
     }
@@ -191,6 +205,11 @@ export default function CustomersPage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-4 md:space-y-6">
         {/* Header Section - Responsive */}
         <div className="flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center md:justify-between">
@@ -200,7 +219,7 @@ export default function CustomersPage() {
           </div>
           <Button onClick={handleCreateCustomer} className="w-full md:w-auto">
             <Plus className="mr-2 h-4 w-4" />
-            <span className="md:hidden">Thêm</span>
+            <span className="md:hidden">{t("customers.addCustomer")}</span>
             <span className="hidden md:inline">{t("customers.addCustomer")}</span>
           </Button>
         </div>
@@ -218,7 +237,7 @@ export default function CustomersPage() {
           </div>
           <Button variant="outline" onClick={() => setIsFilterModalOpen(true)} className="w-full md:w-auto">
             <Filter className="mr-2 h-4 w-4" />
-            <span className="md:hidden">Lọc</span>
+            <span className="md:hidden">{t("customers.filter")}</span>
             <span className="hidden md:inline">{t("customers.filter")}</span>
           </Button>
         </div>
@@ -240,7 +259,7 @@ export default function CustomersPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-xl md:text-2xl font-bold">
-                {allCustomers.filter((c) => c.status === "Active").length}
+                {allCustomers.filter((c) => c.status === CustomerStatus.active).length}
               </div>
               <p className="text-xs text-muted-foreground hidden md:block">{t("customers.currentlyActive")}</p>
             </CardContent>
@@ -260,7 +279,7 @@ export default function CustomersPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-xl md:text-2xl font-bold">
-                {allCustomers.filter((c) => c.customerType === "VIP").length}
+                {allCustomers.filter((c) => c.customerType === CustomerType.vip).length}
               </div>
               <p className="text-xs text-muted-foreground hidden md:block">{t("customers.premiumTierCustomers")}</p>
             </CardContent>
@@ -296,7 +315,7 @@ export default function CustomersPage() {
                       <SelectItem value="50">50</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span className="text-xs text-muted-foreground">/trang</span>
+                  <span className="text-xs text-muted-foreground">/{t("customers.pagination.itemsPerPage")}</span>
                 </div>
               </div>
             </div>
@@ -308,7 +327,7 @@ export default function CustomersPage() {
                   <div className="flex items-start space-x-3">
                     <Avatar className="h-10 w-10 md:h-12 md:w-12 flex-shrink-0">
                       <AvatarImage src="/placeholder.svg" alt={customer.name} />
-                      <AvatarFallback className="text-xs">{getInitials(customer.name)}</AvatarFallback>
+                      <AvatarFallback className="text-xs">{getInitials(customer.name!)}</AvatarFallback>
                     </Avatar>
 
                     <div className="flex-1 min-w-0 space-y-2">
@@ -317,14 +336,14 @@ export default function CustomersPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-medium truncate">{customer.name}</h3>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            <Badge className={`text-xs ${getStatusColor(customer.status)}`}>
-                              {translateStatus(customer.status)}
+                            <Badge className={`text-xs ${getStatusColor(customer.status!)}`}>
+                              {translateStatus(customer.status!)}
                             </Badge>
                             <Badge
                               variant="outline"
-                              className={`text-xs ${getCustomerTypeColor(customer.customerType)}`}
+                              className={`text-xs ${getCustomerTypeColor(customer.customerType!)}`}
                             >
-                              {translateCustomerType(customer.customerType)}
+                              {translateCustomerType(customer.customerType!)}
                             </Badge>
                           </div>
                         </div>
@@ -339,15 +358,15 @@ export default function CustomersPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleViewCustomer(customer)}>
                               <Eye className="mr-2 h-4 w-4" />
-                              Xem
+                              {t("customers.viewCustomer")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
                               <Edit className="mr-2 h-4 w-4" />
-                              Sửa
+                              {t("customers.editCustomer")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDeleteCustomer(customer)} className="text-red-600">
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Xóa
+                              {t("customers.deleteCustomer")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -372,27 +391,27 @@ export default function CustomersPage() {
                       {/* Stats Row */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                         <div>
-                          <span className="text-muted-foreground">Đơn hàng:</span>
-                          <span className="ml-1 font-medium">{customer.totalOrders}</span>
+                          <span className="text-muted-foreground">{t("customers.orders")}:</span>
+                          <span className="ml-1 font-medium">{customer.orders?.length}</span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Chi tiêu:</span>
-                          <span className="ml-1 font-medium text-green-600">{customer.totalSpent}</span>
+                          <span className="text-muted-foreground">{t("customers.spending")}:</span>
+                          {/* <span className="ml-1 font-medium text-green-600">{customer.orders.}</span> */}
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                          <span className="text-muted-foreground">Đơn cuối:</span>
-                          <span className="ml-1">{customer.lastOrder}</span>
+                          <span className="text-muted-foreground">{t("customers.lastOrder")}:</span>
+                          <span className="ml-1">{formatDate(customer.lastOrder?.toString()!)}</span>
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                          <span className="text-muted-foreground">Tham gia:</span>
-                          <span className="ml-1">{customer.joinDate}</span>
+                          <span className="text-muted-foreground">{t("customers.joined")}:</span>
+                          <span className="ml-1">{formatDate(customer.joinDate?.toString()!)}</span>
                         </div>
                       </div>
 
                       {/* Company Info */}
                       {customer.company && (
                         <p className="text-xs text-muted-foreground">
-                          <span className="font-medium">Công ty:</span> {customer.company}
+                          <span className="font-medium">{t("customers.company")}:</span> {customer.company}
                         </p>
                       )}
                     </div>
@@ -412,7 +431,7 @@ export default function CustomersPage() {
                   className="w-full md:w-auto"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  <span className="md:hidden">Trước</span>
+                  <span className="md:hidden">{t("customers.pagination.previous")}</span>
                   <span className="hidden md:inline">{t("customers.pagination.previous")}</span>
                 </Button>
 
@@ -438,7 +457,7 @@ export default function CustomersPage() {
                   disabled={currentPage === totalPages}
                   className="w-full md:w-auto"
                 >
-                  <span className="md:hidden">Sau</span>
+                  <span className="md:hidden">{t("customers.pagination.next")}</span>
                   <span className="hidden md:inline">{t("customers.pagination.next")}</span>
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
@@ -453,7 +472,7 @@ export default function CustomersPage() {
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
         onSave={handleSaveCustomer}
-        customer={selectedCustomer}
+        customer={selectedCustomer!}
         mode={formMode}
       />
 
