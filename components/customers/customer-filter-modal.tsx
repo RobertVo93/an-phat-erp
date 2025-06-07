@@ -63,9 +63,9 @@ export function CustomerFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("customers.filter.all")}</SelectItem>
-                <SelectItem value="Active">{t("customers.status.active")}</SelectItem>
-                <SelectItem value="Inactive">{t("customers.status.inactive")}</SelectItem>
-                <SelectItem value="Pending">{t("customers.status.pending")}</SelectItem>
+                <SelectItem value="active">{t("customers.status.active")}</SelectItem>
+                <SelectItem value="inactive">{t("customers.status.inactive")}</SelectItem>
+                <SelectItem value="pending">{t("customers.status.pending")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -81,9 +81,9 @@ export function CustomerFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("customers.filter.all")}</SelectItem>
-                <SelectItem value="Regular">{t("customers.type.regular")}</SelectItem>
-                <SelectItem value="Premium">{t("customers.type.premium")}</SelectItem>
-                <SelectItem value="VIP">{t("customers.type.vip")}</SelectItem>
+                <SelectItem value="regular">{t("customers.type.regular")}</SelectItem>
+                <SelectItem value="premium">{t("customers.type.premium")}</SelectItem>
+                <SelectItem value="vip">{t("customers.type.vip")}</SelectItem>
               </SelectContent>
             </Select>
           </div>

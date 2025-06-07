@@ -5,6 +5,8 @@ import type { Product, ProductFormData, ProductFilters } from "@/types/product"
 import { getProducts, createProduct as apiCreateProduct, updateProduct as apiUpdateProduct, deleteProduct as apiDeleteProduct } from "@/lib/httpclient/product.client"
 import { debounce } from "lodash"
 import { Collection } from "@/types/collection"
+import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3"
+import { base64ToFile } from "@/lib/utils"
 
 export function useProducts() {
   const [allProducts, setAllProducts] = useState<Product[]>([])
@@ -117,6 +119,14 @@ export function useProducts() {
         createdAt: new Date().toISOString() as any,
         updatedAt: new Date().toISOString() as any,
       }
+      if (newProduct.image && newProduct.image.startsWith("data:")) {
+        // Convert base64 to File
+        const file = base64ToFile(newProduct.image, "product-image.png");
+        // Upload to S3
+        const s3Url = await uploadFileToS3(file, "products");
+        // Replace image field with S3 URL
+        newProduct.image = s3Url;
+      }
       const created = await apiCreateProduct(newProduct)
       setAllProducts((prev) => [...prev, created])
     } finally {
@@ -127,6 +137,21 @@ export function useProducts() {
   const updateProduct = async (id: string, data: ProductFormData): Promise<void> => {
     setLoading(true)
     try {
+      const selectedProduct = allProducts.find((pro) => pro.id === id)
+      if (selectedProduct?.image && selectedProduct?.image !== data.image) {
+        // Delete old image from S3
+        await deleteFileFromS3(selectedProduct.image)
+      }
+
+      if (data.image?.startsWith("data:")) {
+        // Convert base64 to File
+        const file = base64ToFile(data.image, "product-image.png");
+        // Upload to S3
+        const s3Url = await uploadFileToS3(file, "products");
+        // Replace image field with S3 URL
+        data.image = s3Url;
+      }
+      
       const updatedProduct: Product = {
         id: `PRD-${String(allProducts.length + 1).padStart(3, "0")}`,
         ...data,
@@ -143,6 +168,11 @@ export function useProducts() {
     setLoading(true)
     try {
       await apiDeleteProduct(id)
+      // Delete image from S3
+      const selectedProduct = allProducts.find((prod) => prod.id === id)
+      if (selectedProduct?.image) {
+        await deleteFileFromS3(selectedProduct.image)
+      }
       setAllProducts(allProducts.filter((pro) => pro.id !== id))
     } finally {
       setLoading(false)

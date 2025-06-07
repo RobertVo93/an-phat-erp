@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Customer } from "@/types/customer"
 import { useLanguage } from "@/contexts/language-context"
-
+import { CustomerStatus, CustomerType } from "@/types/enums"
 
 interface CustomerFormModalProps {
   isOpen: boolean
@@ -23,19 +23,17 @@ interface CustomerFormModalProps {
 
 export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: CustomerFormModalProps) {
   const { t } = useLanguage()
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Customer>({
     name: "",
     email: "",
     phone: "",
     company: "",
     location: "",
-    customerType: "Regular" as const,
-    status: "Active" as const,
+    customerType: CustomerType.regular,
+    status: CustomerStatus.active,
     notes: "",
-    totalOrders: 0,
-    totalSpent: "$0.00",
-    lastOrder: "",
-    joinDate: new Date().toISOString().split("T")[0],
+    lastOrder: undefined,
+    joinDate: new Date(),
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -48,11 +46,9 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
         phone: customer.phone,
         company: customer.company || "",
         location: customer.location,
-        customerType: customer.customerType,
-        status: customer.status,
+        customerType: customer.customerType as CustomerType,
+        status: customer.status as CustomerStatus,
         notes: customer.notes || "",
-        totalOrders: customer.totalOrders,
-        totalSpent: customer.totalSpent,
         lastOrder: customer.lastOrder,
         joinDate: customer.joinDate,
       })
@@ -63,13 +59,11 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
         phone: "",
         company: "",
         location: "",
-        customerType: "Regular",
-        status: "Active",
+        customerType: CustomerType.regular,
+        status: CustomerStatus.active,
         notes: "",
-        totalOrders: 0,
-        totalSpent: "$0.00",
-        lastOrder: "",
-        joinDate: new Date().toISOString().split("T")[0],
+        lastOrder: undefined,
+        joinDate: new Date(),
       })
     }
     setErrors({})
@@ -78,13 +72,13 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name.trim()) {
+    if (!formData.name!.trim()) {
       newErrors.name = t("customers.form.nameRequired")
     }
-    if (!formData.email.trim()) {
+    if (!formData.email!.trim()) {
       newErrors.email = t("customers.form.emailRequired")
     }
-    if (!formData.phone.trim()) {
+    if (!formData.phone!.trim()) {
       newErrors.phone = t("customers.form.phoneRequired")
     }
 
@@ -178,28 +172,28 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
 
             <div className="space-y-2">
               <Label htmlFor="customerType">{t("customers.form.customerType")}</Label>
-              <Select value={formData.customerType} onValueChange={(value) => handleInputChange("customerType", value)}>
+              <Select value={formData.customerType} onValueChange={(value: CustomerType) => handleInputChange("customerType", value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Regular">{t("customers.type.regular")}</SelectItem>
-                  <SelectItem value="Premium">{t("customers.type.premium")}</SelectItem>
-                  <SelectItem value="VIP">{t("customers.type.vip")}</SelectItem>
+                  <SelectItem value="regular">{t("customers.type.regular")}</SelectItem>
+                  <SelectItem value="premium">{t("customers.type.premium")}</SelectItem>
+                  <SelectItem value="vip">{t("customers.type.vip")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="status">{t("customers.form.status")}</Label>
-              <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+              <Select value={formData.status} onValueChange={(value: CustomerStatus) => handleInputChange("status", value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Active">{t("customers.status.active")}</SelectItem>
-                  <SelectItem value="Inactive">{t("customers.status.inactive")}</SelectItem>
-                  <SelectItem value="Pending">{t("customers.status.pending")}</SelectItem>
+                  <SelectItem value="active">{t("customers.status.active")}</SelectItem>
+                  <SelectItem value="inactive">{t("customers.status.inactive")}</SelectItem>
+                  <SelectItem value="pending">{t("customers.status.pending")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -209,7 +203,11 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
               <Input
                 id="joinDate"
                 type="date"
-                value={formData.joinDate}
+                value={
+                  formData.joinDate
+                    ? new Date(formData.joinDate.toString().replace(" ", "T")).toLocaleDateString("sv-SE")
+                    : ""
+                }
                 onChange={(e) => handleInputChange("joinDate", e.target.value)}
               />
             </div>
