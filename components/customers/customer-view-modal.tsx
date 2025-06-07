@@ -20,11 +20,11 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case "active":
         return "bg-green-100 text-green-800"
-      case "Inactive":
+      case "inactive":
         return "bg-red-100 text-red-800"
-      case "Pending":
+      case "pending":
         return "bg-yellow-100 text-yellow-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -33,11 +33,11 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
   const getCustomerTypeColor = (type: string) => {
     switch (type) {
-      case "VIP":
+      case "vip":
         return "bg-purple-100 text-purple-800"
-      case "Premium":
+      case "premium":
         return "bg-blue-100 text-blue-800"
-      case "Regular":
+      case "regular":
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -46,11 +46,11 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
   const translateStatus = (status: string) => {
     switch (status) {
-      case "Active":
+      case "active":
         return t("customers.status.active")
-      case "Inactive":
+      case "inactive":
         return t("customers.status.inactive")
-      case "Pending":
+      case "pending":
         return t("customers.status.pending")
       default:
         return status
@@ -59,11 +59,11 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
   const translateCustomerType = (type: string) => {
     switch (type) {
-      case "VIP":
+      case "vip":
         return t("customers.type.vip")
-      case "Premium":
+      case "premium":
         return t("customers.type.premium")
-      case "Regular":
+      case "regular":
         return t("customers.type.regular")
       default:
         return type
@@ -85,9 +85,9 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
               <p className="text-sm text-muted-foreground">ID: {customer.id}</p>
             </div>
             <div className="flex space-x-2">
-              <Badge className={getStatusColor(customer.status)}>{translateStatus(customer.status)}</Badge>
-              <Badge variant="outline" className={getCustomerTypeColor(customer.customerType)}>
-                {translateCustomerType(customer.customerType)}
+              <Badge className={getStatusColor(customer.status!.toString())}>{translateStatus(customer.status!.toString())}</Badge>
+              <Badge variant="outline" className={getCustomerTypeColor(customer.customerType!.toString())}>
+                {translateCustomerType(customer.customerType!.toString())}
               </Badge>
             </div>
           </div>
@@ -126,26 +126,26 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {t("customers.joined")}: {customer.joinDate}
+                  {t("customers.joined")}: {new Date(customer.joinDate!.toString().replace(" ", "T")).toLocaleDateString("sv-SE")}
                 </span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {customer.totalOrders} {t("customers.orders")}
+                  {/* {customer.totalOrders} {t("customers.orders")} */}
                 </span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{customer.totalSpent}</span>
+                {/* <span className="text-sm font-medium">{customer.totalSpent}</span> */}
               </div>
 
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {t("customers.lastOrder")}: {customer.lastOrder}
+                  {t("customers.lastOrder")}: {customer.lastOrder ? new Date(customer.lastOrder.toString().replace(" ", "T")).toLocaleDateString("sv-SE") : ""}
                 </span>
               </div>
             </div>
