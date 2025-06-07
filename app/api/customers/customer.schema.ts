@@ -20,7 +20,7 @@ export const UpdateCustomerSchema = z.object({
     phone: z.string().optional(),
     company: z.string().optional(),
     location: z.string().optional(),
-    lastOrder: z.string().optional(),
+    lastOrder: z.string().nullable().optional(),
     status: z.nativeEnum(CustomerStatus).optional(),
     customerType: z.nativeEnum(CustomerType).optional(),
     joinDate: z.string().optional(),

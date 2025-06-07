@@ -152,13 +152,14 @@ export async function GET(req: NextRequest) {
     const sortOrder = searchParams.get("sortOrder") || "asc";
     const status = searchParams.get("status") || undefined;
     const name = searchParams.get("name") || undefined;
+    const customerType = searchParams.get("customerType") || undefined;
 
     const result = await getAllCustomers({
       page,
       limit,
       sortBy,
       sortOrder,
-      filters: { status, name },
+      filters: { status, name, customerType },
     });
     return NextResponse.json(result);
   } catch (error) {
@@ -178,8 +179,6 @@ export async function POST(req: NextRequest) {
     }
     // Convert lastOrder and joinDate to Date if present
     const createData = { ...parse.data } as CustomerEntity;
-    if (createData.lastOrder) createData.lastOrder = new Date(createData.lastOrder);
-    if (createData.joinDate) createData.joinDate = new Date(createData.joinDate);
     const created = await createCustomer(createData);
     return NextResponse.json(created, { status: 201 });
   } catch (error) {

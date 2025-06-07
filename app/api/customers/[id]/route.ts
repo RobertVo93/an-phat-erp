@@ -88,8 +88,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
     // Convert lastOrder and joinDate to Date if present
     const updateData = { ...parse.data } as CustomerEntity;
-    if (updateData.lastOrder) updateData.lastOrder = new Date(updateData.lastOrder);
-    if (updateData.joinDate) updateData.joinDate = new Date(updateData.joinDate);
     const updated = await updateCustomer(params.id, updateData);
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
