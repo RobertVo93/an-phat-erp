@@ -84,6 +84,10 @@ export const ordersTranslations = {
     en: "Order Items",
     vi: "Sản Phẩm Trong Đơn",
   },
+  "orders.price": {
+    en: "Order price",
+    vi: "Giá đơn hàng",
+  },
   "orders.orderTimeline": {
     en: "Order Timeline",
     vi: "Tiến Trình Đơn Hàng",
@@ -155,6 +159,10 @@ export const ordersTranslations = {
   "orders.trackProgress": {
     en: "Track the progress of your order",
     vi: "Theo dõi tiến trình đơn hàng của bạn",
+  },
+  "orders.includedProducts": {
+    en: "Products included in this order",
+    vi: "Sản phầm trong đơn hàng",
   },
 
   // Order status
@@ -378,6 +386,10 @@ export const ordersTranslations = {
     en: "All Payment Methods",
     vi: "Tất Cả Phương Thức Thanh Toán",
   },
+  "orders.filter.dateRange": {
+    en: "Date range",
+    vi: "Phạm vi ngày" 
+  },
   "orders.filter.dateFrom": {
     en: "Date From",
     vi: "Từ Ngày",
@@ -385,6 +397,10 @@ export const ordersTranslations = {
   "orders.filter.dateTo": {
     en: "Date To",
     vi: "Đến Ngày",
+  },
+  "orders.filter.amountRange": {
+    en: "Amount range",
+    vi: "Phạm vi tiền"
   },
   "orders.filter.amountMin": {
     en: "Min Amount",

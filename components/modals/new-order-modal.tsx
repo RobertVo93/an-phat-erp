@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,46 +11,40 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Minus, Search, X } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-
-interface Product {
-  id: string
-  name: string
-  price: number
-  stock: number
-  category: string
-}
-
-interface OrderItem {
-  product: Product
-  quantity: number
-  price: number
-  total: number
-}
-
-interface Customer {
-  id: string
-  name: string
-  email: string
-  phone: string
-  company: string
-  address: string
-}
-
+import { Customer } from "@/types/customer"
+import { Product } from "@/types/product"
+import { Order, OrderItem } from "@/types/order"
+import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
+import { formatLocalDatetime } from "@/lib/utils"
 interface NewOrderModalProps {
   open: boolean
+  customers: Customer[]
+  products: Product[]
   onOpenChange: (open: boolean) => void
+  getCustomersAndProducts: () => void
+  createOrder: (orderData: Partial<Order>) => void
 }
 
-export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
+export function NewOrderModal({
+  open,
+  customers,
+  products,
+  onOpenChange,
+  getCustomersAndProducts,
+  createOrder
+}: NewOrderModalProps) {
   const { t } = useLanguage()
-  const [orderData, setOrderData] = useState({
-    customer: null as Customer | null,
-    tags: "",
-    deliveryDateTime: "",
-    status: "Pending",
+  const [orderData, setOrderData] = useState<Order>({
+    customer: undefined,
+    deliveryDate: new Date(),
+    totalAmount: 0,
+    status: OrderStatus.pending,
+    paymentStatus: PaymentStatus.pending,
+    paymentMethod: PaymentMethod.cash,
     shippingAddress: "",
-    paymentMethod: "",
+    items: [],
     notes: "",
+    tags: [],
   })
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [productSearch, setProductSearch] = useState("")
@@ -58,88 +52,34 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
   const [showProductList, setShowProductList] = useState(false)
   const [showCustomerList, setShowCustomerList] = useState(false)
 
-  // Sample products
-  const products: Product[] = [
-    { id: "PRD-001", name: "Laptop Dell XPS 13", price: 1299, stock: 25, category: t("products.category.electronics") },
-    { id: "PRD-002", name: "iPhone 15 Pro", price: 1499, stock: 15, category: t("products.category.electronics") },
-    { id: "PRD-003", name: "Ghế văn phòng", price: 399, stock: 8, category: t("products.category.furniture") },
-    { id: "PRD-004", name: "Chuột không dây", price: 35, stock: 50, category: t("products.category.accessories") },
-    { id: "PRD-005", name: "Đèn bàn", price: 65, stock: 20, category: t("products.category.furniture") },
-    { id: "PRD-006", name: "Ốp điện thoại", price: 25, stock: 100, category: t("products.category.accessories") },
-  ]
-
-  // Sample customers
-  const customers: Customer[] = [
-    {
-      id: "CUST-001",
-      name: "Nguyễn Văn An",
-      email: "nguyen.van.an@email.com",
-      phone: "+84 123 456 789",
-      company: "Công ty An Phát",
-      address: "123 Đường Lê Lợi, Quận 1, TP.HCM, Việt Nam",
-    },
-    {
-      id: "CUST-002",
-      name: "Trần Thị Bình",
-      email: "tran.thi.binh@email.com",
-      phone: "+84 987 654 321",
-      company: "Studio Thiết Kế Bình",
-      address: "456 Đường Nguyễn Huệ, Quận 3, TP.HCM, Việt Nam",
-    },
-    {
-      id: "CUST-003",
-      name: "Lê Minh Cường",
-      email: "le.minh.cuong@email.com",
-      phone: "+84 555 123 456",
-      company: "Thương Mại Cường Thịnh",
-      address: "789 Đường Trần Hưng Đạo, Quận 5, TP.HCM, Việt Nam",
-    },
-    {
-      id: "CUST-004",
-      name: "Phạm Thị Dung",
-      email: "pham.thi.dung@email.com",
-      phone: "+84 777 888 999",
-      company: "Sản Xuất Dung Hòa",
-      address: "321 Đường Võ Văn Tần, Quận 3, TP.HCM, Việt Nam",
-    },
-    {
-      id: "CUST-005",
-      name: "Hoàng Văn Em",
-      email: "hoang.van.em@email.com",
-      phone: "+84 333 222 111",
-      company: "Giải Pháp Bán Lẻ Em",
-      address: "654 Đường Pasteur, Quận 1, TP.HCM, Việt Nam",
-    },
-  ]
-
   const filteredCustomers = customers.filter(
     (customer) =>
-      customer.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      customer.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      customer.company.toLowerCase().includes(customerSearch.toLowerCase()),
+      customer.name!.toLowerCase().includes(customerSearch.toLowerCase()) ||
+      customer.email!.toLowerCase().includes(customerSearch.toLowerCase()) ||
+      customer.company!.toLowerCase().includes(customerSearch.toLowerCase()),
   )
 
   const selectCustomer = (customer: Customer) => {
     setOrderData({
       ...orderData,
       customer,
-      shippingAddress: customer.address,
+      shippingAddress: customer.location!,
     })
-    setCustomerSearch(customer.name)
+    setCustomerSearch(customer.name!)
     setShowCustomerList(false)
   }
 
   const filteredProducts = products.filter(
     (product) =>
-      product.name.toLowerCase().includes(productSearch.toLowerCase()) &&
-      !orderItems.some((item) => item.product.id === product.id),
+      product.name!.toLowerCase().includes(productSearch.toLowerCase()) &&
+      !orderItems.some((item) => item.product!.id === product.id),
   )
 
   const addProduct = (product: Product) => {
     const newItem: OrderItem = {
       product,
       quantity: 1,
-      price: product.price,
+      unitPrice: product.price,
       total: product.price,
     }
     setOrderItems([...orderItems, newItem])
@@ -151,15 +91,15 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
     if (quantity <= 0) return
     const updatedItems = [...orderItems]
     updatedItems[index].quantity = quantity
-    updatedItems[index].total = quantity * updatedItems[index].price
+    updatedItems[index].total = quantity * updatedItems[index].unitPrice!
     setOrderItems(updatedItems)
   }
 
   const updatePrice = (index: number, price: number) => {
     if (price < 0) return
     const updatedItems = [...orderItems]
-    updatedItems[index].price = price
-    updatedItems[index].total = updatedItems[index].quantity * price
+    updatedItems[index].unitPrice = price
+    updatedItems[index].total = updatedItems[index].quantity! * price
     setOrderItems(updatedItems)
   }
 
@@ -167,41 +107,43 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
     setOrderItems(orderItems.filter((_, i) => i !== index))
   }
 
-  const subtotal = orderItems.reduce((sum, item) => sum + item.total, 0)
+  const subtotal = orderItems.reduce((sum, item) => sum + item.total!, 0)
   const tax = subtotal * 0.1 // 10% tax
   const shipping = subtotal > 100 ? 0 : 15 // Free shipping over $100
   const total = subtotal + tax + shipping
 
   const handleSubmit = () => {
-    console.log("Order Data:", {
-      customer: orderData.customer,
-      status: orderData.status,
-      deliveryDateTime: orderData.deliveryDateTime,
-      tags: orderData.tags,
-      shippingAddress: orderData.shippingAddress,
-      paymentMethod: orderData.paymentMethod,
-      notes: orderData.notes,
+    createOrder({
+      ...orderData,
       items: orderItems,
-      subtotal,
-      tax,
-      shipping,
-      total,
+      totalAmount: total,
+      shippingFee: shipping,
+      tax: tax
     })
 
     // Reset form and close modal
     setOrderData({
-      customer: null,
-      tags: "",
-      deliveryDateTime: "",
-      status: "Pending",
+      customer: undefined,
+      deliveryDate: new Date(),
+      totalAmount: 0,
+      status: OrderStatus.pending,
+      paymentStatus: PaymentStatus.pending,
+      paymentMethod: PaymentMethod.cash,
       shippingAddress: "",
-      paymentMethod: "",
       notes: "",
+      items: [],
+      tags: [],
+      tax: 0,
+      shippingFee: 0
     })
     setOrderItems([])
     setCustomerSearch("")
     onOpenChange(false)
   }
+
+  useEffect(() => {
+    getCustomersAndProducts()
+  }, [open])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -282,7 +224,7 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        setOrderData({ ...orderData, customer: null, shippingAddress: "" })
+                        setOrderData({ ...orderData, customer: undefined, shippingAddress: "" })
                         setCustomerSearch("")
                       }}
                     >
@@ -314,18 +256,18 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
               <div className="space-y-2">
                 <Label htmlFor="status">{t("orders.status")} *</Label>
                 <Select
-                  value={orderData.status}
-                  onValueChange={(value) => setOrderData({ ...orderData, status: value })}
+                  value={orderData.status?.toString()}
+                  onValueChange={(value: OrderStatus) => setOrderData({ ...orderData, status: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("orders.selectOrderStatus")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pending">{t("orders.status.pending")}</SelectItem>
-                    <SelectItem value="Processing">{t("orders.status.processing")}</SelectItem>
-                    <SelectItem value="Shipped">{t("orders.status.shipped")}</SelectItem>
-                    <SelectItem value="Delivered">{t("orders.status.delivered")}</SelectItem>
-                    <SelectItem value="Cancelled">{t("orders.status.cancelled")}</SelectItem>
+                    <SelectItem value={OrderStatus.pending}>{t("orders.status.pending")}</SelectItem>
+                    <SelectItem value={OrderStatus.processing}>{t("orders.status.processing")}</SelectItem>
+                    <SelectItem value={OrderStatus.shipped}>{t("orders.status.shipped")}</SelectItem>
+                    <SelectItem value={OrderStatus.delivered}>{t("orders.status.delivered")}</SelectItem>
+                    <SelectItem value={OrderStatus.cancelled}>{t("orders.status.cancelled")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -335,8 +277,8 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
                 <Input
                   id="deliveryDateTime"
                   type="datetime-local"
-                  value={orderData.deliveryDateTime}
-                  onChange={(e) => setOrderData({ ...orderData, deliveryDateTime: e.target.value })}
+                  value={orderData.deliveryDate ? formatLocalDatetime(orderData.deliveryDate) : ""}
+                  onChange={(e) => setOrderData({ ...orderData, deliveryDate: new Date(e.target.value) })}
                 />
               </div>
 
@@ -345,7 +287,7 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
                 <Input
                   id="tags"
                   value={orderData.tags}
-                  onChange={(e) => setOrderData({ ...orderData, tags: e.target.value })}
+                  onChange={(e) => setOrderData({ ...orderData, tags: [...orderData.tags!, e.target.value] })}
                   placeholder={t("orders.tagsPlaceholder")}
                 />
               </div>
@@ -353,18 +295,18 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
               <div className="space-y-2">
                 <Label htmlFor="paymentMethod">{t("orders.paymentMethod")} *</Label>
                 <Select
-                  value={orderData.paymentMethod}
-                  onValueChange={(value) => setOrderData({ ...orderData, paymentMethod: value })}
+                  value={orderData.paymentMethod?.toString()}
+                  onValueChange={(value: PaymentMethod) => setOrderData({ ...orderData, paymentMethod: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("orders.selectPaymentMethod")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="credit_card">{t("orders.paymentMethod.creditCard")}</SelectItem>
-                    <SelectItem value="debit_card">{t("orders.paymentMethod.debitCard")}</SelectItem>
-                    <SelectItem value="bank_transfer">{t("orders.paymentMethod.bankTransfer")}</SelectItem>
-                    <SelectItem value="cash">{t("orders.paymentMethod.cash")}</SelectItem>
-                    <SelectItem value="paypal">{t("orders.paymentMethod.paypal")}</SelectItem>
+                    <SelectItem value={PaymentMethod.creditCard}>{t("orders.paymentMethod.creditCard")}</SelectItem>
+                    <SelectItem value={PaymentMethod.debitCard}>{t("orders.paymentMethod.debitCard")}</SelectItem>
+                    <SelectItem value={PaymentMethod.bankTransfer}>{t("orders.paymentMethod.bankTransfer")}</SelectItem>
+                    <SelectItem value={PaymentMethod.cash}>{t("orders.paymentMethod.cash")}</SelectItem>
+                    <SelectItem value={PaymentMethod.paypal}>{t("orders.paymentMethod.paypal")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -427,7 +369,7 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
                                 ${product.price} • {t("orders.modal.productStock")}: {product.stock}
                               </p>
                             </div>
-                            <Badge variant="outline">{product.category}</Badge>
+                            <Badge variant="outline">{product.sku}</Badge>
                           </div>
                         </div>
                       ))
@@ -442,12 +384,12 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
               {orderItems.length > 0 && (
                 <div className="space-y-3">
                   {orderItems.map((item, index) => (
-                    <div key={item.product.id} className="p-3 border rounded-lg space-y-3">
+                    <div key={item.product?.id} className="p-3 border rounded-lg space-y-3">
                       {/* Product Info */}
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">{item.product.name}</p>
-                          <p className="text-xs text-gray-500">{item.product.category}</p>
+                          <p className="font-medium text-sm">{item.product!.name}</p>
+                          <p className="text-xs text-gray-500">SKU: {item.product?.sku}</p>
                         </div>
                         <Button
                           type="button"
@@ -470,7 +412,7 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={() => updateQuantity(index, item.quantity - 1)}
+                              onClick={() => updateQuantity(index, item.quantity! - 1)}
                               className="h-8 w-8 p-0"
                             >
                               <Minus className="h-3 w-3" />
@@ -479,14 +421,14 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
                               type="number"
                               value={item.quantity}
                               onChange={(e) => updateQuantity(index, Number.parseInt(e.target.value) || 1)}
-                              className="h-8 w-12 text-center text-xs"
+                              className="h-8 w-20 text-center text-xs"
                               min="1"
                             />
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={() => updateQuantity(index, item.quantity + 1)}
+                              onClick={() => updateQuantity(index, item.quantity! + 1)}
                               className="h-8 w-8 p-0"
                             >
                               <Plus className="h-3 w-3" />
@@ -499,7 +441,7 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
                           <Label className="text-xs text-gray-500">{t("orders.price")}:</Label>
                           <Input
                             type="number"
-                            value={item.price}
+                            value={item.unitPrice}
                             onChange={(e) => updatePrice(index, Number.parseFloat(e.target.value) || 0)}
                             className="h-8 text-xs"
                             step="0.01"
@@ -511,7 +453,7 @@ export function NewOrderModal({ open, onOpenChange }: NewOrderModalProps) {
                       {/* Total */}
                       <div className="flex justify-between items-center pt-2 border-t">
                         <span className="text-sm font-medium">{t("orders.total")}:</span>
-                        <span className="text-sm font-bold">${item.total.toFixed(2)}</span>
+                        <span className="text-sm font-bold">${item.total!.toFixed(2)}</span>
                       </div>
                     </div>
                   ))}

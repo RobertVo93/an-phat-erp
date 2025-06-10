@@ -1,9 +1,10 @@
 "use client"
 
+import { Order } from "@/types/order"
 import { forwardRef } from "react"
 
 interface InvoicePrintProps {
-  order: any
+  order: Order
 }
 
 export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ order }, ref) => {
@@ -13,6 +14,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
 
   const currentDate = new Date().toLocaleDateString()
 
+  if(!order) return;
   return (
     <div ref={ref} className="bg-white p-8 max-w-4xl mx-auto print:shadow-none print:max-w-none">
       {/* Header */}
@@ -31,16 +33,13 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
           <h2 className="text-2xl font-bold text-gray-900">INVOICE</h2>
           <div className="mt-4 text-sm">
             <p>
-              <span className="font-medium">Invoice #:</span> {order.orderNumber}
-            </p>
-            <p>
               <span className="font-medium">Order #:</span> {order.id}
             </p>
             <p>
               <span className="font-medium">Date:</span> {currentDate}
             </p>
             <p>
-              <span className="font-medium">Due Date:</span> {order.expectedDelivery}
+              <span className="font-medium">Due Date:</span> {`${order.deliveryDate}`}
             </p>
           </div>
         </div>
@@ -51,26 +50,17 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Bill To:</h3>
           <div className="text-sm text-gray-700">
-            <p className="font-medium">{order.customer.name}</p>
-            <p>{order.customer.company}</p>
-            <p>{order.billingAddress.street}</p>
-            <p>
-              {order.billingAddress.city}, {order.billingAddress.state} {order.billingAddress.zipCode}
-            </p>
-            <p>{order.billingAddress.country}</p>
-            <p className="mt-2">Email: {order.customer.email}</p>
-            <p>Phone: {order.customer.phone}</p>
+            <p className="font-medium">{order.customer!.name}</p>
+            <p>{order.customer!.company}</p>
+            <p>{order.customer!.location}</p>
+            <p className="mt-2">Email: {order.customer!.email}</p>
+            <p>Phone: {order.customer!.phone}</p>
           </div>
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Ship To:</h3>
           <div className="text-sm text-gray-700">
-            <p className="font-medium">{order.customer.name}</p>
-            <p>{order.shippingAddress.street}</p>
-            <p>
-              {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
-            </p>
-            <p>{order.shippingAddress.country}</p>
+            <p className="font-medium">{order.customer!.name}</p>
           </div>
         </div>
       </div>
@@ -110,7 +100,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
             </tr>
           </thead>
           <tbody>
-            {order.items.map((item: any, index: number) => (
+            {order?.items!.map((item: any, index: number) => (
               <tr key={index} className="border-b border-gray-200">
                 <td className="border border-gray-300 px-4 py-3 text-sm text-gray-900">
                   <div>
@@ -138,26 +128,21 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ ord
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal:</span>
-              <span className="text-gray-900">{formatCurrency(order.subtotal)}</span>
+              <span className="text-gray-900">{formatCurrency(order.totalAmount!)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Tax (10%):</span>
-              <span className="text-gray-900">{formatCurrency(order.tax)}</span>
+              <span className="text-gray-900">{formatCurrency(order.tax!)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Shipping:</span>
-              <span className="text-gray-900">{order.shipping === 0 ? "Free" : formatCurrency(order.shipping)}</span>
+              <span className="text-gray-900">{order.shippingFee === 0 ? "Free" : formatCurrency(order.shippingFee!)}</span>
             </div>
-            {order.discount > 0 && (
-              <div className="flex justify-between text-green-600">
-                <span>Discount:</span>
-                <span>-{formatCurrency(order.discount)}</span>
-              </div>
-            )}
+            
             <div className="border-t border-gray-300 pt-2">
               <div className="flex justify-between text-lg font-bold">
                 <span className="text-gray-900">Total:</span>
-                <span className="text-gray-900">{formatCurrency(order.total)}</span>
+                <span className="text-gray-900">{formatCurrency(order.totalAmount!)}</span>
               </div>
             </div>
           </div>

@@ -18,6 +18,7 @@ import {
   Calendar,
   User,
   CreditCard,
+  Loader2,
 } from "lucide-react"
 import { NewOrderModal } from "@/components/modals/new-order-modal"
 import { OrderFilterModal } from "@/components/orders/order-filter-modal"
@@ -26,10 +27,19 @@ import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { useOrders } from "@/hooks/use-orders"
 import type { OrderFilters, OrderSearchParams } from "@/types/order"
+import { formatDate } from "@/lib/utils"
+import { OrderStatus } from "@/types/enums"
 
 export default function OrdersPage() {
   const { t } = useLanguage()
-  const { searchAndFilterOrders } = useOrders()
+  const {
+    allCustomers,
+    allProducts,
+    loading,
+    getCustomersAndProducts,
+    searchAndFilterOrders,
+    createOrder
+  } = useOrders()
 
   const [showNewOrderModal, setShowNewOrderModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
@@ -55,17 +65,17 @@ export default function OrdersPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
+      case OrderStatus.completed:
         return "bg-green-100 text-green-800"
-      case "processing":
+      case OrderStatus.processing:
         return "bg-yellow-100 text-yellow-800"
-      case "shipped":
+      case OrderStatus.shipped:
         return "bg-blue-100 text-blue-800"
-      case "delivered":
+      case OrderStatus.delivered:
         return "bg-purple-100 text-purple-800"
-      case "pending":
+      case OrderStatus.pending:
         return "bg-gray-100 text-gray-800"
-      case "cancelled":
+      case OrderStatus.cancelled:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -81,10 +91,6 @@ export default function OrdersPage() {
       style: "currency",
       currency: "VND",
     }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN")
   }
 
   const handleSort = (field: typeof sortBy) => {
@@ -209,6 +215,11 @@ export default function OrdersPage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -355,19 +366,19 @@ export default function OrdersPage() {
                       <div key={order.id} className="grid grid-cols-6 gap-4 p-4 border rounded-lg hover:bg-gray-50">
                         <div className="space-y-1">
                           <p className="text-sm font-medium">{order.id}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(order.date)}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(order.deliveryDate!)}</p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-sm font-medium">{order.customer}</p>
-                          <p className="text-xs text-muted-foreground">{order.customerEmail}</p>
+                          <p className="text-sm font-medium">{order.customer?.name}</p>
+                          <p className="text-xs text-muted-foreground">{order.customer?.email}</p>
                         </div>
                         <div>
-                          <Badge className={getStatusColor(order.status)}>{getStatusText(order.status)}</Badge>
+                          <Badge className={getStatusColor(order.status!)}>{getStatusText(order.status!)}</Badge>
                         </div>
                         <div>
                           <Badge variant="outline">{t(`orders.paymentStatus.${order.paymentStatus}`)}</Badge>
                         </div>
-                        <div className="font-medium">{formatCurrency(order.amount)}</div>
+                        <div className="font-medium">{formatCurrency(order.totalAmount!)}</div>
                         <div className="flex justify-center">
                           <Link href={`/orders/${order.id}`}>
                             <Button variant="outline" size="sm">
@@ -390,7 +401,7 @@ export default function OrdersPage() {
                             <p className="font-medium text-sm">{order.id}</p>
                             <p className="text-xs text-muted-foreground flex items-center">
                               <Calendar className="mr-1 h-3 w-3" />
-                              {formatDate(order.date)}
+                              {formatDate(order.deliveryDate!)}
                             </p>
                           </div>
                           <DropdownMenu>
@@ -410,18 +421,18 @@ export default function OrdersPage() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">{t("orders.customer")}:</span>
-                            <span className="text-sm font-medium">{order.customer}</span>
+                            <span className="text-sm font-medium">{order.customer?.name}</span>
                           </div>
 
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">{t("orders.amount")}:</span>
-                            <span className="text-sm font-bold">{formatCurrency(order.amount)}</span>
+                            <span className="text-sm font-bold">{formatCurrency(order.totalAmount!)}</span>
                           </div>
 
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">{t("orders.status")}:</span>
-                            <Badge className={getStatusColor(order.status)} variant="secondary">
-                              {getStatusText(order.status)}
+                            <Badge className={getStatusColor(order.status!)} variant="secondary">
+                              {getStatusText(order.status!)}
                             </Badge>
                           </div>
 
@@ -450,7 +461,14 @@ export default function OrdersPage() {
         </Card>
       </div>
 
-      <NewOrderModal open={showNewOrderModal} onOpenChange={setShowNewOrderModal} />
+      <NewOrderModal
+        open={showNewOrderModal}
+        customers={allCustomers}
+        products={allProducts}
+        getCustomersAndProducts={getCustomersAndProducts}
+        onOpenChange={setShowNewOrderModal}
+        createOrder={createOrder}
+      />
       <OrderFilterModal
         open={showFilterModal}
         onOpenChange={setShowFilterModal}
