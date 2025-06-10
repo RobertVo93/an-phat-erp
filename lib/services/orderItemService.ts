@@ -33,7 +33,6 @@ export async function getOrderItemsByIds(ids: string[]): Promise<OrderItemEntity
       id: In(ids)
     }
   });
-  
   return items;
 }
 

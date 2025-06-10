@@ -14,6 +14,7 @@ export interface Customer extends IBase {
   joinDate?: Date
   notes?: string
   orders?: Order[]
+  totalSpend?: number
 }
 
 export interface CustomerFilters {

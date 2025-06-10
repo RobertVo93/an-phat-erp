@@ -29,6 +29,7 @@ import { ProductFilterModal } from "@/components/products/product-filter-modal"
 import type { Product, ProductFormData } from "@/types/product"
 import { formatCurrency } from "@/lib/utils"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ProductStatus } from "@/types/enums"
 
 export default function ProductsPage() {
   const { t } = useLanguage()
@@ -62,13 +63,13 @@ export default function ProductsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
+      case ProductStatus.active:
         return "bg-green-100 text-green-800"
-      case "inactive":
+      case ProductStatus.inactive:
         return "bg-gray-100 text-gray-800"
-      case "lowStock":
+      case ProductStatus.lowStock:
         return "bg-yellow-100 text-yellow-800"
-      case "outOfStock":
+      case ProductStatus.outOfStock:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"

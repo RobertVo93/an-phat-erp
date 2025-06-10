@@ -33,6 +33,7 @@ import { CustomerDeleteModal } from "@/components/customers/customer-delete-moda
 import { CustomerFilterModal } from "@/components/customers/customer-filter-modal"
 import type { Customer } from "@/types/customer"
 import { CustomerStatus, CustomerType } from "@/types/enums"
+import { formatCurrency, formatDate } from "@/lib/utils"
 
 export default function CustomersPage() {
   const { t } = useLanguage()
@@ -55,6 +56,7 @@ export default function CustomersPage() {
     deleteCustomer,
     getCustomerById,
     loading,
+    totalRevenue
   } = useCustomers()
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
@@ -64,24 +66,13 @@ export default function CustomersPage() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
 
-  const formatDate = (dateString: string) => {
-    if(!dateString) return;
-
-    const date = new Date(dateString)
-    const day = String(date.getDate()).padStart(2, '0')
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const year = date.getFullYear()
-
-    return `${day}-${month}-${year}`
-  }
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case CustomerStatus.active:
         return "bg-green-100 text-green-800"
-      case "Inactive":
+      case CustomerStatus.inactive:
         return "bg-red-100 text-red-800"
-      case "Pending":
+      case CustomerStatus.pending:
         return "bg-yellow-100 text-yellow-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -90,11 +81,11 @@ export default function CustomersPage() {
 
   const getCustomerTypeColor = (type: string) => {
     switch (type) {
-      case "VIP":
+      case CustomerType.vip:
         return "bg-purple-100 text-purple-800"
-      case "Premium":
+      case CustomerType.premium:
         return "bg-blue-100 text-blue-800"
-      case "Regular":
+      case CustomerType.regular:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -111,11 +102,11 @@ export default function CustomersPage() {
 
   const translateStatus = (status: string) => {
     switch (status) {
-      case "active":
+      case CustomerStatus.active:
         return t("customers.status.active")
-      case "inactive":
+      case CustomerStatus.inactive:
         return t("customers.status.inactive")
-      case "pending":
+      case CustomerStatus.pending:
         return t("customers.status.pending")
       default:
         return status
@@ -124,11 +115,11 @@ export default function CustomersPage() {
 
   const translateCustomerType = (type: string) => {
     switch (type) {
-      case "vip":
+      case CustomerType.vip:
         return t("customers.type.vip")
-      case "premium":
+      case CustomerType.premium:
         return t("customers.type.premium")
-      case "regular":
+      case CustomerType.regular:
         return t("customers.type.regular")
       default:
         return type
@@ -269,7 +260,7 @@ export default function CustomersPage() {
               <CardTitle className="text-xs md:text-sm font-medium">{t("customers.totalRevenue")}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-xl md:text-2xl font-bold">$18,160</div>
+              <div className="text-xl md:text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
               <p className="text-xs text-muted-foreground hidden md:block">{t("customers.fromAllCustomers")}</p>
             </CardContent>
           </Card>
@@ -396,11 +387,11 @@ export default function CustomersPage() {
                         </div>
                         <div>
                           <span className="text-muted-foreground">{t("customers.spending")}:</span>
-                          {/* <span className="ml-1 font-medium text-green-600">{customer.orders.}</span> */}
+                          <span className="ml-1 font-medium text-green-600">{formatCurrency(customer.totalSpend!)}</span>
                         </div>
                         <div className="col-span-2 md:col-span-1">
                           <span className="text-muted-foreground">{t("customers.lastOrder")}:</span>
-                          <span className="ml-1">{formatDate(customer.lastOrder?.toString()!)}</span>
+                          <span className="ml-1">{customer.lastOrder ? formatDate(customer.lastOrder?.toString()) : ""}</span>
                         </div>
                         <div className="col-span-2 md:col-span-1">
                           <span className="text-muted-foreground">{t("customers.joined")}:</span>
