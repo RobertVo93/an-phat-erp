@@ -3,6 +3,8 @@ import { getAllOrders, createOrder, type CreateOrderInput } from "@/lib/services
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { CreateOrderSchema } from "./order.schema";
 import { getUserFromRequest } from "@/lib/auth/jwt";
+import { OrderItemEntity } from "@/lib/database/entities";
+import { AppDataSource } from "@/lib/database/typeorm";
 
 /**
  * @swagger
@@ -191,7 +193,28 @@ export async function POST(req: NextRequest) {
   try {
     await ensureDataSource();
     const data = await req.json();
-    const parse = CreateOrderSchema.safeParse(data);
+
+    const orderItemRepo = AppDataSource.getRepository(OrderItemEntity);
+    const createdOrderItems = [];
+    for (const itemInput of data.items) {
+      const orderItem = orderItemRepo.create({
+        product: { id: itemInput.product.id },
+        quantity: itemInput.quantity,
+        unitPrice: itemInput.unitPrice,
+        total: itemInput.total,
+      });
+      await orderItemRepo.save(orderItem);
+      createdOrderItems.push(orderItem);
+    }
+
+    const orderData = {
+      ...data,
+      customer: data.customer.id,
+      items: createdOrderItems.map(item => item.id),
+    };
+
+    const parse = CreateOrderSchema.safeParse(orderData);
+
     if (!parse.success) {
       return NextResponse.json({ error: "Invalid input", details: parse.error.errors }, { status: 400 });
     }
@@ -201,6 +224,8 @@ export async function POST(req: NextRequest) {
       deliveryDate: rest.deliveryDate ? new Date(rest.deliveryDate) : undefined,
       customer,
       items,
+      shippingFee: rest.shippingFee,
+      tax: rest.tax
     };
     try {
       const created = await createOrder(createData);

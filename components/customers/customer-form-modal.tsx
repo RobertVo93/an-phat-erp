@@ -177,9 +177,9 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="regular">{t("customers.type.regular")}</SelectItem>
-                  <SelectItem value="premium">{t("customers.type.premium")}</SelectItem>
-                  <SelectItem value="vip">{t("customers.type.vip")}</SelectItem>
+                  <SelectItem value={CustomerType.regular}>{t("customers.type.regular")}</SelectItem>
+                  <SelectItem value={CustomerType.premium}>{t("customers.type.premium")}</SelectItem>
+                  <SelectItem value={CustomerType.vip}>{t("customers.type.vip")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -191,9 +191,9 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">{t("customers.status.active")}</SelectItem>
-                  <SelectItem value="inactive">{t("customers.status.inactive")}</SelectItem>
-                  <SelectItem value="pending">{t("customers.status.pending")}</SelectItem>
+                  <SelectItem value={CustomerStatus.active}>{t("customers.status.active")}</SelectItem>
+                  <SelectItem value={CustomerStatus.inactive}>{t("customers.status.inactive")}</SelectItem>
+                  <SelectItem value={CustomerStatus.pending}>{t("customers.status.pending")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
