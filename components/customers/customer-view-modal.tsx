@@ -6,6 +6,8 @@ import type { Customer } from "@/types/customer"
 import { useLanguage } from "@/contexts/language-context"
 
 import { Mail, Phone, MapPin, Building, Calendar, ShoppingCart, DollarSign } from "lucide-react"
+import { CustomerStatus, CustomerType } from "@/types/enums"
+import { formatCurrency } from "@/lib/utils"
 
 interface CustomerViewModalProps {
   isOpen: boolean
@@ -20,11 +22,11 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
+      case CustomerStatus.active:
         return "bg-green-100 text-green-800"
-      case "inactive":
+      case CustomerStatus.inactive:
         return "bg-red-100 text-red-800"
-      case "pending":
+      case CustomerStatus.pending:
         return "bg-yellow-100 text-yellow-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -33,11 +35,11 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
   const getCustomerTypeColor = (type: string) => {
     switch (type) {
-      case "vip":
+      case CustomerType.vip:
         return "bg-purple-100 text-purple-800"
-      case "premium":
+      case CustomerType.premium:
         return "bg-blue-100 text-blue-800"
-      case "regular":
+      case CustomerType.regular:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -46,11 +48,11 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
   const translateStatus = (status: string) => {
     switch (status) {
-      case "active":
+      case CustomerStatus.active:
         return t("customers.status.active")
-      case "inactive":
+      case CustomerStatus.inactive:
         return t("customers.status.inactive")
-      case "pending":
+      case CustomerStatus.pending:
         return t("customers.status.pending")
       default:
         return status
@@ -59,11 +61,11 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
   const translateCustomerType = (type: string) => {
     switch (type) {
-      case "vip":
+      case CustomerType.vip:
         return t("customers.type.vip")
-      case "premium":
+      case CustomerType.premium:
         return t("customers.type.premium")
-      case "regular":
+      case CustomerType.regular:
         return t("customers.type.regular")
       default:
         return type
@@ -133,13 +135,13 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
               <div className="flex items-center space-x-2">
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {/* {customer.totalOrders} {t("customers.orders")} */}
+                  {customer.orders?.length} {t("customers.orders")}
                 </span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
-                {/* <span className="text-sm font-medium">{customer.totalSpent}</span> */}
+                <span className="text-sm font-medium">{formatCurrency(customer.totalSpend!)}</span>
               </div>
 
               <div className="flex items-center space-x-2">

@@ -15,6 +15,7 @@ export function useCustomers() {
   const [sortBy, setSortBy] = useState<keyof Customer>("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [loading, setLoading] = useState(false)
+  const [totalRevenue, setTotalRevenue] = useState<number>(0)
 
   const filteredAndSortedCustomers = useMemo(() => {
     const filtered = customers.filter((customer) => {
@@ -125,7 +126,19 @@ export function useCustomers() {
           customerType: filters.customerType as CustomerType,
           name: filters.name,
         })
-        setCustomers(res.data);
+
+        // calcualte total spends of customers
+        const calculatingCustomers = res.data.map((customer: Customer) => {
+          const totalSpend = customer.orders?.reduce((sum, order) => sum + (order.totalAmount ?? 0), 0) ?? 0
+          return {
+            ...customer,
+            totalSpend,
+          }
+        })
+        setCustomers(calculatingCustomers)
+
+        const totalSpendAllCustomers = calculatingCustomers.reduce((sum: number, customer: Customer) => sum + customer.totalSpend!, 0)
+        setTotalRevenue(totalSpendAllCustomers)
       } catch (e) {
         console.error(e)
       } finally {
@@ -163,6 +176,7 @@ export function useCustomers() {
     updateCustomer,
     deleteCustomer,
     getCustomerById,
-    loading
+    loading,
+    totalRevenue,
   }
 }
