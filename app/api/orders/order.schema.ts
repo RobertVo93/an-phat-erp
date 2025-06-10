@@ -12,6 +12,8 @@ export const CreateOrderSchema = z.object({
   tags: z.array(z.string()).optional(),
   customer: z.string().optional(), // required customer ID
   items: z.array(z.string()).optional(), // required array of OrderItem IDs
+  tax: z.number().optional(),
+  shippingFee: z.number().optional(),
 });
 
 export const UpdateOrderSchema = CreateOrderSchema.partial(); 

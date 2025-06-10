@@ -20,6 +20,13 @@ export function formatDate(date: string | Date): string {
   }).replace(/\//g, '-')
 }
 
+export function formatLocalDatetime(date: Date|string) {
+  const dateData = new Date(date);
+  const offset = dateData.getTimezoneOffset();
+  const local = new Date(dateData.getTime() - offset * 60 * 1000);
+  return local.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+}
+
 export function base64ToFile(base64: string, filename: string): File {
   const arr = base64.split(',');
   const mime = arr[0].match(/:(.*?);/)?.[1] || '';

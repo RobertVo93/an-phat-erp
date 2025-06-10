@@ -12,7 +12,8 @@ export interface Order extends IBase {
   shippingAddress?: string
   notes?: string
   tags?: string[]
-
+  tax?: number
+  shippingFee?: number
 
   items?: OrderItem[]
   customer?: ICustomer

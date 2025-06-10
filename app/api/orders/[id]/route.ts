@@ -4,6 +4,8 @@ import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { UpdateOrderSchema } from "../order.schema";
 import { OrderEntity } from "@/lib/database/entities/order.entity";
 import { getUserFromRequest } from "@/lib/auth/jwt";
+import { AppDataSource } from "@/lib/database/typeorm";
+import { OrderItemEntity } from "@/lib/database/entities";
 
 /**
  * @swagger
@@ -77,21 +79,81 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
+export type CreateOrderInput = Omit<Partial<OrderEntity>, 'customer' | 'items'> & { customer?: string; items?: string[] };
+
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
     const data = await req.json();
-    const parse = UpdateOrderSchema.safeParse(data);
+    const orderItemRepo = AppDataSource.getRepository(OrderItemEntity);
+
+    const existingOrder = await AppDataSource.getRepository(OrderEntity).findOne({
+      where: { id: params.id },
+      relations: ["items"],
+    });
+
+    if (!existingOrder) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    const existingItemIds = new Set(existingOrder.items.map((item) => item.id));
+
+    const updatedOrderItems = [];
+
+    for (const itemInput of data.items) {
+      if (itemInput.id && existingItemIds.has(itemInput.id)) {
+        // update old data
+        await orderItemRepo.update(itemInput.id, {
+          product: { id: itemInput.product.id },
+          quantity: itemInput.quantity,
+          unitPrice: itemInput.unitPrice,
+          total: itemInput.total,
+        });
+        updatedOrderItems.push(itemInput.id);
+        existingItemIds.delete(itemInput.id);
+      } else {
+        // create new data
+        const newItem = orderItemRepo.create({
+          product: { id: itemInput.product.id },
+          quantity: itemInput.quantity,
+          unitPrice: itemInput.unitPrice,
+          total: itemInput.total,
+        });
+        await orderItemRepo.save(newItem);
+        updatedOrderItems.push(newItem.id);
+      }
+    }
+
+    // remove item
+    for (const unusedItemId of existingItemIds) {
+      await orderItemRepo.delete(unusedItemId!);
+    }
+
+    const orderData = {
+      ...data,
+      customer: data.customer.id,
+      items: updatedOrderItems,
+    };
+
+    const parse = UpdateOrderSchema.safeParse(orderData);
     if (!parse.success) {
       return NextResponse.json({ error: "Invalid input", details: parse.error.errors }, { status: 400 });
     }
-    const updateData = {
-      ...parse.data,
-      deliveryDate: parse.data.deliveryDate ? new Date(parse.data.deliveryDate) : undefined,
+
+    const { items, customer, ...rest } = parse.data;
+    const updateData: CreateOrderInput = {
+      ...rest,
+      deliveryDate: rest.deliveryDate ? new Date(rest.deliveryDate) : undefined,
+      customer,
+      items,
+      shippingFee: rest.shippingFee,
+      tax: rest.tax,
     };
+
     const updated = await updateOrder(params.id, updateData);
+
     if (!updated) return NextResponse.json({ error: "Order not found" }, { status: 404 });
     return NextResponse.json(updated);
   } catch (error) {

@@ -33,6 +33,12 @@ export class OrderEntity extends BaseEntity implements IOrder {
   @Column("text", { array: true, nullable: true })
   tags?: string[];
 
+  @Column({ type: "float", nullable: true })
+  shippingFee?: number;
+
+  @Column({ type: "float", nullable: true })
+  tax?: number;
+
   //////Related fields//////
   @ManyToOne(() => CustomerEntity, (customer: CustomerEntity) => customer.orders, { nullable: true })
   @JoinColumn({ name: "customer_id" })

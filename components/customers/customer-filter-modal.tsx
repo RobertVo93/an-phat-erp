@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import type { CustomerFilters } from "@/types/customer"
 import { useLanguage } from "@/contexts/language-context"
+import { CustomerStatus, CustomerType } from "@/types/enums"
 
 
 interface CustomerFilterModalProps {
@@ -63,9 +64,9 @@ export function CustomerFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("customers.filter.all")}</SelectItem>
-                <SelectItem value="active">{t("customers.status.active")}</SelectItem>
-                <SelectItem value="inactive">{t("customers.status.inactive")}</SelectItem>
-                <SelectItem value="pending">{t("customers.status.pending")}</SelectItem>
+                <SelectItem value={CustomerStatus.active}>{t("customers.status.active")}</SelectItem>
+                <SelectItem value={CustomerStatus.inactive}>{t("customers.status.inactive")}</SelectItem>
+                <SelectItem value={CustomerStatus.pending}>{t("customers.status.pending")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -81,9 +82,9 @@ export function CustomerFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("customers.filter.all")}</SelectItem>
-                <SelectItem value="regular">{t("customers.type.regular")}</SelectItem>
-                <SelectItem value="premium">{t("customers.type.premium")}</SelectItem>
-                <SelectItem value="vip">{t("customers.type.vip")}</SelectItem>
+                <SelectItem value={CustomerType.regular}>{t("customers.type.regular")}</SelectItem>
+                <SelectItem value={CustomerType.premium}>{t("customers.type.premium")}</SelectItem>
+                <SelectItem value={CustomerType.vip}>{t("customers.type.vip")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
