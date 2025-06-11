@@ -365,7 +365,7 @@ export default function OrdersPage() {
                     {orders.map((order) => (
                       <div key={order.id} className="grid grid-cols-6 gap-4 p-4 border rounded-lg hover:bg-gray-50">
                         <div className="space-y-1">
-                          <p className="text-sm font-medium">{order.id}</p>
+                          <p className="text-sm font-medium">{order.orderNumber}</p>
                           <p className="text-xs text-muted-foreground">{formatDate(order.deliveryDate!)}</p>
                         </div>
                         <div className="space-y-1">
@@ -398,7 +398,7 @@ export default function OrdersPage() {
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div className="space-y-1">
-                            <p className="font-medium text-sm">{order.id}</p>
+                            <p className="font-medium text-sm">{order.orderNumber}</p>
                             <p className="text-xs text-muted-foreground flex items-center">
                               <Calendar className="mr-1 h-3 w-3" />
                               {formatDate(order.deliveryDate!)}

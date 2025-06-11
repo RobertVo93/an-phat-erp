@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/contexts/language-context"
 import type { Warehouse } from "@/types/warehouse"
+import { WarehouseStatus, WarehouseTemperature, WarehouseType } from "@/types"
 
 interface WarehouseFormModalProps {
   isOpen: boolean
@@ -23,17 +24,17 @@ interface WarehouseFormModalProps {
 
 export function WarehouseFormModal({ isOpen, onClose, onSave, onUpdate, warehouse, mode }: WarehouseFormModalProps) {
   const { t } = useLanguage()
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Warehouse>({
     name: "",
     location: "",
     address: "",
     manager: "",
-    capacity: "",
-    occupied: "",
-    status: "Active" as const,
-    type: "Distribution Center" as const,
-    zones: "",
-    temperature: "Ambient" as const,
+    capacity: 0,
+    occupied: 0,
+    status: WarehouseStatus.active as const,
+    type: WarehouseType.distributionCenter as const,
+    zones: 0,
+    temperature: WarehouseTemperature.ambient as const,
     phone: "",
     email: "",
     description: "",
@@ -43,15 +44,15 @@ export function WarehouseFormModal({ isOpen, onClose, onSave, onUpdate, warehous
   useEffect(() => {
     if (warehouse && mode === "edit") {
       setFormData({
-        name: warehouse.name,
-        location: warehouse.location,
-        address: warehouse.address,
-        manager: warehouse.manager,
-        capacity: warehouse.capacity.toString(),
-        occupied: warehouse.occupied.toString(),
+        name: warehouse.name!,
+        location: warehouse.location!,
+        address: warehouse.address!,
+        manager: warehouse.manager!,
+        capacity: warehouse.capacity,
+        occupied: warehouse.occupied,
         status: warehouse.status,
         type: warehouse.type,
-        zones: warehouse.zones.toString(),
+        zones: warehouse.zones,
         temperature: warehouse.temperature,
         phone: warehouse.phone || "",
         email: warehouse.email || "",
@@ -63,12 +64,12 @@ export function WarehouseFormModal({ isOpen, onClose, onSave, onUpdate, warehous
         location: "",
         address: "",
         manager: "",
-        capacity: "",
-        occupied: "",
-        status: "Active",
-        type: "Distribution Center",
-        zones: "",
-        temperature: "Ambient",
+        capacity: 0,
+        occupied: 0,
+        status: WarehouseStatus.active,
+        type: WarehouseType.distributionCenter,
+        zones: 0,
+        temperature: WarehouseTemperature.ambient,
         phone: "",
         email: "",
         description: "",
@@ -79,32 +80,32 @@ export function WarehouseFormModal({ isOpen, onClose, onSave, onUpdate, warehous
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-
-    if (!formData.name.trim()) {
+    
+    if (!formData.name!.trim()) {
       newErrors.name = t("warehouse.nameRequired")
     }
-    if (!formData.location.trim()) {
+    if (!formData.location!.trim()) {
       newErrors.location = t("warehouse.locationRequired")
     }
-    if (!formData.address.trim()) {
+    if (!formData.address!.trim()) {
       newErrors.address = t("warehouse.addressRequired")
     }
-    if (!formData.manager.trim()) {
+    if (!formData.manager!.trim()) {
       newErrors.manager = t("warehouse.managerRequired")
     }
-    if (!formData.capacity.trim()) {
+    if (!formData.capacity!) {
       newErrors.capacity = t("warehouse.capacityRequired")
     } else if (Number(formData.capacity) <= 0) {
       newErrors.capacity = t("warehouse.capacityPositive")
     }
-    if (!formData.occupied.trim()) {
+    if (!formData.occupied!) {
       newErrors.occupied = t("warehouse.occupiedRequired")
     } else if (Number(formData.occupied) < 0) {
       newErrors.occupied = t("warehouse.occupiedPositive")
     } else if (Number(formData.occupied) > Number(formData.capacity)) {
       newErrors.occupied = t("warehouse.occupiedLessCapacity")
     }
-    if (!formData.zones.trim()) {
+    if (!formData.zones!) {
       newErrors.zones = t("warehouse.zonesRequired")
     } else if (Number(formData.zones) <= 0) {
       newErrors.zones = t("warehouse.zonesPositive")
@@ -119,23 +120,23 @@ export function WarehouseFormModal({ isOpen, onClose, onSave, onUpdate, warehous
     if (!validateForm()) return
 
     const warehouseData = {
-      name: formData.name.trim(),
-      location: formData.location.trim(),
-      address: formData.address.trim(),
-      manager: formData.manager.trim(),
+      name: formData.name!.trim(),
+      location: formData.location!.trim(),
+      address: formData.address!.trim(),
+      manager: formData.manager!.trim(),
       capacity: Number(formData.capacity),
       occupied: Number(formData.occupied),
       status: formData.status,
       type: formData.type,
       zones: Number(formData.zones),
       temperature: formData.temperature,
-      phone: formData.phone.trim(),
-      email: formData.email.trim(),
-      description: formData.description.trim(),
+      phone: formData.phone!.trim(),
+      email: formData.email!.trim(),
+      description: formData.description!.trim(),
     }
 
     if (mode === "edit" && warehouse && onUpdate) {
-      onUpdate(warehouse.id, warehouseData)
+      onUpdate(warehouse.id!, warehouseData)
     } else {
       onSave(warehouseData)
     }
@@ -242,41 +243,41 @@ export function WarehouseFormModal({ isOpen, onClose, onSave, onUpdate, warehous
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="status">{t("warehouse.status")}</Label>
-              <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+              <Select value={formData.status} onValueChange={(value: WarehouseStatus) => handleInputChange("status", value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Active">{t("warehouse.status.Active")}</SelectItem>
-                  <SelectItem value="Maintenance">{t("warehouse.status.Maintenance")}</SelectItem>
-                  <SelectItem value="Inactive">{t("warehouse.status.Inactive")}</SelectItem>
+                  <SelectItem value={WarehouseStatus.active}>{t("warehouse.status.active")}</SelectItem>
+                  <SelectItem value={WarehouseStatus.maintenance}>{t("warehouse.status.maintenance")}</SelectItem>
+                  <SelectItem value={WarehouseStatus.inactive}>{t("warehouse.status.inactive")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="type">{t("warehouse.type")}</Label>
-              <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
+              <Select value={formData.type} onValueChange={(value: WarehouseType) => handleInputChange("type", value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Distribution Center">{t("warehouse.type.DistributionCenter")}</SelectItem>
-                  <SelectItem value="Regional Hub">{t("warehouse.type.RegionalHub")}</SelectItem>
-                  <SelectItem value="Cold Storage">{t("warehouse.type.ColdStorage")}</SelectItem>
-                  <SelectItem value="Backup Storage">{t("warehouse.type.BackupStorage")}</SelectItem>
+                  <SelectItem value={WarehouseType.distributionCenter}>{t("warehouse.type.distributionCenter")}</SelectItem>
+                  <SelectItem value={WarehouseType.regionalHub}>{t("warehouse.type.regionalHub")}</SelectItem>
+                  <SelectItem value={WarehouseType.coldStorage}>{t("warehouse.type.coldStorage")}</SelectItem>
+                  <SelectItem value={WarehouseType.backupStorage}>{t("warehouse.type.backupStorage")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="temperature">{t("warehouse.temperature")}</Label>
-              <Select value={formData.temperature} onValueChange={(value) => handleInputChange("temperature", value)}>
+              <Select value={formData.temperature} onValueChange={(value: WarehouseTemperature) => handleInputChange("temperature", value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Ambient">{t("warehouse.temperature.Ambient")}</SelectItem>
-                  <SelectItem value="Refrigerated">{t("warehouse.temperature.Refrigerated")}</SelectItem>
-                  <SelectItem value="Frozen">{t("warehouse.temperature.Frozen")}</SelectItem>
+                  <SelectItem value={WarehouseTemperature.ambient}>{t("warehouse.temperature.ambient")}</SelectItem>
+                  <SelectItem value={WarehouseTemperature.refrigerated}>{t("warehouse.temperature.refrigerated")}</SelectItem>
+                  <SelectItem value={WarehouseTemperature.frozen}>{t("warehouse.temperature.frozen")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -299,7 +300,7 @@ export function WarehouseFormModal({ isOpen, onClose, onSave, onUpdate, warehous
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">{t("warehouse.description")}</Label>
+            <Label htmlFor="description">{t("warehouse.input.description")}</Label>
             <Textarea
               id="description"
               value={formData.description}

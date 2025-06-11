@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { useWarehouses } from "@/hooks/use-warehouses"
@@ -29,6 +30,7 @@ import { WarehouseViewModal } from "@/components/warehouses/warehouse-view-modal
 import { WarehouseFilterModal } from "@/components/warehouses/warehouse-filter-modal"
 import { WarehouseDeleteModal } from "@/components/warehouses/warehouse-delete-modal"
 import type { Warehouse } from "@/types/warehouse"
+import { WarehouseStatus, WarehouseType } from "@/types"
 
 export default function WarehousePage() {
   const { t } = useLanguage()
@@ -50,6 +52,7 @@ export default function WarehousePage() {
     addWarehouse,
     updateWarehouse,
     deleteWarehouse,
+    loading
   } = useWarehouses()
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
@@ -61,11 +64,11 @@ export default function WarehousePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case WarehouseStatus.active:
         return "bg-green-100 text-green-800"
-      case "Maintenance":
+      case WarehouseStatus.maintenance:
         return "bg-yellow-100 text-yellow-800"
-      case "Inactive":
+      case WarehouseStatus.inactive:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -74,13 +77,13 @@ export default function WarehousePage() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "Distribution Center":
+      case WarehouseType.distributionCenter:
         return "bg-blue-100 text-blue-800"
-      case "Regional Hub":
+      case WarehouseType.regionalHub:
         return "bg-purple-100 text-purple-800"
-      case "Cold Storage":
+      case WarehouseType.coldStorage:
         return "bg-cyan-100 text-cyan-800"
-      case "Backup Storage":
+      case WarehouseType.backupStorage:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -121,25 +124,32 @@ export default function WarehousePage() {
 
   const confirmDelete = () => {
     if (selectedWarehouse) {
-      deleteWarehouse(selectedWarehouse.id)
+      deleteWarehouse(selectedWarehouse.id!)
       setIsDeleteModalOpen(false)
       setSelectedWarehouse(null)
     }
   }
 
   // Calculate statistics
-  const totalCapacity = allWarehouses.reduce((sum, wh) => sum + wh.capacity, 0)
-  const totalOccupied = allWarehouses.reduce((sum, wh) => sum + wh.occupied, 0)
+  const totalCapacity = allWarehouses.reduce((sum, wh) => sum + wh.capacity!, 0)
+  const totalOccupied = allWarehouses.reduce((sum, wh) => sum + wh.occupied!, 0)
   const avgUtilization =
     allWarehouses.length > 0
       ? Math.round(
-          allWarehouses.reduce((sum, wh) => sum + calculateUtilization(wh.occupied, wh.capacity), 0) /
-            allWarehouses.length,
-        )
+        allWarehouses.reduce((sum, wh) => sum + calculateUtilization(wh.occupied!, wh.capacity!), 0) /
+        allWarehouses.length,
+      )
       : 0
+
+  if (!warehouses) return;
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -256,7 +266,7 @@ export default function WarehousePage() {
           <CardContent>
             <div className="space-y-4">
               {warehouses.map((warehouse) => {
-                const utilization = calculateUtilization(warehouse.occupied, warehouse.capacity)
+                const utilization = calculateUtilization(warehouse.occupied!, warehouse.capacity!)
                 return (
                   <div
                     key={warehouse.id}
@@ -266,11 +276,11 @@ export default function WarehousePage() {
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <h3 className="text-sm font-medium">{warehouse.name}</h3>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className={getStatusColor(warehouse.status)}>
+                          <Badge className={getStatusColor(warehouse.status!)}>
                             {t(`warehouse.status.${warehouse.status}`)}
                           </Badge>
-                          <Badge variant="outline" className={getTypeColor(warehouse.type)}>
-                            {t(`warehouse.type.${warehouse.type.replace(/\s+/g, "")}`)}
+                          <Badge variant="outline" className={getTypeColor(warehouse.type!)}>
+                            {t(`warehouse.type.${warehouse.type!.replace(/\s+/g, "")}`)}
                           </Badge>
                         </div>
                       </div>
@@ -296,13 +306,12 @@ export default function WarehousePage() {
                           <span className="text-muted-foreground"> {t("warehouse.utilized")}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {warehouse.occupied.toLocaleString()} / {warehouse.capacity.toLocaleString()} m²
+                          {warehouse.occupied!.toLocaleString()} / {warehouse.capacity!.toLocaleString()} m²
                         </div>
                         <div className="w-32 bg-gray-200 rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full ${
-                              utilization >= 90 ? "bg-red-500" : utilization >= 75 ? "bg-yellow-500" : "bg-green-500"
-                            }`}
+                            className={`h-2 rounded-full ${utilization >= 90 ? "bg-red-500" : utilization >= 75 ? "bg-yellow-500" : "bg-green-500"
+                              }`}
                             style={{ width: `${utilization}%` }}
                           ></div>
                         </div>
@@ -385,7 +394,7 @@ export default function WarehousePage() {
           onClose={() => setIsFormModalOpen(false)}
           onSave={addWarehouse}
           onUpdate={updateWarehouse}
-          warehouse={selectedWarehouse}
+          warehouse={selectedWarehouse!}
           mode={formMode}
         />
 
