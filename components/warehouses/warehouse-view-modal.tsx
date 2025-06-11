@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin, Package, User, Phone, Mail, Calendar } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { Warehouse } from "@/types/warehouse"
+import { WarehouseStatus, WarehouseType } from "@/types"
+import { formatDate } from "@/lib/utils"
 
 interface WarehouseViewModalProps {
   isOpen: boolean
@@ -19,11 +21,11 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case WarehouseStatus.active:
         return "bg-green-100 text-green-800"
-      case "Maintenance":
+      case WarehouseStatus.maintenance:
         return "bg-yellow-100 text-yellow-800"
-      case "Inactive":
+      case WarehouseStatus.inactive:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -32,20 +34,20 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "Distribution Center":
+      case WarehouseType.distributionCenter:
         return "bg-blue-100 text-blue-800"
-      case "Regional Hub":
+      case WarehouseType.regionalHub:
         return "bg-purple-100 text-purple-800"
-      case "Cold Storage":
+      case WarehouseType.coldStorage:
         return "bg-cyan-100 text-cyan-800"
-      case "Backup Storage":
+      case WarehouseType.backupStorage:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
-  const utilization = Math.round((warehouse.occupied / warehouse.capacity) * 100)
+  const utilization = Math.round((warehouse.occupied! / warehouse.capacity!) * 100)
   const getUtilizationColor = (percentage: number) => {
     if (percentage >= 90) return "text-red-600"
     if (percentage >= 75) return "text-yellow-600"
@@ -67,9 +69,9 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
               <p className="text-sm text-muted-foreground">ID: {warehouse.id}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge className={getStatusColor(warehouse.status)}>{t(`warehouse.status.${warehouse.status}`)}</Badge>
-              <Badge variant="outline" className={getTypeColor(warehouse.type)}>
-                {t(`warehouse.type.${warehouse.type.replace(/\s+/g, "")}`)}
+              <Badge className={getStatusColor(warehouse.status!)}>{t(`warehouse.status.${warehouse.status}`)}</Badge>
+              <Badge variant="outline" className={getTypeColor(warehouse.type!)}>
+                {t(`warehouse.type.${warehouse.type!.replace(/\s+/g, "")}`)}
               </Badge>
             </div>
           </div>
@@ -111,7 +113,7 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
               <div>
                 <p className="text-sm font-medium">{t("warehouse.type")}</p>
                 <p className="text-sm text-muted-foreground">
-                  {t(`warehouse.type.${warehouse.type.replace(/\s+/g, "")}`)}
+                  {t(`warehouse.type.${warehouse.type!.replace(/\s+/g, "")}`)}
                 </p>
               </div>
             </div>
@@ -153,7 +155,7 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
                 <div>
                   <p className="text-sm font-medium">{t("warehouse.capacity")}</p>
                   <p className="text-sm text-muted-foreground">
-                    {warehouse.capacity.toLocaleString()} {t("warehouse.squareMeters")}
+                    {warehouse.capacity!.toLocaleString()} {t("warehouse.squareMeters")}
                   </p>
                 </div>
               </div>
@@ -162,7 +164,7 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
                 <div>
                   <p className="text-sm font-medium">{t("warehouse.occupied")}</p>
                   <p className="text-sm text-muted-foreground">
-                    {warehouse.occupied.toLocaleString()} {t("warehouse.squareMeters")}
+                    {warehouse.occupied!.toLocaleString()} {t("warehouse.squareMeters")}
                   </p>
                 </div>
               </div>
@@ -198,14 +200,14 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">{t("warehouse.createdAt")}</p>
-                <p className="text-sm text-muted-foreground">{warehouse.createdAt}</p>
+                <p className="text-sm text-muted-foreground">{formatDate(warehouse.createdAt!)}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">{t("warehouse.updatedAt")}</p>
-                <p className="text-sm text-muted-foreground">{warehouse.updatedAt}</p>
+                <p className="text-sm text-muted-foreground">{formatDate(warehouse.updatedAt!)}</p>
               </div>
             </div>
           </div>
