@@ -8,7 +8,7 @@ import { addWarehouse, getAllWarehouses } from "@/lib/services/warehouseService"
  * @swagger
  * components:
  *   schemas:
- *     MutateOrderRequest:
+ *     MutateWarehouseRequest:
  *       type: object
  *       properties:
  *         deliveryDate:
@@ -40,7 +40,7 @@ import { addWarehouse, getAllWarehouses } from "@/lib/services/warehouseService"
  *           items:
  *             type: object
  * 
- *     OrderResponse:
+ *     WarehouseResponse:
  *       type: object
  *       properties:
  *         id:
@@ -84,46 +84,13 @@ import { addWarehouse, getAllWarehouses } from "@/lib/services/warehouseService"
  *         updatedBy:
  *           type: string
  * 
- * /api/orders:
+ * /api/warehouse:
  *   get:
- *     summary: Get all orders
- *     tags: [Order APIs]
- *     parameters:
- *       - in: query
- *         name: page
- *         schema: { type: integer }
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema: { type: integer }
- *         description: Items per page
- *       - in: query
- *         name: sortBy
- *         schema: { type: string }
- *         description: Field to sort by
- *       - in: query
- *         name: sortOrder
- *         schema: { type: string, enum: [asc, desc] }
- *         description: Sort order
- *       - in: query
- *         name: status
- *         schema: { type: string }
- *         description: Filter by status
- *       - in: query
- *         name: customer
- *         schema: { type: string }
- *         description: Filter by customer
- *       - in: query
- *         name: dateFrom
- *         schema: { type: string, format: date-time }
- *         description: Filter by start date
- *       - in: query
- *         name: dateTo
- *         schema: { type: string, format: date-time }
- *         description: Filter by end date
+ *     summary: Get all warehouses
+ *     tags: [Warehouse APIs]
  *     responses:
  *       200:
- *         description: List of orders
+ *         description: List of all warehouses
  *         content:
  *           application/json:
  *             schema:
@@ -132,29 +99,23 @@ import { addWarehouse, getAllWarehouses } from "@/lib/services/warehouseService"
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/OrderResponse'
- *                 total:
- *                   type: number
- *                 page:
- *                   type: number
- *                 limit:
- *                   type: number
+ *                     $ref: '#/components/schemas/WarehouseResponse'
  *   post:
- *     summary: Create a new order
- *     tags: [Order APIs]
+ *     summary: Create a new warehouse
+ *     tags: [Warehouse APIs]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/MutateOrderRequest'
+ *             $ref: '#/components/schemas/MutateWarehouseRequest'
  *     responses:
  *       201:
- *         description: Order created
+ *         description: Warehouse created
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/OrderResponse'
+ *               $ref: '#/components/schemas/WarehouseResponse'
  */
 
 export async function GET(req: NextRequest) {

@@ -12,19 +12,6 @@ export async function getAllWarehouses() {
   return { data };
 }
 
-// export async function getOrderById(id: string) {
-//   const repo = AppDataSource.getRepository(OrderEntity);
-//   const order = await repo.findOne({
-//     where: { id },
-//     relations: [
-//       'customer',
-//       'items',
-//       'items.product'
-//     ],
-//   });
-//   return order;
-// }
-
 export async function addWarehouse(data: Warehouse) {
   const repo = AppDataSource.getRepository(WarehouseEntity);
   const warehouse = repo.create(data);

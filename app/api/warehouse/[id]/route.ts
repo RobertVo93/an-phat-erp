@@ -6,75 +6,45 @@ import { deleteWarehouse, updateWarehouse } from "@/lib/services/warehouseServic
 
 /**
  * @swagger
- * /api/orders/{id}:
- *   get:
- *     summary: Get order by ID
- *     tags: [Order APIs]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
- *         description: Order ID
- *     responses:
- *       200:
- *         description: Order found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/OrderResponse'
- * 
+ * /api/warehouse/{id}:
  *   put:
- *     summary: Update an order
- *     tags: [Order APIs]
+ *     summary: Update a warehouse
+ *     tags: [Warehouse APIs]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema: { type: string }
- *         description: Order ID
+ *         description: Warehouse ID
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/MutateOrderRequest'
+ *             $ref: '#/components/schemas/MutateWarehouseRequest'
  *     responses:
  *       200:
- *         description: Order updated
+ *         description: Warehouse updated
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/OrderResponse'
+ *               $ref: '#/components/schemas/WarehouseResponse'
  * 
  *   delete:
- *     summary: Delete an order
- *     tags: [Order APIs]
+ *     summary: Delete an warehouse
+ *     tags: [Warehouse APIs]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema: { type: string }
- *         description: Order ID
+ *         description: Warehouse ID
  *     responses:
  *       204:
- *         description: Order deleted
+ *         description: Warehouse deleted
  *       404:
- *         description: Order not found
+ *         description: Warehouse not found
  */
-
-// export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-//   const user = getUserFromRequest(req);
-//   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//   try {
-//     await ensureDataSource();
-//     const order = await getOrderById(params.id);
-//     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-//     return NextResponse.json(order);
-//   } catch (error) {
-//     return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });
-//   }
-// }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const user = getUserFromRequest(req);
