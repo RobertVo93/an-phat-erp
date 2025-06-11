@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { useLanguage } from "@/contexts/language-context"
 import type { WarehouseFilters } from "@/types/warehouse"
+import { WarehouseStatus, WarehouseTemperature, WarehouseType } from "@/types"
 
 interface WarehouseFilterModalProps {
   isOpen: boolean
@@ -67,9 +68,9 @@ export function WarehouseFilterModal({ isOpen, onClose, filters, onFiltersChange
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="AllStatuses">{t("warehouse.allStatuses")}</SelectItem>
-                <SelectItem value="Active">{t("warehouse.status.Active")}</SelectItem>
-                <SelectItem value="Maintenance">{t("warehouse.status.Maintenance")}</SelectItem>
-                <SelectItem value="Inactive">{t("warehouse.status.Inactive")}</SelectItem>
+                <SelectItem value={WarehouseStatus.active}>{t("warehouse.status.active")}</SelectItem>
+                <SelectItem value={WarehouseStatus.maintenance}>{t("warehouse.status.maintenance")}</SelectItem>
+                <SelectItem value={WarehouseStatus.inactive}>{t("warehouse.status.inactive")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,10 +91,10 @@ export function WarehouseFilterModal({ isOpen, onClose, filters, onFiltersChange
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="AllTypes">{t("warehouse.allTypes")}</SelectItem>
-                <SelectItem value="Distribution Center">{t("warehouse.type.DistributionCenter")}</SelectItem>
-                <SelectItem value="Regional Hub">{t("warehouse.type.RegionalHub")}</SelectItem>
-                <SelectItem value="Cold Storage">{t("warehouse.type.ColdStorage")}</SelectItem>
-                <SelectItem value="Backup Storage">{t("warehouse.type.BackupStorage")}</SelectItem>
+                <SelectItem value={WarehouseType.distributionCenter}>{t("warehouse.type.distributionCenter")}</SelectItem>
+                <SelectItem value={WarehouseType.regionalHub}>{t("warehouse.type.regionalHub")}</SelectItem>
+                <SelectItem value={WarehouseType.coldStorage}>{t("warehouse.type.coldStorage")}</SelectItem>
+                <SelectItem value={WarehouseType.backupStorage}>{t("warehouse.type.backupStorage")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -114,9 +115,9 @@ export function WarehouseFilterModal({ isOpen, onClose, filters, onFiltersChange
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="AllTemperatures">{t("warehouse.allTemperatures")}</SelectItem>
-                <SelectItem value="Ambient">{t("warehouse.temperature.Ambient")}</SelectItem>
-                <SelectItem value="Refrigerated">{t("warehouse.temperature.Refrigerated")}</SelectItem>
-                <SelectItem value="Frozen">{t("warehouse.temperature.Frozen")}</SelectItem>
+                <SelectItem value={WarehouseTemperature.ambient}>{t("warehouse.temperature.ambient")}</SelectItem>
+                <SelectItem value={WarehouseTemperature.refrigerated}>{t("warehouse.temperature.refrigerated")}</SelectItem>
+                <SelectItem value={WarehouseTemperature.frozen}>{t("warehouse.temperature.frozen")}</SelectItem>
               </SelectContent>
             </Select>
           </div>

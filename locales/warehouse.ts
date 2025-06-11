@@ -107,47 +107,47 @@ export const warehouseTranslations = {
     en: "Email",
     vi: "Email",
   },
-  "warehouse.description": {
+  "warehouse.input.description": {
     en: "Description",
     vi: "Mô Tả",
   },
-  "warehouse.status.Active": {
+  "warehouse.status.active": {
     en: "Active",
     vi: "Hoạt Động",
   },
-  "warehouse.status.Maintenance": {
+  "warehouse.status.maintenance": {
     en: "Maintenance",
     vi: "Bảo Trì",
   },
-  "warehouse.status.Inactive": {
+  "warehouse.status.inactive": {
     en: "Inactive",
     vi: "Không Hoạt Động",
   },
-  "warehouse.type.DistributionCenter": {
+  "warehouse.type.distributionCenter": {
     en: "Distribution Center",
     vi: "Trung Tâm Phân Phối",
   },
-  "warehouse.type.RegionalHub": {
+  "warehouse.type.regionalHub": {
     en: "Regional Hub",
     vi: "Trung Tâm Khu Vực",
   },
-  "warehouse.type.ColdStorage": {
+  "warehouse.type.coldStorage": {
     en: "Cold Storage",
     vi: "Kho Lạnh",
   },
-  "warehouse.type.BackupStorage": {
+  "warehouse.type.backupStorage": {
     en: "Backup Storage",
     vi: "Kho Dự Phòng",
   },
-  "warehouse.temperature.Ambient": {
+  "warehouse.temperature.ambient": {
     en: "Ambient",
     vi: "Thường",
   },
-  "warehouse.temperature.Refrigerated": {
+  "warehouse.temperature.refrigerated": {
     en: "Refrigerated",
     vi: "Lạnh",
   },
-  "warehouse.temperature.Frozen": {
+  "warehouse.temperature.frozen": {
     en: "Frozen",
     vi: "Đông Lạnh",
   },
