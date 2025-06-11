@@ -4,6 +4,7 @@ import { Customer as ICustomer } from "./customer";
 import { Product as IProduct } from "./product";
 
 export interface Order extends IBase {
+  orderNumber?: string
   deliveryDate?: Date
   totalAmount?: number
   status?: OrderStatus

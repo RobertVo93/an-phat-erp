@@ -9,6 +9,9 @@ import { Order as IOrder } from "@/types/order";
 
 @Entity({ name: "orders" })
 export class OrderEntity extends BaseEntity implements IOrder {
+  @Column({ nullable: true })
+  orderNumber?: string;
+
   @Column({ type: "timestamp", nullable: true })
   deliveryDate?: Date;
 

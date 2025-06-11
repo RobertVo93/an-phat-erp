@@ -223,7 +223,7 @@ export default function OrderDetailPage() {
               <Button variant="outline" size="sm" className="flex items-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("orders.backToOrders")}</span>
-                <span className="sm:hidden">Quay lại</span>
+                <span className="sm:hidden">{t("orders.backToOrders")}</span>
               </Button>
             </Link>
 
@@ -254,15 +254,15 @@ export default function OrderDetailPage() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setShowEditModal(true)}>
                     <Edit className="mr-2 h-4 w-4" />
-                    Chỉnh sửa
+                    {t("orders.editOrder")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handlePrint}>
                     <Printer className="mr-2 h-4 w-4" />
-                    In hóa đơn
+                    {t("orders.printInvoice")}
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Send className="mr-2 h-4 w-4" />
-                    Gửi hóa đơn
+                    {t("orders.sendInvoice")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -273,7 +273,7 @@ export default function OrderDetailPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                {t("orders.title")} {orderData?.id}
+                {t("orders.title")} {orderData?.orderNumber}
               </h2>
               <Badge className={getStatusColor(orderData?.status!)}>{getStatusText(orderData?.status!)}</Badge>
             </div>
