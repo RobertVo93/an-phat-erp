@@ -2,7 +2,6 @@ import { z } from "zod";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
 
 export const CreateOrderSchema = z.object({
-  orderNumber: z.string().optional(),
   deliveryDate: z.string().optional(), // ISO string
   totalAmount: z.number().optional(),
   status: z.nativeEnum(OrderStatus).optional(),

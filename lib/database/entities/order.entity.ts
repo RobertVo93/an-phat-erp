@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn, BeforeInsert } from "typeorm";
 import { OrderItemEntity } from "./order-item.entity";
 import { BaseEntity } from "./base.entity";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "../../../types/enums";
@@ -6,10 +6,11 @@ import { CustomerEntity } from "./customer.entity";
 import type { Customer as ICustomer } from "@/types/customer";
 import { OrderItem as IOrderItem } from "@/types/order";
 import { Order as IOrder } from "@/types/order";
+import { AppDataSource } from "../typeorm";
 
 @Entity({ name: "orders" })
 export class OrderEntity extends BaseEntity implements IOrder {
-  @Column({ nullable: true })
+  @Column({ unique: true })
   orderNumber?: string;
 
   @Column({ type: "timestamp", nullable: true })
@@ -49,4 +50,20 @@ export class OrderEntity extends BaseEntity implements IOrder {
 
   @OneToMany(() => OrderItemEntity, (item: OrderItemEntity) => item.order, { cascade: true, nullable: true })
   items!: IOrderItem[];
+
+  //////Auto order numbering//////
+  @BeforeInsert()
+  async generateOrderNumber() {
+    const repo = AppDataSource.getRepository(OrderEntity);
+    const latest = await repo
+      .createQueryBuilder("order")
+      .orderBy("CAST(SUBSTRING(order.orderNumber FROM 5) AS INTEGER)", "DESC") 
+      .getOne();
+
+    const lastNumber = latest?.orderNumber
+      ? parseInt(latest.orderNumber.replace("ORD-", ""), 10)
+      : 0;
+
+    this.orderNumber = `ORD-${lastNumber + 1}`;
+  }
 }

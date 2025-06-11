@@ -142,7 +142,6 @@ export function useOrders() {
     try {
       const newOrder: Order = {
         id: `ORD-${String(orders.length + 1).padStart(3, "0")}`,
-        orderNumber: `ORD-${String(orders.length + 1).padStart(3, "0")}`,
         createdAt: new Date(),
         updatedAt: new Date(),
         deliveryDate: new Date(),
