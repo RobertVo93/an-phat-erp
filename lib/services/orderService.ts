@@ -1,7 +1,6 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { OrderEntity } from "@/lib/database/entities/order.entity";
 import { getCustomerById } from "@/lib/services/customerService";
-import { getOrderItemsByIds } from "@/lib/services/orderItemService";
 import { OrderItemEntity } from "@/lib/database/entities/order-item.entity";
 import { CustomerEntity } from "@/lib/database/entities/customer.entity";
 import { In } from "typeorm";
