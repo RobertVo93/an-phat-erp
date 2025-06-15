@@ -18,7 +18,6 @@ import { payrollTranslations } from "@/locales/payroll"
 import { warehouseTranslations } from "@/locales/warehouse"
 import { stockInTranslations } from "@/locales/stock-in"
 import { commonTranslations } from "@/locales/common"
-import { stockOutTranslations } from "@/locales/stock-out"
 
 type Language = "en" | "vi"
 
@@ -46,7 +45,6 @@ const translations: Translations = {
   ...warehouseTranslations,
   ...stockInTranslations,
   ...commonTranslations,
-  ...stockOutTranslations,
 }
 
 interface LanguageContextType {

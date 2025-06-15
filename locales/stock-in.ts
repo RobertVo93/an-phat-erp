@@ -23,6 +23,18 @@ export const stockInTranslations = {
     en: "Sort",
     vi: "Sắp xếp",
   },
+  "stockIn.stockType": {
+    en: "Type",
+    vi: "Loại"
+  },
+  "stockIn.form.stock-in": {
+    en: "Stock-in",
+    vi: "Nhập kho",
+  },
+  "stockIn.form.stock-out": {
+    en: "Stock-out",
+    vi: "Xuất kho",
+  },
   "stockIn.totalReceipts": {
     en: "Total Receipts",
     vi: "Tổng Phiếu Nhập",
@@ -95,6 +107,58 @@ export const stockInTranslations = {
     en: "Delete",
     vi: "Xóa",
   },
+  "stockIn.thisMonth": {
+    en: "This month",
+    vi: "Tháng này",
+  },
+  "stockIn.inventory": {
+    en: "Inventory",
+    vi: "Hàng tồn kho",
+  },
+  "stockIn.receivedSuccess": {
+    en: "Received success",
+    vi: "Đã nhận thành công",
+  },
+  "stockIn.waitForDelivery": {
+    en: "Waiting for delivery",
+    vi: "Chờ nhận hàng",
+  },
+  "stockIn.stockInSheet": {
+    en: "Stock-in sheets",
+    vi: "Phiếu Nhập Kho",
+  },
+  "stockIn.stockInSheetsList": {
+    en: "List of incoming inventory and warehouse receipts",
+    vi: "Danh sách phiếu nhập kho và hàng tồn kho đến",
+  },
+  "stockIn.otherProducts": {
+    en: "other products",
+    vi: "sản phẩm khác",
+  },
+  "stockIn.display": {
+    en: "Display",
+    vi: "Hiển thị",
+  },
+  "stockIn.section": {
+    en: "Section",
+    vi: "Mục",
+  },
+  "stockIn.previous": {
+    en: "Previous",
+    vi: "Trước",
+  },
+  "stockIn.next": {
+    en: "Next",
+    vi: "Tiếp",
+  },
+  "stockIn.page": {
+    en: "page",
+    vi: "trang",
+  },
+  "stockIn.allWarehouses": {
+    en: "All warehouses",
+    vi: "Tất cả kho hàng",
+  },
   "stockIn.status.draft": {
     en: "Draft",
     vi: "Nháp",
@@ -114,6 +178,10 @@ export const stockInTranslations = {
   "stockIn.status.cancelled": {
     en: "Cancelled",
     vi: "Đã Hủy",
+  },
+  "stockIn.form.title.view": {
+    en: "Stock-in information",
+    vi: "Thông tin nhập kho"
   },
   "stockIn.form.title.create": {
     en: "Create Stock In Receipt",
@@ -174,6 +242,10 @@ export const stockInTranslations = {
   "stockIn.form.save": {
     en: "Save",
     vi: "Lưu",
+  },
+  "stockIn.form.autoComplete": {
+    en: "Complete immediately ",
+    vi: "Hoàn thành ngay",
   },
   "stockIn.form.cancel": {
     en: "Cancel",
@@ -242,6 +314,10 @@ export const stockInTranslations = {
   "stockIn.validation.receiptNumberRequired": {
     en: "Receipt number is required",
     vi: "Số phiếu nhập là bắt buộc",
+  },
+  "stockIn.validation.productRequired": {
+    en: "Product is required",
+    vi: "Hàng hóa là bắt buộc",
   },
   "stockIn.validation.supplierRequired": {
     en: "Supplier is required",

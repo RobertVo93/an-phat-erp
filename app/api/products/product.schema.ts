@@ -31,3 +31,7 @@ export const UpdateProductSchema = z.object({
     supplier: z.string().optional(),
     image: z.string().optional(),
 });
+
+export const ExtendedProductSchema = CreateProductSchema.extend({
+  id: z.string().optional(),
+});

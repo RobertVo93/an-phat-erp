@@ -7,18 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
-import type { StockInFilters } from "@/types/stock-in"
+import type { StockChangeFilters } from "@/types/stock-change"
+import { StockChangeStatus, Warehouse } from "@/types"
 
-interface StockInFilterModalProps {
+interface StockChangeFilterModalProps {
   isOpen: boolean
   onClose: () => void
-  onApply: (filters: StockInFilters) => void
-  currentFilters: StockInFilters
+  onApply: (filters: StockChangeFilters) => void
+  currentFilters: StockChangeFilters
+  warehouses: Warehouse[]
 }
 
-export function StockInFilterModal({ isOpen, onClose, onApply, currentFilters }: StockInFilterModalProps) {
+export function StockChangeFilterModal({ isOpen, onClose, onApply, currentFilters, warehouses }: StockChangeFilterModalProps) {
   const { t } = useLanguage()
-  const [filters, setFilters] = useState<StockInFilters>(currentFilters)
+  const [filters, setFilters] = useState<StockChangeFilters>(currentFilters)
 
   useEffect(() => {
     setFilters(currentFilters)
@@ -30,7 +32,7 @@ export function StockInFilterModal({ isOpen, onClose, onApply, currentFilters }:
   }
 
   const handleReset = () => {
-    const resetFilters: StockInFilters = {}
+    const resetFilters: StockChangeFilters = {}
     setFilters(resetFilters)
     onApply(resetFilters)
     onClose()
@@ -55,11 +57,11 @@ export function StockInFilterModal({ isOpen, onClose, onApply, currentFilters }:
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("stockIn.filter.allStatuses")}</SelectItem>
-                <SelectItem value="draft">{t("stockIn.status.draft")}</SelectItem>
-                <SelectItem value="pending">{t("stockIn.status.pending")}</SelectItem>
-                <SelectItem value="in_transit">{t("stockIn.status.in_transit")}</SelectItem>
-                <SelectItem value="completed">{t("stockIn.status.completed")}</SelectItem>
-                <SelectItem value="cancelled">{t("stockIn.status.cancelled")}</SelectItem>
+                <SelectItem value={StockChangeStatus.draft}>{t("stockIn.status.draft")}</SelectItem>
+                <SelectItem value={StockChangeStatus.pending}>{t("stockIn.status.pending")}</SelectItem>
+                <SelectItem value={StockChangeStatus.inTransit}>{t("stockIn.status.in_transit")}</SelectItem>
+                <SelectItem value={StockChangeStatus.completed}>{t("stockIn.status.completed")}</SelectItem>
+                <SelectItem value={StockChangeStatus.cancelled}>{t("stockIn.status.cancelled")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -76,12 +78,22 @@ export function StockInFilterModal({ isOpen, onClose, onApply, currentFilters }:
 
           <div>
             <Label htmlFor="warehouse">{t("stockIn.warehouse")}</Label>
-            <Input
-              id="warehouse"
-              value={filters.warehouse || ""}
-              onChange={(e) => setFilters((prev) => ({ ...prev, warehouse: e.target.value || undefined }))}
-              placeholder={t("stockIn.warehouse")}
-            />
+            <Select
+              value={filters.warehouse || "AllWarehouses"}
+              onValueChange={(value) => setFilters((prev) => ({ ...prev, warehouse: value === "AllWarehouses" ? undefined : value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t("stockIn.form.selectSupplier")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="AllWarehouses">{t("stockIn.allWarehouses")}</SelectItem>
+                {warehouses.map((wh) => (
+                  <SelectItem key={wh.id} value={wh.name!}>
+                    {wh.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

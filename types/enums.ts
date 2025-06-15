@@ -114,12 +114,17 @@ export enum StockOutStatus {
   cancelled = "cancelled"
 }
 
-export enum StockInStatus {
+export enum StockChangeStatus {
   draft = "draft",
   pending = "pending",
   inTransit = "in_transit",
   completed = "completed",
   cancelled = "cancelled"
+}
+
+export enum StockChangeType {
+  stockIn = "stock-in",
+  stockOut = "stock-out",
 }
 
 export enum ProductionStatus {
