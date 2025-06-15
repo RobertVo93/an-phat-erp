@@ -52,6 +52,10 @@ export const navTranslations = {
     en: "Warehouse",
     vi: "Kho Hàng",
   },
+  "nav.stockChange": {
+    en: "Stock In & Out",
+    vi: "Xuất Nhập Kho",
+  },
   "nav.stockIn": {
     en: "Stock In",
     vi: "Nhập Kho",

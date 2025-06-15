@@ -5,10 +5,12 @@ import { Warehouse } from "@/types";
 
 export async function getAllWarehouses() {
   const repo = AppDataSource.getRepository(WarehouseEntity);
-  const qb = repo.createQueryBuilder("warehouse");
-  // Sorting
-  qb.orderBy(`warehouse.name`, "ASC");
-  const [ data ] = await qb.getManyAndCount();
+  const qb = repo.createQueryBuilder("warehouse")
+    .leftJoinAndSelect("warehouse.warehouseProducts", "wp")
+    .leftJoinAndSelect("wp.product", "product")
+    .orderBy("warehouse.name", "ASC");
+
+  const [data] = await qb.getManyAndCount();
   return { data };
 }
 

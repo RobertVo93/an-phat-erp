@@ -10,14 +10,15 @@ import { OrderEntity } from "./entities/order.entity";
 import { OrderItemEntity } from "./entities/order-item.entity";
 import { PayrollRecordEntity } from "./entities/payroll-record.entity";
 import { ProductEntity } from "./entities/product.entity";
-import { StockInEntity } from "./entities/stock-in.entity";
-import { StockOutEntity } from "./entities/stock-out.entity";
+import { StockChangeEntity } from "./entities/stock-change.entity";
 import { UtilityEntity } from "./entities/utility.entity";
 import { WarehouseEntity } from "./entities/warehouse.entity";
 import { AttendanceRecordEntity } from "./entities/attendance-record.entity";
 import { UtilityReading } from "./entities/utility-reading.entity";
 import { UserEntity } from "./entities/user.entity";
 import { UserPagePermissionEntity } from "./entities/user-page-permission.entity";
+import { WarehouseProductEntity } from "./entities/warehouse-product.entity";
+import { StockProductEntity } from "./entities/stock-product.entity";
 import { env } from "@/constants/env";
 
 export const AppDataSource = new DataSource({
@@ -34,14 +35,15 @@ export const AppDataSource = new DataSource({
     OrderItemEntity,
     PayrollRecordEntity,
     ProductEntity,
-    StockInEntity,
-    StockOutEntity,
+    StockChangeEntity,
     UtilityEntity,
     WarehouseEntity,
     AttendanceRecordEntity,
     UtilityReading,
     UserEntity,
     UserPagePermissionEntity,
+    WarehouseProductEntity,
+    StockProductEntity
   ],
   ssl: { rejectUnauthorized: false }, // required for Neon
   migrations: [__dirname + '/migrations/*{.ts,.js}'],

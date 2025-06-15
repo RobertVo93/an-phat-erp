@@ -1,12 +1,11 @@
 import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { WarehouseStatus, WarehouseType, WarehouseTemperature } from "../../../types/enums";
-import { StockInEntity } from "./stock-in.entity";
-import { StockOutEntity } from "./stock-out.entity";
-import { StockIn as IStockIn } from "@/types/stock-in";
-import { StockOut as IStockOut } from "@/types/stock-out";
+import { StockChangeEntity } from "./stock-change.entity";
+import { StockChange as IStockChange } from "@/types/stock-change";
 import { Warehouse as IWarehouse } from "@/types/warehouse";
-
+import { WarehouseProductEntity } from "./warehouse-product.entity";
+import { WarehouseProduct as IWarehouseProduct } from "@/types/warehouseProduct";
 
 @Entity({ name: "warehouses" })
 export class WarehouseEntity extends BaseEntity implements IWarehouse {
@@ -50,9 +49,9 @@ export class WarehouseEntity extends BaseEntity implements IWarehouse {
   description?: string;
 
   //////Related fields//////
-  @OneToMany(() => StockInEntity, (stockIn: StockInEntity) => stockIn.warehouse, { nullable: true })
-  stockIns?: IStockIn[];
+  @OneToMany(() => StockChangeEntity, (stockChange: StockChangeEntity) => stockChange.warehouse, { nullable: true })
+  stockChanges?: IStockChange[];
 
-  @OneToMany(() => StockOutEntity, (stockOut: StockOutEntity) => stockOut.warehouse, { nullable: true })
-  stockOuts?: IStockOut[];
+  @OneToMany(() => WarehouseProductEntity, (wp) => wp.warehouse, { nullable: true })
+  warehouseProducts?: IWarehouseProduct[];
 }

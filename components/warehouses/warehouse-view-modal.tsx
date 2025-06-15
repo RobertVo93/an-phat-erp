@@ -4,8 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Package, User, Phone, Mail, Calendar } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-import type { Warehouse } from "@/types/warehouse"
-import { WarehouseStatus, WarehouseType } from "@/types"
+import { Warehouse, WarehouseStatus, WarehouseType } from "@/types"
 import { formatDate } from "@/lib/utils"
 
 interface WarehouseViewModalProps {
@@ -178,13 +177,24 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
-                className={`h-3 rounded-full ${
-                  utilization >= 90 ? "bg-red-500" : utilization >= 75 ? "bg-yellow-500" : "bg-green-500"
-                }`}
+                className={`h-3 rounded-full ${utilization >= 90 ? "bg-red-500" : utilization >= 75 ? "bg-yellow-500" : "bg-green-500"
+                  }`}
                 style={{ width: `${utilization}%` }}
               ></div>
             </div>
           </div>
+
+          {/* Products information */}
+          {warehouse.warehouseProducts?.length! > 0 &&
+            <div>
+              <h4 className="font-medium text-base">{t("warehouse.products")}</h4>
+              {warehouse.warehouseProducts?.map((wp) =>
+                <p className="text-sm text-muted-foreground" key={wp.id}>
+                  {wp.product?.name} - {wp.quantity} {t("warehouse.items")}
+                </p>
+              )}
+            </div>
+          }
 
           {/* Description */}
           {warehouse.description && (

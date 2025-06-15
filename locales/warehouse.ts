@@ -7,6 +7,14 @@ export const warehouseTranslations = {
     en: "Monitor and manage warehouse facilities and capacity",
     vi: "Giám sát và quản lý các cơ sở kho hàng và công suất",
   },
+  "warehouse.products": {
+    en: "Warehouse products",
+    vi: "Sản phẩm trong kho",
+  },
+  "warehouse.items": {
+    en: "items",
+    vi: "sản phẩm",
+  },
   "warehouse.addWarehouse": {
     en: "Add Warehouse",
     vi: "Thêm Kho Hàng",
