@@ -6,6 +6,10 @@ import { OrderItemEntity } from "./order-item.entity";
 import { Collection as ICollection } from "@/types/collection";
 import { OrderItem as IOrderItem } from "@/types/order";
 import { Product as IProduct } from "@/types/product";
+import { WarehouseProductEntity } from "./warehouse-product.entity";
+import { WarehouseProduct as IWarehouseProduct } from "@/types/warehouseProduct";
+import { StockProductEntity } from "./stock-product.entity";
+import type { StockProduct as IStockProduct} from "@/types/stock-product";
 
 @Entity({ name: "products" })
 export class ProductEntity extends BaseEntity implements IProduct {
@@ -48,4 +52,10 @@ export class ProductEntity extends BaseEntity implements IProduct {
 
   @OneToMany(() => OrderItemEntity, (item: OrderItemEntity) => item.product, { nullable: true })
   orderItems?: IOrderItem[];
+
+  @OneToMany(() => StockProductEntity, (sp) => sp.product, { nullable: true })
+  stockProducts?: IStockProduct[];
+
+  @OneToMany(() => WarehouseProductEntity, (wp) => wp.product, { nullable: true })
+  warehouseProducts?: IWarehouseProduct[];
 } 
