@@ -4,19 +4,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button"
 import { AlertTriangle } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-import type { StockIn } from "@/types/stock-in"
+import type { StockChange } from "@/types/stock-change"
 
-interface StockInDeleteModalProps {
+interface StockChangeDeleteModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
-  stockIn: StockIn | null
+  stockChange: StockChange | null
 }
 
-export function StockInDeleteModal({ isOpen, onClose, onConfirm, stockIn }: StockInDeleteModalProps) {
+export function StockChangeDeleteModal({ isOpen, onClose, onConfirm, stockChange }: StockChangeDeleteModalProps) {
   const { t } = useLanguage()
 
-  if (!stockIn) return null
+  if (!stockChange) return null
 
   const handleConfirm = () => {
     onConfirm()
@@ -35,13 +35,13 @@ export function StockInDeleteModal({ isOpen, onClose, onConfirm, stockIn }: Stoc
         </DialogHeader>
 
         <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="font-semibold">{stockIn.receiptNumber}</p>
-          <p className="text-sm text-gray-600">{stockIn.supplierName}</p>
+          <p className="font-semibold">{stockChange.receiptNumber}</p>
+          <p className="text-sm text-gray-600">{stockChange.supplier}</p>
           <p className="text-sm text-gray-600">
             {new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",
-            }).format(stockIn.totalAmount)}
+            }).format(stockChange.totalAmount!)}
           </p>
         </div>
 

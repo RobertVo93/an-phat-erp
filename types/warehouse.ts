@@ -1,7 +1,7 @@
 import { WarehouseStatus, WarehouseType, WarehouseTemperature } from "@/types/enums";
 import { IBase } from "./base.interface";
-import { StockIn as IStockIn } from "./stock-in";
-import { StockOut as IStockOut } from "./stock-out";
+import { StockChange as IStockChange } from "./stock-change";
+import { WarehouseProduct } from "./warehouseProduct";
 
 export interface Warehouse extends IBase{
   name?: string
@@ -18,8 +18,8 @@ export interface Warehouse extends IBase{
   email?: string
   description?: string
 
-  stockIns?: IStockIn[]
-  stockOuts?: IStockOut[]
+  stockChanges?: IStockChange[]
+  warehouseProducts?: WarehouseProduct[]
 }
 
 export interface WarehouseFilters {

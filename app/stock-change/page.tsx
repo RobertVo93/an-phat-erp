@@ -21,20 +21,22 @@ import {
   Edit,
   Trash2,
   ArrowUpDown,
+  Loader2,
 } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-import { useStockIn } from "@/hooks/use-stock-in"
-import { StockInFormModal } from "@/components/stock-in/stock-in-form-modal"
-import { StockInViewModal } from "@/components/stock-in/stock-in-view-modal"
-import { StockInFilterModal } from "@/components/stock-in/stock-in-filter-modal"
-import { StockInDeleteModal } from "@/components/stock-in/stock-in-delete-modal"
-import type { StockIn } from "@/types/stock-in"
+import { useStockChange } from "@/hooks/use-stock-change"
+import { StockChangeFormModal } from "@/components/stock-change/stock-change-form-modal"
+import { StockChangeViewModal } from "@/components/stock-change/stock-change-view-modal"
+import { StockChangeFilterModal } from "@/components/stock-change/stock-change-filter-modal"
+import { StockChangeDeleteModal } from "@/components/stock-change/stock-change-delete-modal"
+import type { StockChange } from "@/types/stock-change"
+import { StockChangeStatus } from "@/types"
 
-export default function StockInPage() {
+export default function StockChangePage() {
   const { t } = useLanguage()
   const {
-    stockInRecords,
-    allStockInRecords,
+    stockChangeRecords,
+    allStockChangeRecords,
     searchTerm,
     setSearchTerm,
     filters,
@@ -49,30 +51,33 @@ export default function StockInPage() {
     setItemsPerPage,
     totalPages,
     totalRecords,
-    addStockIn,
-    updateStockIn,
-    deleteStockIn,
+    addStockChange,
+    updateStockChange,
+    deleteStockChange,
     resetFilters,
-  } = useStockIn()
+    loading,
+    products,
+    warehouses
+  } = useStockChange()
 
   const [showFormModal, setShowFormModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [selectedStockIn, setSelectedStockIn] = useState<StockIn | null>(null)
-  const [editingStockIn, setEditingStockIn] = useState<StockIn | null>(null)
+  const [selectedStockChange, setSelectedStockChange] = useState<StockChange | null>(null)
+  const [editingStockChange, setEditingStockChange] = useState<StockChange | null>(null)
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
+      case StockChangeStatus.completed:
         return "bg-green-100 text-green-800"
-      case "pending":
+      case StockChangeStatus.pending:
         return "bg-yellow-100 text-yellow-800"
-      case "in_transit":
+      case StockChangeStatus.inTransit:
         return "bg-blue-100 text-blue-800"
-      case "cancelled":
+      case StockChangeStatus.cancelled:
         return "bg-red-100 text-red-800"
-      case "draft":
+      case StockChangeStatus.draft:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -90,39 +95,39 @@ export default function StockInPage() {
     return new Date(dateString).toLocaleDateString("vi-VN")
   }
 
-  const totalValue = allStockInRecords.reduce((sum, record) => sum + record.totalAmount, 0)
-  const completedRecords = allStockInRecords.filter((record) => record.status === "completed").length
-  const pendingRecords = allStockInRecords.filter((record) => record.status === "pending").length
+  const totalValue = allStockChangeRecords.reduce((sum: number, record: StockChange) => sum + record.totalAmount!, 0)
+  const completedRecords = allStockChangeRecords.filter((record: StockChange) => record.status === StockChangeStatus.completed).length
+  const pendingRecords = allStockChangeRecords.filter((record: StockChange) => record.status === StockChangeStatus.pending).length
 
-  const handleView = (stockIn: StockIn) => {
-    setSelectedStockIn(stockIn)
+  const handleView = (stockChange: StockChange) => {
+    setSelectedStockChange(stockChange)
     setShowViewModal(true)
   }
 
-  const handleEdit = (stockIn: StockIn) => {
-    setEditingStockIn(stockIn)
+  const handleEdit = (stockChange: StockChange) => {
+    setEditingStockChange(stockChange)
     setShowFormModal(true)
   }
 
-  const handleDelete = (stockIn: StockIn) => {
-    setSelectedStockIn(stockIn)
+  const handleDelete = (stockChange: StockChange) => {
+    setSelectedStockChange(stockChange)
     setShowDeleteModal(true)
   }
 
-  const handleSave = (stockInData: Omit<StockIn, "id" | "createdAt" | "updatedAt">) => {
-    if (editingStockIn) {
-      updateStockIn(editingStockIn.id, stockInData)
-      setEditingStockIn(null)
+  const handleSave = (stockChangeData: Omit<StockChange, "id" | "createdAt" | "updatedAt">) => {
+    if (editingStockChange) {
+      updateStockChange(editingStockChange.id!, stockChangeData)
+      setEditingStockChange(null)
     } else {
-      addStockIn(stockInData)
+      addStockChange(stockChangeData)
     }
     setShowFormModal(false)
   }
 
   const handleDeleteConfirm = () => {
-    if (selectedStockIn) {
-      deleteStockIn(selectedStockIn.id)
-      setSelectedStockIn(null)
+    if (selectedStockChange) {
+      deleteStockChange(selectedStockChange.id!)
+      setSelectedStockChange(null)
     }
   }
 
@@ -137,6 +142,11 @@ export default function StockInPage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -198,8 +208,8 @@ export default function StockInPage() {
               <Package className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{allStockInRecords.length}</div>
-              <p className="text-xs text-muted-foreground">Tháng này</p>
+              <div className="text-2xl font-bold">{allStockChangeRecords.length}</div>
+              <p className="text-xs text-muted-foreground">{t("stockIn.thisMonth")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -209,7 +219,7 @@ export default function StockInPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
-              <p className="text-xs text-muted-foreground">Hàng tồn kho nhận</p>
+              <p className="text-xs text-muted-foreground">{t("stockIn.inventory")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -219,7 +229,7 @@ export default function StockInPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{completedRecords}</div>
-              <p className="text-xs text-muted-foreground">Đã nhận thành công</p>
+              <p className="text-xs text-muted-foreground">{t("stockIn.receivedSuccess")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -229,28 +239,28 @@ export default function StockInPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{pendingRecords}</div>
-              <p className="text-xs text-muted-foreground">Chờ nhận hàng</p>
+              <p className="text-xs text-muted-foreground">{t("stockIn.waitForDelivery")}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Stock In Records */}
+        {/* Stock changes Records */}
         <Card>
           <CardHeader>
-            <CardTitle>Phiếu Nhập Kho</CardTitle>
-            <CardDescription>Danh sách phiếu nhập kho và hàng tồn kho đến</CardDescription>
+            <CardTitle>{t("stockIn.stockInSheet")}</CardTitle>
+            <CardDescription>{t("stockIn.stockInSheetsList")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stockInRecords.map((record) => (
+              {stockChangeRecords.map((record: StockChange) => (
                 <div key={record.id} className="p-4 border rounded-lg">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-3">
                     <div className="flex items-center space-x-3">
                       <h3 className="text-sm font-medium">{record.receiptNumber}</h3>
-                      <Badge className={getStatusColor(record.status)}>{t(`stockIn.status.${record.status}`)}</Badge>
+                      <Badge className={getStatusColor(record.status!)}>{t(`stockIn.status.${record.status}`)}</Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="text-sm font-bold">{formatCurrency(record.totalAmount)}</div>
+                      <div className="text-sm font-bold">{formatCurrency(record.totalAmount!)}</div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
@@ -262,14 +272,18 @@ export default function StockInPage() {
                             <Eye className="mr-2 h-4 w-4" />
                             {t("stockIn.view")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEdit(record)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            {t("stockIn.edit")}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(record)} className="text-red-600">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            {t("stockIn.delete")}
-                          </DropdownMenuItem>
+                          {record.status !== StockChangeStatus.completed &&
+                            <DropdownMenuItem onClick={() => handleEdit(record)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              {t("stockIn.edit")}
+                            </DropdownMenuItem>
+                          }
+                          {record.status !== StockChangeStatus.completed &&
+                            <DropdownMenuItem onClick={() => handleDelete(record)} className="text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {t("stockIn.delete")}
+                            </DropdownMenuItem>
+                          }
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -277,13 +291,16 @@ export default function StockInPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs text-muted-foreground mb-3">
                     <div>
-                      <span className="font-medium">{t("stockIn.date")}:</span> {formatDate(record.date)}
+                      <span className="font-medium">{t("stockIn.stockType")}:</span> {t(`stockIn.form.${record.type}`)}
                     </div>
                     <div>
-                      <span className="font-medium">{t("stockIn.supplier")}:</span> {record.supplierName}
+                      <span className="font-medium">{t("stockIn.date")}:</span> {formatDate(`${record.date}`)}
                     </div>
                     <div>
-                      <span className="font-medium">{t("stockIn.warehouse")}:</span> {record.warehouseName}
+                      <span className="font-medium">{t("stockIn.supplier")}:</span> {record.supplier!}
+                    </div>
+                    <div>
+                      <span className="font-medium">{t("stockIn.warehouse")}:</span> {record.warehouse?.name!}
                     </div>
                     {record.referenceNumber && (
                       <div>
@@ -299,17 +316,17 @@ export default function StockInPage() {
 
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground">{t("stockIn.products")}:</p>
-                    {record.items.slice(0, 3).map((item, index) => (
+                    {record.stockProducts && record.stockProducts.slice(0, 3).map((item, index) => (
                       <div key={index} className="flex justify-between text-xs bg-gray-50 p-2 rounded">
-                        <span>{item.productName}</span>
+                        <span>{item.product?.name}</span>
                         <span>
-                          {item.quantity.toLocaleString()} × {formatCurrency(item.unitCost)} ={" "}
-                          {formatCurrency(item.totalCost)}
+                          {item.quantity!.toLocaleString()} × {formatCurrency(item.unitCost!)} ={" "}
+                          {formatCurrency(item.quantity! * item.unitCost!)}
                         </span>
                       </div>
                     ))}
-                    {record.items.length > 3 && (
-                      <div className="text-xs text-gray-500 text-center">+{record.items.length - 3} sản phẩm khác</div>
+                    {record.stockProducts && record.stockProducts.length > 3 && (
+                      <div className="text-xs text-gray-500 text-center">+{record.stockProducts!.length - 3} {t("stockIn.otherProducts")}</div>
                     )}
                   </div>
                 </div>
@@ -320,7 +337,7 @@ export default function StockInPage() {
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Hiển thị</span>
+                  <span className="text-sm text-gray-600">{t("stockIn.display")}</span>
                   <Select
                     value={itemsPerPage.toString()}
                     onValueChange={(value) => setItemsPerPage(Number.parseInt(value))}
@@ -335,7 +352,7 @@ export default function StockInPage() {
                       <SelectItem value="50">50</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-gray-600">mục</span>
+                  <span className="text-sm text-gray-600">{t("stockIn.section")}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -345,10 +362,10 @@ export default function StockInPage() {
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
                   >
-                    Trước
+                    {t("stockIn.previous")}
                   </Button>
                   <span className="text-sm text-gray-600">
-                    Trang {currentPage} / {totalPages}
+                    {t("stockIn.page")} {currentPage} / {totalPages}
                   </span>
                   <Button
                     variant="outline"
@@ -356,7 +373,7 @@ export default function StockInPage() {
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
                   >
-                    Tiếp
+                    {t("stockIn.next")}
                   </Button>
                 </div>
               </div>
@@ -366,30 +383,37 @@ export default function StockInPage() {
       </div>
 
       {/* Modals */}
-      <StockInFormModal
+      <StockChangeFormModal
         isOpen={showFormModal}
         onClose={() => {
           setShowFormModal(false)
-          setEditingStockIn(null)
+          setEditingStockChange(null)
         }}
         onSave={handleSave}
-        stockIn={editingStockIn}
+        stockChange={editingStockChange!}
+        products={products}
+        warehouses={warehouses}
       />
 
-      <StockInViewModal isOpen={showViewModal} onClose={() => setShowViewModal(false)} stockIn={selectedStockIn} />
+      <StockChangeViewModal 
+        isOpen={showViewModal} 
+        onClose={() => setShowViewModal(false)} 
+        stockChange={selectedStockChange} 
+      />
 
-      <StockInFilterModal
+      <StockChangeFilterModal
         isOpen={showFilterModal}
         onClose={() => setShowFilterModal(false)}
         onApply={setFilters}
         currentFilters={filters}
+        warehouses={warehouses}
       />
 
-      <StockInDeleteModal
+      <StockChangeDeleteModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDeleteConfirm}
-        stockIn={selectedStockIn}
+        stockChange={selectedStockChange}
       />
     </ERPLayout>
   )
