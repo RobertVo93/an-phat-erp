@@ -7,31 +7,38 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
-import { availableProducts, availableMaterials, availableUtilities, availableEmployees } from "@/lib/production-data"
-import type { SelectedMaterial, SelectedUtility, SelectedEmployee } from "@/types/production"
+import { availableUtilities, availableEmployees } from "@/lib/production-data"
+import type { SelectedUtility, SelectedEmployee, ProductionRecord } from "@/types/production"
+import { Product, ProductionStatus } from "@/types"
+import { formatLocalDatetime } from "@/lib/utils"
+import { ProductionMaterial } from "@/types/productionMaterial"
+import { useLanguage } from "@/contexts/language-context"
 
 interface NewProductionFormProps {
+  availableProducts: Product[]
+  availableMaterials: Product[]
   onClose: () => void
+  createNewProduction: (data: ProductionRecord) => void
 }
 
-export function NewProductionForm({ onClose }: NewProductionFormProps) {
-  const [selectedProduct, setSelectedProduct] = useState("")
-  const [quantity, setQuantity] = useState("")
-  const [selectedMaterials, setSelectedMaterials] = useState<SelectedMaterial[]>([])
+export function NewProductionForm({
+  availableProducts,
+  availableMaterials,
+  onClose,
+  createNewProduction
+}: NewProductionFormProps) {
+  const { t } = useLanguage()
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [quantity, setQuantity] = useState<number>(1)
+  const [selectedMaterials, setSelectedMaterials] = useState<ProductionMaterial[]>([])
   const [selectedUtilities, setSelectedUtilities] = useState<SelectedUtility[]>([])
   const [selectedEmployees, setSelectedEmployees] = useState<SelectedEmployee[]>([])
 
   const addMaterial = () => {
+    const addedMaterial: Product = {}
     setSelectedMaterials([
       ...selectedMaterials,
-      {
-        id: "",
-        name: "",
-        quantity: 0,
-        unit: "",
-        price: 0,
-        totalCost: 0,
-      },
+      addedMaterial,
     ])
   }
 
@@ -43,17 +50,14 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
         updated[index] = {
           ...updated[index],
           id: material.id,
-          name: material.name,
-          unit: material.unit,
-          price: material.price,
-          totalCost: updated[index].quantity * material.price,
+          material: material,
+          quantity: 1,
+          totalCost: material.cost,
         }
       }
     } else if (field === "quantity") {
       updated[index][field] = Number.parseFloat(value) || 0
-      updated[index].totalCost = updated[index].quantity * updated[index].price
-    } else {
-      updated[index][field] = value
+      updated[index].totalCost = updated[index].quantity! * updated[index].material?.cost!
     }
     setSelectedMaterials(updated)
   }
@@ -70,7 +74,7 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
         name: "",
         quantity: 0,
         unit: "",
-        price: 0,
+        cost: 0,
         totalCost: 0,
       },
     ])
@@ -86,15 +90,13 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
           id: utility.id,
           name: utility.name,
           unit: utility.unit,
-          price: utility.price,
-          totalCost: updated[index].quantity * utility.price,
+          cost: utility.cost,
+          totalCost: updated[index].quantity! * utility.cost!,
         }
       }
     } else if (field === "quantity") {
       updated[index][field] = Number.parseFloat(value) || 0
-      updated[index].totalCost = updated[index].quantity * updated[index].price
-    } else {
-      updated[index][field] = value
+      updated[index].totalCost = updated[index].quantity! * updated[index].cost!
     }
     setSelectedUtilities(updated)
   }
@@ -134,8 +136,6 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
     } else if (field === "hours") {
       updated[index][field] = Number.parseFloat(value) || 0
       updated[index].totalCost = updated[index].hours * updated[index].hourlyRate
-    } else {
-      updated[index][field] = value
     }
     setSelectedEmployees(updated)
   }
@@ -145,10 +145,51 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
   }
 
   const calculateTotalCost = () => {
-    const materialsCost = selectedMaterials.reduce((sum, m) => sum + m.totalCost, 0)
-    const utilitiesCost = selectedUtilities.reduce((sum, u) => sum + u.totalCost, 0)
+    const materialsCost = selectedMaterials.reduce((sum, m) => sum + m.totalCost!, 0)
+    const utilitiesCost = selectedUtilities.reduce((sum, u) => sum + u.totalCost!, 0)
     const laborCost = selectedEmployees.reduce((sum, e) => sum + e.totalCost, 0)
     return materialsCost + utilitiesCost + laborCost
+  }
+
+  const calculateLabors = () => {
+    let totalHours = 0;
+    let totalCost = 0
+    selectedEmployees.forEach(employee => {
+      totalHours += employee.hours
+      totalCost += employee.totalCost
+    });
+    return [totalHours, totalCost]
+  }
+
+  const onSelectProduct = (id: string) => {
+    const selectingProduct = availableProducts.find((pro) => pro.id === id)
+    setSelectedProduct(selectingProduct!)
+  }
+
+  const handleSubmit = async () => {
+    const [laborHours, laborCost] = calculateLabors()
+    const newProduction: ProductionRecord = {
+      date: formatLocalDatetime(new Date()),
+      quantity: quantity,
+      unit: "",
+      status: ProductionStatus.inProgress,
+      statusText: "",
+      shift: "",
+      operator: "",
+      product: selectedProduct!,
+      productionMaterials: selectedMaterials,
+      utilities: selectedUtilities,
+      labor: {
+        hours: laborHours,
+        workers: selectedEmployees.length ?? 0,
+        cost: laborCost,
+      },
+      totalCost: calculateTotalCost(),
+      efficiency: 0,
+    }
+
+    createNewProduction(newProduction)
+    onClose()
   }
 
   return (
@@ -157,16 +198,16 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="product" className="text-sm">
-            Sản Phẩm
+           {t("production.form.product")}
           </Label>
-          <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+          <Select value={selectedProduct?.id} onValueChange={onSelectProduct}>
             <SelectTrigger className="h-10">
-              <SelectValue placeholder="Chọn sản phẩm" />
+              <SelectValue placeholder={t("production.form.selectProduct")} />
             </SelectTrigger>
             <SelectContent>
               {availableProducts.map((product) => (
-                <SelectItem key={product.id} value={product.id}>
-                  {product.name} ({product.unit})
+                <SelectItem key={product.id} value={product.id!}>
+                  {product.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -174,13 +215,15 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="quantity" className="text-sm">
-            Số Lượng Sản Xuất
+            {t("production.form.productionQuantity")}
           </Label>
           <Input
             id="quantity"
-            placeholder="Nhập số lượng"
+            placeholder={t("production.form.inputQuantity")}
             value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
+            type="number"
+            min={1}
+            onChange={(e) => setQuantity(Number(e.target.value))}
             className="h-10"
           />
         </div>
@@ -189,7 +232,7 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
       {/* Nguyên liệu */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base sm:text-lg font-semibold">Nguyên Liệu</h3>
+          <h3 className="text-base sm:text-lg font-semibold">{t("production.form.materials")}</h3>
           <Button variant="outline" size="sm" onClick={addMaterial} className="text-xs">
             <Plus className="w-3 h-3 mr-1" />
             Thêm
@@ -200,14 +243,14 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
             <div key={index} className="border rounded-lg p-3 space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <Label className="text-xs">Nguyên liệu</Label>
+                  <Label className="text-xs">{t("production.form.materials")}</Label>
                   <Select value={material.id} onValueChange={(value) => updateMaterial(index, "id", value)}>
                     <SelectTrigger className="h-9">
                       <SelectValue placeholder="Chọn" />
                     </SelectTrigger>
                     <SelectContent>
                       {availableMaterials.map((mat) => (
-                        <SelectItem key={mat.id} value={mat.id}>
+                        <SelectItem key={mat.id} value={mat.id!}>
                           {mat.name}
                         </SelectItem>
                       ))}
@@ -215,7 +258,7 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Số lượng</Label>
+                  <Label className="text-xs">{t("production.form.quantity")}</Label>
                   <Input
                     placeholder="0"
                     value={material.quantity || ""}
@@ -225,17 +268,17 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div>
+                {/* <div>
                   <span className="text-gray-600">Đơn vị: </span>
                   <span className="font-medium">{material.unit}</span>
+                </div> */}
+                <div>
+                  <span className="text-gray-600">{t("production.form.unitPrice")}: </span>
+                  <span className="font-medium">{material.material?.cost!.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Đơn giá: </span>
-                  <span className="font-medium">{material.price.toLocaleString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Thành tiền: </span>
-                  <span className="font-medium">{material.totalCost.toLocaleString()}</span>
+                  <span className="text-gray-600">{t("production.form.totalCost")}: </span>
+                  <span className="font-medium">{material.totalCost}</span>
                 </div>
               </div>
               <Button
@@ -244,7 +287,7 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
                 onClick={() => removeMaterial(index)}
                 className="w-full text-red-600 text-xs"
               >
-                Xóa
+                {t("production.form.remove")}
               </Button>
             </div>
           ))}
@@ -254,10 +297,10 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
       {/* Tiện ích */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base sm:text-lg font-semibold">Tiện Ích</h3>
+          <h3 className="text-base sm:text-lg font-semibold">{t("production.form.utility")}</h3>
           <Button variant="outline" size="sm" onClick={addUtility} className="text-xs">
             <Plus className="w-3 h-3 mr-1" />
-            Thêm
+            {t("production.form.add")}
           </Button>
         </div>
         <div className="space-y-3">
@@ -265,14 +308,14 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
             <div key={index} className="border rounded-lg p-3 space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <Label className="text-xs">Tiện ích</Label>
+                  <Label className="text-xs">{t("production.form.utility")}</Label>
                   <Select value={utility.id} onValueChange={(value) => updateUtility(index, "id", value)}>
                     <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Chọn" />
+                      <SelectValue placeholder={t("production.form.select")} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableUtilities.map((util) => (
-                        <SelectItem key={util.id} value={util.id}>
+                        <SelectItem key={util.id} value={util.id!}>
                           {util.name}
                         </SelectItem>
                       ))}
@@ -280,7 +323,7 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Số lượng</Label>
+                  <Label className="text-xs">{t("production.form.quantity")}</Label>
                   <Input
                     placeholder="0"
                     value={utility.quantity || ""}
@@ -291,16 +334,16 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-600">Đơn vị: </span>
+                  <span className="text-gray-600">{t("production.form.unit")}: </span>
                   <span className="font-medium">{utility.unit}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Đơn giá: </span>
-                  <span className="font-medium">{utility.price.toLocaleString()}</span>
+                  <span className="text-gray-600">{t("production.form.unitPrice")}: </span>
+                  <span className="font-medium">{utility.cost!.toString()}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Thành tiền: </span>
-                  <span className="font-medium">{utility.totalCost.toLocaleString()}</span>
+                  <span className="text-gray-600">{t("production.form.totalCost")}: </span>
+                  <span className="font-medium">{utility.totalCost!.toString()}</span>
                 </div>
               </div>
               <Button
@@ -309,7 +352,7 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
                 onClick={() => removeUtility(index)}
                 className="w-full text-red-600 text-xs"
               >
-                Xóa
+                {t("production.form.remove")}
               </Button>
             </div>
           ))}
@@ -319,10 +362,10 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
       {/* Nhân công */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base sm:text-lg font-semibold">Nhân Công</h3>
+          <h3 className="text-base sm:text-lg font-semibold">{t("production.form.labor")}</h3>
           <Button variant="outline" size="sm" onClick={addEmployee} className="text-xs">
             <Plus className="w-3 h-3 mr-1" />
-            Thêm
+            {t("production.form.add")}
           </Button>
         </div>
         <div className="space-y-3">
@@ -330,10 +373,10 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
             <div key={index} className="border rounded-lg p-3 space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <Label className="text-xs">Nhân viên</Label>
+                  <Label className="text-xs">{t("production.form.employee")}</Label>
                   <Select value={employee.id} onValueChange={(value) => updateEmployee(index, "id", value)}>
                     <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Chọn" />
+                      <SelectValue placeholder={t("production.form.select")} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableEmployees.map((emp) => (
@@ -345,7 +388,7 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Số giờ</Label>
+                  <Label className="text-xs">{t("production.form.hours")}</Label>
                   <Input
                     placeholder="0"
                     value={employee.hours || ""}
@@ -356,15 +399,15 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-600">Chức vụ: </span>
+                  <span className="text-gray-600">{t("production.form.position")}: </span>
                   <span className="font-medium">{employee.position}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Lương/giờ: </span>
+                  <span className="text-gray-600">{t("production.form.salaryPerHour")}: </span>
                   <span className="font-medium">{employee.hourlyRate.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Thành tiền: </span>
+                  <span className="text-gray-600">{t("production.form.totalCost")}: </span>
                   <span className="font-medium">{employee.totalCost.toLocaleString()}</span>
                 </div>
               </div>
@@ -384,39 +427,39 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
       {/* Tổng kết chi phí */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base sm:text-lg">Tổng Kết Chi Phí</CardTitle>
+          <CardTitle className="text-base sm:text-lg">{t("production.form.expensesSummary")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span>Chi phí nguyên liệu:</span>
+              <span>{t("production.form.materialExpense")}:</span>
               <span className="font-medium">
-                {selectedMaterials.reduce((sum, m) => sum + m.totalCost, 0).toLocaleString()} đ
+                {selectedMaterials.reduce((sum, m) => sum + m.totalCost!, 0).toLocaleString()} đ
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Chi phí tiện ích:</span>
+              <span>{t("production.form.utilityExpense")}:</span>
               <span className="font-medium">
-                {selectedUtilities.reduce((sum, u) => sum + u.totalCost, 0).toLocaleString()} đ
+                {selectedUtilities.reduce((sum, u) => sum + u.totalCost!, 0).toLocaleString()} đ
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Chi phí nhân công:</span>
+              <span>{t("production.form.laborExpense")}:</span>
               <span className="font-medium">
                 {selectedEmployees.reduce((sum, e) => sum + e.totalCost, 0).toLocaleString()} đ
               </span>
             </div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
-              <span>Tổng chi phí:</span>
-              <span>{calculateTotalCost().toLocaleString()} đ</span>
+              <span>{t("production.form.totalExpense")}:</span>
+              <span>{calculateTotalCost().toLocaleString()}</span>
             </div>
             {quantity && (
               <div className="flex justify-between text-xs text-gray-600">
-                <span>Chi phí trên đơn vị:</span>
-                <span>
-                  {(calculateTotalCost() / Number.parseFloat(quantity)).toFixed(0).toLocaleString()} đ/
+                <span>{t("production.form.expensePerUnit")}:</span>
+                {/* <span>
+                  {(calculateTotalCost() / quantity).toFixed(0).toLocaleString()} đ/
                   {availableProducts.find((p) => p.id === selectedProduct)?.unit || "đơn vị"}
-                </span>
+                </span> */}
               </div>
             )}
           </div>
@@ -425,10 +468,10 @@ export function NewProductionForm({ onClose }: NewProductionFormProps) {
 
       <div className="flex flex-col sm:flex-row justify-end gap-2">
         <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
-          Hủy
+            {t("production.form.cancel")}
         </Button>
-        <Button onClick={onClose} className="w-full sm:w-auto">
-          Lưu Đơn Sản Xuất
+        <Button onClick={handleSubmit} className="w-full sm:w-auto">
+          {t("production.form.saveProductionSheet")}
         </Button>
       </div>
     </div>
