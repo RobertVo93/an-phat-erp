@@ -35,11 +35,13 @@ export function NewProductionForm({
   const [selectedEmployees, setSelectedEmployees] = useState<SelectedEmployee[]>([])
 
   const addMaterial = () => {
-    const addedMaterial: Product = {}
-    setSelectedMaterials([
-      ...selectedMaterials,
-      addedMaterial,
-    ])
+    if (selectedMaterials.length < availableMaterials.length) {
+      const addedMaterial: Product = {}
+      setSelectedMaterials([
+        ...selectedMaterials,
+        addedMaterial,
+      ])
+    }
   }
 
   const updateMaterial = (index: number, field: string, value: any) => {
@@ -67,17 +69,19 @@ export function NewProductionForm({
   }
 
   const addUtility = () => {
-    setSelectedUtilities([
-      ...selectedUtilities,
-      {
-        id: "",
-        name: "",
-        quantity: 0,
-        unit: "",
-        cost: 0,
-        totalCost: 0,
-      },
-    ])
+    if (selectedUtilities.length < availableUtilities.length) {
+      setSelectedUtilities([
+        ...selectedUtilities,
+        {
+          id: "",
+          name: "",
+          quantity: 1,
+          unit: "",
+          cost: 0,
+          totalCost: 0,
+        },
+      ])
+    }
   }
 
   const updateUtility = (index: number, field: string, value: any) => {
@@ -106,17 +110,19 @@ export function NewProductionForm({
   }
 
   const addEmployee = () => {
-    setSelectedEmployees([
-      ...selectedEmployees,
-      {
-        id: "",
-        name: "",
-        position: "",
-        hours: 0,
-        hourlyRate: 0,
-        totalCost: 0,
-      },
-    ])
+    if (selectedEmployees.length < availableEmployees.length) {
+      setSelectedEmployees([
+        ...selectedEmployees,
+        {
+          id: "",
+          name: "",
+          position: "",
+          hours: 1,
+          hourlyRate: 0,
+          totalCost: 0,
+        },
+      ])
+    }
   }
 
   const updateEmployee = (index: number, field: string, value: any) => {
@@ -145,11 +151,11 @@ export function NewProductionForm({
   }
 
   const calculateTotalCost = () => {
-    const materialsCost = selectedMaterials.reduce((sum, m) => sum + m.totalCost!, 0)
-    const utilitiesCost = selectedUtilities.reduce((sum, u) => sum + u.totalCost!, 0)
-    const laborCost = selectedEmployees.reduce((sum, e) => sum + e.totalCost, 0)
-    return materialsCost + utilitiesCost + laborCost
-  }
+    const materialsCost = selectedMaterials.reduce((sum, m) => sum + (m.totalCost ?? 0), 0);
+    const utilitiesCost = selectedUtilities.reduce((sum, u) => sum + (u.totalCost ?? 0), 0);
+    const laborCost = selectedEmployees.reduce((sum, e) => sum + (e.totalCost ?? 0),0);
+    return materialsCost + utilitiesCost + laborCost;
+  };
 
   const calculateLabors = () => {
     let totalHours = 0;
@@ -198,7 +204,7 @@ export function NewProductionForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="product" className="text-sm">
-           {t("production.form.product")}
+            {t("production.form.product")}
           </Label>
           <Select value={selectedProduct?.id} onValueChange={onSelectProduct}>
             <SelectTrigger className="h-10">
@@ -235,7 +241,7 @@ export function NewProductionForm({
           <h3 className="text-base sm:text-lg font-semibold">{t("production.form.materials")}</h3>
           <Button variant="outline" size="sm" onClick={addMaterial} className="text-xs">
             <Plus className="w-3 h-3 mr-1" />
-            Thêm
+            {t("production.form.add")}
           </Button>
         </div>
         <div className="space-y-3">
@@ -246,14 +252,21 @@ export function NewProductionForm({
                   <Label className="text-xs">{t("production.form.materials")}</Label>
                   <Select value={material.id} onValueChange={(value) => updateMaterial(index, "id", value)}>
                     <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Chọn" />
+                      <SelectValue placeholder={t("production.form.select")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableMaterials.map((mat) => (
-                        <SelectItem key={mat.id} value={mat.id!}>
-                          {mat.name}
-                        </SelectItem>
-                      ))}
+                      {availableMaterials
+                        .filter((mat) =>
+                          mat.id === material.material?.id ||
+                          !selectedMaterials.some((selected, i) =>
+                            i !== index && selected.material?.id === mat.id
+                          )
+                        )
+                        .map((mat) => (
+                          <SelectItem key={mat.id} value={mat.id!}>
+                            {mat.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -314,11 +327,18 @@ export function NewProductionForm({
                       <SelectValue placeholder={t("production.form.select")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableUtilities.map((util) => (
-                        <SelectItem key={util.id} value={util.id!}>
-                          {util.name}
-                        </SelectItem>
-                      ))}
+                      {availableUtilities
+                        .filter((util) =>
+                          util.id === utility.id ||
+                          !selectedUtilities.some((selected, i) =>
+                            i !== index && selected?.id === util.id
+                          )
+                        )
+                        .map((util) => (
+                          <SelectItem key={util.id} value={util.id!}>
+                            {util.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -379,11 +399,18 @@ export function NewProductionForm({
                       <SelectValue placeholder={t("production.form.select")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableEmployees.map((emp) => (
-                        <SelectItem key={emp.id} value={emp.id}>
-                          {emp.name} - {emp.position}
-                        </SelectItem>
-                      ))}
+                      {availableEmployees
+                        .filter((emp) =>
+                          emp.id === employee?.id ||
+                          !selectedEmployees.some((selected, i) =>
+                            i !== index && selected?.id === emp.id
+                          )
+                        )
+                        .map((emp) => (
+                          <SelectItem key={emp.id} value={emp.id}>
+                            {emp.name} - {emp.position}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -417,7 +444,7 @@ export function NewProductionForm({
                 onClick={() => removeEmployee(index)}
                 className="w-full text-red-600 text-xs"
               >
-                Xóa
+                {t("production.form.remove")}
               </Button>
             </div>
           ))}
@@ -434,7 +461,7 @@ export function NewProductionForm({
             <div className="flex justify-between">
               <span>{t("production.form.materialExpense")}:</span>
               <span className="font-medium">
-                {selectedMaterials.reduce((sum, m) => sum + m.totalCost!, 0).toLocaleString()} đ
+                {selectedMaterials.reduce((sum, m) => sum + (m.totalCost ?? 0), 0).toLocaleString()} đ
               </span>
             </div>
             <div className="flex justify-between">
@@ -468,7 +495,7 @@ export function NewProductionForm({
 
       <div className="flex flex-col sm:flex-row justify-end gap-2">
         <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
-            {t("production.form.cancel")}
+          {t("production.form.cancel")}
         </Button>
         <Button onClick={handleSubmit} className="w-full sm:w-auto">
           {t("production.form.saveProductionSheet")}
