@@ -92,6 +92,10 @@ export const utilitiesTranslations = {
     en: "Type",
     vi: "Loại",
   },
+  "utilities.utilityName": {
+    en: "Utility Name",
+    vi: "Tên tiện ích",
+  },
   "utilities.provider": {
     en: "Provider",
     vi: "Nhà cung cấp",
@@ -263,6 +267,10 @@ export const utilitiesTranslations = {
   "utilities.typeRequired": {
     en: "Type is required",
     vi: "Loại là bắt buộc",
+  },
+  "utilities.nameRequired": {
+    en: "Name is required",
+    vi: "Tên là bắt buộc",
   },
   "utilities.providerRequired": {
     en: "Provider is required",

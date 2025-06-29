@@ -311,6 +311,9 @@ export default function UtilityPage() {
                         </div>
                         <div className="flex-1 space-y-2">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <h3 className="text-sm font-medium">{utility.name!}</h3>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                             <h3 className="text-sm font-medium">{t(`utilities.${utility.type!.toLowerCase()}`)}</h3>
                             <Badge className={getStatusColor(utility.status!)}>
                               {t(`utilities.${utility.status!.toLowerCase()}`)}
@@ -370,7 +373,7 @@ export default function UtilityPage() {
         </Card>
 
         {/* Pagination */}
-        {totalPages && (
+        {totalPages > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{t("utilities.itemsPerPage")}:</span>

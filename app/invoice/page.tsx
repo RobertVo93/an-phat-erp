@@ -21,6 +21,7 @@ import {
   ChevronUp,
   ChevronDown,
   Printer,
+  Loader2,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/contexts/language-context"
@@ -30,6 +31,7 @@ import { InvoiceViewModal } from "@/components/invoices/invoice-view-modal"
 import { InvoiceFilterModal } from "@/components/invoices/invoice-filter-modal"
 import { InvoiceDeleteModal } from "@/components/invoices/invoice-delete-modal"
 import type { Invoice } from "@/types/invoice"
+import { InvoiceStatus } from "@/types"
 
 export default function InvoicePage() {
   const { t } = useLanguage()
@@ -52,6 +54,8 @@ export default function InvoicePage() {
     deleteInvoice,
     resetFilters,
     stats,
+    loading,
+    allUtilities,
   } = useInvoices()
 
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -63,17 +67,17 @@ export default function InvoicePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "paid":
+      case InvoiceStatus.paid:
         return "bg-green-100 text-green-800"
-      case "sent":
+      case InvoiceStatus.sent:
         return "bg-blue-100 text-blue-800"
-      case "partial":
+      case InvoiceStatus.partial:
         return "bg-yellow-100 text-yellow-800"
-      case "overdue":
+      case InvoiceStatus.overdue:
         return "bg-red-100 text-red-800"
-      case "draft":
+      case InvoiceStatus.draft:
         return "bg-gray-100 text-gray-800"
-      case "cancelled":
+      case InvoiceStatus.cancelled:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -81,7 +85,7 @@ export default function InvoicePage() {
   }
 
   const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("vi-VN") + " ₫"
+    return amount?.toLocaleString("vi-VN") + " ₫"
   }
 
   const formatDate = (dateString: string) => {
@@ -94,13 +98,13 @@ export default function InvoicePage() {
 
   const handleEditInvoice = (invoiceData: Omit<Invoice, "id" | "createdAt" | "updatedAt">) => {
     if (selectedInvoice) {
-      updateInvoice(selectedInvoice.id, invoiceData)
+      updateInvoice(selectedInvoice.id!, invoiceData)
     }
   }
 
   const handleDeleteInvoice = () => {
     if (selectedInvoice) {
-      deleteInvoice(selectedInvoice.id)
+      deleteInvoice(selectedInvoice.id!)
     }
   }
 
@@ -131,6 +135,11 @@ export default function InvoicePage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -165,7 +174,7 @@ export default function InvoicePage() {
             </Button>
             {activeFiltersCount > 0 && (
               <Button variant="ghost" onClick={resetFilters} size="sm">
-                Xóa lọc
+                {t("invoices.removeFilter")}
               </Button>
             )}
           </div>
@@ -180,7 +189,7 @@ export default function InvoicePage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold">{stats.totalInvoices}</div>
-              <p className="text-xs text-muted-foreground">Tổng số hóa đơn</p>
+              <p className="text-xs text-muted-foreground">{t("invoices.stats.totalInvoices")}</p>
             </CardContent>
           </Card>
 
@@ -191,7 +200,7 @@ export default function InvoicePage() {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-xl font-bold">{formatCurrency(stats.totalAmount)}</div>
-              <p className="text-xs text-muted-foreground">Tổng giá trị</p>
+              <p className="text-xs text-muted-foreground">{t("invoices.stats.totalAmount")}</p>
             </CardContent>
           </Card>
 
@@ -202,7 +211,7 @@ export default function InvoicePage() {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-xl font-bold">{formatCurrency(stats.paidAmount)}</div>
-              <p className="text-xs text-muted-foreground">Đã thu</p>
+              <p className="text-xs text-muted-foreground">{t("invoices.stats.paidAmount")}</p>
             </CardContent>
           </Card>
 
@@ -213,7 +222,7 @@ export default function InvoicePage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold">{stats.pendingCount}</div>
-              <p className="text-xs text-muted-foreground">Chờ thu</p>
+              <p className="text-xs text-muted-foreground">{t("invoices.stats.pendingCount")}</p>
             </CardContent>
           </Card>
 
@@ -224,7 +233,7 @@ export default function InvoicePage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold">{stats.overdueCount}</div>
-              <p className="text-xs text-muted-foreground">Quá hạn</p>
+              <p className="text-xs text-muted-foreground">{t("invoices.stats.overdueCount")}</p>
             </CardContent>
           </Card>
         </div>
@@ -234,15 +243,15 @@ export default function InvoicePage() {
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <CardTitle>Danh sách hóa đơn</CardTitle>
+                <CardTitle>{t("invoices.invoiceList")}</CardTitle>
                 <CardDescription>
-                  Hiển thị {invoices.length} trong tổng số {totalItems} hóa đơn
+                  {t("invoices.display")} {invoices?.length} {t("invoices.in")} {totalItems} {t("invoices.invoices")}
                 </CardDescription>
               </div>
 
               {/* Sort Controls */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Sắp xếp:</span>
+                <span className="text-sm text-muted-foreground">{t("invoices.sort")}:</span>
                 <Select
                   value={`${sortConfig.field}-${sortConfig.direction}`}
                   onValueChange={(value) => {
@@ -254,12 +263,12 @@ export default function InvoicePage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="createdAt-desc">Mới nhất</SelectItem>
-                    <SelectItem value="createdAt-asc">Cũ nhất</SelectItem>
-                    <SelectItem value="total-desc">Giá trị cao</SelectItem>
-                    <SelectItem value="total-asc">Giá trị thấp</SelectItem>
-                    <SelectItem value="dueDate-asc">Đến hạn sớm</SelectItem>
-                    <SelectItem value="dueDate-desc">Đến hạn muộn</SelectItem>
+                    <SelectItem value="createdAt-desc">{t("invoices.newest")}</SelectItem>
+                    <SelectItem value="createdAt-asc">{t("invoices.oldest")}</SelectItem>
+                    <SelectItem value="total-desc">{t("invoices.highPrice")}</SelectItem>
+                    <SelectItem value="total-asc">{t("invoices.lowPrice")}</SelectItem>
+                    <SelectItem value="dueDate-asc">{t("invoices.dueSoon")}</SelectItem>
+                    <SelectItem value="dueDate-desc">{t("invoices.dueLate")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -268,17 +277,17 @@ export default function InvoicePage() {
           <CardContent>
             {/* Mobile Card View */}
             <div className="space-y-4">
-              {invoices.map((invoice) => (
+              {invoices?.map((invoice) => (
                 <div key={invoice.id} className="border rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium">{invoice.invoiceNumber}</h3>
-                        <Badge className={getStatusColor(invoice.status)}>
+                        <Badge className={getStatusColor(invoice.status!)}>
                           {t(`invoices.status.${invoice.status}`)}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{invoice.customerName}</p>
+                      {/* <p className="text-sm text-muted-foreground">{invoice.customerName!}</p> */}
                     </div>
 
                     <DropdownMenu>
@@ -334,28 +343,28 @@ export default function InvoicePage() {
 
                   <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                     <div>
-                      <span className="text-muted-foreground">Ngày phát hành:</span>
-                      <p className="font-medium">{formatDate(invoice.issueDate)}</p>
+                      <span className="text-muted-foreground">{t("invoices.issueDate")}:</span>
+                      <p className="font-medium">{formatDate(invoice.issueDate?.toString()!)}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Đến hạn:</span>
-                      <p className="font-medium">{formatDate(invoice.dueDate)}</p>
+                      <span className="text-muted-foreground">{t("invoices.dueDate")}:</span>
+                      <p className="font-medium">{formatDate(invoice.dueDate?.toString()!)}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Tổng tiền:</span>
-                      <p className="font-medium">{formatCurrency(invoice.total)}</p>
+                      <span className="text-muted-foreground">{t("invoices.totalMoney")}:</span>
+                      <p className="font-medium">{formatCurrency(invoice.total!)}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Đã thanh toán:</span>
-                      <p className="font-medium text-green-600">{formatCurrency(invoice.paidAmount)}</p>
+                      <span className="text-muted-foreground">{t("invoices.paidAmount")}:</span>
+                      <p className="font-medium text-green-600">{formatCurrency(invoice.paidAmount!)}</p>
                     </div>
                   </div>
 
-                  {invoice.paidAmount < invoice.total && (
+                  {invoice.paidAmount! < invoice.total! && (
                     <div className="text-sm">
-                      <span className="text-muted-foreground">Còn lại: </span>
+                      <span className="text-muted-foreground">{t("invoices.outstandingAmount")}: </span>
                       <span className="font-medium text-red-600">
-                        {formatCurrency(invoice.total - invoice.paidAmount)}
+                        {formatCurrency(invoice.total! - invoice.paidAmount!)}
                       </span>
                     </div>
                   )}
@@ -364,14 +373,14 @@ export default function InvoicePage() {
             </div>
 
             {/* Empty State */}
-            {invoices.length === 0 && (
+            {invoices?.length === 0 && (
               <div className="text-center py-8">
                 <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Không có hóa đơn</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">{t("invoices.noInvoice")}</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   {searchTerm || activeFiltersCount > 0
-                    ? "Không tìm thấy hóa đơn phù hợp với tiêu chí tìm kiếm"
-                    : "Bắt đầu bằng cách tạo hóa đơn đầu tiên"}
+                    ? t("invoices.canNotFilter")
+                    : t("invoices.noInvoiceDescription")}
                 </p>
                 {!searchTerm && activeFiltersCount === 0 && (
                   <Button onClick={() => setShowCreateModal(true)} className="mt-4">
@@ -414,11 +423,11 @@ export default function InvoicePage() {
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
                   >
-                    Trước
+                    {t("invoices.previous")}
                   </Button>
 
                   <span className="text-sm text-muted-foreground">
-                    Trang {currentPage} / {totalPages}
+                    {t("invoices.page")} {currentPage} / {totalPages}
                   </span>
 
                   <Button
@@ -427,7 +436,7 @@ export default function InvoicePage() {
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
                   >
-                    Sau
+                    {t("invoices.next")}
                   </Button>
                 </div>
               </div>
@@ -437,6 +446,7 @@ export default function InvoicePage() {
 
         {/* Modals */}
         <InvoiceFormModal
+          allUtilities={allUtilities}
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           onSave={handleCreateInvoice}
@@ -444,13 +454,14 @@ export default function InvoicePage() {
         />
 
         <InvoiceFormModal
+          allUtilities={allUtilities}
           isOpen={showEditModal}
           onClose={() => {
             setShowEditModal(false)
             setSelectedInvoice(null)
           }}
           onSave={handleEditInvoice}
-          invoice={selectedInvoice}
+          invoice={selectedInvoice!}
           mode="edit"
         />
 
