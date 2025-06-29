@@ -33,8 +33,10 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react"
 import type { Utility } from "@/types/utility"
+import { UtilityStatus, UtilityType } from "@/types"
 
 export default function UtilityPage() {
   const { t } = useLanguage()
@@ -52,13 +54,14 @@ export default function UtilityPage() {
     itemsPerPage,
     setItemsPerPage,
     totalPages,
-    totalItems,
+    // totalItems,
     addUtility,
     updateUtility,
     deleteUtility,
     getUtilityById,
     resetFilters,
     stats,
+    loading,
   } = useUtilities()
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
@@ -70,36 +73,36 @@ export default function UtilityPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case UtilityStatus.active:
         return "bg-green-100 text-green-800"
-      case "Overdue":
+      case UtilityStatus.overdue:
         return "bg-red-100 text-red-800"
-      case "Inactive":
+      case UtilityStatus.inactive:
         return "bg-yellow-100 text-yellow-800"
-      case "Disconnected":
+      case UtilityStatus.disconnected:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
-  const getUtilityIcon = (type: string) => {
+  const getUtilityIcon = (type: UtilityType) => {
     switch (type.toLowerCase()) {
-      case "electricity":
+      case UtilityType.electricity:
         return Zap
-      case "water":
+      case UtilityType.water:
         return Droplets
-      case "gas":
+      case UtilityType.gas:
         return Thermometer
-      case "internet":
+      case UtilityType.internet:
         return Wifi
-      case "phone":
+      case UtilityType.phone:
         return Phone
-      case "cable":
+      case UtilityType.cable:
         return Tv
-      case "security":
+      case UtilityType.security:
         return Shield
-      case "cleaning":
+      case UtilityType.cleaning:
         return Broom
       default:
         return Zap
@@ -134,7 +137,7 @@ export default function UtilityPage() {
 
   const confirmDelete = () => {
     if (selectedUtility) {
-      deleteUtility(selectedUtility.id)
+      deleteUtility(selectedUtility.id!)
     }
   }
 
@@ -142,12 +145,17 @@ export default function UtilityPage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("utilities.title")}</h2>
-            <p className="text-muted-foreground">{t("utilities.description")}</p>
+            <p className="text-muted-foreground">{t("utilities.detailDescription")}</p>
           </div>
           <Button onClick={handleCreateUtility} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
@@ -193,7 +201,7 @@ export default function UtilityPage() {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">{stats.totalUtilities}</div>
-              <p className="text-xs text-muted-foreground">Services</p>
+              <p className="text-xs text-muted-foreground">{t("utilities.services")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -203,7 +211,7 @@ export default function UtilityPage() {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">{stats.activeUtilities}</div>
-              <p className="text-xs text-muted-foreground">Active</p>
+              <p className="text-xs text-muted-foreground">{t("utilities.active")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -213,7 +221,7 @@ export default function UtilityPage() {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">{stats.overdueUtilities}</div>
-              <p className="text-xs text-muted-foreground">Overdue</p>
+              <p className="text-xs text-muted-foreground">{t("utilities.overdue")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -223,7 +231,7 @@ export default function UtilityPage() {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">{formatCurrency(stats.totalMonthlyCost)}</div>
-              <p className="text-xs text-muted-foreground">Monthly</p>
+              <p className="text-xs text-muted-foreground">{t("utilities.monthly")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -233,7 +241,7 @@ export default function UtilityPage() {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">{formatCurrency(stats.avgMonthlyCost)}</div>
-              <p className="text-xs text-muted-foreground">Average</p>
+              <p className="text-xs text-muted-foreground">{t("utilities.avgMonthly")}</p>
             </CardContent>
           </Card>
         </div>
@@ -261,7 +269,7 @@ export default function UtilityPage() {
             </Button>
           </div>
           <div className="text-sm text-muted-foreground">
-            {totalItems} {totalItems === 1 ? "utility" : "utilities"}
+            {totalPages} {totalPages === 1 ? "utility" : "utilities"}
           </div>
         </div>
 
@@ -270,8 +278,8 @@ export default function UtilityPage() {
           <CardHeader>
             <CardTitle>{t("utilities.title")}</CardTitle>
             <CardDescription>
-              {totalItems > 0
-                ? `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} utilities`
+              {totalPages > 0
+                ? `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalPages)} of ${totalPages} utilities`
                 : t("utilities.noUtilities")}
             </CardDescription>
           </CardHeader>
@@ -291,7 +299,7 @@ export default function UtilityPage() {
             ) : (
               <div className="space-y-4">
                 {utilities.map((utility) => {
-                  const UtilityIcon = getUtilityIcon(utility.type)
+                  const UtilityIcon = getUtilityIcon(utility.type!)
                   return (
                     <div
                       key={utility.id}
@@ -303,33 +311,33 @@ export default function UtilityPage() {
                         </div>
                         <div className="flex-1 space-y-2">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <h3 className="text-sm font-medium">{t(`utilities.${utility.type.toLowerCase()}`)}</h3>
-                            <Badge className={getStatusColor(utility.status)}>
-                              {t(`utilities.${utility.status.toLowerCase()}`)}
+                            <h3 className="text-sm font-medium">{t(`utilities.${utility.type!.toLowerCase()}`)}</h3>
+                            <Badge className={getStatusColor(utility.status!)}>
+                              {t(`utilities.${utility.status!.toLowerCase()}`)}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs text-muted-foreground">
-                            <div>Provider: {utility.provider}</div>
-                            <div>Account: {utility.accountNumber}</div>
-                            <div>Location: {utility.location}</div>
+                            <div>{t("utilities.provider")}: {utility.provider}</div>
+                            <div>{t("utilities.account")}: {utility.accountNumber}</div>
+                            <div>{t("utilities.location")}: {utility.location}</div>
                           </div>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-muted-foreground">
                             <span>
-                              Usage: {utility.monthlyUsage} {t(`utilities.${utility.unit.toLowerCase()}`)}
+                              {t("utilities.usage")}: {utility.monthlyUsage} {t(`utilities.${utility.unit!.toLowerCase()}`)}
                             </span>
                             <span className="hidden sm:inline">•</span>
                             <span>
-                              Rate: {formatCurrency(utility.costPerUnit)}/{t(`utilities.${utility.unit.toLowerCase()}`)}
+                              {t("utilities.rate")}: {formatCurrency(utility.costPerUnit!)}/{t(`utilities.${utility.unit!.toLowerCase()}`)}
                             </span>
                             <span className="hidden sm:inline">•</span>
-                            <span>Due: {utility.dueDate}</span>
+                            <span>{t("utilities.due")}: {utility.dueDate}</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right hidden sm:block">
-                          <div className="text-lg font-bold">{formatCurrency(utility.monthlyCost)}</div>
-                          <div className="text-xs text-muted-foreground">Monthly cost</div>
+                          <div className="text-lg font-bold">{formatCurrency(utility.monthlyCost!)}</div>
+                          <div className="text-xs text-muted-foreground">{t("utilities.monthlyCost")}</div>
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -362,11 +370,14 @@ export default function UtilityPage() {
         </Card>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {totalPages && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{t("utilities.itemsPerPage")}:</span>
-              <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
+              <Select value={itemsPerPage.toString()} onValueChange={(value) => {
+                setCurrentPage(1)
+                setItemsPerPage(Number(value))
+              }}>
                 <SelectTrigger className="w-20">
                   <SelectValue />
                 </SelectTrigger>
@@ -441,13 +452,14 @@ export default function UtilityPage() {
         onClose={() => setIsFormModalOpen(false)}
         onSave={addUtility}
         onUpdate={updateUtility}
-        utility={selectedUtility}
+        utility={selectedUtility!}
         mode={formMode}
       />
 
       <UtilityViewModal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} utility={selectedUtility} />
 
       <UtilityFilterModal
+        utilities={utilities}
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApplyFilters={setFilters}

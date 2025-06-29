@@ -7,19 +7,23 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
-import type { UtilityFilters } from "@/types/utility"
+import type { Utility, UtilityFilters } from "@/types/utility"
+import { UtilityStatus, UtilityType } from "@/types"
 
 interface UtilityFilterModalProps {
+  utilities: Utility[]
   isOpen: boolean
   onClose: () => void
   onApplyFilters: (filters: UtilityFilters) => void
   currentFilters: UtilityFilters
 }
 
-export function UtilityFilterModal({ isOpen, onClose, onApplyFilters, currentFilters }: UtilityFilterModalProps) {
+export function UtilityFilterModal({ utilities, isOpen, onClose, onApplyFilters, currentFilters }: UtilityFilterModalProps) {
   const { t } = useLanguage()
   const [filters, setFilters] = useState<UtilityFilters>(currentFilters)
-
+  const [locations, setLocations] = useState<string[]>([])
+  const [providers, setProviders] = useState<string[]>([])
+  
   useEffect(() => {
     setFilters(currentFilters)
   }, [currentFilters, isOpen])
@@ -36,20 +40,20 @@ export function UtilityFilterModal({ isOpen, onClose, onApplyFilters, currentFil
     onClose()
   }
 
-  const utilityTypes = ["electricity", "water", "gas", "internet", "phone", "cable", "security", "cleaning"]
+  const onInit = async () => {
+    try {
+      utilities.forEach((ult: Utility) => {
+        setLocations(prev => prev.includes(ult.location!) ? prev : [...prev, ult.location!])
+        setProviders(prev => prev.includes(ult.provider!) ? prev : [...prev, ult.provider!])
+      });
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
-  const statuses = ["active", "inactive", "overdue", "disconnected"]
-
-  const locations = ["Main Warehouse", "North Branch", "South Branch", "Office Building", "Storage Facility"]
-
-  const providers = [
-    "Vietnam Electricity",
-    "Saigon Water Corporation",
-    "PetroVietnam Gas",
-    "FPT Telecom",
-    "Viettel",
-    "VNPT",
-  ]
+  useEffect(() => {
+    onInit()
+  }, [utilities])
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -71,11 +75,12 @@ export function UtilityFilterModal({ isOpen, onClose, onApplyFilters, currentFil
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("common.all")}</SelectItem>
-                  {utilityTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {t(`utilities.${type}`)}
-                    </SelectItem>
-                  ))}
+                  {Object.keys(UtilityType)
+                    .map((type) => (
+                      <SelectItem key={Math.random()} value={type}>
+                        {t(`utilities.${type}`)}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -91,11 +96,12 @@ export function UtilityFilterModal({ isOpen, onClose, onApplyFilters, currentFil
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("common.all")}</SelectItem>
-                  {statuses.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {t(`utilities.${status}`)}
-                    </SelectItem>
-                  ))}
+                  {Object.keys(UtilityStatus)
+                    .map((status: any) => (
+                      <SelectItem key={Math.random()} value={status}>
+                        {t(`utilities.${status}`)}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

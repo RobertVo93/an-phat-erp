@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/contexts/language-context"
 import { Zap, Droplets, Thermometer, Wifi, Phone, Tv, Shield, BrushIcon as Broom } from "lucide-react"
 import type { Utility } from "@/types/utility"
+import { UtilityStatus, UtilityType } from "@/types"
 
 interface UtilityViewModalProps {
   isOpen: boolean
@@ -20,13 +21,13 @@ export function UtilityViewModal({ isOpen, onClose, utility }: UtilityViewModalP
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case UtilityStatus.active:
         return "bg-green-100 text-green-800"
-      case "Overdue":
+      case UtilityStatus.overdue:
         return "bg-red-100 text-red-800"
-      case "Inactive":
+      case UtilityStatus.inactive:
         return "bg-yellow-100 text-yellow-800"
-      case "Disconnected":
+      case UtilityStatus.disconnected:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -35,21 +36,21 @@ export function UtilityViewModal({ isOpen, onClose, utility }: UtilityViewModalP
 
   const getUtilityIcon = (type: string) => {
     switch (type.toLowerCase()) {
-      case "electricity":
+      case UtilityType.electricity:
         return Zap
-      case "water":
+      case UtilityType.water:
         return Droplets
-      case "gas":
+      case UtilityType.gas:
         return Thermometer
-      case "internet":
+      case UtilityType.internet:
         return Wifi
-      case "phone":
+      case UtilityType.phone:
         return Phone
-      case "cable":
+      case UtilityType.cable:
         return Tv
-      case "security":
+      case UtilityType.security:
         return Shield
-      case "cleaning":
+      case UtilityType.cleaning:
         return Broom
       default:
         return Zap
@@ -64,7 +65,7 @@ export function UtilityViewModal({ isOpen, onClose, utility }: UtilityViewModalP
     return new Date(dateString).toLocaleDateString()
   }
 
-  const UtilityIcon = getUtilityIcon(utility.type)
+  const UtilityIcon = getUtilityIcon(utility.type!)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -82,10 +83,10 @@ export function UtilityViewModal({ isOpen, onClose, utility }: UtilityViewModalP
           {/* Header Info */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-xl font-semibold">{t(`utilities.${utility.type.toLowerCase()}`)}</h3>
+              <h3 className="text-xl font-semibold">{t(`utilities.${utility.type!.toLowerCase()}`)}</h3>
               <p className="text-sm text-muted-foreground">{utility.provider}</p>
             </div>
-            <Badge className={getStatusColor(utility.status)}>{t(`utilities.${utility.status.toLowerCase()}`)}</Badge>
+            <Badge className={getStatusColor(utility.status!)}>{t(`utilities.${utility.status!.toLowerCase()}`)}</Badge>
           </div>
 
           {/* Basic Information */}
@@ -108,15 +109,15 @@ export function UtilityViewModal({ isOpen, onClose, utility }: UtilityViewModalP
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">{t("utilities.dueDate")}</label>
-                <p className="text-sm">{formatDate(utility.dueDate)}</p>
+                <p className="text-sm">{formatDate(utility.dueDate!)}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">{t("utilities.lastReading")}</label>
-                <p className="text-sm">{formatDate(utility.lastReading)}</p>
+                <p className="text-sm">{formatDate(utility.lastReading!)}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">{t("utilities.status")}</label>
-                <p className="text-sm">{t(`utilities.${utility.status.toLowerCase()}`)}</p>
+                <p className="text-sm">{t(`utilities.${utility.status!.toLowerCase()}`)}</p>
               </div>
             </div>
           </div>
@@ -128,18 +129,18 @@ export function UtilityViewModal({ isOpen, onClose, utility }: UtilityViewModalP
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm text-muted-foreground">{t("utilities.monthlyUsage")}</p>
                 <p className="text-lg font-semibold">
-                  {utility.monthlyUsage} {t(`utilities.${utility.unit.toLowerCase()}`)}
+                  {utility.monthlyUsage} {t(`utilities.${utility.unit!.toLowerCase()}`)}
                 </p>
               </div>
               <div className="text-center p-3 bg-green-50 rounded-lg">
                 <p className="text-sm text-muted-foreground">{t("utilities.costPerUnit")}</p>
                 <p className="text-lg font-semibold">
-                  {formatCurrency(utility.costPerUnit)}/{t(`utilities.${utility.unit.toLowerCase()}`)}
+                  {formatCurrency(utility.costPerUnit!)}/{t(`utilities.${utility.unit!.toLowerCase()}`)}
                 </p>
               </div>
               <div className="text-center p-3 bg-orange-50 rounded-lg">
                 <p className="text-sm text-muted-foreground">{t("utilities.monthlyCost")}</p>
-                <p className="text-lg font-semibold">{formatCurrency(utility.monthlyCost)}</p>
+                <p className="text-lg font-semibold">{formatCurrency(utility.monthlyCost!)}</p>
               </div>
             </div>
           </div>
@@ -156,11 +157,11 @@ export function UtilityViewModal({ isOpen, onClose, utility }: UtilityViewModalP
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Created</label>
-              <p className="text-sm">{formatDate(utility.createdAt)}</p>
+              <p className="text-sm">{formatDate(utility.createdAt!.toString())}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
-              <p className="text-sm">{formatDate(utility.updatedAt)}</p>
+              <p className="text-sm">{formatDate(utility.updatedAt!.toString())}</p>
             </div>
           </div>
         </div>
