@@ -4,7 +4,7 @@ export const utilitiesTranslations = {
     en: "Utility Management",
     vi: "Quản lý Tiện ích",
   },
-  "utilities.description": {
+  "utilities.detailDescription": {
     en: "Monitor and manage utility services and consumption",
     vi: "Theo dõi và quản lý các dịch vụ tiện ích và mức tiêu thụ",
   },
@@ -25,8 +25,8 @@ export const utilitiesTranslations = {
     vi: "Xóa Tiện ích",
   },
   "utilities.searchPlaceholder": {
-    en: "Search utilities...",
-    vi: "Tìm kiếm tiện ích...",
+    en: "Search utilities by provider, location or account number",
+    vi: "Tìm kiếm tiện ích theo người cung cấp, địa chỉ hoặc số tài khoản"
   },
   "utilities.filter": {
     en: "Filter",
@@ -65,6 +65,26 @@ export const utilitiesTranslations = {
   "utilities.avgMonthlyCost": {
     en: "Avg. Cost",
     vi: "Chi phí TB",
+  },
+  "utilities.avgMonthly": {
+    en: "Average",
+    vi: "Trung bình",
+  },
+  "utilities.account": {
+    en: "Account",
+    vi: "Tài khoản",
+  },
+  "utilities.usage": {
+    en: "Usage",
+    vi: "Mức sử dụng",
+  },
+  "utilities.rate": {
+    en: "Rate",
+    vi: "Tỷ lệ",
+  },
+  "utilities.due": {
+    en: "Due",
+    vi: "Hạn",
   },
 
   // Form fields
@@ -149,6 +169,10 @@ export const utilitiesTranslations = {
   "utilities.cleaning": {
     en: "Cleaning",
     vi: "Vệ sinh",
+  },
+  "utilities.other": {
+    en: "Other",
+    vi: "Khác",
   },
 
   // Status
