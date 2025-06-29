@@ -31,6 +31,83 @@ export const invoicesTranslations = {
     en: "Filter",
     vi: "Lọc",
   },
+  "invoices.removeFilter": {
+    en: "Remove filter",
+    vi: "Xóa lọc",
+  },
+  "invoices.invoiceList": {
+    en: "Invoice list",
+    vi: "Danh sách hóa đơn",
+  },
+  "invoices.display": {
+    en: "Display",
+    vi: "Hiển thị",
+  },
+  "invoices.in": {
+    en: "in",
+    vi: "trong",
+  },
+  "invoices.invoices": {
+    en: "invoices",
+    vi: "hóa đơn",
+  },
+  "invoices.sort": {
+    en: "Sort",
+    vi: "Sắp xếp",
+  },
+  "invoices.newest": {
+    en: "Newest",
+    vi: "Mới nhất",
+  },
+  "invoices.oldest": {
+    en: "Oldest",
+    vi: "Cũ nhất",
+  },
+  "invoices.highPrice": {
+    en: "High price",
+    vi: "Giá trị cao",
+  },
+  "invoices.lowPrice": {
+    en: "Low price",
+    vi: "Giá trị thấp",
+  },
+  "invoices.dueSoon": {
+    en: "Due soon",
+    vi: "Đến hạn sớm",
+  },
+  "invoices.dueLate": {
+    en: "Due late",
+    vi: "Đến hạn muộn",
+  },
+  "invoices.totalMoney": {
+    en: "Total",
+    vi: "Tổng tiền",
+  },
+  "invoices.noInvoice": {
+    en: "No invoice",
+    vi: "Không có hóa đơn",
+  },
+  "invoices.canNotFilter": {
+    en: "Can't filter the invoices",
+    vi: "Không tìm thấy hóa đơn phù hợp với tiêu chí tìm kiếm",
+  },
+  "invoices.noInvoiceDescription": {
+    en: "Start to create the first invoice",
+    vi: "Bắt đầu bằng cách tạo hóa đơn đầu tiên",
+  },
+  "invoices.previous": {
+    en: "Previous",
+    vi: "Trước",
+  },
+  "invoices.page": {
+    en: "Page",
+    vi: "Trang",
+  },
+  "invoices.next": {
+    en: "Next",
+    vi: "Sau",
+  },
+  
   "invoices.download": {
     en: "Download PDF",
     vi: "Tải PDF",
@@ -84,8 +161,16 @@ export const invoicesTranslations = {
     vi: "Chỉ số Tiện ích",
   },
   "invoices.utilityType": {
-    en: "Utility Type",
+    en: "Utility type",
     vi: "Loại Tiện ích",
+  },
+  "invoices.utility": {
+    en: "Utility",
+    vi: "Tiện ích",
+  },
+  "invoices.utilityInformation": {
+    en: "Utility information",
+    vi: "Thông tin hóa đơn",
   },
   "invoices.utilityName": {
     en: "Utility Name",
@@ -127,6 +212,10 @@ export const invoicesTranslations = {
     en: "Internet",
     vi: "Internet",
   },
+  "invoices.predefined_utility": {
+    en: "Predefined Utility",
+    vi: "Tiện ích đã tạo trước",
+  },
   "invoices.other": {
     en: "Other",
     vi: "Khác",
@@ -154,6 +243,38 @@ export const invoicesTranslations = {
   "invoices.outstandingAmount": {
     en: "Outstanding Amount",
     vi: "Còn lại",
+  },
+  "invoices.status": {
+    en: "Invoice status",
+    vi: "Trạng thái hóa đơn",
+  },
+  "invoices.status.allStatuses": {
+    en: "All statuses",
+    vi: "Tất cả trạng thái",
+  },
+  "invoices.status.periodFrom": {
+    en: "Period from",
+    vi: "Kỳ hóa đơn từ",
+  },
+  "invoices.status.periodTo": {
+    en: "Period to",
+    vi: "Kỳ hóa đơn đến",
+  },
+  "invoices.status.moneyFrom": {
+    en: "Amount from",
+    vi: "Số tiền từ",
+  },
+  "invoices.status.moneyTo": {
+    en: "Amount to",
+    vi: "Số tiền đến",
+  },
+  "invoices.status.rest": {
+    en: "Reset",
+    vi: "Đặt lại",
+  },
+  "invoices.status.apply": {
+    en: "Apply",
+    vi: "Áp dụng",
   },
   "invoices.status.draft": {
     en: "Draft",
@@ -202,6 +323,10 @@ export const invoicesTranslations = {
   "invoices.notes": {
     en: "Notes",
     vi: "Ghi chú",
+  },
+  "invoices.addNote": {
+    en: "Add note...",
+    vi: "Ghi chú thêm...",
   },
   "invoices.stats.totalInvoices": {
     en: "Total Invoices",
@@ -254,5 +379,41 @@ export const invoicesTranslations = {
   "invoices.success.sent": {
     en: "Invoice sent successfully",
     vi: "Gửi hóa đơn thành công",
+  },
+  "invoices.delete.title": {
+    en: "Delete Invoice",
+    vi: "Xóa Hóa Đơn",
+  },
+  "invoices.delete.message": {
+    en: "You can't undo this action.",
+    vi: "Hành động này không thể hoàn tác.",
+  },
+  "invoices.delete.confirm": {
+    en: "Delete",
+    vi: "Xóa",
+  },
+  "invoices.detail": {
+    en: "Invoice detail",
+    vi: "Chi tiết hóa đơn",
+  },
+  "invoices.detail.previousReading": {
+    en: "Previous reading",
+    vi: "Chỉ số đầu",
+  },
+  "invoices.detail.currentReading": {
+    en: "Current reading",
+    vi: "Chỉ số cuối",
+  },
+  "invoices.detail.consumption": {
+    en: "Consumption",
+    vi: "Tiêu thụ",
+  },
+  "invoices.detail.fixedFee": {
+    en: "Fixed fee",
+    vi: "Phí cố định",
+  },
+  "invoices.detail.summary": {
+    en: "Summary",
+    vi: "Tổng kết",
   },
 }

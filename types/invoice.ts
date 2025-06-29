@@ -1,14 +1,17 @@
-import { UtilityType, InvoiceStatus } from "@/types/enums";
+import { InvoiceStatus, ReadingType } from "@/types/enums";
 import { IBase } from "./base.interface";
+import { Utility as IUtility } from "./utility";
 export interface UtilityReading {
   id: string
-  utilityType: UtilityType
+  utilityType: ReadingType
   utilityName: string
   previousReading: number
   currentReading: number
   consumption: number
   unitPrice: number
   total: number
+
+  utility?: IUtility
 }
 
 export interface Invoice extends IBase{
@@ -32,8 +35,8 @@ export interface Invoice extends IBase{
 export interface InvoiceFilters {
   status?: string
   propertyId?: string
-  billingPeriodFrom?: string
-  billingPeriodTo?: string
+  billingPeriodFrom?: Date
+  billingPeriodTo?: Date
   amountFrom?: number
   amountTo?: number
 }
