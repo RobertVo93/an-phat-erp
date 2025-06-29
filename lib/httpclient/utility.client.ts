@@ -1,10 +1,7 @@
 import { Utility, UtilityFilters } from "@/types";
 
-export async function getUtilities(params: UtilityFilters = {}) {
+export async function getAllUtilities() {
   const url = new URL("/api/utility", window.location.origin);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
-  });
   const res = await fetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch Utilities");
   return res.json();

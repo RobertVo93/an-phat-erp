@@ -8,6 +8,9 @@ export class UtilityEntity extends BaseEntity implements IUtility {
   @Column({ type: "enum", enum: UtilityType, nullable: true })
   type?: UtilityType;
 
+  @Column({ nullable: false })
+  name?: string
+
   @Column({ nullable: true })
   provider?: string;
 

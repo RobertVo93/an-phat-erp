@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import type { Utility, UtilityFilters, UtilitySortField, SortDirection } from "@/types/utility"
 import { UtilityStatus } from "@/types"
-import { addUtility as apiAddUtility, getUtilities as apiGetUtilities, updateUtility as apiUpdateUtility, deleteUtility as apiDeleteUtility } from "@/lib/httpclient/utility.client"
+import { addUtility as apiAddUtility, getAllUtilities as apiGetAllUtilities, updateUtility as apiUpdateUtility, deleteUtility as apiDeleteUtility } from "@/lib/httpclient/utility.client"
 import { debounce } from "lodash"
 
 export function useUtilities() {
@@ -150,44 +150,25 @@ export function useUtilities() {
     }
   }, [utilities])
 
-  useEffect(() => {
-    const debouncedFetchUtility = debounce(async () => {
+  const getAllUtilities = async () => {
+    try {
       setLoading(true)
-      try {
-        const res = await apiGetUtilities({
-          page: currentPage,
-          limit: itemsPerPage,
-          sortField: sortField,
-          sortDirection: sortDirection,
-          searchTerm: searchTerm,
-          type: filters.type,
-          status: filters.status,
-          location: filters.location,
-          provider: filters.provider,
-          dueDateFrom: filters.dueDateFrom,
-          dueDateTo: filters.dueDateTo,
-          costFrom: filters.costFrom,
-          costTo: filters.costTo,
-        })
-        setUtilities(res.data)
-        setTotalUtilities(res.total)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    }, 1000)
-
-    debouncedFetchUtility()
-
-    // Cleanup function to cancel any pending debounced calls
-    return () => {
-      debouncedFetchUtility.cancel()
+      const res = await apiGetAllUtilities()
+      setUtilities(res.data)
+      setTotalUtilities(res.total)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
     }
-  }, [currentPage, itemsPerPage, filters, sortField, sortDirection, searchTerm])
+  }
+
+  useEffect(() => {
+    getAllUtilities()
+  }, [])
 
   return {
-    utilities: utilities,
+    utilities: paginatedUtilities,
     allUtilities: utilities,
     searchTerm,
     setSearchTerm,
@@ -200,8 +181,8 @@ export function useUtilities() {
     setCurrentPage,
     itemsPerPage,
     setItemsPerPage,
-    totalPages: Math.ceil(totalUtilities / itemsPerPage),
-    // totalItems: filteredAndSortedUtilities.length,
+    totalPages: Math.ceil(filteredAndSortedUtilities?.length / itemsPerPage),
+    totalItems: filteredAndSortedUtilities?.length,
     addUtility,
     updateUtility,
     deleteUtility,
