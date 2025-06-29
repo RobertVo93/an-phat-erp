@@ -4,6 +4,7 @@ import { UtilityStatus, UtilityType, UtilityUnit } from "@/types/enums";
 export const UtilitySchema = z.object({
   id: z.string().optional(),
   type: z.nativeEnum(UtilityType).optional(),
+  name: z.string().optional(),
   provider: z.string().optional(),
   accountNumber: z.string().optional(),
   location: z.string().optional(),

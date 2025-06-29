@@ -182,3 +182,8 @@ export enum UserRole {
   staff = "staff",
   customer = "customer",
 }
+
+export enum ReadingType {
+  predefined_utility = "predefined_utility",
+  other = "other"
+}

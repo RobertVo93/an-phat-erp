@@ -27,6 +27,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
   const { t } = useLanguage()
   const [formData, setFormData] = useState<Utility>({
     type: UtilityType.cable,
+    name: "",
     provider: "",
     accountNumber: "",
     location: "",
@@ -45,6 +46,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
     if (mode === "edit" && utility) {
       setFormData({
         type: utility.type,
+        name: utility.name,
         provider: utility.provider,
         accountNumber: utility.accountNumber,
         location: utility.location,
@@ -60,6 +62,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
     } else {
       setFormData({
         type: UtilityType.cable,
+        name: "",
         provider: "",
         accountNumber: "",
         location: "",
@@ -95,6 +98,9 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
 
     if (!formData.type!.trim()) {
       newErrors.type = t("utilities.typeRequired")
+    }
+    if (!formData.name!.trim()) {
+      newErrors.type = t("utilities.nameRequired")
     }
     if (!formData.provider!.trim()) {
       newErrors.provider = t("utilities.providerRequired")
@@ -134,6 +140,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
 
     const utilityData = {
       type: formData.type,
+      name: formData.name,
       provider: formData.provider,
       accountNumber: formData.accountNumber,
       location: formData.location,
@@ -181,6 +188,17 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
                 </SelectContent>
               </Select>
               {errors.type && <p className="text-sm text-red-500">{errors.type}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="utilityName">{t("utilities.utilityName")} *</Label>
+              <Input
+                id="utilityName"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder={t("utilities.utilityName")}
+              />
+              {errors.provider && <p className="text-sm text-red-500">{errors.provider}</p>}
             </div>
 
             <div className="space-y-2">

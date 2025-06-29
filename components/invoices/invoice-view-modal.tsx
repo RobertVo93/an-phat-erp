@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, Send, Printer } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { Invoice } from "@/types/invoice"
+import { InvoiceStatus, ReadingType, UtilityType } from "@/types"
 
 interface InvoiceViewModalProps {
   isOpen: boolean
@@ -24,17 +25,17 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "paid":
+      case InvoiceStatus.paid:
         return "bg-green-100 text-green-800"
-      case "sent":
+      case InvoiceStatus.sent:
         return "bg-blue-100 text-blue-800"
-      case "partial":
+      case InvoiceStatus.partial:
         return "bg-yellow-100 text-yellow-800"
-      case "overdue":
+      case InvoiceStatus.overdue:
         return "bg-red-100 text-red-800"
-      case "draft":
+      case InvoiceStatus.draft:
         return "bg-gray-100 text-gray-800"
-      case "cancelled":
+      case InvoiceStatus.cancelled:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -43,13 +44,13 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
 
   const getUtilityIcon = (type: string) => {
     switch (type) {
-      case "electricity":
+      case UtilityType.electricity:
         return "⚡"
-      case "water":
+      case UtilityType.water:
         return "💧"
-      case "gas":
+      case UtilityType.gas:
         return "🔥"
-      case "internet":
+      case UtilityType.internet:
         return "🌐"
       default:
         return "📋"
@@ -91,14 +92,18 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
             <div>
               <h2 className="text-2xl font-bold">{invoice.invoiceNumber}</h2>
               <p className="text-muted-foreground">
-                {t("invoices.billingPeriod")}: {invoice.billingPeriod}
+                {t("invoices.billingPeriod")}: {
+                  invoice.billingPeriod ?
+                    new Date(invoice.billingPeriod).toLocaleDateString("sv-SE", { year: "numeric", month: "2-digit", }) :
+                    ""
+                }
               </p>
             </div>
-            <Badge className={getStatusColor(invoice.status)}>{t(`invoices.status.${invoice.status}`)}</Badge>
+            <Badge className={getStatusColor(invoice.status!)}>{t(`invoices.status.${invoice.status}`)}</Badge>
           </div>
 
           {/* Property & Tenant Info */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle>Thông tin căn hộ & người thuê</CardTitle>
             </CardHeader>
@@ -115,26 +120,26 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Invoice Details */}
           <Card>
             <CardHeader>
-              <CardTitle>Chi tiết hóa đơn</CardTitle>
+              <CardTitle>{t("invoices.detail")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div>
                   <p className="text-sm text-muted-foreground">{t("invoices.issueDate")}</p>
-                  <p className="font-medium">{formatDate(invoice.issueDate)}</p>
+                  <p className="font-medium">{formatDate(invoice.issueDate?.toString()!)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t("invoices.dueDate")}</p>
-                  <p className="font-medium">{formatDate(invoice.dueDate)}</p>
+                  <p className="font-medium">{formatDate(invoice.dueDate?.toString()!)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t("invoices.status")}</p>
-                  <Badge className={getStatusColor(invoice.status)}>{t(`invoices.status.${invoice.status}`)}</Badge>
+                  <Badge className={getStatusColor(invoice.status?.toString()!)}>{t(`invoices.status.${invoice.status}`)}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -147,8 +152,8 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {invoice.readings.map((reading) => (
-                  <div key={reading.id} className="border rounded-lg p-4">
+                {invoice.readings?.map((reading, index) => (
+                  <div key={index} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium flex items-center">
                         <span className="mr-2">{getUtilityIcon(reading.utilityType)}</span>
@@ -157,30 +162,28 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
                       <span className="font-medium">{formatCurrency(reading.total)}</span>
                     </div>
 
-                    {reading.utilityType === "electricity" ||
-                    reading.utilityType === "water" ||
-                    reading.utilityType === "gas" ? (
+                    {reading.utilityType === ReadingType.predefined_utility ? (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground mt-4">
                         <div>
-                          <span className="block">Chỉ số đầu:</span>
+                          <span className="block">{t("invoices.detail.previousReading")}:</span>
                           <span className="font-medium">{reading.previousReading}</span>
                         </div>
                         <div>
-                          <span className="block">Chỉ số cuối:</span>
+                          <span className="block">{t("invoices.detail.currentReading")}:</span>
                           <span className="font-medium">{reading.currentReading}</span>
                         </div>
                         <div>
-                          <span className="block">Tiêu thụ:</span>
+                          <span className="block">{t("invoices.detail.consumption")}:</span>
                           <span className="font-medium">{reading.consumption}</span>
                         </div>
                         <div>
-                          <span className="block">Đơn giá:</span>
+                          <span className="block">{t("invoices.unitPrice")}:</span>
                           <span className="font-medium">{formatCurrency(reading.unitPrice)}</span>
                         </div>
                       </div>
                     ) : (
                       <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                        <span>Phí cố định</span>
+                        <span>{t("invoices.detail.fixedFee")}</span>
                         <span>{formatCurrency(reading.unitPrice)}</span>
                       </div>
                     )}
@@ -193,43 +196,43 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
           {/* Totals */}
           <Card>
             <CardHeader>
-              <CardTitle>Tổng kết</CardTitle>
+              <CardTitle>{t("invoices.detail.summary")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>{t("invoices.subtotal")}:</span>
-                  <span>{formatCurrency(invoice.subtotal)}</span>
+                  <span>{formatCurrency(invoice.subtotal!)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>
                     {t("invoices.tax")} ({invoice.taxRate}%):
                   </span>
-                  <span>{formatCurrency(invoice.taxAmount)}</span>
+                  <span>{formatCurrency(invoice.taxAmount!)}</span>
                 </div>
-                {invoice.otherFees > 0 && (
+                {invoice.otherFees! > 0 && (
                   <div className="flex justify-between">
                     <span>
                       {t("invoices.otherFees")}
                       {invoice.otherFeesDescription && ` (${invoice.otherFeesDescription})`}:
                     </span>
-                    <span>{formatCurrency(invoice.otherFees)}</span>
+                    <span>{formatCurrency(invoice.otherFees!)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-lg font-bold border-t pt-2">
                   <span>{t("invoices.total")}:</span>
-                  <span>{formatCurrency(invoice.total)}</span>
+                  <span>{formatCurrency(invoice.total!)}</span>
                 </div>
-                {invoice.paidAmount > 0 && (
+                {invoice.paidAmount! > 0 && (
                   <>
                     <div className="flex justify-between text-green-600">
                       <span>{t("invoices.paidAmount")}:</span>
-                      <span>{formatCurrency(invoice.paidAmount)}</span>
+                      <span>{formatCurrency(invoice.paidAmount!)}</span>
                     </div>
-                    {invoice.paidAmount < invoice.total && (
+                    {invoice.paidAmount! < invoice.total! && (
                       <div className="flex justify-between text-red-600 font-medium">
                         <span>{t("invoices.outstandingAmount")}:</span>
-                        <span>{formatCurrency(invoice.total - invoice.paidAmount)}</span>
+                        <span>{formatCurrency(invoice.total! - invoice.paidAmount!)}</span>
                       </div>
                     )}
                   </>

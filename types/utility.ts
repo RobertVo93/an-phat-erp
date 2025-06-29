@@ -4,6 +4,7 @@ import { IBase } from "./base.interface";
 export interface Utility extends IBase{
   id?: string
   type?: UtilityType
+  name?: string
   provider?: string
   accountNumber?: string
   location?: string
