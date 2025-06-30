@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import type { EmployeeFilters } from "@/types/employee"
 import { useLanguage } from "@/contexts/language-context"
+import { EmployeeStatus, EmployeeType } from "@/types"
 
 interface EmployeeFilterModalProps {
   isOpen: boolean
@@ -62,9 +63,9 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("employees.filter.all")}</SelectItem>
-                <SelectItem value="Active">{t("employees.status.active")}</SelectItem>
-                <SelectItem value="Inactive">{t("employees.status.inactive")}</SelectItem>
-                <SelectItem value="On Leave">{t("employees.status.onLeave")}</SelectItem>
+                <SelectItem value={EmployeeStatus.active}>{t("employees.status.active")}</SelectItem>
+                <SelectItem value={EmployeeStatus.inactive}>{t("employees.status.inactive")}</SelectItem>
+                <SelectItem value={EmployeeStatus.onLeave}>{t("employees.status.onLeave")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -80,10 +81,10 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("employees.filter.all")}</SelectItem>
-                <SelectItem value="Full-time">{t("employees.type.fullTime")}</SelectItem>
-                <SelectItem value="Part-time">{t("employees.type.partTime")}</SelectItem>
-                <SelectItem value="Contract">{t("employees.type.contract")}</SelectItem>
-                <SelectItem value="Intern">{t("employees.type.intern")}</SelectItem>
+                <SelectItem value={EmployeeType.fullTime}>{t("employees.type.fullTime")}</SelectItem>
+                <SelectItem value={EmployeeType.partTime}>{t("employees.type.partTime")}</SelectItem>
+                <SelectItem value={EmployeeType.contract}>{t("employees.type.contract")}</SelectItem>
+                <SelectItem value={EmployeeType.intern}>{t("employees.type.intern")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -112,7 +113,7 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
           <div className="space-y-2">
             <Label>{t("employees.filter.position")}</Label>
             <Input
-              placeholder="Enter position..."
+              placeholder={t("employees.filter.enterPosition")}
               value={filters.position || ""}
               onChange={(e) => updateFilter("position", e.target.value)}
             />
@@ -123,13 +124,13 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
               <Input
                 type="date"
-                placeholder="From"
+                placeholder={t("employees.filter.from")}
                 value={filters.hireDateFrom || ""}
                 onChange={(e) => updateFilter("hireDateFrom", e.target.value)}
               />
               <Input
                 type="date"
-                placeholder="To"
+                placeholder={t("employees.filter.to")}
                 value={filters.hireDateTo || ""}
                 onChange={(e) => updateFilter("hireDateTo", e.target.value)}
               />
@@ -141,7 +142,7 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="number"
-                placeholder="Min salary"
+                placeholder={t("employees.filter.minSalary")}
                 value={filters.salaryMin || ""}
                 onChange={(e) =>
                   updateFilter("salaryMin", e.target.value ? Number.parseInt(e.target.value) : undefined)
@@ -149,7 +150,7 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
               />
               <Input
                 type="number"
-                placeholder="Max salary"
+                placeholder={t("employees.filter.maxSalary")}
                 value={filters.salaryMax || ""}
                 onChange={(e) =>
                   updateFilter("salaryMax", e.target.value ? Number.parseInt(e.target.value) : undefined)

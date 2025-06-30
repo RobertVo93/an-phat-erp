@@ -23,6 +23,7 @@ import {
   Mail,
   Phone,
   MoreVertical,
+  Loader2,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useEmployees } from "@/hooks/use-employees"
@@ -32,6 +33,7 @@ import { EmployeeViewModal } from "@/components/employees/employee-view-modal"
 import { EmployeeDeleteModal } from "@/components/employees/employee-delete-modal"
 import { EmployeeFilterModal } from "@/components/employees/employee-filter-modal"
 import type { Employee } from "@/types/employee"
+import { EmployeeStatus, EmployeeType } from "@/types"
 
 export default function EmployeePage() {
   const { t } = useLanguage()
@@ -55,6 +57,7 @@ export default function EmployeePage() {
     updateEmployee,
     deleteEmployee,
     stats,
+    loading
   } = useEmployees()
 
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
@@ -66,11 +69,11 @@ export default function EmployeePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case EmployeeStatus.active:
         return "bg-green-100 text-green-800"
-      case "On Leave":
+      case EmployeeStatus.onLeave:
         return "bg-yellow-100 text-yellow-800"
-      case "Inactive":
+      case EmployeeStatus.inactive:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -79,13 +82,13 @@ export default function EmployeePage() {
 
   const getEmployeeTypeColor = (type: string) => {
     switch (type) {
-      case "Full-time":
+      case EmployeeType.fullTime:
         return "bg-blue-100 text-blue-800"
-      case "Part-time":
+      case EmployeeType.partTime:
         return "bg-purple-100 text-purple-800"
-      case "Contract":
+      case EmployeeType.contract:
         return "bg-orange-100 text-orange-800"
-      case "Intern":
+      case EmployeeType.intern:
         return "bg-gray-100 text-gray-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -94,11 +97,11 @@ export default function EmployeePage() {
 
   const translateStatus = (status: string) => {
     switch (status) {
-      case "Active":
+      case EmployeeStatus.active:
         return t("employees.status.active")
-      case "Inactive":
+      case EmployeeStatus.inactive:
         return t("employees.status.inactive")
-      case "On Leave":
+      case EmployeeStatus.onLeave:
         return t("employees.status.onLeave")
       default:
         return status
@@ -107,13 +110,13 @@ export default function EmployeePage() {
 
   const translateEmployeeType = (type: string) => {
     switch (type) {
-      case "Full-time":
+      case EmployeeType.fullTime:
         return t("employees.type.fullTime")
-      case "Part-time":
+      case EmployeeType.partTime:
         return t("employees.type.partTime")
-      case "Contract":
+      case EmployeeType.contract:
         return t("employees.type.contract")
-      case "Intern":
+      case EmployeeType.intern:
         return t("employees.type.intern")
       default:
         return type
@@ -165,13 +168,13 @@ export default function EmployeePage() {
     if (formMode === "create") {
       addEmployee(employeeData as Omit<Employee, "id">)
     } else if (formMode === "edit" && selectedEmployee) {
-      updateEmployee(selectedEmployee.id, employeeData)
+      updateEmployee(selectedEmployee.id!, employeeData)
     }
   }
 
   const handleConfirmDelete = () => {
     if (selectedEmployee) {
-      deleteEmployee(selectedEmployee.id)
+      deleteEmployee(selectedEmployee.id!)
       setIsDeleteModalOpen(false)
       setSelectedEmployee(null)
     }
@@ -191,6 +194,11 @@ export default function EmployeePage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-4 p-4 sm:p-6">
         {/* Header */}
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -295,8 +303,8 @@ export default function EmployeePage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 mb-2">
                     <h3 className="font-semibold text-base truncate">{employee.name}</h3>
-                    <Badge className={getStatusColor(employee.status)} variant="secondary">
-                      {translateStatus(employee.status)}
+                    <Badge className={getStatusColor(employee.status!)} variant="secondary">
+                      {translateStatus(employee.status!)}
                     </Badge>
                   </div>
 
@@ -304,7 +312,7 @@ export default function EmployeePage() {
                     <div className="flex items-center space-x-2">
                       <Building className="h-3 w-3 flex-shrink-0" />
                       <span className="truncate">
-                        {employee.position} - {translateDepartment(employee.department)}
+                        {employee.position} - {translateDepartment(employee.department!)}
                       </span>
                     </div>
 
@@ -321,8 +329,8 @@ export default function EmployeePage() {
 
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex space-x-2">
-                      <Badge variant="outline" className={getEmployeeTypeColor(employee.employeeType)}>
-                        {translateEmployeeType(employee.employeeType)}
+                      <Badge variant="outline" className={getEmployeeTypeColor(employee.employeeType!)}>
+                        {translateEmployeeType(employee.employeeType!)}
                       </Badge>
                     </div>
                     <span className="text-sm font-medium">{employee.salary}</span>
@@ -453,7 +461,7 @@ export default function EmployeePage() {
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
         onSave={handleSaveEmployee}
-        employee={selectedEmployee}
+        employee={selectedEmployee!}
         mode={formMode}
       />
 
