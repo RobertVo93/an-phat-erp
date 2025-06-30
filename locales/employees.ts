@@ -88,6 +88,19 @@ export const employeesTranslations = {
     en: "Actions",
     vi: "Hành Động",
   },
+  "employees.view": {
+    en: "View",
+    vi: "Xem",
+  },
+  "employees.edit": {
+    en: "Edit",
+    vi: "Sửa",
+  },
+  "employees.delete": {
+    en: "Delete",
+    vi: "Xóa",
+  },
+  
 
   // Status translations
   "employees.status.active": {
@@ -206,6 +219,10 @@ export const employeesTranslations = {
     en: "Hire date is required",
     vi: "Ngày tuyển dụng là bắt buộc",
   },
+  "employees.form.selectDepartment": {
+    en: "Select department",
+    vi: "Chọn phòng ban",
+  },
 
   // View modal translations
   "employees.form.contactInfo": {
@@ -261,6 +278,26 @@ export const employeesTranslations = {
   "employees.filter.reset": {
     en: "Reset",
     vi: "Đặt Lại",
+  },
+  "employees.filter.enterPosition": {
+    en: "Enter position...",
+    vi: "Nhập vị trí...",
+  },
+  "employees.filter.from": {
+    en: "From",
+    vi: "Từ",
+  },
+  "employees.filter.to": {
+    en: "To",
+    vi: "Tới",
+  },
+  "employees.filter.minSalary": {
+    en: "Min salary",
+    vi: "Lương tối thiểu",
+  },
+  "employees.filter.maxSalary": {
+    en: "Max salary",
+    vi: "Lương tối đa",
   },
 
   // Delete modal translations
