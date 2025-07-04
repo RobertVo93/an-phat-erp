@@ -1,23 +1,22 @@
 import { PayrollStatus } from "@/types/enums";
 import { IBase } from "./base.interface";
+import { Employee } from "./employee";
 
 export interface PayrollRecord extends IBase{
-  employeeId?: string
-  name?: string
-  department?: string
-  position?: string
-  baseSalary?: number
-  overtime?: number
-  bonus?: number
-  deductions?: number
-  netSalary?: number
-  status?: PayrollStatus
-  payPeriod?: string
-  workingDays?: number
-  overtimeHours?: number
-  notes?: string
-  processedDate?: string
+  id?: string,
+  bonus?: number,
+  deductions?: number,
+  workingShifts?: number,
+  payPeriod?: string,
+  totalSalary?: number,
+  status?: PayrollStatus,
+  paidAt?: Date,
+  notes?: string,
+
+  employee?: Employee,
 }
+
+export type SortableKey = "employee.name" | "employee.department" | "totalSalary" | "status";
 
 export interface PayrollFilters {
   status?: string
