@@ -8,15 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import type { PayrollFilters } from "@/types/payroll"
 import { useLanguage } from "@/contexts/language-context"
+import { PayrollStatus } from "@/types"
 
 interface PayrollFilterModalProps {
   isOpen: boolean
   onClose: () => void
   onApply: (filters: PayrollFilters) => void
   currentFilters: PayrollFilters
+  filterPeriods: string[]
 }
 
-export function PayrollFilterModal({ isOpen, onClose, onApply, currentFilters }: PayrollFilterModalProps) {
+export function PayrollFilterModal({ filterPeriods, isOpen, onClose, onApply, currentFilters }: PayrollFilterModalProps) {
   const { t } = useLanguage()
   const [filters, setFilters] = useState<PayrollFilters>(currentFilters)
 
@@ -62,9 +64,9 @@ export function PayrollFilterModal({ isOpen, onClose, onApply, currentFilters }:
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("payroll.filter.all")}</SelectItem>
-                <SelectItem value="Processed">{t("payroll.status.processed")}</SelectItem>
-                <SelectItem value="Pending">{t("payroll.status.pending")}</SelectItem>
-                <SelectItem value="Failed">{t("payroll.status.failed")}</SelectItem>
+                <SelectItem value={PayrollStatus.processed}>{t("payroll.status.processed")}</SelectItem>
+                <SelectItem value={PayrollStatus.pending}>{t("payroll.status.pending")}</SelectItem>
+                <SelectItem value={PayrollStatus.failed}>{t("payroll.status.failed")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -93,7 +95,7 @@ export function PayrollFilterModal({ isOpen, onClose, onApply, currentFilters }:
           <div className="space-y-2">
             <Label>{t("payroll.filter.position")}</Label>
             <Input
-              placeholder="Enter position..."
+              placeholder={t("payroll.filter.enterPosition")}
               value={filters.position || ""}
               onChange={(e) => updateFilter("position", e.target.value)}
             />
@@ -110,9 +112,9 @@ export function PayrollFilterModal({ isOpen, onClose, onApply, currentFilters }:
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("payroll.filter.all")}</SelectItem>
-                <SelectItem value="January 2024">January 2024</SelectItem>
-                <SelectItem value="December 2023">December 2023</SelectItem>
-                <SelectItem value="November 2023">November 2023</SelectItem>
+                {filterPeriods.map((item, index) => (
+                  <SelectItem key={index} value={item}>{item}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -122,7 +124,7 @@ export function PayrollFilterModal({ isOpen, onClose, onApply, currentFilters }:
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="number"
-                placeholder="Min salary"
+                placeholder={t("payroll.filter.minSalary")}
                 value={filters.salaryMin || ""}
                 onChange={(e) =>
                   updateFilter("salaryMin", e.target.value ? Number.parseInt(e.target.value) : undefined)
@@ -130,7 +132,7 @@ export function PayrollFilterModal({ isOpen, onClose, onApply, currentFilters }:
               />
               <Input
                 type="number"
-                placeholder="Max salary"
+                placeholder={t("payroll.filter.maxSalary")}
                 value={filters.salaryMax || ""}
                 onChange={(e) =>
                   updateFilter("salaryMax", e.target.value ? Number.parseInt(e.target.value) : undefined)

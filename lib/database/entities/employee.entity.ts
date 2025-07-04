@@ -4,9 +4,11 @@ import { EmployeeType, EmployeeStatus } from "../../../types/enums";
 import { AttendanceRecordEntity } from "./attendance-record.entity";
 import { AttendanceRecord as IAttendanceRecord } from "@/types/attendance";
 import { Employee as IEmployee } from "@/types/employee";
+import { PayrollRecordEntity } from "./payroll-record.entity";
+import { PayrollRecord as IPayrollRecord} from "@/types";
 
 @Entity({ name: "employees" })
-export class EmployeeEntity extends BaseEntity implements IEmployee{
+export class EmployeeEntity extends BaseEntity implements IEmployee {
   @Column({ nullable: false })
   name?: string;
 
@@ -46,4 +48,8 @@ export class EmployeeEntity extends BaseEntity implements IEmployee{
   //////Related fields//////
   @OneToMany(() => AttendanceRecordEntity, (attendance) => attendance.employee, { nullable: true })
   attendanceRecords!: IAttendanceRecord[];
-} 
+
+  @OneToMany(() => PayrollRecordEntity, (payroll) => payroll.employee, { nullable: true })
+  payrollRecords?: IPayrollRecord[];
+}
+ 
