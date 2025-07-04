@@ -120,7 +120,11 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
   }
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    if (field === "salary") {
+      setFormData((prev) => ({ ...prev, [field]: Number(value) }))
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }))
+    }
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }))
     }
@@ -230,6 +234,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                 <Input
                   id="salary"
                   value={formData.salary}
+                  type="number"
                   onChange={(e) => handleInputChange("salary", e.target.value)}
                   placeholder="$0.00"
                   className={errors.salary ? "border-red-500" : ""}

@@ -34,8 +34,11 @@ import {
   ChevronLeft,
   ChevronRight,
   DollarSign,
+  Loader2,
 } from "lucide-react"
 import type { AttendanceRecord } from "@/types/attendance"
+import { AttendanceShift, AttendanceStatus } from "@/types"
+import { extractHourMinute } from "@/lib/utils"
 
 export default function AttendancePage() {
   const { t } = useLanguage()
@@ -65,6 +68,8 @@ export default function AttendancePage() {
     timesheetData,
     employees,
     getEmployeeById,
+    loading,
+    currentMonth, setCurrentMonth, currentYear, setCurrentYear
   } = useAttendance()
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
@@ -73,8 +78,6 @@ export default function AttendancePage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1)
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
 
   const handleAddRecord = () => {
     setFormMode("create")
@@ -100,21 +103,21 @@ export default function AttendancePage() {
 
   const handleConfirmDelete = () => {
     if (selectedRecord) {
-      deleteAttendanceRecord(selectedRecord.id)
+      deleteAttendanceRecord(selectedRecord.id!)
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Present":
+      case AttendanceStatus.present:
         return "bg-green-100 text-green-800"
-      case "Late":
+      case AttendanceStatus.late:
         return "bg-yellow-100 text-yellow-800"
-      case "Absent":
+      case AttendanceStatus.absent:
         return "bg-red-100 text-red-800"
-      case "Half Day":
+      case AttendanceStatus.halfDay:
         return "bg-blue-100 text-blue-800"
-      case "Overtime":
+      case AttendanceStatus.overtime:
         return "bg-purple-100 text-purple-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -123,11 +126,11 @@ export default function AttendancePage() {
 
   const getShiftColor = (shift: string) => {
     switch (shift) {
-      case "Morning":
+      case AttendanceShift.morning:
         return "bg-orange-100 text-orange-800"
-      case "Afternoon":
+      case AttendanceShift.afternoon:
         return "bg-blue-100 text-blue-800"
-      case "Evening":
+      case AttendanceShift.evening:
         return "bg-indigo-100 text-indigo-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -142,7 +145,7 @@ export default function AttendancePage() {
       .toUpperCase()
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString("vi-VN")
   }
 
@@ -162,6 +165,11 @@ export default function AttendancePage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -274,6 +282,14 @@ export default function AttendancePage() {
                 <Filter className="mr-2 h-4 w-4" />
                 {t("attendance.filter")}
               </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setFilters({})} 
+                  className={`flex-1 sm:flex-none ${Object.keys(filters).length === 0 && 'bg-gray-400 pointer-events-none hover:bg-gray-400'}`}
+                >
+                  {t("attendance.filter.reset")}
+                </Button>
+
               <Select value={`${itemsPerPage}`} onValueChange={(value) => setItemsPerPage(Number.parseInt(value))}>
                 <SelectTrigger className="w-20">
                   <SelectValue />
@@ -317,12 +333,12 @@ export default function AttendancePage() {
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src="/placeholder.svg" alt={record.employeeName} />
-                          <AvatarFallback>{getInitials(record.employeeName)}</AvatarFallback>
+                          <AvatarImage src="/placeholder.svg" alt={record.employee?.name!} />
+                          <AvatarFallback>{getInitials(record.employee?.name!)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-medium">{record.employeeName}</h3>
-                          <p className="text-sm text-muted-foreground">{record.employeeId}</p>
+                          <h3 className="font-medium">{record.employee?.name!}</h3>
+                          <p className="text-sm text-muted-foreground">{record.employee?.id!}</p>
                         </div>
                       </div>
                       <DropdownMenu>
@@ -351,23 +367,23 @@ export default function AttendancePage() {
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <p className="text-muted-foreground">{t("attendance.date")}</p>
-                        <p className="font-medium">{formatDate(record.date)}</p>
+                        <p className="font-medium">{formatDate(record.date!)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">{t("attendance.shift")}</p>
-                        <Badge className={getShiftColor(record.shift)}>
-                          {t(`attendance.shift.${record.shift.toLowerCase()}`)}
+                        <Badge className={getShiftColor(record.shift!)}>
+                          {t(`attendance.shift.${record.shift?.toLowerCase()}`)}
                         </Badge>
                       </div>
                       <div>
                         <p className="text-muted-foreground">{t("attendance.status")}</p>
-                        <Badge className={getStatusColor(record.status)}>
-                          {t(`attendance.status.${record.status.toLowerCase().replace(" ", "")}`)}
+                        <Badge className={getStatusColor(record.status!)}>
+                          {t(`attendance.status.${record.status?.toLowerCase().replace(" ", "")}`)}
                         </Badge>
                       </div>
                       <div>
                         <p className="text-muted-foreground">{t("attendance.dailyWage")}</p>
-                        <p className="font-medium">${record.dailyWage.toFixed(2)}</p>
+                        <p className="font-medium">${record.dailyWage?.toFixed(2)}</p>
                       </div>
                     </div>
 
@@ -376,13 +392,13 @@ export default function AttendancePage() {
                         {record.checkIn && (
                           <div>
                             <p className="text-muted-foreground">{t("attendance.checkIn")}</p>
-                            <p className="font-medium">{record.checkIn}</p>
+                            <p className="font-medium">{extractHourMinute(record.checkIn)}</p>
                           </div>
                         )}
                         {record.checkOut && (
                           <div>
                             <p className="text-muted-foreground">{t("attendance.checkOut")}</p>
-                            <p className="font-medium">{record.checkOut}</p>
+                            <p className="font-medium">{extractHourMinute(record.checkOut)}</p>
                           </div>
                         )}
                       </div>
@@ -407,9 +423,9 @@ export default function AttendancePage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-2 cursor-pointer" onClick={() => handleSort("employeeName")}>
+                      <th className="text-left p-2 cursor-pointer" onClick={() => handleSort("employee")}>
                         {t("attendance.employee")}
-                        {sortBy === "employeeName" && (sortOrder === "asc" ? " ↑" : " ↓")}
+                        {sortBy === "employee" && (sortOrder === "asc" ? " ↑" : " ↓")}
                       </th>
                       <th className="text-left p-2 cursor-pointer" onClick={() => handleSort("date")}>
                         {t("attendance.date")}
@@ -431,29 +447,29 @@ export default function AttendancePage() {
                         <td className="p-2">
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src="/placeholder.svg" alt={record.employeeName} />
-                              <AvatarFallback className="text-xs">{getInitials(record.employeeName)}</AvatarFallback>
+                              <AvatarImage src="/placeholder.svg" alt={record.employee?.name!} />
+                              {/* <AvatarFallback className="text-xs">{getInitials(record.employee?.name!)}</AvatarFallback> */}
                             </Avatar>
                             <div>
-                              <p className="font-medium text-sm">{record.employeeName}</p>
-                              <p className="text-xs text-muted-foreground">{record.employeeId}</p>
+                              <p className="font-medium text-sm">{record.employee?.name!}</p>
+                              <p className="text-xs text-muted-foreground">{record.employee?.id!}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="p-2 text-sm">{formatDate(record.date)}</td>
+                        <td className="p-2 text-sm">{formatDate(record.date!)}</td>
                         <td className="p-2">
-                          <Badge className={getShiftColor(record.shift)} variant="secondary">
-                            {t(`attendance.shift.${record.shift.toLowerCase()}`)}
+                          <Badge className={getShiftColor(record.shift!)} variant="secondary">
+                            {t(`attendance.shift.${record.shift?.toLowerCase()}`)}
                           </Badge>
                         </td>
-                        <td className="p-2 text-sm">{record.checkIn || "-"}</td>
-                        <td className="p-2 text-sm">{record.checkOut || "-"}</td>
+                        <td className="p-2 text-sm">{extractHourMinute(record.checkIn!) || "-"}</td>
+                        <td className="p-2 text-sm">{extractHourMinute(record.checkOut!) || "-"}</td>
                         <td className="p-2 text-sm">{record.workHours}h</td>
                         <td className="p-2 text-sm">{record.overtimeHours}h</td>
-                        <td className="p-2 text-sm">${record.dailyWage.toFixed(2)}</td>
+                        <td className="p-2 text-sm">${record.dailyWage?.toFixed(2)}</td>
                         <td className="p-2">
-                          <Badge className={getStatusColor(record.status)}>
-                            {t(`attendance.status.${record.status.toLowerCase().replace(" ", "")}`)}
+                          <Badge className={getStatusColor(record.status!)}>
+                            {t(`attendance.status.${record.status?.toLowerCase().replace(" ", "")}`)}
                           </Badge>
                         </td>
                         <td className="p-2">
@@ -541,7 +557,7 @@ export default function AttendancePage() {
           onClose={() => setIsFormModalOpen(false)}
           onSave={addAttendanceRecord}
           onUpdate={updateAttendanceRecord}
-          record={selectedRecord}
+          record={selectedRecord!}
           mode={formMode}
           employees={employees}
         />

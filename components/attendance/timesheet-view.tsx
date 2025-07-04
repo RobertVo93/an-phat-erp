@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLanguage } from "@/contexts/language-context"
 import { Save, Calendar } from "lucide-react"
 import type { TimesheetData } from "@/types/attendance"
+import { AttendanceStatus } from "@/types"
 
 interface TimesheetViewProps {
   timesheetData: TimesheetData[]
@@ -48,15 +49,15 @@ export function TimesheetView({
 
   const getCellContent = (employeeData: TimesheetData, shift: string, day: number) => {
     const record = employeeData.shifts[shift as keyof typeof employeeData.shifts][day.toString()]
-    if (record && record.status === "Present") {
+    if (record && record.status === AttendanceStatus.present) {
       return "x"
     }
     return "-"
   }
 
   const getCellClass = (employeeData: TimesheetData, shift: string, day: number) => {
-    const record = employeeData.shifts[shift as keyof typeof employeeData.shifts][day.toString()]
-    if (record && record.status === "Present") {
+    const record = employeeData?.shifts?.[shift as keyof typeof employeeData.shifts]?.[day.toString()]
+    if (record && record.status === AttendanceStatus.present) {
       return "bg-orange-400 text-white font-bold"
     }
     return "bg-gray-100 text-gray-400"
@@ -78,7 +79,7 @@ export function TimesheetView({
               <SelectContent>
                 {months.map((month) => (
                   <SelectItem key={month.value} value={month.value.toString()}>
-                    {month.label}
+                    {t(`attendance.timesheet.${month.label}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -102,7 +103,10 @@ export function TimesheetView({
         <div className="overflow-x-auto">
           <div className="min-w-[800px]">
             {/* Header */}
-            <div className="grid grid-cols-[120px_80px_repeat(31,_30px)_60px] gap-1 mb-2">
+            <div
+              className="grid gap-1 mb-2"
+              style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
+            >
               <div className="bg-green-600 text-white p-2 text-xs font-bold text-center rounded">
                 {t("attendance.timesheet.employee")}
               </div>
@@ -123,7 +127,10 @@ export function TimesheetView({
             {timesheetData.map((employeeData) => (
               <div key={employeeData.employeeId} className="mb-4">
                 {/* Morning shift */}
-                <div className="grid grid-cols-[120px_80px_repeat(31,_30px)_60px] gap-1 mb-1">
+                <div 
+                  className="grid gap-1 mb-1"
+                  style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
+                >
                   <div className="bg-white border p-2 text-xs font-medium text-center">{employeeData.employeeName}</div>
                   <div className="bg-orange-100 text-orange-800 p-2 text-xs font-medium text-center">
                     {t("attendance.shift.morning")}
@@ -131,18 +138,21 @@ export function TimesheetView({
                   {days.map((day) => (
                     <div
                       key={`morning-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "Morning", day)}`}
+                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "morning", day)}`}
                     >
-                      {getCellContent(employeeData, "Morning", day)}
+                      {getCellContent(employeeData, "morning", day)}
                     </div>
                   ))}
                   <div className="bg-white border p-2 text-xs font-bold text-center">
-                    {Object.values(employeeData.shifts.Morning).filter((record) => record?.status === "Present").length}
+                    {Object.values(employeeData.shifts.morning).filter((record) => record?.status === AttendanceStatus.present).length}
                   </div>
                 </div>
 
                 {/* Afternoon shift */}
-                <div className="grid grid-cols-[120px_80px_repeat(31,_30px)_60px] gap-1 mb-1">
+                <div 
+                  className="grid gap-1 mb-1"
+                  style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
+                >
                   <div className="bg-white border p-2 text-xs"></div>
                   <div className="bg-blue-100 text-blue-800 p-2 text-xs font-medium text-center">
                     {t("attendance.shift.afternoon")}
@@ -150,21 +160,24 @@ export function TimesheetView({
                   {days.map((day) => (
                     <div
                       key={`afternoon-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "Afternoon", day)}`}
+                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "afternoon", day)}`}
                     >
-                      {getCellContent(employeeData, "Afternoon", day)}
+                      {getCellContent(employeeData, "afternoon", day)}
                     </div>
                   ))}
                   <div className="bg-white border p-2 text-xs font-bold text-center">
                     {
-                      Object.values(employeeData.shifts.Afternoon).filter((record) => record?.status === "Present")
+                      Object.values(employeeData.shifts.afternoon).filter((record) => record?.status === AttendanceStatus.present)
                         .length
                     }
                   </div>
                 </div>
 
                 {/* Evening shift */}
-                <div className="grid grid-cols-[120px_80px_repeat(31,_30px)_60px] gap-1 mb-1">
+                <div 
+                  className="grid gap-1 mb-1"
+                  style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
+                >
                   <div className="bg-white border p-2 text-xs"></div>
                   <div className="bg-indigo-100 text-indigo-800 p-2 text-xs font-medium text-center">
                     {t("attendance.shift.evening")}
@@ -172,13 +185,13 @@ export function TimesheetView({
                   {days.map((day) => (
                     <div
                       key={`evening-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "Evening", day)}`}
+                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "evening", day)}`}
                     >
-                      {getCellContent(employeeData, "Evening", day)}
+                      {getCellContent(employeeData, "evening", day)}
                     </div>
                   ))}
                   <div className="bg-white border p-2 text-xs font-bold text-center">
-                    {Object.values(employeeData.shifts.Evening).filter((record) => record?.status === "Present").length}
+                    {Object.values(employeeData.shifts.evening).filter((record) => record?.status === AttendanceStatus.present).length}
                   </div>
                 </div>
               </div>
