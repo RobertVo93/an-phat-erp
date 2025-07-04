@@ -31,11 +31,21 @@ export function formatYYYYMMDD(date: string | Date): string {
   return `${year}-${month}-${day}`
 }
 
-export function formatLocalDatetime(date: Date|string) {
+export function formatLocalDatetime(date: Date | string) {
   const dateData = new Date(date);
   const offset = dateData.getTimezoneOffset();
   const local = new Date(dateData.getTime() - offset * 60 * 1000);
   return local.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+}
+
+export function extractHourMinute(date: Date | string | null) {
+  if (!date) return "";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "";
+
+  const hours = d.getHours().toString().padStart(2, "0");
+  const minutes = d.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
 
 export function base64ToFile(base64: string, filename: string): File {

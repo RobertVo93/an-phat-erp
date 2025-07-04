@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/contexts/language-context"
 import type { AttendanceRecord } from "@/types/attendance"
+import { AttendanceShift, AttendanceStatus, Employee } from "@/types"
+import { extractHourMinute } from "@/lib/utils"
 
 interface AttendanceFormModalProps {
   isOpen: boolean
@@ -19,7 +21,7 @@ interface AttendanceFormModalProps {
   onUpdate?: (id: string, data: Partial<AttendanceRecord>) => void
   record?: AttendanceRecord
   mode: "create" | "edit"
-  employees: Array<{ id: string; name: string; department: string; position: string }>
+  employees: Employee[]
 }
 
 export function AttendanceFormModal({
@@ -32,49 +34,35 @@ export function AttendanceFormModal({
   employees,
 }: AttendanceFormModalProps) {
   const { t } = useLanguage()
-  const [formData, setFormData] = useState({
-    employeeId: "",
-    employeeName: "",
-    date: "",
-    shift: "",
-    checkIn: "",
-    checkOut: "",
-    status: "",
+  const [formData, setFormData] = useState<AttendanceRecord>({
+    date: new Date().toISOString().split("T")[0],
+    shift: AttendanceShift.morning,
+    checkIn: new Date(),
+    checkOut: new Date(),
+    status: AttendanceStatus.present,
     workHours: 0,
     overtimeHours: 0,
     dailyWage: 0,
     notes: "",
+    employee: undefined,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (record && mode === "edit") {
-      setFormData({
-        employeeId: record.employeeId,
-        employeeName: record.employeeName,
-        date: record.date,
-        shift: record.shift,
-        checkIn: record.checkIn || "",
-        checkOut: record.checkOut || "",
-        status: record.status,
-        workHours: record.workHours,
-        overtimeHours: record.overtimeHours,
-        dailyWage: record.dailyWage,
-        notes: record.notes || "",
-      })
+      setFormData(record)
     } else {
       setFormData({
-        employeeId: "",
-        employeeName: "",
         date: new Date().toISOString().split("T")[0],
-        shift: "",
-        checkIn: "",
-        checkOut: "",
-        status: "",
+        shift: AttendanceShift.morning,
+        checkIn: new Date(),
+        checkOut: new Date(),
+        status: AttendanceStatus.present,
         workHours: 0,
         overtimeHours: 0,
         dailyWage: 0,
         notes: "",
+        employee: undefined,
       })
     }
     setErrors({})
@@ -83,7 +71,7 @@ export function AttendanceFormModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.employeeId) {
+    if (!formData.employee) {
       newErrors.employeeId = t("attendance.form.employeeRequired")
     }
     if (!formData.date) {
@@ -95,10 +83,10 @@ export function AttendanceFormModal({
     if (!formData.status) {
       newErrors.status = t("attendance.form.statusRequired")
     }
-    if (formData.workHours < 0) {
+    if (formData.workHours! < 0) {
       newErrors.workHours = t("attendance.form.workHoursRequired")
     }
-    if (formData.dailyWage < 0) {
+    if (formData.dailyWage! < 0) {
       newErrors.dailyWage = t("attendance.form.dailyWageRequired")
     }
 
@@ -111,21 +99,20 @@ export function AttendanceFormModal({
     if (!validateForm()) return
 
     const attendanceData = {
-      employeeId: formData.employeeId,
-      employeeName: formData.employeeName,
       date: formData.date,
-      shift: formData.shift as "Morning" | "Afternoon" | "Evening",
+      shift: formData.shift as AttendanceShift,
       checkIn: formData.checkIn || undefined,
       checkOut: formData.checkOut || undefined,
-      status: formData.status as "Present" | "Absent" | "Late" | "Half Day" | "Overtime",
+      status: formData.status as AttendanceStatus,
       workHours: formData.workHours,
       overtimeHours: formData.overtimeHours,
       dailyWage: formData.dailyWage,
-      notes: formData.notes || undefined,
+      notes: formData.notes || "",
+      employee: formData.employee
     }
 
     if (mode === "edit" && record && onUpdate) {
-      onUpdate(record.id, attendanceData)
+      onUpdate(record.id!, attendanceData)
     } else {
       onSave(attendanceData)
     }
@@ -133,10 +120,64 @@ export function AttendanceFormModal({
     onClose()
   }
 
+  function calculateWorkHours(checkIn: Date | string, checkOut: Date | string): number {
+    if (!checkIn || !checkOut) return 0;
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+      return 0;
+    }
+    const diffMinutes = (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60);
+    const roundedMinutes = Math.round(diffMinutes / 15) * 15;
+    return Math.round((roundedMinutes / 60) * 100) / 100;
+  }
+
   const handleInputChange = (field: string, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+    switch (field) {
+      case ("employeeId"): {
+        const employee = employees.find((emp) => emp.id === value)
+        if (employee) {
+          setFormData((prev) => ({ ...prev, employee: employee }))
+        }
+        break;
+      }
+      case ("date"): {
+        const newDate = new Date(value)
+        setFormData((prev) => ({
+          ...prev,
+          date: value.toString(),
+          checkIn: newDate,
+          checkOut: newDate,
+          workHours: 0,
+        }));
+        break;
+      }
+      case ("checkIn"): {
+        const checkTime = `${formData.date}T${value}`;
+        setFormData((prev) => ({
+          ...prev,
+          [field]: new Date(checkTime),
+          workHours: calculateWorkHours(new Date(checkTime), formData.checkOut!)
+        }));
+        break;
+      }
+      case ("checkOut"): {
+        const checkTime = `${formData.date}T${value}`;
+        setFormData((prev) => ({
+          ...prev,
+          [field]: new Date(checkTime),
+          workHours: calculateWorkHours(formData.checkIn!, new Date(checkTime))
+        }));
+        break;
+      }
+      default: {
+        setFormData((prev) => ({ ...prev, [field]: value }))
+        if (errors[field]) {
+          setErrors((prev) => ({ ...prev, [field]: "" }))
+        }
+        break;
+      }
     }
   }
 
@@ -152,21 +193,15 @@ export function AttendanceFormModal({
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="employee">{t("attendance.form.employee")}</Label>
               <Select
-                value={formData.employeeId}
-                onValueChange={(value) => {
-                  const employee = employees.find((emp) => emp.id === value)
-                  if (employee) {
-                    handleInputChange("employeeId", employee.id)
-                    handleInputChange("employeeName", employee.name)
-                  }
-                }}
+                value={formData.employee?.id!}
+                onValueChange={(value) => { handleInputChange("employeeId", value) }}
               >
                 <SelectTrigger className={errors.employeeId ? "border-red-500" : ""}>
                   <SelectValue placeholder={t("attendance.form.selectEmployee")} />
                 </SelectTrigger>
                 <SelectContent>
                   {employees.map((employee) => (
-                    <SelectItem key={employee.id} value={employee.id}>
+                    <SelectItem key={employee.id} value={employee.id!}>
                       <div className="flex flex-col">
                         <span className="font-medium">{employee.name}</span>
                         <span className="text-xs text-muted-foreground">
@@ -199,9 +234,9 @@ export function AttendanceFormModal({
                   <SelectValue placeholder={t("attendance.form.shift")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Morning">{t("attendance.shift.morning")}</SelectItem>
-                  <SelectItem value="Afternoon">{t("attendance.shift.afternoon")}</SelectItem>
-                  <SelectItem value="Evening">{t("attendance.shift.evening")}</SelectItem>
+                  <SelectItem value={AttendanceShift.morning}>{t("attendance.shift.morning")}</SelectItem>
+                  <SelectItem value={AttendanceShift.afternoon}>{t("attendance.shift.afternoon")}</SelectItem>
+                  <SelectItem value={AttendanceShift.evening}>{t("attendance.shift.evening")}</SelectItem>
                 </SelectContent>
               </Select>
               {errors.shift && <p className="text-sm text-red-500">{errors.shift}</p>}
@@ -212,7 +247,7 @@ export function AttendanceFormModal({
               <Input
                 id="checkIn"
                 type="time"
-                value={formData.checkIn}
+                value={formData.checkIn ? extractHourMinute(formData.checkIn!) : ""}
                 onChange={(e) => handleInputChange("checkIn", e.target.value)}
               />
             </div>
@@ -222,7 +257,7 @@ export function AttendanceFormModal({
               <Input
                 id="checkOut"
                 type="time"
-                value={formData.checkOut}
+                value={formData.checkOut ? extractHourMinute(formData.checkOut!) : ""}
                 onChange={(e) => handleInputChange("checkOut", e.target.value)}
               />
             </div>
@@ -234,11 +269,11 @@ export function AttendanceFormModal({
                   <SelectValue placeholder={t("attendance.form.status")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Present">{t("attendance.status.present")}</SelectItem>
-                  <SelectItem value="Absent">{t("attendance.status.absent")}</SelectItem>
-                  <SelectItem value="Late">{t("attendance.status.late")}</SelectItem>
-                  <SelectItem value="Half Day">{t("attendance.status.halfDay")}</SelectItem>
-                  <SelectItem value="Overtime">{t("attendance.status.overtime")}</SelectItem>
+                  <SelectItem value={AttendanceStatus.present}>{t("attendance.status.present")}</SelectItem>
+                  <SelectItem value={AttendanceStatus.absent}>{t("attendance.status.absent")}</SelectItem>
+                  <SelectItem value={AttendanceStatus.late}>{t("attendance.status.late")}</SelectItem>
+                  <SelectItem value={AttendanceStatus.halfDay}>{t("attendance.status.halfDay")}</SelectItem>
+                  <SelectItem value={AttendanceStatus.overtime}>{t("attendance.status.overtime")}</SelectItem>
                 </SelectContent>
               </Select>
               {errors.status && <p className="text-sm text-red-500">{errors.status}</p>}
@@ -253,7 +288,8 @@ export function AttendanceFormModal({
                 min="0"
                 max="24"
                 value={formData.workHours}
-                onChange={(e) => handleInputChange("workHours", Number.parseFloat(e.target.value) || 0)}
+                readOnly
+                // onChange={(e) => handleInputChange("workHours", Number.parseFloat(e.target.value) || 0)}
                 className={errors.workHours ? "border-red-500" : ""}
               />
               {errors.workHours && <p className="text-sm text-red-500">{errors.workHours}</p>}
@@ -291,7 +327,7 @@ export function AttendanceFormModal({
             <Label htmlFor="notes">{t("attendance.form.notes")}</Label>
             <Textarea
               id="notes"
-              value={formData.notes}
+              value={formData.notes ? formData.notes : ""}
               onChange={(e) => handleInputChange("notes", e.target.value)}
               rows={3}
             />

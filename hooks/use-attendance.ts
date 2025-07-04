@@ -1,102 +1,13 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import type { AttendanceRecord, AttendanceFilters, AttendanceStats, TimesheetData } from "@/types/attendance"
-
-// Mock data for demonstration
-const mockAttendanceRecords: AttendanceRecord[] = [
-  {
-    id: "ATT-001",
-    employeeId: "EMP-001",
-    employeeName: "Robert Vo",
-    date: "2025-01-15",
-    checkIn: "08:30",
-    checkOut: "17:45",
-    shift: "Morning",
-    status: "Present",
-    workHours: 8.25,
-    overtimeHours: 1.25,
-    dailyWage: 150,
-    notes: "Good performance",
-    createdAt: "2025-01-15T08:30:00Z",
-    updatedAt: "2025-01-15T17:45:00Z",
-  },
-  {
-    id: "ATT-002",
-    employeeId: "EMP-002",
-    employeeName: "Nguyen Van A",
-    date: "2025-01-15",
-    checkIn: "08:45",
-    checkOut: "17:30",
-    shift: "Morning",
-    status: "Late",
-    workHours: 7.75,
-    overtimeHours: 0,
-    dailyWage: 120,
-    notes: "Late arrival",
-    createdAt: "2025-01-15T08:45:00Z",
-    updatedAt: "2025-01-15T17:30:00Z",
-  },
-  {
-    id: "ATT-003",
-    employeeId: "EMP-003",
-    employeeName: "Tran Thi B",
-    date: "2025-01-15",
-    checkIn: "14:00",
-    checkOut: "22:00",
-    shift: "Afternoon",
-    status: "Present",
-    workHours: 8,
-    overtimeHours: 0,
-    dailyWage: 130,
-    createdAt: "2025-01-15T14:00:00Z",
-    updatedAt: "2025-01-15T22:00:00Z",
-  },
-  {
-    id: "ATT-004",
-    employeeId: "EMP-004",
-    employeeName: "Le Van C",
-    date: "2025-01-15",
-    shift: "Morning",
-    status: "Absent",
-    workHours: 0,
-    overtimeHours: 0,
-    dailyWage: 0,
-    notes: "Sick leave",
-    createdAt: "2025-01-15T00:00:00Z",
-    updatedAt: "2025-01-15T00:00:00Z",
-  },
-  {
-    id: "ATT-005",
-    employeeId: "EMP-001",
-    employeeName: "Robert Vo",
-    date: "2025-01-16",
-    checkIn: "08:00",
-    checkOut: "16:30",
-    shift: "Morning",
-    status: "Present",
-    workHours: 8.5,
-    overtimeHours: 0.5,
-    dailyWage: 155,
-    createdAt: "2025-01-16T08:00:00Z",
-    updatedAt: "2025-01-16T16:30:00Z",
-  },
-]
-
-// Mock employees data (normally from database)
-const mockEmployees = [
-  { id: "EMP-001", name: "Robert Vo", department: "IT", position: "Developer" },
-  { id: "EMP-002", name: "Nguyen Van A", department: "IT", position: "Tester" },
-  { id: "EMP-003", name: "Tran Thi B", department: "Marketing", position: "Manager" },
-  { id: "EMP-004", name: "Le Van C", department: "Finance", position: "Accountant" },
-  { id: "EMP-005", name: "Pham Thi D", department: "HR", position: "HR Manager" },
-  { id: "EMP-006", name: "Hoang Van E", department: "IT", position: "Senior Developer" },
-  { id: "EMP-007", name: "Vu Thi F", department: "Sales", position: "Sales Executive" },
-  { id: "EMP-008", name: "Do Van G", department: "Operations", position: "Supervisor" },
-]
+import { getEmployee } from "@/lib/httpclient/employee.client"
+import { AttendanceStatus, Employee } from "@/types"
+import { getAllAttendanceRecords, addAttendanceRecord as apiAddAttendanceRecord, updateAttendanceRecord as apiUpdateAttendanceRecord, deleteAttendanceRecord as apiDeleteAttendanceRecord } from "@/lib/httpclient/attendance.client"
 
 export function useAttendance() {
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(mockAttendanceRecords)
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<AttendanceFilters>({})
   const [currentPage, setCurrentPage] = useState(1)
@@ -104,30 +15,32 @@ export function useAttendance() {
   const [sortBy, setSortBy] = useState<keyof AttendanceRecord>("date")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [viewMode, setViewMode] = useState<"list" | "timesheet">("list")
-  const [employees] = useState(mockEmployees)
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1)
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
 
   // Filter and search attendance records
   const filteredRecords = useMemo(() => {
     const filtered = attendanceRecords.filter((record) => {
       const matchesSearch =
         searchTerm === "" ||
-        record.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.employeeId.toLowerCase().includes(searchTerm.toLowerCase())
+        record.employee?.name!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.employee?.id!.toLowerCase().includes(searchTerm.toLowerCase())
 
       const matchesEmployeeName =
-        !filters.employeeName || record.employeeName.toLowerCase().includes(filters.employeeName.toLowerCase())
+        !filters.employeeName || record.employee?.name!.toLowerCase().includes(filters.employeeName.toLowerCase())
 
-      const matchesDateFrom = !filters.dateFrom || record.date >= filters.dateFrom
-      const matchesDateTo = !filters.dateTo || record.date <= filters.dateTo
+      const matchesDate = !filters.date || new Date(record.date!).toDateString() === filters.date.toDateString();
       const matchesStatus = !filters.status || record.status === filters.status
       const matchesShift = !filters.shift || record.shift === filters.shift
-      const matchesEmployeeId = !filters.employeeId || record.employeeId === filters.employeeId
+      const matchesEmployeeId = !filters.employeeId || record.employee?.id! === filters.employeeId
 
       return (
         matchesSearch &&
         matchesEmployeeName &&
-        matchesDateFrom &&
-        matchesDateTo &&
+        matchesDate &&
         matchesStatus &&
         matchesShift &&
         matchesEmployeeId
@@ -139,6 +52,23 @@ export function useAttendance() {
       const aValue = a[sortBy]
       const bValue = b[sortBy]
 
+      if (
+        typeof aValue === "object" &&
+        typeof bValue === "object" &&
+        aValue !== null &&
+        bValue !== null &&
+        "name" in aValue &&
+        "name" in bValue
+      ) {
+        const aName = (aValue as any).name
+        const bName = (bValue as any).name
+
+        if (typeof aName === "string" && typeof bName === "string") {
+          const comparison = aName.localeCompare(bName)
+          return sortOrder === "asc" ? comparison : -comparison
+        }
+      }
+
       if (typeof aValue === "string" && typeof bValue === "string") {
         const comparison = aValue.localeCompare(bValue)
         return sortOrder === "asc" ? comparison : -comparison
@@ -148,8 +78,8 @@ export function useAttendance() {
         return sortOrder === "asc" ? aValue - bValue : bValue - aValue
       }
 
-      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1
-      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1
+      if (aValue! < bValue!) return sortOrder === "asc" ? -1 : 1
+      if (aValue! > bValue!) return sortOrder === "asc" ? 1 : -1
       return 0
     })
 
@@ -163,11 +93,11 @@ export function useAttendance() {
 
   // Statistics
   const stats: AttendanceStats = useMemo(() => {
-    const totalPresent = filteredRecords.filter((record) => record.status === "Present").length
-    const totalAbsent = filteredRecords.filter((record) => record.status === "Absent").length
-    const totalLate = filteredRecords.filter((record) => record.status === "Late").length
-    const totalOvertimeHours = filteredRecords.reduce((sum, record) => sum + record.overtimeHours, 0)
-    const totalWages = filteredRecords.reduce((sum, record) => sum + record.dailyWage, 0)
+    const totalPresent = filteredRecords.filter((record) => record.status === AttendanceStatus.present).length
+    const totalAbsent = filteredRecords.filter((record) => record.status === AttendanceStatus.absent).length
+    const totalLate = filteredRecords.filter((record) => record.status === AttendanceStatus.late).length
+    const totalOvertimeHours = filteredRecords.reduce((sum, record) => sum + record.overtimeHours!, 0)
+    const totalWages = filteredRecords.reduce((sum, record) => sum + record.dailyWage!, 0)
 
     return {
       totalPresent,
@@ -180,66 +110,111 @@ export function useAttendance() {
 
   // Timesheet data
   const timesheetData = useMemo(() => {
-    const employees = new Map<string, TimesheetData>()
+    const filteredByMonth = filteredRecords.filter((record) => {
+      if (!record.date) return false;
+      const date = new Date(record.date);
+      return (
+        date.getMonth() + 1 === currentMonth &&
+        date.getFullYear() === currentYear
+      );
+    });
 
-    filteredRecords.forEach((record) => {
-      if (!employees.has(record.employeeId)) {
-        employees.set(record.employeeId, {
-          employeeId: record.employeeId,
-          employeeName: record.employeeName,
+    const employees = new Map<string, TimesheetData>();
+
+    filteredByMonth.forEach((record) => {
+      if (!record.employee?.id) return;
+
+      if (!employees.has(record.employee.id)) {
+        employees.set(record.employee.id, {
+          employeeId: record.employee.id,
+          employeeName: record.employee.name!,
           shifts: {
-            Morning: {},
-            Afternoon: {},
-            Evening: {},
+            morning: {},
+            afternoon: {},
+            evening: {},
           },
           totalDays: 0,
-        })
+        });
       }
 
-      const employee = employees.get(record.employeeId)!
-      const day = new Date(record.date).getDate().toString()
-      employee.shifts[record.shift][day] = record
+      const employee = employees.get(record.employee.id)!;
+      const day = new Date(record.date!).getDate().toString();
+      employee.shifts[record.shift!][day] = record;
 
-      // Calculate total days
-      const allShifts = Object.values(employee.shifts).flatMap((shift) => Object.values(shift))
-      employee.totalDays = allShifts.filter((record) => record && record.status === "Present").length
-    })
+      const allShifts = Object.values(employee.shifts).flatMap((shift) =>
+        Object.values(shift)
+      );
+      employee.totalDays = allShifts.filter(
+        (record) => record && record.status === AttendanceStatus.present
+      ).length;
+    });
 
-    return Array.from(employees.values())
-  }, [filteredRecords])
+    return Array.from(employees.values());
+  }, [filteredRecords, currentMonth, currentYear]);
 
   // CRUD operations
-  const addAttendanceRecord = (recordData: Omit<AttendanceRecord, "id" | "createdAt" | "updatedAt">) => {
-    const newRecord: AttendanceRecord = {
-      ...recordData,
-      id: `ATT-${String(attendanceRecords.length + 1).padStart(3, "0")}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  const addAttendanceRecord = async (recordData: Omit<AttendanceRecord, "id" | "createdAt" | "updatedAt">) => {
+    try {
+      setLoading(true)
+      const newRecord: AttendanceRecord = {
+        ...recordData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      const added = await apiAddAttendanceRecord(newRecord)
+      setAttendanceRecords((prev) => [...prev, added])
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
     }
-    setAttendanceRecords((prev) => [...prev, newRecord])
   }
 
-  const updateAttendanceRecord = (id: string, recordData: Partial<AttendanceRecord>) => {
-    setAttendanceRecords((prev) =>
-      prev.map((record) =>
-        record.id === id
-          ? {
-              ...record,
-              ...recordData,
-              updatedAt: new Date().toISOString(),
-            }
-          : record,
-      ),
-    )
+  const updateAttendanceRecord = async (id: string, recordData: Partial<AttendanceRecord>) => {
+    try {
+      setLoading(true)
+      const updated = await apiUpdateAttendanceRecord(id, recordData)
+      setAttendanceRecords((prev) => prev.map(record => record.id === id ? updated : record))
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const deleteAttendanceRecord = (id: string) => {
-    setAttendanceRecords((prev) => prev.filter((record) => record.id !== id))
+  const deleteAttendanceRecord = async (id: string) => {
+    try {
+      setLoading(true)
+      await apiDeleteAttendanceRecord(id)
+      setAttendanceRecords((prev) => prev.filter((record) => record.id !== id))
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getAttendanceRecord = (id: string) => {
     return attendanceRecords.find((record) => record.id === id)
   }
+
+  const onInit = async () => {
+    try {
+      setLoading(true)
+      const employeeData = await getEmployee()
+      setEmployees(employeeData.data)
+      const attendanceData = await getAllAttendanceRecords()
+      setAttendanceRecords(attendanceData.data)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    onInit()
+  }, [])
 
   return {
     attendanceRecords: paginatedRecords,
@@ -269,5 +244,7 @@ export function useAttendance() {
     timesheetData,
     employees,
     getEmployeeById: (id: string) => employees.find((emp) => emp.id === id),
+    loading,
+    currentMonth, setCurrentMonth, currentYear, setCurrentYear
   }
 }
