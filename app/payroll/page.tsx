@@ -18,16 +18,20 @@ import {
   FileText,
   MoreHorizontal,
   Eye,
-  Trash2,
   ChevronLeft,
   ChevronRight,
+  Loader2,
+  Check,
 } from "lucide-react"
 import { usePayroll } from "@/hooks/use-payroll"
 import { PayrollFilterModal } from "@/components/payroll/payroll-filter-modal"
 import { PayrollViewModal } from "@/components/payroll/payroll-view-modal"
 import { PayrollDeleteModal } from "@/components/payroll/payroll-delete-modal"
 import { useLanguage } from "@/contexts/language-context"
-import type { PayrollRecord } from "@/types/payroll"
+import type { PayrollRecord, SortableKey } from "@/types/payroll"
+import { PayrollStatus } from "@/types"
+import { PayrollProcessOneModal } from "@/components/payroll/payroll-process-one-modal"
+import { PayrollProcessAllModal } from "@/components/payroll/payroll-process-all-modal"
 
 export default function PayrollPage() {
   const { t } = useLanguage()
@@ -47,30 +51,34 @@ export default function PayrollPage() {
     setSortOrder,
     totalPages,
     totalRecords,
-    deletePayrollRecord,
     stats,
     processAllPayrolls,
+    loading,
+    filterPeriods,
+    processOnePayroll
   } = usePayroll()
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isProcessOneModalOpen, setIsProcessOneModalOpen] = useState(false)
+  const [isProcessAllModalOpen, setIsProcessAllModalOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState<PayrollRecord | null>(null)
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Processed":
+      case PayrollStatus.processed:
         return "bg-green-100 text-green-800"
-      case "Pending":
+      case PayrollStatus.pending:
         return "bg-yellow-100 text-yellow-800"
-      case "Failed":
+      case PayrollStatus.failed:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null) => {
+    if (!name) return ""
     return name
       .split(" ")
       .map((n) => n[0])
@@ -79,7 +87,7 @@ export default function PayrollPage() {
   }
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`
+    return `${amount.toLocaleString()} VND`
   }
 
   const handleView = (record: PayrollRecord) => {
@@ -87,30 +95,23 @@ export default function PayrollPage() {
     setIsViewModalOpen(true)
   }
 
-  const handleDelete = (record: PayrollRecord) => {
-    setSelectedRecord(record)
-    setIsDeleteModalOpen(true)
-  }
-
-  const handleConfirmDelete = () => {
+  const handleConfirmProcess = () => {
     if (selectedRecord) {
-      deletePayrollRecord(selectedRecord.id)
+      processOnePayroll(selectedRecord.id!)
     }
   }
 
-  const handleSort = (field: keyof PayrollRecord) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-    } else {
-      setSortBy(field)
-      setSortOrder("asc")
-    }
+  const handleProcessOne = (record: PayrollRecord) => {
+    setSelectedRecord(record)
+    setIsProcessOneModalOpen(true)
   }
 
   const handleProcessAll = () => {
+    setIsProcessAllModalOpen(true)
+  }
+
+  const handleConfirmProcessAll = () => {
     processAllPayrolls()
-    // Show success message
-    alert(t("payroll.messages.processSuccess"))
   }
 
   const handleExport = () => {
@@ -120,6 +121,11 @@ export default function PayrollPage() {
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -158,7 +164,7 @@ export default function PayrollPage() {
             <Select
               value={`${sortBy}-${sortOrder}`}
               onValueChange={(value) => {
-                const [field, order] = value.split("-") as [keyof PayrollRecord, "asc" | "desc"]
+                const [field, order] = value.split("-") as [SortableKey, "asc" | "desc"]
                 setSortBy(field)
                 setSortOrder(order)
               }}
@@ -167,23 +173,23 @@ export default function PayrollPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name-asc">
+                <SelectItem value="employee.name-asc">
                   {t("payroll.sort.name")} ({t("payroll.sort.ascending")})
                 </SelectItem>
-                <SelectItem value="name-desc">
+                <SelectItem value="employee.name-desc">
                   {t("payroll.sort.name")} ({t("payroll.sort.descending")})
                 </SelectItem>
-                <SelectItem value="department-asc">
+                <SelectItem value="employee.department-asc">
                   {t("payroll.sort.department")} ({t("payroll.sort.ascending")})
                 </SelectItem>
-                <SelectItem value="department-desc">
+                <SelectItem value="employee.department-desc">
                   {t("payroll.sort.department")} ({t("payroll.sort.descending")})
                 </SelectItem>
-                <SelectItem value="netSalary-asc">
-                  {t("payroll.sort.netSalary")} ({t("payroll.sort.ascending")})
+                <SelectItem value="totalSalary-asc">
+                  {t("payroll.sort.totalSalary")} ({t("payroll.sort.ascending")})
                 </SelectItem>
-                <SelectItem value="netSalary-desc">
-                  {t("payroll.sort.netSalary")} ({t("payroll.sort.descending")})
+                <SelectItem value="totalSalary-desc">
+                  {t("payroll.sort.totalSalary")} ({t("payroll.sort.descending")})
                 </SelectItem>
                 <SelectItem value="status-asc">
                   {t("payroll.sort.status")} ({t("payroll.sort.ascending")})
@@ -205,7 +211,7 @@ export default function PayrollPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(stats.totalPayroll)}</div>
-              <p className="text-xs text-muted-foreground">January 2024</p>
+              {/* <p className="text-xs text-muted-foreground">January 2024</p> */}
             </CardContent>
           </Card>
           <Card>
@@ -257,18 +263,18 @@ export default function PayrollPage() {
                 >
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src="/placeholder.svg" alt={record.name} />
-                      <AvatarFallback>{getInitials(record.name)}</AvatarFallback>
+                      <AvatarImage src="/placeholder.svg" alt={record.employee?.name!} />
+                      <AvatarFallback>{getInitials(record.employee?.name!)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-                        <h3 className="text-sm font-medium">{record.name}</h3>
-                        <Badge className={getStatusColor(record.status)}>
-                          {t(`payroll.status.${record.status.toLowerCase()}`)}
+                        <h3 className="text-sm font-medium">{record.employee?.name!}</h3>
+                        <Badge className={getStatusColor(record.status!)}>
+                          {t(`payroll.status.${record.status?.toLowerCase()}`)}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {record.position} - {t(`payroll.departments.${record.department.toLowerCase()}`)}
+                        {record.employee?.position} - {t(`payroll.departments.${record.employee?.department!.toLowerCase()}`)}
                       </p>
                       <p className="text-xs text-muted-foreground">{record.payPeriod}</p>
                     </div>
@@ -277,23 +283,15 @@ export default function PayrollPage() {
                   <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-5 sm:gap-4">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground">{t("payroll.baseSalary")}</p>
-                      <p className="font-medium">{formatCurrency(record.baseSalary)}</p>
+                      <p className="font-medium">{formatCurrency(record.employee?.salary!)}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">{t("payroll.overtime")}</p>
-                      <p className="font-medium text-green-600">+{formatCurrency(record.overtime)}</p>
+                      <p className="text-xs text-muted-foreground">{t("payroll.workingShifts")}</p>
+                      <p className="font-medium">{record.workingShifts}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">{t("payroll.bonus")}</p>
-                      <p className="font-medium text-green-600">+{formatCurrency(record.bonus)}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground">{t("payroll.deductions")}</p>
-                      <p className="font-medium text-red-600">-{formatCurrency(record.deductions)}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground">{t("payroll.netSalary")}</p>
-                      <p className="font-bold text-lg">{formatCurrency(record.netSalary)}</p>
+                      <p className="text-xs text-muted-foreground">{t("payroll.totalSalary")}</p>
+                      <p className="font-bold text-lg">{formatCurrency(record.totalSalary!)}</p>
                     </div>
                   </div>
 
@@ -308,10 +306,12 @@ export default function PayrollPage() {
                         <Eye className="mr-2 h-4 w-4" />
                         {t("payroll.viewPayroll")}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(record)} className="text-red-600">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t("payroll.delete.confirm")}
-                      </DropdownMenuItem>
+                      {record.status !== PayrollStatus.processed &&
+                        <DropdownMenuItem onClick={() => handleProcessOne(record)} className="text-green-500">
+                          <Check className="mr-2 h-4 w-4" />
+                          {t("payroll.processPayroll")}
+                        </DropdownMenuItem>
+                      }
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -378,6 +378,7 @@ export default function PayrollPage() {
         onClose={() => setIsFilterModalOpen(false)}
         onApply={setFilters}
         currentFilters={filters}
+        filterPeriods={filterPeriods}
       />
 
       <PayrollViewModal
@@ -386,11 +387,17 @@ export default function PayrollPage() {
         payrollRecord={selectedRecord}
       />
 
-      <PayrollDeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
+      <PayrollProcessOneModal
+        isOpen={isProcessOneModalOpen}
+        onClose={() => setIsProcessOneModalOpen(false)}
+        onConfirm={handleConfirmProcess}
         payrollRecord={selectedRecord}
+      />
+
+      <PayrollProcessAllModal
+        isOpen={isProcessAllModalOpen}
+        onClose={() => setIsProcessAllModalOpen(false)}
+        onConfirm={handleConfirmProcessAll}
       />
     </ERPLayout>
   )

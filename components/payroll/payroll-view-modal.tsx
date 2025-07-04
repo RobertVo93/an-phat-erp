@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { PayrollRecord } from "@/types/payroll"
 import { useLanguage } from "@/contexts/language-context"
+import { PayrollStatus } from "@/types"
 
 interface PayrollViewModalProps {
   isOpen: boolean
@@ -20,11 +21,11 @@ export function PayrollViewModal({ isOpen, onClose, payrollRecord }: PayrollView
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Processed":
+      case PayrollStatus.processed:
         return "bg-green-100 text-green-800"
-      case "Pending":
+      case PayrollStatus.pending:
         return "bg-yellow-100 text-yellow-800"
-      case "Failed":
+      case PayrollStatus.failed:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -40,7 +41,7 @@ export function PayrollViewModal({ isOpen, onClose, payrollRecord }: PayrollView
   }
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`
+    return `${amount.toLocaleString()} VND`
   }
 
   return (
@@ -54,21 +55,21 @@ export function PayrollViewModal({ isOpen, onClose, payrollRecord }: PayrollView
           {/* Employee Info */}
           <div className="flex items-center space-x-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src="/placeholder.svg" alt={payrollRecord.name} />
-              <AvatarFallback className="text-lg">{getInitials(payrollRecord.name)}</AvatarFallback>
+              <AvatarImage src="/placeholder.svg" alt={payrollRecord?.employee?.name!} />
+              <AvatarFallback className="text-lg">{getInitials(payrollRecord?.employee?.name!)}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-2">
-                <h3 className="text-xl font-semibold">{payrollRecord.name}</h3>
-                <Badge className={getStatusColor(payrollRecord.status)}>
-                  {t(`payroll.status.${payrollRecord.status.toLowerCase()}`)}
+                <h3 className="text-xl font-semibold">{payrollRecord?.employee?.name!}</h3>
+                <Badge className={getStatusColor(payrollRecord?.status!)}>
+                  {t(`payroll.status.${payrollRecord.status?.toLowerCase()}`)}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {payrollRecord.position} - {t(`payroll.departments.${payrollRecord.department.toLowerCase()}`)}
+                {payrollRecord?.employee?.position!} - {t(`payroll.departments.${payrollRecord?.employee?.department?.toLowerCase()}`)}
               </p>
               <p className="text-sm text-muted-foreground">
-                {t("payroll.form.employeeId")}: {payrollRecord.employeeId}
+                {t("payroll.form.employeeId")}: {payrollRecord.employee?.id}
               </p>
             </div>
           </div>
@@ -87,53 +88,24 @@ export function PayrollViewModal({ isOpen, onClose, payrollRecord }: PayrollView
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{t("payroll.workingDays")}:</span>
-                  <span className="font-medium">{payrollRecord.workingDays} days</span>
+                  <span className="text-sm text-muted-foreground">{t("payroll.workingShifts")}:</span>
+                  <span className="font-medium">{payrollRecord.workingShifts} {t("payroll.shifts")}</span>
                 </div>
-
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{t("payroll.overtimeHours")}:</span>
-                  <span className="font-medium">{payrollRecord.overtimeHours} hours</span>
-                </div>
-
-                {payrollRecord.processedDate && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Processed Date:</span>
-                    <span className="font-medium">{payrollRecord.processedDate}</span>
-                  </div>
-                )}
               </div>
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold text-lg">Salary Breakdown</h4>
+              <h4 className="font-semibold text-lg">{t("payroll.balaryBreakdown")}</h4>
 
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">{t("payroll.baseSalary")}:</span>
-                  <span className="font-medium">{formatCurrency(payrollRecord.baseSalary)}</span>
+                  <span className="font-medium">{formatCurrency(payrollRecord?.employee?.salary!)}</span>
                 </div>
-
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{t("payroll.overtime")}:</span>
-                  <span className="font-medium text-green-600">+{formatCurrency(payrollRecord.overtime)}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{t("payroll.bonus")}:</span>
-                  <span className="font-medium text-green-600">+{formatCurrency(payrollRecord.bonus)}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{t("payroll.deductions")}:</span>
-                  <span className="font-medium text-red-600">-{formatCurrency(payrollRecord.deductions)}</span>
-                </div>
-
                 <Separator />
-
                 <div className="flex justify-between">
-                  <span className="font-semibold">{t("payroll.netSalary")}:</span>
-                  <span className="font-bold text-lg">{formatCurrency(payrollRecord.netSalary)}</span>
+                  <span className="font-semibold">{t("payroll.totalSalary")}:</span>
+                  <span className="font-bold text-lg">{formatCurrency(payrollRecord?.totalSalary!)}</span>
                 </div>
               </div>
             </div>
