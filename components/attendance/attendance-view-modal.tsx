@@ -7,6 +7,8 @@ import { Separator } from "@/components/ui/separator"
 import { useLanguage } from "@/contexts/language-context"
 import { Calendar, Clock, DollarSign, User, FileText } from "lucide-react"
 import type { AttendanceRecord } from "@/types/attendance"
+import { AttendanceShift, AttendanceStatus } from "@/types"
+import { extractHourMinute, formatLocalDatetime } from "@/lib/utils"
 
 interface AttendanceViewModalProps {
   isOpen: boolean
@@ -21,15 +23,15 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Present":
+      case AttendanceStatus.present:
         return "bg-green-100 text-green-800"
-      case "Late":
+      case AttendanceStatus.late:
         return "bg-yellow-100 text-yellow-800"
-      case "Absent":
+      case AttendanceStatus.absent:
         return "bg-red-100 text-red-800"
-      case "Half Day":
+      case AttendanceStatus.halfDay:
         return "bg-blue-100 text-blue-800"
-      case "Overtime":
+      case AttendanceStatus.overtime:
         return "bg-purple-100 text-purple-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -38,11 +40,11 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
 
   const getShiftColor = (shift: string) => {
     switch (shift) {
-      case "Morning":
+      case AttendanceShift.morning:
         return "bg-orange-100 text-orange-800"
-      case "Afternoon":
+      case AttendanceShift.afternoon:
         return "bg-blue-100 text-blue-800"
-      case "Evening":
+      case AttendanceShift.evening:
         return "bg-indigo-100 text-indigo-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -72,18 +74,18 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
           {/* Employee Info */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">{record.employeeName}</h3>
+              <h3 className="text-lg font-semibold">{record.employee?.name!}</h3>
               <div className="flex gap-2">
-                <Badge className={getStatusColor(record.status)}>
-                  {t(`attendance.status.${record.status.toLowerCase().replace(" ", "")}`)}
+                <Badge className={getStatusColor(record.status!)}>
+                  {t(`attendance.status.${record.status?.toLowerCase().replace(" ", "")}`)}
                 </Badge>
-                <Badge className={getShiftColor(record.shift)}>
-                  {t(`attendance.shift.${record.shift.toLowerCase()}`)}
+                <Badge className={getShiftColor(record.shift!)}>
+                  {t(`attendance.shift.${record.shift?.toLowerCase()}`)}
                 </Badge>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              {t("attendance.form.employeeId")}: {record.employeeId}
+              {t("attendance.form.employeeId")}: {record.employee?.id!}
             </p>
           </div>
 
@@ -96,7 +98,7 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{t("attendance.date")}</span>
               </div>
-              <p className="text-sm">{formatDate(record.date)}</p>
+              <p className="text-sm">{formatDate(record.date!)}</p>
             </div>
 
             <div className="space-y-3">
@@ -104,7 +106,7 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{t("attendance.shift")}</span>
               </div>
-              <p className="text-sm">{t(`attendance.shift.${record.shift.toLowerCase()}`)}</p>
+              <p className="text-sm">{t(`attendance.shift.${record.shift?.toLowerCase()}`)}</p>
             </div>
 
             {record.checkIn && (
@@ -113,7 +115,7 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
                   <Clock className="h-4 w-4 text-green-600" />
                   <span className="text-sm font-medium">{t("attendance.checkIn")}</span>
                 </div>
-                <p className="text-sm">{record.checkIn}</p>
+                <p className="text-sm">{extractHourMinute(record.checkIn)}</p>
               </div>
             )}
 
@@ -123,7 +125,7 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
                   <Clock className="h-4 w-4 text-red-600" />
                   <span className="text-sm font-medium">{t("attendance.checkOut")}</span>
                 </div>
-                <p className="text-sm">{record.checkOut}</p>
+                <p className="text-sm">{extractHourMinute(record.checkOut)}</p>
               </div>
             )}
           </div>
@@ -153,7 +155,7 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
                 <DollarSign className="h-4 w-4 text-green-600" />
                 <span className="text-sm font-medium">{t("attendance.dailyWage")}</span>
               </div>
-              <p className="text-sm">${record.dailyWage.toFixed(2)}</p>
+              <p className="text-sm">${record.dailyWage?.toFixed(2)}</p>
             </div>
           </div>
 

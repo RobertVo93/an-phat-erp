@@ -9,7 +9,10 @@ export const EmployeeSchema = z.object({
   position: z.string().optional(),
   department: z.string().optional(),
   salary: z.number().optional(),
-  hireDate: z.date().optional(),
+  hireDate: z.preprocess(
+    (val) => (typeof val === "string" || val instanceof Date) ? new Date(val) : undefined,
+    z.date().optional()
+  ),
   employeeType: z.nativeEnum(EmployeeType).optional(),
   status: z.nativeEnum(EmployeeStatus).optional(),
   address: z.string().optional(),
