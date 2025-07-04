@@ -20,22 +20,32 @@ export function formatDate(date: string | Date): string {
   }).replace(/\//g, '-')
 }
 
-export function formatLocalDatetime(date: Date|string) {
+export function formatYYYYMMDD(date: string | Date): string {
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0') // getMonth: 0-11
+  const day = String(d.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+export function formatLocalDatetime(date: Date | string) {
   const dateData = new Date(date);
   const offset = dateData.getTimezoneOffset();
   const local = new Date(dateData.getTime() - offset * 60 * 1000);
   return local.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
 }
 
-export function isTodayLocalDatetime(dateStr: string): boolean {
-  const inputDate = new Date(dateStr);
+export function extractHourMinute(date: Date | string | null) {
+  if (!date) return "";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "";
 
-  const now = new Date();
-  return (
-    inputDate.getFullYear() === now.getFullYear() &&
-    inputDate.getMonth() === now.getMonth() &&
-    inputDate.getDate() === now.getDate()
-  );
+  const hours = d.getHours().toString().padStart(2, "0");
+  const minutes = d.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
 
 export function base64ToFile(base64: string, filename: string): File {

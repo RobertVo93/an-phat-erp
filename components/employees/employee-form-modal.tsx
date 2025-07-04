@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Employee } from "@/types/employee"
 import { useLanguage } from "@/contexts/language-context"
+import { EmployeeStatus, EmployeeType } from "@/types"
 
 interface EmployeeFormModalProps {
   isOpen: boolean
@@ -21,16 +22,16 @@ interface EmployeeFormModalProps {
 
 export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: EmployeeFormModalProps) {
   const { t } = useLanguage()
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Employee>({
     name: "",
     email: "",
     phone: "",
     position: "",
     department: "",
-    salary: "",
-    hireDate: new Date().toISOString().split("T")[0],
-    employeeType: "Full-time" as const,
-    status: "Active" as const,
+    salary: 0,
+    hireDate: new Date(),
+    employeeType: EmployeeType.fullTime,
+    status: EmployeeStatus.active,
     address: "",
     emergencyContact: "",
     notes: "",
@@ -61,10 +62,10 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
         phone: "",
         position: "",
         department: "",
-        salary: "",
-        hireDate: new Date().toISOString().split("T")[0],
-        employeeType: "Full-time",
-        status: "Active",
+        salary: 0,
+        hireDate: new Date(),
+        employeeType: EmployeeType.fullTime,
+        status: EmployeeStatus.active,
         address: "",
         emergencyContact: "",
         notes: "",
@@ -76,25 +77,25 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name.trim()) {
+    if (!formData.name?.trim()) {
       newErrors.name = t("employees.form.nameRequired")
     }
-    if (!formData.email.trim()) {
+    if (!formData.email?.trim()) {
       newErrors.email = t("employees.form.emailRequired")
     }
-    if (!formData.phone.trim()) {
+    if (!formData.phone?.trim()) {
       newErrors.phone = t("employees.form.phoneRequired")
     }
-    if (!formData.position.trim()) {
+    if (!formData.position?.trim()) {
       newErrors.position = t("employees.form.positionRequired")
     }
-    if (!formData.department.trim()) {
+    if (!formData.department?.trim()) {
       newErrors.department = t("employees.form.departmentRequired")
     }
-    if (!formData.salary.trim()) {
+    if (!formData.salary) {
       newErrors.salary = t("employees.form.salaryRequired")
     }
-    if (!formData.hireDate.trim()) {
+    if (!formData.hireDate) {
       newErrors.hireDate = t("employees.form.hireDateRequired")
     }
 
@@ -119,7 +120,11 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
   }
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    if (field === "salary") {
+      setFormData((prev) => ({ ...prev, [field]: Number(value) }))
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }))
+    }
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }))
     }
@@ -210,7 +215,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                 <Label htmlFor="department">{t("employees.form.department")} *</Label>
                 <Select value={formData.department} onValueChange={(value) => handleInputChange("department", value)}>
                   <SelectTrigger className={errors.department ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Select department" />
+                    <SelectValue placeholder={t("employees.form.selectDepartment")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="IT">{t("employees.departments.it")}</SelectItem>
@@ -229,6 +234,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                 <Input
                   id="salary"
                   value={formData.salary}
+                  type="number"
                   onChange={(e) => handleInputChange("salary", e.target.value)}
                   placeholder="$0.00"
                   className={errors.salary ? "border-red-500" : ""}
@@ -241,7 +247,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                 <Input
                   id="hireDate"
                   type="date"
-                  value={formData.hireDate}
+                  value={new Date(formData.hireDate!).toLocaleDateString("sv-SE")}
                   onChange={(e) => handleInputChange("hireDate", e.target.value)}
                   className={errors.hireDate ? "border-red-500" : ""}
                 />
@@ -258,10 +264,10 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Full-time">{t("employees.type.fullTime")}</SelectItem>
-                    <SelectItem value="Part-time">{t("employees.type.partTime")}</SelectItem>
-                    <SelectItem value="Contract">{t("employees.type.contract")}</SelectItem>
-                    <SelectItem value="Intern">{t("employees.type.intern")}</SelectItem>
+                    <SelectItem value={EmployeeType.fullTime}>{t("employees.type.fullTime")}</SelectItem>
+                    <SelectItem value={EmployeeType.partTime}>{t("employees.type.partTime")}</SelectItem>
+                    <SelectItem value={EmployeeType.contract}>{t("employees.type.contract")}</SelectItem>
+                    <SelectItem value={EmployeeType.intern}>{t("employees.type.intern")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -273,9 +279,9 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Active">{t("employees.status.active")}</SelectItem>
-                    <SelectItem value="Inactive">{t("employees.status.inactive")}</SelectItem>
-                    <SelectItem value="On Leave">{t("employees.status.onLeave")}</SelectItem>
+                    <SelectItem value={EmployeeStatus.active}>{t("employees.status.active")}</SelectItem>
+                    <SelectItem value={EmployeeStatus.inactive}>{t("employees.status.inactive")}</SelectItem>
+                    <SelectItem value={EmployeeStatus.onLeave}>{t("employees.status.onLeave")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

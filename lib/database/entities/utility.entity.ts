@@ -1,12 +1,15 @@
 import { Entity, Column } from "typeorm";
 import { BaseEntity } from "./base.entity";
-import { UtilityStatus } from "../../../types/enums";
+import { UtilityStatus, UtilityType, UtilityUnit } from "../../../types/enums";
 import { Utility as IUtility } from "@/types/utility";
 
 @Entity({ name: "utilities" })
 export class UtilityEntity extends BaseEntity implements IUtility {
-  @Column({ nullable: true })
-  type?: string;
+  @Column({ type: "enum", enum: UtilityType, nullable: true })
+  type?: UtilityType;
+
+  @Column({ nullable: false })
+  name?: string
 
   @Column({ nullable: true })
   provider?: string;
@@ -20,8 +23,8 @@ export class UtilityEntity extends BaseEntity implements IUtility {
   @Column({ type: "float", nullable: true })
   monthlyUsage?: number;
 
-  @Column({ nullable: true })
-  unit?: string;
+  @Column({ type: "enum", enum: UtilityUnit, nullable: true })
+  unit?: UtilityUnit;
 
   @Column({ type: "float", nullable: true })
   costPerUnit?: number;

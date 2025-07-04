@@ -148,6 +148,10 @@ export const attendanceTranslations = {
     en: "Half Day",
     vi: "Nửa Ngày",
   },
+  "attendance.status.halfday": {
+    en: "Half Day",
+    vi: "Nửa Ngày",
+  },
   "attendance.status.overtime": {
     en: "Overtime",
     vi: "Làm Thêm",
@@ -260,9 +264,33 @@ export const attendanceTranslations = {
     en: "Filter Attendance",
     vi: "Lọc Chấm Công",
   },
+  "attendance.filter.description": {
+    en: "Select to filter attendance",
+    vi: "Chọn để lọc Chấm Công",
+  },
   "attendance.filter.employeeName": {
     en: "Employee Name",
     vi: "Tên Nhân Viên",
+  },
+  "attendance.filter.selectEmployee": {
+    en: "Select Employee",
+    vi: "Chọn Nhân Viên",
+  },
+  "attendance.filter.allEmployees": {
+    en: "All Employee",
+    vi: "Tất cả Nhân Viên",
+  },
+  "attendance.filter.date": {
+    en: "Filter by date",
+    vi: "Lọc theo ngày",
+  },
+  "attendance.filter.pickDate": {
+    en: "Select date",
+    vi: "Chọn ngày",
+  },
+  "attendance.filter.employee": {
+    en: "Filter by employee",
+    vi: "Lọc theo nhân viên",
   },
   "attendance.filter.dateRange": {
     en: "Date Range",
@@ -343,6 +371,54 @@ export const attendanceTranslations = {
   "attendance.timesheet.year": {
     en: "Year",
     vi: "Năm",
+  },
+  "attendance.timesheet.January": {
+    en: "January",
+    vi: "Tháng 1",
+  },
+  "attendance.timesheet.February": {
+    en: "February",
+    vi: "Tháng 2",
+  },
+  "attendance.timesheet.March": {
+    en: "March",
+    vi: "Tháng 3",
+  },
+  "attendance.timesheet.April": {
+    en: "April",
+    vi: "Tháng 4",
+  },
+  "attendance.timesheet.May": {
+    en: "May",
+    vi: "Tháng 5",
+  },
+  "attendance.timesheet.June": {
+    en: "June",
+    vi: "Tháng 6",
+  },
+  "attendance.timesheet.July": {
+    en: "July",
+    vi: "Tháng 7",
+  },
+  "attendance.timesheet.August": {
+    en: "August",
+    vi: "Tháng 8",
+  },
+  "attendance.timesheet.September": {
+    en: "September",
+    vi: "Tháng 9",
+  },
+  "attendance.timesheet.October": {
+    en: "October",
+    vi: "Tháng 10",
+  },
+  "attendance.timesheet.November": {
+    en: "November",
+    vi: "Tháng 11",
+  },
+  "attendance.timesheet.December": {
+    en: "December",
+    vi: "Tháng 12",
   },
 
   // Pagination

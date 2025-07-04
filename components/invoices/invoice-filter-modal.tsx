@@ -53,7 +53,7 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
                 <SelectValue placeholder="Tất cả trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                <SelectItem value="all">{t("invoices.status.allStatuses")}</SelectItem>
                 <SelectItem value="draft">{t("invoices.status.draft")}</SelectItem>
                 <SelectItem value="sent">{t("invoices.status.sent")}</SelectItem>
                 <SelectItem value="paid">{t("invoices.status.paid")}</SelectItem>
@@ -66,28 +66,30 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="billingPeriodFrom">Kỳ hóa đơn từ</Label>
+              <Label htmlFor="billingPeriodFrom">{t("invoices.status.periodFrom")}</Label>
               <Input
                 id="billingPeriodFrom"
                 placeholder="MM/YYYY"
-                value={filters.billingPeriodFrom || ""}
-                onChange={(e) => setFilters((prev) => ({ ...prev, billingPeriodFrom: e.target.value }))}
+                type="month"
+                value={new Date(filters.billingPeriodFrom!).toLocaleDateString("sv-SE", { year: "numeric", month: "2-digit" })}
+                onChange={(e) => setFilters((prev) => ({ ...prev, billingPeriodFrom: new Date(e.target.value) }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="billingPeriodTo">Kỳ hóa đơn đến</Label>
+              <Label htmlFor="billingPeriodTo">{t("invoices.status.periodTo")}</Label>
               <Input
                 id="billingPeriodTo"
                 placeholder="MM/YYYY"
-                value={filters.billingPeriodTo || ""}
-                onChange={(e) => setFilters((prev) => ({ ...prev, billingPeriodTo: e.target.value }))}
+                type="month"
+                value={new Date(filters.billingPeriodTo!).toLocaleDateString("sv-SE", { year: "numeric", month: "2-digit" })}
+                onChange={(e) => setFilters((prev) => ({ ...prev, billingPeriodTo: new Date(e.target.value) }))}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amountFrom">Số tiền từ</Label>
+              <Label htmlFor="amountFrom">{t("invoices.status.moneyFrom")}</Label>
               <Input
                 id="amountFrom"
                 type="number"
@@ -99,7 +101,7 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="amountTo">Số tiền đến</Label>
+              <Label htmlFor="amountTo">{t("invoices.status.moneyTo")}</Label>
               <Input
                 id="amountTo"
                 type="number"
@@ -115,9 +117,9 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={handleReset}>
-            Đặt lại
+            {t("invoices.status.rest")}
           </Button>
-          <Button onClick={handleApply}>Áp dụng</Button>
+          <Button onClick={handleApply}>{t("invoices.status.apply")}</Button>
         </div>
       </DialogContent>
     </Dialog>

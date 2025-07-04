@@ -82,6 +82,25 @@ export enum UtilityStatus {
   disconnected = "disconnected"
 }
 
+export enum UtilityType {
+  electricity = "electricity",
+  water = "water",
+  gas = "gas",
+  internet = "internet",
+  phone = "phone",
+  cable = "cable",
+  security = "security",
+  cleaning = "cleaning",
+  other = "other"
+}
+
+export enum UtilityUnit {
+  kwh = "kwh",
+  m3 = "m3",
+  gb = "gb",
+  minutes = "minutes"
+}
+
 export enum ProductStatus {
   active = "active",
   inactive = "inactive",
@@ -134,14 +153,6 @@ export enum ProductionStatus {
   cancelled = "cancelled"
 }
 
-export enum UtilityType {
-  electricity = "electricity",
-  water = "water",
-  gas = "gas",
-  internet = "internet",
-  other = "other"
-}
-
 export enum EmployeeType {
   fullTime = "fullTime",
   partTime = "partTime",
@@ -162,7 +173,7 @@ export enum InvoiceStatus {
   partial = "partial",
   overdue = "overdue",
   cancelled = "cancelled"
-} 
+}
 
 export enum UserRole {
   super_admin = "super_admin",
@@ -170,4 +181,9 @@ export enum UserRole {
   manager = "manager",
   staff = "staff",
   customer = "customer",
+}
+
+export enum ReadingType {
+  predefined_utility = "predefined_utility",
+  other = "other"
 }

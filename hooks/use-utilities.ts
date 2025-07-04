@@ -1,142 +1,41 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import type { Utility, UtilityFilters, UtilitySortField, SortDirection } from "@/types/utility"
-
-// Mock data for utilities
-const mockUtilities: Utility[] = [
-  {
-    id: "UTIL-001",
-    type: "Electricity",
-    provider: "Vietnam Electricity",
-    accountNumber: "ELC-123456789",
-    location: "Main Warehouse",
-    monthlyUsage: 2500,
-    unit: "kWh",
-    costPerUnit: 0.12,
-    monthlyCost: 300,
-    lastReading: "2024-01-15",
-    status: "Active",
-    dueDate: "2024-02-15",
-    description: "Main warehouse electricity supply",
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-15",
-  },
-  {
-    id: "UTIL-002",
-    type: "Water",
-    provider: "Saigon Water Corporation",
-    accountNumber: "WTR-987654321",
-    location: "Main Warehouse",
-    monthlyUsage: 150,
-    unit: "m³",
-    costPerUnit: 2.5,
-    monthlyCost: 375,
-    lastReading: "2024-01-15",
-    status: "Active",
-    dueDate: "2024-02-10",
-    description: "Water supply for main facility",
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-15",
-  },
-  {
-    id: "UTIL-003",
-    type: "Gas",
-    provider: "PetroVietnam Gas",
-    accountNumber: "GAS-456789123",
-    location: "Main Warehouse",
-    monthlyUsage: 80,
-    unit: "m³",
-    costPerUnit: 1.8,
-    monthlyCost: 144,
-    lastReading: "2024-01-15",
-    status: "Active",
-    dueDate: "2024-02-20",
-    description: "Gas supply for heating and cooking",
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-15",
-  },
-  {
-    id: "UTIL-004",
-    type: "Internet",
-    provider: "FPT Telecom",
-    accountNumber: "INT-789123456",
-    location: "Main Warehouse",
-    monthlyUsage: 1000,
-    unit: "GB",
-    costPerUnit: 0.05,
-    monthlyCost: 50,
-    lastReading: "2024-01-15",
-    status: "Active",
-    dueDate: "2024-02-05",
-    description: "High-speed internet connection",
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-15",
-  },
-  {
-    id: "UTIL-005",
-    type: "Electricity",
-    provider: "Vietnam Electricity",
-    accountNumber: "ELC-111222333",
-    location: "North Branch",
-    monthlyUsage: 1200,
-    unit: "kWh",
-    costPerUnit: 0.12,
-    monthlyCost: 144,
-    lastReading: "2024-01-15",
-    status: "Overdue",
-    dueDate: "2024-01-25",
-    description: "North branch electricity supply",
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-15",
-  },
-  {
-    id: "UTIL-006",
-    type: "Phone",
-    provider: "Viettel",
-    accountNumber: "PHN-555666777",
-    location: "Main Warehouse",
-    monthlyUsage: 500,
-    unit: "minutes",
-    costPerUnit: 0.1,
-    monthlyCost: 50,
-    lastReading: "2024-01-15",
-    status: "Active",
-    dueDate: "2024-02-12",
-    description: "Business phone line",
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-15",
-  },
-]
+import { UtilityStatus } from "@/types"
+import { addUtility as apiAddUtility, getAllUtilities as apiGetAllUtilities, updateUtility as apiUpdateUtility, deleteUtility as apiDeleteUtility } from "@/lib/httpclient/utility.client"
+import { debounce } from "lodash"
 
 export function useUtilities() {
-  const [utilities, setUtilities] = useState<Utility[]>(mockUtilities)
+  const [utilities, setUtilities] = useState<Utility[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<UtilityFilters>({})
   const [sortField, setSortField] = useState<UtilitySortField>("type")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [itemsPerPage, setItemsPerPage] = useState(5)
+  const [totalUtilities, setTotalUtilities] = useState(0)
+  const [loading, setLoading] = useState<boolean>(false)
 
   const filteredAndSortedUtilities = useMemo(() => {
     const filtered = utilities.filter((utility) => {
       const matchesSearch =
-        utility.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        utility.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        utility.accountNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        utility.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        utility.id.toLowerCase().includes(searchTerm.toLowerCase())
+        utility.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        utility.provider?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        utility.accountNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        utility.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        utility.id?.toLowerCase().includes(searchTerm.toLowerCase())
 
       const matchesType = !filters.type || utility.type === filters.type
       const matchesStatus = !filters.status || utility.status === filters.status
       const matchesLocation = !filters.location || utility.location === filters.location
       const matchesProvider = !filters.provider || utility.provider === filters.provider
 
-      const matchesDueDateFrom = !filters.dueDateFrom || utility.dueDate >= filters.dueDateFrom
-      const matchesDueDateTo = !filters.dueDateTo || utility.dueDate <= filters.dueDateTo
+      const matchesDueDateFrom = !filters.dueDateFrom || utility.dueDate! >= filters.dueDateFrom
+      const matchesDueDateTo = !filters.dueDateTo || utility.dueDate! <= filters.dueDateTo
 
-      const matchesCostFrom = filters.costFrom === undefined || utility.monthlyCost >= filters.costFrom
-      const matchesCostTo = filters.costTo === undefined || utility.monthlyCost <= filters.costTo
+      const matchesCostFrom = filters.costFrom === undefined || utility.monthlyCost! >= filters.costFrom
+      const matchesCostTo = filters.costTo === undefined || utility.monthlyCost! <= filters.costTo
 
       return (
         matchesSearch &&
@@ -174,28 +73,46 @@ export function useUtilities() {
     return filteredAndSortedUtilities.slice(startIndex, startIndex + itemsPerPage)
   }, [filteredAndSortedUtilities, currentPage, itemsPerPage])
 
-  const totalPages = Math.ceil(filteredAndSortedUtilities.length / itemsPerPage)
-
-  const addUtility = (utility: Omit<Utility, "id" | "createdAt" | "updatedAt">) => {
-    const newUtility: Utility = {
-      ...utility,
-      id: `UTIL-${String(utilities.length + 1).padStart(3, "0")}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  const addUtility = async (utility: Omit<Utility, "id" | "createdAt" | "updatedAt">) => {
+    try {
+      setLoading(true)
+      const newUtility: Utility = {
+        ...utility,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      const added = await apiAddUtility(newUtility)
+      setUtilities([...utilities, added])
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
     }
-    setUtilities([...utilities, newUtility])
   }
 
-  const updateUtility = (id: string, updates: Partial<Utility>) => {
-    setUtilities(
-      utilities.map((utility) =>
-        utility.id === id ? { ...utility, ...updates, updatedAt: new Date().toISOString() } : utility,
-      ),
-    )
+  const updateUtility = async (id: string, updates: Partial<Utility>) => {
+    try {
+      setLoading(true)
+      updates.updatedAt = new Date()
+      const updated = await apiUpdateUtility(id, updates)
+      setUtilities(utilities.map((ut) => (ut.id === id ? { ...ut, ...updated } : ut)))
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const deleteUtility = (id: string) => {
-    setUtilities(utilities.filter((utility) => utility.id !== id))
+  const deleteUtility = async (id: string) => {
+    try {
+      setLoading(true)
+      await apiDeleteUtility(id)
+      setUtilities(utilities.filter((utility) => utility.id !== id))
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getUtilityById = (id: string) => {
@@ -219,9 +136,9 @@ export function useUtilities() {
 
   const stats = useMemo(() => {
     const totalUtilities = utilities.length
-    const activeUtilities = utilities.filter((u) => u.status === "Active").length
-    const overdueUtilities = utilities.filter((u) => u.status === "Overdue").length
-    const totalMonthlyCost = utilities.reduce((sum, u) => sum + u.monthlyCost, 0)
+    const activeUtilities = utilities.filter((u) => u.status === UtilityStatus.active).length
+    const overdueUtilities = utilities.filter((u) => u.status === UtilityStatus.overdue).length
+    const totalMonthlyCost = utilities.reduce((sum, u) => sum + u.monthlyCost!, 0)
     const avgMonthlyCost = totalUtilities > 0 ? totalMonthlyCost / totalUtilities : 0
 
     return {
@@ -232,6 +149,23 @@ export function useUtilities() {
       avgMonthlyCost,
     }
   }, [utilities])
+
+  const getAllUtilities = async () => {
+    try {
+      setLoading(true)
+      const res = await apiGetAllUtilities()
+      setUtilities(res.data)
+      setTotalUtilities(res.total)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    getAllUtilities()
+  }, [])
 
   return {
     utilities: paginatedUtilities,
@@ -247,13 +181,14 @@ export function useUtilities() {
     setCurrentPage,
     itemsPerPage,
     setItemsPerPage,
-    totalPages,
-    totalItems: filteredAndSortedUtilities.length,
+    totalPages: Math.ceil(filteredAndSortedUtilities?.length / itemsPerPage),
+    totalItems: filteredAndSortedUtilities?.length,
     addUtility,
     updateUtility,
     deleteUtility,
     getUtilityById,
     resetFilters,
     stats,
+    loading
   }
 }

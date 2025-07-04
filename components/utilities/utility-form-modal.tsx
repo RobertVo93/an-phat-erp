@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
-import type { Utility } from "@/types/utility"
+import type { Utility, UtilityFilters } from "@/types/utility"
+import { UtilityStatus, UtilityType, UtilityUnit } from "@/types"
+import { formatYYYYMMDD } from "@/lib/utils"
 
 interface UtilityFormModalProps {
   isOpen: boolean
@@ -23,18 +25,19 @@ interface UtilityFormModalProps {
 
 export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, mode }: UtilityFormModalProps) {
   const { t } = useLanguage()
-  const [formData, setFormData] = useState({
-    type: "",
+  const [formData, setFormData] = useState<Utility>({
+    type: UtilityType.cable,
+    name: "",
     provider: "",
     accountNumber: "",
     location: "",
-    monthlyUsage: "",
-    unit: "",
-    costPerUnit: "",
-    monthlyCost: "",
-    lastReading: "",
-    status: "Active" as const,
-    dueDate: "",
+    monthlyUsage: 0,
+    unit: UtilityUnit.gb,
+    costPerUnit: 0,
+    monthlyCost: 0,
+    lastReading: formatYYYYMMDD(new Date()),
+    status: UtilityStatus.active,
+    dueDate: formatYYYYMMDD(new Date()),
     description: "",
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -43,13 +46,14 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
     if (mode === "edit" && utility) {
       setFormData({
         type: utility.type,
+        name: utility.name,
         provider: utility.provider,
         accountNumber: utility.accountNumber,
         location: utility.location,
-        monthlyUsage: utility.monthlyUsage.toString(),
+        monthlyUsage: utility.monthlyUsage,
         unit: utility.unit,
-        costPerUnit: utility.costPerUnit.toString(),
-        monthlyCost: utility.monthlyCost.toString(),
+        costPerUnit: utility.costPerUnit,
+        monthlyCost: utility.monthlyCost,
         lastReading: utility.lastReading,
         status: utility.status,
         dueDate: utility.dueDate,
@@ -57,17 +61,18 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
       })
     } else {
       setFormData({
-        type: "",
+        type: UtilityType.cable,
+        name: "",
         provider: "",
         accountNumber: "",
         location: "",
-        monthlyUsage: "",
-        unit: "",
-        costPerUnit: "",
-        monthlyCost: "",
-        lastReading: "",
-        status: "Active",
-        dueDate: "",
+        monthlyUsage: 0,
+        unit: UtilityUnit.gb,
+        costPerUnit: 0,
+        monthlyCost: 0,
+        lastReading: formatYYYYMMDD(new Date()),
+        status: UtilityStatus.active,
+        dueDate: formatYYYYMMDD(new Date()),
         description: "",
       })
     }
@@ -76,14 +81,14 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
 
   // Auto-calculate monthly cost when usage or cost per unit changes
   useEffect(() => {
-    const usage = Number.parseFloat(formData.monthlyUsage) || 0
-    const costPerUnit = Number.parseFloat(formData.costPerUnit) || 0
+    const usage = formData.monthlyUsage || 0
+    const costPerUnit = formData.costPerUnit || 0
     const monthlyCost = usage * costPerUnit
 
     if (usage > 0 && costPerUnit > 0) {
       setFormData((prev) => ({
         ...prev,
-        monthlyCost: monthlyCost.toFixed(2),
+        monthlyCost: monthlyCost,
       }))
     }
   }, [formData.monthlyUsage, formData.costPerUnit])
@@ -91,31 +96,34 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.type.trim()) {
+    if (!formData.type!.trim()) {
       newErrors.type = t("utilities.typeRequired")
     }
-    if (!formData.provider.trim()) {
+    if (!formData.name!.trim()) {
+      newErrors.type = t("utilities.nameRequired")
+    }
+    if (!formData.provider!.trim()) {
       newErrors.provider = t("utilities.providerRequired")
     }
-    if (!formData.accountNumber.trim()) {
+    if (!formData.accountNumber!.trim()) {
       newErrors.accountNumber = t("utilities.accountNumberRequired")
     }
-    if (!formData.location.trim()) {
+    if (!formData.location!.trim()) {
       newErrors.location = t("utilities.locationRequired")
     }
-    if (!formData.monthlyUsage.trim()) {
+    if (!formData.monthlyUsage!) {
       newErrors.monthlyUsage = t("utilities.monthlyUsageRequired")
     }
-    if (!formData.unit.trim()) {
+    if (!formData.unit!) {
       newErrors.unit = t("utilities.unitRequired")
     }
-    if (!formData.costPerUnit.trim()) {
+    if (!formData.costPerUnit!) {
       newErrors.costPerUnit = t("utilities.costPerUnitRequired")
     }
     if (!formData.status) {
       newErrors.status = t("utilities.statusRequired")
     }
-    if (!formData.dueDate.trim()) {
+    if (!formData.dueDate!.trim()) {
       newErrors.dueDate = t("utilities.dueDateRequired")
     }
 
@@ -132,13 +140,14 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
 
     const utilityData = {
       type: formData.type,
+      name: formData.name,
       provider: formData.provider,
       accountNumber: formData.accountNumber,
       location: formData.location,
-      monthlyUsage: Number.parseFloat(formData.monthlyUsage),
+      monthlyUsage: formData.monthlyUsage,
       unit: formData.unit,
-      costPerUnit: Number.parseFloat(formData.costPerUnit),
-      monthlyCost: Number.parseFloat(formData.monthlyCost),
+      costPerUnit: formData.costPerUnit,
+      monthlyCost: formData.monthlyCost,
       lastReading: formData.lastReading,
       status: formData.status,
       dueDate: formData.dueDate,
@@ -146,19 +155,13 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
     }
 
     if (mode === "edit" && utility && onUpdate) {
-      onUpdate(utility.id, utilityData)
+      onUpdate(utility.id!, utilityData)
     } else {
       onSave(utilityData)
     }
 
     onClose()
   }
-
-  const utilityTypes = ["electricity", "water", "gas", "internet", "phone", "cable", "security", "cleaning"]
-
-  const units = ["kwh", "m3", "gb", "minutes"]
-
-  const statuses = ["active", "inactive", "overdue", "disconnected"]
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -171,19 +174,31 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">{t("utilities.type")} *</Label>
-              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+              <Select value={formData.type} onValueChange={(value: UtilityType) => setFormData({ ...formData, type: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder={`${t("common.select")} ${t("utilities.type").toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
-                  {utilityTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {t(`utilities.${type}`)}
-                    </SelectItem>
-                  ))}
+                  {Object.keys(UtilityType)
+                    .map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {t(`utilities.${type}`)}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               {errors.type && <p className="text-sm text-red-500">{errors.type}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="utilityName">{t("utilities.utilityName")} *</Label>
+              <Input
+                id="utilityName"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder={t("utilities.utilityName")}
+              />
+              {errors.provider && <p className="text-sm text-red-500">{errors.provider}</p>}
             </div>
 
             <div className="space-y-2">
@@ -226,7 +241,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
                 type="number"
                 step="0.01"
                 value={formData.monthlyUsage}
-                onChange={(e) => setFormData({ ...formData, monthlyUsage: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, monthlyUsage: Number(e.target.value) })}
                 placeholder="0"
               />
               {errors.monthlyUsage && <p className="text-sm text-red-500">{errors.monthlyUsage}</p>}
@@ -234,16 +249,17 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
 
             <div className="space-y-2">
               <Label htmlFor="unit">{t("utilities.unit")} *</Label>
-              <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
+              <Select value={formData.unit} onValueChange={(value: UtilityUnit) => setFormData({ ...formData, unit: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder={`${t("common.select")} ${t("utilities.unit").toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
-                  {units.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                      {t(`utilities.${unit}`)}
-                    </SelectItem>
-                  ))}
+                  {Object.keys(UtilityUnit)
+                    .map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {t(`utilities.${unit}`)}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               {errors.unit && <p className="text-sm text-red-500">{errors.unit}</p>}
@@ -256,7 +272,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
                 type="number"
                 step="0.01"
                 value={formData.costPerUnit}
-                onChange={(e) => setFormData({ ...formData, costPerUnit: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, costPerUnit: Number(e.target.value) })}
                 placeholder="0.00"
               />
               {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit}</p>}
@@ -269,7 +285,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
                 type="number"
                 step="0.01"
                 value={formData.monthlyCost}
-                onChange={(e) => setFormData({ ...formData, monthlyCost: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, monthlyCost: Number(e.target.value) })}
                 placeholder="0.00"
                 readOnly
                 className="bg-gray-50"
@@ -296,11 +312,12 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {statuses.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {t(`utilities.${status}`)}
-                    </SelectItem>
-                  ))}
+                  {Object.keys(UtilityStatus)
+                    .map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {t(`utilities.${status}`)}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               {errors.status && <p className="text-sm text-red-500">{errors.status}</p>}
