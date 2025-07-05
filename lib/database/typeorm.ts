@@ -22,6 +22,8 @@ import { StockProductEntity } from "./entities/stock-product.entity";
 import { ProductionMaterialEntity } from "./entities/production-material.entity";
 import { ProductionRecordEntity } from "./entities/production-record.entity";
 import { env } from "@/constants/env";
+import { ProductionUtilityEntity } from "./entities/production-utility.entity";
+import { ProductionLaborEntity } from "./entities/production-labor.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -47,7 +49,9 @@ export const AppDataSource = new DataSource({
     WarehouseProductEntity,
     StockProductEntity,
     ProductionRecordEntity,
-    ProductionMaterialEntity
+    ProductionMaterialEntity,
+    ProductionUtilityEntity,
+    ProductionLaborEntity
   ],
   ssl: { rejectUnauthorized: false }, // required for Neon
   migrations: [__dirname + '/migrations/*{.ts,.js}'],

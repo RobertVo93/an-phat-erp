@@ -1,11 +1,14 @@
+import { availableEmployees } from './../lib/production-data';
 "use client"
 
 import { useEffect, useState } from "react"
 import type { ProductionRecord } from "@/types/production"
-import { Product } from "@/types"
+import { Employee, Product, Utility } from "@/types"
 import { getProducts as apiGetProducts } from "@/lib/httpclient"
 import { createProduction, getAllProductions, updateProduction } from "@/lib/httpclient/production.client"
 import { isTodayLocalDatetime } from "@/lib/utils"
+import { getAllUtilities } from "@/lib/httpclient/utility.client"
+import { getEmployee } from '@/lib/httpclient/employee.client';
 
 export function useProduction() {
   const [selectedRecord, setSelectedRecord] = useState<ProductionRecord | null>(null)
@@ -16,6 +19,8 @@ export function useProduction() {
   const [isNewProductionOpen, setIsNewProductionOpen] = useState(false)
   const [availableProducts, setAvailableProducts] = useState<Product[]>([])
   const [availableMaterials, setAvailableMaterials] = useState<Product[]>([])
+  const [availableUtilities, setAvailableUtilities] = useState<Utility[]>([])
+  const [availableEmployees, setAvailableEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState<boolean>(false)
 
   const onInit = async () => {
@@ -23,10 +28,13 @@ export function useProduction() {
       setLoading(true)
       const prResponse = await getAllProductions()
       setHistoryProductionRecords(prResponse.data as ProductionRecord[])
-
       const pro = await apiGetProducts()
       setAvailableProducts(pro.data)
       setAvailableMaterials(pro.data)
+      const ult = await getAllUtilities()
+      setAvailableUtilities(ult.data)
+      const emp = await getEmployee()
+      setAvailableEmployees(emp.data)
     } catch (e) {
       console.error(e)
     } finally {
@@ -107,6 +115,8 @@ export function useProduction() {
     loading,
     availableProducts,
     availableMaterials,
+    availableUtilities,
+    availableEmployees,
     todayRecords: todayProductionRecords,
     historyRecords: historyProductionRecords,
 

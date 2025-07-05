@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { getUserFromRequest } from "@/lib/auth/jwt";
-import { ProductionSchema, ProductionMaterialArraySchema } from "./production.schema";
+import { ProductionSchema, ProductionMaterialArraySchema, ProductionUtilityArraySchema, ProductionLaborArraySchema } from "./production.schema";
 import { createProductionRecord, getAllProductionRecords } from "@/lib/services/productionService";
-
 
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
@@ -34,8 +33,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid input", details: parseProductionMaterials.error.errors }, { status: 400 });
     }
 
+    const parseProductionUtilities = ProductionUtilityArraySchema.safeParse(data.productionUtilities);
+    if (!parseProductionUtilities.success) {
+      return NextResponse.json({ error: "Invalid input", details: parseProductionUtilities.error.errors }, { status: 400 });
+    }
+
+    const parseProductionLabors = ProductionLaborArraySchema.safeParse(data.productionLabors);
+    if (!parseProductionLabors.success) {
+      return NextResponse.json({ error: "Invalid input", details: parseProductionLabors.error.errors }, { status: 400 });
+    }
+
     try {
-      const created = await createProductionRecord(parseData.data, parseProductionMaterials.data);
+      const created = await createProductionRecord(
+        parseData.data,
+        parseProductionMaterials.data,
+        parseProductionUtilities.data,
+        parseProductionLabors.data
+      );
       return NextResponse.json(created, { status: 201 });
     } catch (err) {
       return NextResponse.json({ error: (err instanceof Error ? err.message : String(err)) }, { status: 400 });

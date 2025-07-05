@@ -14,6 +14,7 @@ import { CalendarIcon, Search, Eye, Edit, Download, RefreshCw } from "lucide-rea
 import { format } from "date-fns"
 import type { ProductionRecord } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
+import { ProductionStatus } from "@/types"
 
 interface ProductionHistoryProps {
   historyRecords: ProductionRecord[]
@@ -72,7 +73,7 @@ export function ProductionHistory({
     setProductFilter(productId)
   }
 
-  const getStatusBadge = (status: string, statusText: string) => {
+  const getStatusBadge = (status: string) => {
     const variants = {
       completed: "default",
       "in-progress": "secondary",
@@ -101,7 +102,6 @@ export function ProductionHistory({
       record.date,
       record.product,
       `${record.quantity} ${record.unit}`,
-      record.statusText,
       record.shift,
       record.operator,
       record.totalCost!.toLocaleString(),
@@ -161,10 +161,10 @@ export function ProductionHistory({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("production.history.all")}</SelectItem>
-                <SelectItem value="completed">{t("production.history.completed")}</SelectItem>
-                <SelectItem value="in-progress">{t("production.history.inProgress")}</SelectItem>
-                <SelectItem value="cancelled">{t("production.history.cancelled")}</SelectItem>
-                <SelectItem value="paused">{t("production.history.paused")}</SelectItem>
+                <SelectItem value={ProductionStatus.completed}>{t("production.history.completed")}</SelectItem>
+                <SelectItem value={ProductionStatus.inProgress}>{t("production.history.in-progress")}</SelectItem>
+                <SelectItem value={ProductionStatus.cancelled}>{t("production.history.cancelled")}</SelectItem>
+                <SelectItem value={ProductionStatus.paused}>{t("production.history.paused")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -186,21 +186,6 @@ export function ProductionHistory({
                     {product?.name}
                   </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs">{t("production.history.workingShift")}</Label>
-            <Select value={shiftFilter} onValueChange={setShiftFilter}>
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("production.history.all")}</SelectItem>
-                <SelectItem value="Sáng">{t("production.history.morningShift")}</SelectItem>
-                <SelectItem value="Chiều">{t("production.history.afternoonShift")}</SelectItem>
-                <SelectItem value="Tối">{t("production.history.nightShift")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -290,7 +275,7 @@ export function ProductionHistory({
                     <TableCell className="text-xs">
                       {record.quantity} {record.unit}
                     </TableCell>
-                    <TableCell className="text-xs">{getStatusBadge(record.status!, record.statusText!)}</TableCell>
+                    <TableCell className="text-xs">{getStatusBadge(record.status!)}</TableCell>
                     <TableCell className="text-xs">{record.shift}</TableCell>
                     <TableCell className="text-xs">{record.operator}</TableCell>
                     <TableCell className="text-xs">{record.totalCost!.toLocaleString()} đ</TableCell>

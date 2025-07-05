@@ -122,6 +122,22 @@ export const productionTranslations = {
     en: "Efficiency",
     vi: "Hiệu Suất",
   },
+  "production.recordItem.completed": {
+    en: "Completed",
+    vi: "Đã hoàn thành",
+  },
+  "production.recordItem.in-progress": {
+    en: "In-progress",
+    vi: "Đang sản xuất",
+  },
+  "production.recordItem.paused": {
+    en: "Paused",
+    vi: "Tạm ngưng",
+  },
+  "production.recordItem.cancelled": {
+    en: "Cancelled",
+    vi: "Đã dừng",
+  },
 
   // ProductionHistory
   "production.history.title": {
@@ -374,6 +390,26 @@ export const productionTranslations = {
     en: "Save Production Sheet",
     vi: "Lưu Đơn Sản Xuất"
   },
+  "production.form.selectedProductRequired": {
+    en: "Product is required",
+    vi: "Sản phẩm là bắt buộc"
+  },
+  "production.form.quantityMustGreaterThanZero": {
+    en: "Quantity must greater than 0",
+    vi: "Số lượng phải lớn hơn 0"
+  },
+  "production.form.selectedMaterialsRequired": {
+    en: "Material is required",
+    vi: "Nguyên liệu là bắt buộc"
+  },
+  "production.form.selectedUtilitiesRequired": {
+    en: "Utilitiy is required",
+    vi: "Tiện ích là bắt buộc"
+  },
+  "production.form.selectedEmployeesRequired": {
+    en: "Employee is required",
+    vi: "Nhân viên là bắt buộc"
+  },
 
   // ProductionDetailModal
   "production.detail.title": {
@@ -432,6 +468,10 @@ export const productionTranslations = {
     en: "Utility",
     vi: "Tiện Ích",
   },
+  "production.detail.labor": {
+    en: "Labor",
+    vi: "Nhân công",
+  },
   "production.detail.laborDetail": {
     en: "Labor Detail",
     vi: "Chi Tiết Nhân Công",
@@ -455,6 +495,10 @@ export const productionTranslations = {
   "production.detail.laborsExpenses": {
     en: "Labors expenses",
     vi: "Tổng chi phí nhân công",
+  },
+  "production.detail.salary": {
+    en: "Salary",
+    vi: "Tiền công",
   },
 
   // EditProductionModal

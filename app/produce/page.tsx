@@ -31,6 +31,8 @@ export default function ProducePage() {
     availableMaterials,
     todayRecords,
     historyRecords,
+    availableUtilities,
+    availableEmployees,
 
     handleViewRecord,
     handleEditRecord,
@@ -139,6 +141,8 @@ export default function ProducePage() {
             <NewProductionForm
               availableMaterials={availableMaterials}
               availableProducts={availableProducts}
+              availableUtilities={availableUtilities}
+              availableEmployees={availableEmployees}
               onClose={closeNewProduction}
               createNewProduction={createNewProduction}
             />
@@ -153,6 +157,8 @@ export default function ProducePage() {
           <EditProductionModal
             availableMaterials={availableMaterials}
             availableProducts={availableProducts}
+            availableUtilities={availableUtilities}
+            availableEmployees={availableEmployees}
             isOpen={isEditModalOpen}
             onClose={closeEditModal}
             record={editingRecord}

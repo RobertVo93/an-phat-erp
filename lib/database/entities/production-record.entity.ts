@@ -7,6 +7,10 @@ import type { Product as IProduct } from "@/types";
 import { ProductionMaterialEntity } from "./production-material.entity";
 import { ProductionMaterial } from "@/types/productionMaterial";
 import { AppDataSource } from "../typeorm";
+import { ProductionUtilityEntity } from "./production-utility.entity";
+import type { ProductionUtility as IProductionUtility } from "@/types/productionUtility";
+import { ProductionLaborEntity } from "./production-labor.entity";
+import { ProductionLabor as IProductionLabor } from "@/types/ProductionLabor";
 
 @Entity({ name: "production_records" })
 export class ProductionRecordEntity extends BaseEntity implements IProductionRecord {
@@ -24,9 +28,6 @@ export class ProductionRecordEntity extends BaseEntity implements IProductionRec
 
   @Column({ type: "enum", enum: ProductionStatus, nullable: true })
   status?: ProductionStatus;
-
-  @Column({ nullable: true })
-  statusText?: string;
 
   @Column({ nullable: true })
   shift?: string;
@@ -48,11 +49,11 @@ export class ProductionRecordEntity extends BaseEntity implements IProductionRec
   @OneToMany(() => ProductionMaterialEntity, (pm: ProductionMaterialEntity) => pm.productionRecord, { nullable: true })
   productionMaterials?: ProductionMaterial[];
 
-  @Column({ type: "jsonb", nullable: true })
-  utilities?: Array<{ name: string; quantity: number; unit: string; cost: number }>;
+  @OneToMany(() => ProductionUtilityEntity, (pu) => pu.productionRecord, { cascade: true })
+  productionUtilities?: IProductionUtility[];
 
-  @Column({ type: "jsonb", nullable: true })
-  labor?: { hours: number; workers: number; cost: number };
+  @OneToMany(() => ProductionLaborEntity, (pl) => pl.productionRecord, { cascade: true })
+  productionLabors?: IProductionLabor[];
 
   // Auto numbering
   @BeforeInsert()

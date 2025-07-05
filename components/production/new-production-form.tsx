@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
-import { availableUtilities, availableEmployees } from "@/lib/production-data"
-import type { SelectedUtility, SelectedEmployee, ProductionRecord } from "@/types/production"
-import { Product, ProductionStatus } from "@/types"
+import type { SelectedUtility, ProductionRecord } from "@/types/production"
+import { Employee, Product, ProductionStatus, Utility } from "@/types"
 import { formatLocalDatetime } from "@/lib/utils"
 import { ProductionMaterial } from "@/types/productionMaterial"
 import { useLanguage } from "@/contexts/language-context"
@@ -17,6 +16,8 @@ import { useLanguage } from "@/contexts/language-context"
 interface NewProductionFormProps {
   availableProducts: Product[]
   availableMaterials: Product[]
+  availableUtilities: Utility[]
+  availableEmployees: Employee[]
   onClose: () => void
   createNewProduction: (data: ProductionRecord) => void
 }
@@ -24,6 +25,8 @@ interface NewProductionFormProps {
 export function NewProductionForm({
   availableProducts,
   availableMaterials,
+  availableUtilities,
+  availableEmployees,
   onClose,
   createNewProduction
 }: NewProductionFormProps) {
@@ -32,7 +35,8 @@ export function NewProductionForm({
   const [quantity, setQuantity] = useState<number>(1)
   const [selectedMaterials, setSelectedMaterials] = useState<ProductionMaterial[]>([])
   const [selectedUtilities, setSelectedUtilities] = useState<SelectedUtility[]>([])
-  const [selectedEmployees, setSelectedEmployees] = useState<SelectedEmployee[]>([])
+  const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const addMaterial = () => {
     if (selectedMaterials.length < availableMaterials.length) {
@@ -75,7 +79,7 @@ export function NewProductionForm({
         {
           id: "",
           name: "",
-          quantity: 1,
+          quantity: 0,
           unit: "",
           cost: 0,
           totalCost: 0,
@@ -94,8 +98,9 @@ export function NewProductionForm({
           id: utility.id,
           name: utility.name,
           unit: utility.unit,
-          cost: utility.cost,
-          totalCost: updated[index].quantity! * utility.cost!,
+          quantity: 1,
+          cost: utility.monthlyCost!,
+          totalCost: updated[index].quantity! * utility.costPerUnit!,
         }
       }
     } else if (field === "quantity") {
@@ -113,14 +118,7 @@ export function NewProductionForm({
     if (selectedEmployees.length < availableEmployees.length) {
       setSelectedEmployees([
         ...selectedEmployees,
-        {
-          id: "",
-          name: "",
-          position: "",
-          hours: 1,
-          hourlyRate: 0,
-          totalCost: 0,
-        },
+        {},
       ])
     }
   }
@@ -130,18 +128,8 @@ export function NewProductionForm({
     if (field === "id") {
       const employee = availableEmployees.find((e) => e.id === value)
       if (employee) {
-        updated[index] = {
-          ...updated[index],
-          id: employee.id,
-          name: employee.name,
-          position: employee.position,
-          hourlyRate: employee.hourlyRate,
-          totalCost: updated[index].hours * employee.hourlyRate,
-        }
+        updated[index] = employee
       }
-    } else if (field === "hours") {
-      updated[index][field] = Number.parseFloat(value) || 0
-      updated[index].totalCost = updated[index].hours * updated[index].hourlyRate
     }
     setSelectedEmployees(updated)
   }
@@ -151,45 +139,65 @@ export function NewProductionForm({
   }
 
   const calculateTotalCost = () => {
-    const materialsCost = selectedMaterials.reduce((sum, m) => sum + (m.totalCost ?? 0), 0);
-    const utilitiesCost = selectedUtilities.reduce((sum, u) => sum + (u.totalCost ?? 0), 0);
-    const laborCost = selectedEmployees.reduce((sum, e) => sum + (e.totalCost ?? 0),0);
+    const materialsCost = selectedMaterials.reduce(
+      (sum, m) => sum + (typeof m?.totalCost === "number" ? m.totalCost : 0), 0);
+
+    const utilitiesCost = selectedUtilities.reduce(
+      (sum, u) => sum + (typeof u?.totalCost === "number" ? u.totalCost : 0), 0);
+
+    const laborCost = selectedEmployees.reduce(
+      (sum, e) => sum + (typeof e?.salary === "number" ? e.salary : 0), 0);
+
     return materialsCost + utilitiesCost + laborCost;
   };
-
-  const calculateLabors = () => {
-    let totalHours = 0;
-    let totalCost = 0
-    selectedEmployees.forEach(employee => {
-      totalHours += employee.hours
-      totalCost += employee.totalCost
-    });
-    return [totalHours, totalCost]
-  }
 
   const onSelectProduct = (id: string) => {
     const selectingProduct = availableProducts.find((pro) => pro.id === id)
     setSelectedProduct(selectingProduct!)
   }
 
+  function hasValidArray(arr: any) {
+    return Array.isArray(arr) &&
+      arr.length > 0 &&
+      arr.every(item => item && typeof item.id === "string" && item.id.trim() !== "");
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    if (!selectedProduct) {
+      newErrors.selectedProduct = t("production.form.selectedProductRequired")
+    }
+    if (quantity === 0) {
+      newErrors.quantity = t("production.form.quantityMustGreaterThanZero")
+    }
+    if (!hasValidArray(selectedMaterials)) {
+      newErrors.selectedMaterials = t("production.form.selectedMaterialsRequired")
+    }
+    if (!hasValidArray(selectedUtilities)) {
+      newErrors.selectedUtilities = t("production.form.selectedUtilitiesRequired")
+    }
+    if (!hasValidArray(selectedEmployees)) {
+      newErrors.selectedEmployees = t("production.form.selectedEmployeesRequired")
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = async () => {
-    const [laborHours, laborCost] = calculateLabors()
+    if (!validateForm()) return
+
     const newProduction: ProductionRecord = {
       date: formatLocalDatetime(new Date()),
       quantity: quantity,
       unit: "",
       status: ProductionStatus.inProgress,
-      statusText: "",
       shift: "",
       operator: "",
       product: selectedProduct!,
       productionMaterials: selectedMaterials,
-      utilities: selectedUtilities,
-      labor: {
-        hours: laborHours,
-        workers: selectedEmployees.length ?? 0,
-        cost: laborCost,
-      },
+      productionUtilities: selectedUtilities,
+      productionLabors: selectedEmployees,
       totalCost: calculateTotalCost(),
       efficiency: 0,
     }
@@ -218,6 +226,7 @@ export function NewProductionForm({
               ))}
             </SelectContent>
           </Select>
+          {errors.selectedProduct && <p className="text-sm text-red-500">{errors.selectedProduct}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="quantity" className="text-sm">
@@ -232,6 +241,7 @@ export function NewProductionForm({
             onChange={(e) => setQuantity(Number(e.target.value))}
             className="h-10"
           />
+          {errors.quantity && <p className="text-sm text-red-500">{errors.quantity}</p>}
         </div>
       </div>
 
@@ -273,7 +283,9 @@ export function NewProductionForm({
                 <div className="space-y-1">
                   <Label className="text-xs">{t("production.form.quantity")}</Label>
                   <Input
-                    placeholder="0"
+                    placeholder="1"
+                    type="number"
+                    min={1}
                     value={material.quantity || ""}
                     onChange={(e) => updateMaterial(index, "quantity", e.target.value)}
                     className="h-9"
@@ -304,6 +316,7 @@ export function NewProductionForm({
               </Button>
             </div>
           ))}
+          {errors.selectedMaterials && <p className="text-sm text-red-500">{errors.selectedMaterials}</p>}
         </div>
       </div>
 
@@ -345,7 +358,9 @@ export function NewProductionForm({
                 <div className="space-y-1">
                   <Label className="text-xs">{t("production.form.quantity")}</Label>
                   <Input
-                    placeholder="0"
+                    placeholder="1"
+                    type="number"
+                    min={1}
                     value={utility.quantity || ""}
                     onChange={(e) => updateUtility(index, "quantity", e.target.value)}
                     className="h-9"
@@ -377,6 +392,7 @@ export function NewProductionForm({
             </div>
           ))}
         </div>
+        {errors.selectedUtilities && <p className="text-sm text-red-500">{errors.selectedUtilities}</p>}
       </div>
 
       {/* Nhân công */}
@@ -407,21 +423,12 @@ export function NewProductionForm({
                           )
                         )
                         .map((emp) => (
-                          <SelectItem key={emp.id} value={emp.id}>
+                          <SelectItem key={emp.id} value={emp.id!}>
                             {emp.name} - {emp.position}
                           </SelectItem>
                         ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">{t("production.form.hours")}</Label>
-                  <Input
-                    placeholder="0"
-                    value={employee.hours || ""}
-                    onChange={(e) => updateEmployee(index, "hours", e.target.value)}
-                    className="h-9"
-                  />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
@@ -430,12 +437,8 @@ export function NewProductionForm({
                   <span className="font-medium">{employee.position}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">{t("production.form.salaryPerHour")}: </span>
-                  <span className="font-medium">{employee.hourlyRate.toLocaleString()}</span>
-                </div>
-                <div>
                   <span className="text-gray-600">{t("production.form.totalCost")}: </span>
-                  <span className="font-medium">{employee.totalCost.toLocaleString()}</span>
+                  <span className="font-medium">{employee.salary?.toLocaleString()}</span>
                 </div>
               </div>
               <Button
@@ -449,6 +452,7 @@ export function NewProductionForm({
             </div>
           ))}
         </div>
+        {errors.selectedEmployees && <p className="text-sm text-red-500">{errors.selectedEmployees}</p>}
       </div>
 
       {/* Tổng kết chi phí */}
@@ -472,9 +476,9 @@ export function NewProductionForm({
             </div>
             <div className="flex justify-between">
               <span>{t("production.form.laborExpense")}:</span>
-              <span className="font-medium">
+              {/* <span className="font-medium">
                 {selectedEmployees.reduce((sum, e) => sum + e.totalCost, 0).toLocaleString()} đ
-              </span>
+              </span> */}
             </div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
               <span>{t("production.form.totalExpense")}:</span>

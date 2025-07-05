@@ -9,8 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus, Trash2, Save, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Product, ProductionStatus } from "@/types"
-import { availableEmployees, availableUtilities } from "@/lib/production-data"
+import { Employee, Product, ProductionStatus, Utility } from "@/types"
 import { ProductionMaterial } from "@/types/productionMaterial"
 import { ProductionRecord, SelectedEmployee, SelectedUtility } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
@@ -19,6 +18,8 @@ interface EditProductionModalProps {
   isOpen: boolean
   availableMaterials: Product[]
   availableProducts: Product[]
+  availableUtilities: Utility[]
+  availableEmployees: Employee[]
   onClose: () => void
   record: ProductionRecord
   onSave: (updatedRecord: any) => void
@@ -27,6 +28,8 @@ interface EditProductionModalProps {
 export function EditProductionModal({
   availableMaterials,
   availableProducts,
+  availableUtilities,
+  availableEmployees,
   isOpen,
   onClose,
   record,
@@ -36,7 +39,8 @@ export function EditProductionModal({
   const [formData, setFormData] = useState<ProductionRecord | null>(record)
   const [selectedMaterials, setSelectedMaterials] = useState<ProductionMaterial[]>([])
   const [selectedUtilities, setSelectedUtilities] = useState<SelectedUtility[]>([])
-  const [selectedEmployees, setSelectedEmployees] = useState<SelectedEmployee[]>([])
+  const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const statusOptions = [
     { value: "in-progress", label: t("production.edit.in-progress"), color: "bg-yellow-100 text-yellow-800" },
@@ -62,30 +66,21 @@ export function EditProductionModal({
       // Load utilities
       const selectedUtilities = availableUtilities
         .filter((utility) =>
-          record.utilities?.some((u) => u.name === utility.name)
+          record.productionUtilities?.some((u) => u.utility?.name === utility.name)
         )
         .map((utility) => {
-          const matched = record.utilities?.find((u) => u.name === utility.name);
+          const matched = record.productionUtilities?.find((u) => u.utility?.name === utility.name);
           return {
             ...utility,
             quantity: matched?.quantity ?? 0,
-            cost: matched?.cost ?? utility.cost,
-            totalCost: (matched?.quantity ?? 0) * (matched?.cost! ?? utility.cost!),
+            cost: matched?.cost ?? utility.monthlyCost,
+            totalCost: (matched?.quantity ?? 0) * (matched?.cost! ?? utility.monthlyCost),
           };
         }) as SelectedUtility[];
       setSelectedUtilities(selectedUtilities)
 
       // Load employees (giả sử có thông tin nhân viên)
-      const employees: SelectedEmployee[] = [
-        {
-          id: "emp001",
-          name: "record.operator",
-          position: "Trưởng ca",
-          hours: record.labor?.hours!,
-          hourlyRate: record.labor?.cost! / record.labor?.hours!,
-          totalCost: record.labor?.cost!,
-        },
-      ]
+      const employees = record.productionLabors?.map(prl => prl.employee).filter(Boolean) as Employee[]
       setSelectedEmployees(employees)
     }
   }, [record, isOpen])
@@ -115,18 +110,13 @@ export function EditProductionModal({
 
   // Material functions
   const addMaterial = () => {
-    const addedMaterial: ProductionMaterial = {
-      id: "",
-      quantity: 0,
-      totalCost: 0,
-      material: undefined,
-      production: undefined,
+    if (selectedMaterials.length < availableMaterials.length) {
+      const addedMaterial: Product = {}
+      setSelectedMaterials([
+        ...selectedMaterials,
+        addedMaterial,
+      ])
     }
-
-    setSelectedMaterials([
-      ...selectedMaterials,
-      addedMaterial,
-    ])
   }
 
   const updateMaterial = (index: number, field: string, value: any) => {
@@ -136,10 +126,10 @@ export function EditProductionModal({
       if (material) {
         updated[index] = {
           ...updated[index],
-          id: material.id!,
-          material: material!,
+          id: material.id,
+          material: material,
           quantity: 1,
-          totalCost: material.cost!,
+          totalCost: material.cost,
         }
       }
     } else if (field === "quantity") {
@@ -178,8 +168,9 @@ export function EditProductionModal({
           id: utility.id,
           name: utility.name,
           unit: utility.unit,
-          cost: utility.cost,
-          totalCost: updated[index].quantity! * utility.cost!,
+          cost: utility.costPerUnit,
+          quantity: 1,
+          totalCost: updated[index].quantity! * utility.costPerUnit!,
         }
       }
     } else if (field === "quantity") {
@@ -195,17 +186,15 @@ export function EditProductionModal({
 
   // Employee functions
   const addEmployee = () => {
-    setSelectedEmployees([
-      ...selectedEmployees,
-      {
-        id: "",
-        name: "",
-        position: "",
-        hours: 0,
-        hourlyRate: 0,
-        totalCost: 0,
-      },
-    ])
+    if (selectedEmployees.length < availableEmployees.length) {
+      const newEmployee: Employee = {
+        salary: 0
+      }
+      setSelectedEmployees([
+        ...selectedEmployees,
+        newEmployee,
+      ])
+    }
   }
 
   const updateEmployee = (index: number, field: string, value: any) => {
@@ -213,56 +202,73 @@ export function EditProductionModal({
     if (field === "id") {
       const employee = availableEmployees.find((e) => e.id === value)
       if (employee) {
-        updated[index] = {
-          ...updated[index],
-          id: employee.id,
-          name: employee.name,
-          position: employee.position,
-          hourlyRate: employee.hourlyRate,
-          totalCost: updated[index].hours * employee.hourlyRate,
-        }
+        updated[index] = employee
       }
-    } else if (field === "hours") {
-      updated[index][field] = Number.parseFloat(value) || 0
-      updated[index].totalCost = updated[index].hours * updated[index].hourlyRate
     }
     setSelectedEmployees(updated)
   }
 
   const removeEmployee = (index: number) => {
-    setSelectedEmployees(selectedEmployees.filter((_, i) => i !== index))
+    setSelectedEmployees(selectedEmployees?.filter((_, i) => i !== index))
   }
 
   const calculateTotalCost = () => {
-    const materialsCost = selectedMaterials.reduce((sum, m) => sum + m.totalCost!, 0)
-    const utilitiesCost = selectedUtilities.reduce((sum, u) => sum + u.totalCost!, 0)
-    const laborCost = selectedEmployees.reduce((sum, e) => sum + e.totalCost, 0)
-    return materialsCost + utilitiesCost + laborCost
+    const materialsCost = selectedMaterials.reduce(
+      (sum, m) => sum + (typeof m?.totalCost === "number" ? m.totalCost : 0), 0);
+
+    const utilitiesCost = selectedUtilities.reduce(
+      (sum, u) => sum + (typeof u?.totalCost === "number" ? u.totalCost : 0), 0);
+
+    const laborCost = selectedEmployees.reduce(
+      (sum, e) => sum + (typeof e?.salary === "number" ? e.salary : 0), 0);
+
+    return materialsCost + utilitiesCost + laborCost;
+  };
+
+  function hasValidArray(arr: any) {
+    return Array.isArray(arr) &&
+      arr.length > 0 &&
+      arr.every(item => item && typeof item.id === "string" && item.id.trim() !== "");
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData?.product) {
+      newErrors.selectedProduct = t("production.form.selectedProductRequired")
+    }
+    if (formData?.quantity === 0) {
+      newErrors.quantity = t("production.form.quantityMustGreaterThanZero")
+    }
+    if (!hasValidArray(selectedMaterials)) {
+      newErrors.selectedMaterials = t("production.form.selectedMaterialsRequired")
+    }
+    if (!hasValidArray(selectedUtilities)) {
+      newErrors.selectedUtilities = t("production.form.selectedUtilitiesRequired")
+    }
+    if (!hasValidArray(selectedEmployees)) {
+      newErrors.selectedEmployees = t("production.form.selectedEmployeesRequired")
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSave = () => {
-    const updatedRecord = {
+    if (!validateForm()) return
+
+    const updatedRecord: ProductionRecord = {
       ...record,
       product: formData?.product,
       quantity: Number(formData?.quantity),
       status: formData?.status,
-      statusText: t(`production.edit.${record.status}`),
       shift: shiftOptions.find((s) => s.value === formData?.shift)?.label.split(" ")[1] || record.shift,
       operator: formData?.operator,
       date: formData?.date,
       efficiency: Number(formData?.efficiency),
       productionMaterials: selectedMaterials,
-      utilities: selectedUtilities.map((u) => ({
-        name: u.name,
-        quantity: u.quantity,
-        unit: u.unit,
-        cost: u.totalCost,
-      })),
-      labor: {
-        hours: selectedEmployees.reduce((sum, e) => sum + e.hours, 0),
-        workers: selectedEmployees.length,
-        cost: selectedEmployees.reduce((sum, e) => sum + e.totalCost, 0),
-      },
+      productionUtilities: selectedUtilities,
+      productionLabors: selectedEmployees,
       totalCost: calculateTotalCost(),
     }
     onSave(updatedRecord)
@@ -307,6 +313,7 @@ export function EditProductionModal({
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.selectedProduct && <p className="text-sm text-red-500">{errors.selectedProduct}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -314,11 +321,12 @@ export function EditProductionModal({
                   <Input
                     id="quantity"
                     type="number"
-
+                    min={1}
                     value={formData?.quantity}
                     onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
                     placeholder={t("production.edit.inputQuantity")}
                   />
+                  {errors.quantity && <p className="text-sm text-red-500">{errors.quantity}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -341,43 +349,6 @@ export function EditProductionModal({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="shift">{t("production.edit.workingShift")}</Label>
-                  <Select value={formData?.shift} onValueChange={(value) => setFormData({ ...formData, shift: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("production.edit.selectShift")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {shiftOptions.map((shift) => (
-                        <SelectItem key={shift.value} value={shift.value}>
-                          {shift.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="operator">{t("production.edit.operator")}</Label>
-                  <Input
-                    id="operator"
-                    value={formData?.operator}
-                    onChange={(e) => setFormData({ ...formData, operator: e.target.value })}
-                    placeholder={t("production.edit.operator")}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="efficiency">{t("production.edit.efficiency")} (%)</Label>
-                  <Input
-                    id="efficiency"
-                    type="number"
-                    value={formData?.efficiency}
-                    onChange={(e) => setFormData({ ...formData, efficiency: Number(e.target.value) })}
-                    placeholder={t("production.edit.efficiency")}
-                  />
                 </div>
               </div>
             </CardContent>
@@ -409,19 +380,27 @@ export function EditProductionModal({
                             <SelectValue placeholder={t("production.edit.select")} />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableMaterials.map((mat) => (
-                              <SelectItem key={mat.id!} value={mat.id!}>
-                                {mat.name!}
-                              </SelectItem>
-                            ))}
+                            {availableMaterials
+                              .filter((mat) =>
+                                mat.id === material.material?.id ||
+                                !selectedMaterials.some((selected, i) =>
+                                  i !== index && selected.material?.id === mat.id
+                                )
+                              )
+                              .map((mat) => (
+                                <SelectItem key={mat.id!} value={mat.id!}>
+                                  {mat.name!}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">{t("production.edit.quantity")}</Label>
                         <Input
-                          placeholder="0"
+                          placeholder="1"
                           type="number"
+                          min={1}
                           value={material.quantity ?? 0}
                           onChange={(e) => updateMaterial(index, "quantity", e.target.value)}
                           className="h-9"
@@ -457,6 +436,7 @@ export function EditProductionModal({
                     </div>
                   </div>
                 ))}
+                {errors.selectedMaterials && <p className="text-sm text-red-500">{errors.selectedMaterials}</p>}
               </div>
             </CardContent>
           </Card>
@@ -484,18 +464,27 @@ export function EditProductionModal({
                             <SelectValue placeholder={t("production.edit.select")} />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableUtilities.map((util) => (
-                              <SelectItem key={util.id} value={util.id!}>
-                                {util.name}
-                              </SelectItem>
-                            ))}
+                            {availableUtilities
+                              .filter((util) =>
+                                util.id === utility.id ||
+                                !selectedUtilities.some((selected, i) =>
+                                  i !== index && selected?.id === util.id
+                                )
+                              )
+                              .map((util) => (
+                                <SelectItem key={util.id} value={util.id!}>
+                                  {util.name}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">{t("production.edit.quantity")}</Label>
                         <Input
-                          placeholder="0"
+                          placeholder="1"
+                          type="number"
+                          min={1}
                           value={utility.quantity || ""}
                           onChange={(e) => updateUtility(index, "quantity", e.target.value)}
                           className="h-9"
@@ -527,6 +516,7 @@ export function EditProductionModal({
                     </div>
                   </div>
                 ))}
+                {errors.selectedUtilities && <p className="text-sm text-red-500">{errors.selectedUtilities}</p>}
               </div>
             </CardContent>
           </Card>
@@ -544,7 +534,7 @@ export function EditProductionModal({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {selectedEmployees.map((employee, index) => (
+                {selectedEmployees?.map((employee, index) => (
                   <div key={index} className="border rounded-lg p-3 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
                       <div className="space-y-1 lg:col-span-2">
@@ -554,21 +544,28 @@ export function EditProductionModal({
                             <SelectValue placeholder={t("production.edit.selectEmployee")} />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableEmployees.map((emp) => (
-                              <SelectItem key={emp.id} value={emp.id}>
-                                <div className="flex items-center gap-2">
-                                  <img
-                                    src={emp.avatar || "/placeholder.svg"}
-                                    alt={emp.name}
-                                    className="w-6 h-6 rounded-full"
-                                  />
-                                  <div>
-                                    <div className="font-medium text-sm">{emp.name}</div>
-                                    <div className="text-xs text-gray-500">{emp.position}</div>
+                            {availableEmployees
+                              .filter((emp) =>
+                                emp.id === employee?.id ||
+                                !selectedEmployees.some((selected, i) =>
+                                  i !== index && selected?.id === emp.id
+                                )
+                              )
+                              .map((emp) => (
+                                <SelectItem key={emp.id} value={emp.id!}>
+                                  <div className="flex items-center gap-2">
+                                    <img
+                                      src={"/placeholder.svg"}
+                                      alt={emp.name}
+                                      className="w-6 h-6 rounded-full"
+                                    />
+                                    <div>
+                                      <div className="font-medium text-sm">{emp.name}</div>
+                                      <div className="text-xs text-gray-500">{emp.position}</div>
+                                    </div>
                                   </div>
-                                </div>
-                              </SelectItem>
-                            ))}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -577,22 +574,9 @@ export function EditProductionModal({
                         <Input value={employee.position} disabled className="h-9" />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">{t("production.edit.hours")}</Label>
-                        <Input
-                          placeholder="0"
-                          value={employee.hours || ""}
-                          onChange={(e) => updateEmployee(index, "hours", e.target.value)}
-                          className="h-9"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">{t("production.edit.salaryPerHour")}</Label>
-                        <Input value={employee.hourlyRate.toLocaleString()} disabled className="h-9" />
-                      </div>
-                      <div className="space-y-1">
                         <Label className="text-xs">{t("production.edit.totalCost")}</Label>
                         <div className="flex gap-1">
-                          <Input value={employee.totalCost.toLocaleString()} disabled className="h-9" />
+                          <Input value={employee.salary?.toLocaleString()} disabled className="h-9" />
                           <Button
                             variant="outline"
                             size="sm"
@@ -606,6 +590,7 @@ export function EditProductionModal({
                     </div>
                   </div>
                 ))}
+                {errors.selectedEmployees && <p className="text-sm text-red-500">{errors.selectedEmployees}</p>}
               </div>
             </CardContent>
           </Card>
@@ -631,7 +616,7 @@ export function EditProductionModal({
                 </div>
                 <div className="text-center p-4 bg-orange-50 rounded-lg">
                   <div className="text-2xl font-bold text-orange-600">
-                    {selectedEmployees.reduce((sum, e) => sum + e.totalCost, 0).toLocaleString()} đ
+                    {selectedEmployees?.reduce((sum, e) => sum + e.salary!, 0).toLocaleString()} đ
                   </div>
                   <div className="text-sm text-gray-600">{t("production.edit.laborExpense")}</div>
                 </div>
@@ -640,15 +625,6 @@ export function EditProductionModal({
                   <div className="text-sm text-gray-600">{t("production.edit.totalExpense")}</div>
                 </div>
               </div>
-              {formData?.quantity && (
-                <div className="mt-4 text-center p-3 bg-gray-50 rounded-lg">
-                  <div className="text-lg font-semibold">
-                    {t("production.edit.expensePerUnit")}:{" "}
-                    {(calculateTotalCost() / Number(formData?.quantity)).toFixed(0).toLocaleString()} đ/
-                    {/* {availableProducts.find((p) => p.id === formData?.product)?.unit || "đơn vị"} */}
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
