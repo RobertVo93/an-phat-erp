@@ -43,7 +43,7 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
             <span className="hidden sm:inline">{t("production.recordItem.seeDetails")}</span>
             <span className="sm:hidden">{t("production.recordItem.see")}</span>
           </Button>
-          <Button variant="outline" size="sm" className="text-xs" onClick={() => onEdit(record)}>
+          <Button variant="outline" size="sm" className={`text-xs ${record.status === ProductionStatus.completed && 'hidden'}`} onClick={() => onEdit(record)}>
             <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
             <span className="hidden sm:inline">{t("production.recordItem.edit")}</span>
             <span className="sm:hidden">{t("production.recordItem.edit")}</span>

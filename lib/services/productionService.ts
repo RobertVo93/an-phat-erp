@@ -8,6 +8,7 @@ import { ProductionUtility } from "@/types/productionUtility";
 import { ProductionUtilityEntity } from "../database/entities/production-utility.entity";
 import { ProductionLabor } from "@/types/ProductionLabor";
 import { ProductionLaborEntity } from "../database/entities/production-labor.entity";
+import { ProductionStatus } from "@/types";
 
 export async function getAllProductionRecords() {
   const repo = AppDataSource.getRepository(ProductionRecordEntity);
@@ -217,6 +218,31 @@ export async function updateProduction(
   }
   if (newLabors.length > 0) {
     await productionLaborRepo.save(newLabors);
+  }
+
+  // 5. update product stock if status is completed
+  if (
+    updatedProductionRecord.status === ProductionStatus.completed &&
+    updatedProductionRecord.product &&
+    typeof updatedProductionRecord.quantity === "number"
+  ) {
+    // 5.1. add ouput product
+    const product = await productRepo.findOneBy({ id: updatedProductionRecord.product.id });
+    if (product) {
+      product.stock = (product.stock ?? 0) + updatedProductionRecord.quantity;
+      await productRepo.save(product);
+    }
+
+    // 5.2. remove input materials
+    for (const item of newMaterials) {
+      if (!item.material || typeof item.quantity !== "number") continue;
+
+      const material = await productRepo.findOneBy({ id: item.material.id });
+      if (material) {
+        material.stock = (material.stock ?? 0) - item.quantity;
+        await productRepo.save(material);
+      }
+    }
   }
 
   const fullUpdatedRecord = await productionRecordRepo.findOne({
