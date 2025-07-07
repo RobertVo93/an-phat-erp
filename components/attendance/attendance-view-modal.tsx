@@ -132,33 +132,6 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
 
           <Separator />
 
-          {/* Work Hours and Wage Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium">{t("attendance.workHours")}</span>
-              </div>
-              <p className="text-sm">{record.workHours}h</p>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-purple-600" />
-                <span className="text-sm font-medium">{t("attendance.overtime")}</span>
-              </div>
-              <p className="text-sm">{record.overtimeHours}h</p>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium">{t("attendance.dailyWage")}</span>
-              </div>
-              <p className="text-sm">${record.dailyWage?.toFixed(2)}</p>
-            </div>
-          </div>
-
           {record.notes && (
             <>
               <Separator />

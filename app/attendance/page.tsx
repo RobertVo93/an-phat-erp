@@ -250,7 +250,7 @@ export default function AttendancePage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalWages.toFixed(2)} VNĐ</div>
-              <p className="text-xs text-muted-foreground">{t("attendance.totalWagesToday")}</p>
+              <p className="text-xs text-muted-foreground">{t("attendance.totalWagesMonth")} {currentMonth}-{currentYear}</p>
             </CardContent>
           </Card>
         </div>
@@ -305,6 +305,7 @@ export default function AttendancePage() {
             onYearChange={setCurrentYear}
             onSave={handleTimesheetSave}
             onSelect={onQuickSelectInTimesheet}
+            onDelete={deleteAttendanceRecord}
           />
         ) : (
           <Card>

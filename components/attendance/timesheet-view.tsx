@@ -15,6 +15,7 @@ interface TimesheetViewProps {
   onYearChange: (year: number) => void
   onSave: () => void
   onSelect: (day: number, month: number, year: number, shift: AttendanceShift, employeeId: string) => void
+  onDelete: (id: string) => void
 }
 
 export function TimesheetView({
@@ -24,7 +25,8 @@ export function TimesheetView({
   onMonthChange,
   onYearChange,
   onSave,
-  onSelect
+  onSelect,
+  onDelete
 }: TimesheetViewProps) {
   const { t } = useLanguage()
 
@@ -129,7 +131,7 @@ export function TimesheetView({
             {timesheetData.map((employeeData) => (
               <div key={employeeData.employeeId} className="mb-4">
                 {/* Morning shift */}
-                <div 
+                <div
                   className="grid gap-1 mb-1"
                   style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
                 >
@@ -141,7 +143,12 @@ export function TimesheetView({
                     <div
                       key={`morning-${day}`}
                       className={`p-2 text-xs text-center border ${getCellClass(employeeData, "morning", day)} hover:cursor-pointer hover:bg-green-300`}
-                      onClick={() => onSelect(day, currentMonth, currentYear, AttendanceShift.morning, employeeData.employeeId)}
+                      onClick={() => {
+                        const attendanceId = employeeData.shifts.morning[day]?.id
+                        attendanceId ?
+                          onDelete(attendanceId) :
+                          onSelect(day, currentMonth, currentYear, AttendanceShift.morning, employeeData.employeeId)
+                      }}
                     >
                       {getCellContent(employeeData, "morning", day)}
                     </div>
@@ -152,7 +159,7 @@ export function TimesheetView({
                 </div>
 
                 {/* Afternoon shift */}
-                <div 
+                <div
                   className="grid gap-1 mb-1"
                   style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
                 >
@@ -164,7 +171,12 @@ export function TimesheetView({
                     <div
                       key={`afternoon-${day}`}
                       className={`p-2 text-xs text-center border ${getCellClass(employeeData, "afternoon", day)} hover:cursor-pointer hover:bg-green-300`}
-                      onClick={() => onSelect(day, currentMonth, currentYear, AttendanceShift.afternoon, employeeData.employeeId)}
+                      onClick={() => {
+                        const attendanceId = employeeData.shifts.afternoon[day]?.id
+                        attendanceId ?
+                          onDelete(attendanceId) :
+                          onSelect(day, currentMonth, currentYear, AttendanceShift.afternoon, employeeData.employeeId)
+                      }}
                     >
                       {getCellContent(employeeData, "afternoon", day)}
                     </div>
@@ -178,7 +190,7 @@ export function TimesheetView({
                 </div>
 
                 {/* Evening shift */}
-                <div 
+                <div
                   className="grid gap-1 mb-1"
                   style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
                 >
@@ -190,7 +202,12 @@ export function TimesheetView({
                     <div
                       key={`evening-${day}`}
                       className={`p-2 text-xs text-center border ${getCellClass(employeeData, "evening", day)} hover:cursor-pointer hover:bg-green-300`}
-                      onClick={() => onSelect(day, currentMonth, currentYear, AttendanceShift.evening, employeeData.employeeId)}
+                      onClick={() => {
+                        const attendanceId = employeeData.shifts.evening[day]?.id
+                        attendanceId ?
+                          onDelete(attendanceId) :
+                          onSelect(day, currentMonth, currentYear, AttendanceShift.evening, employeeData.employeeId)
+                      }}
                     >
                       {getCellContent(employeeData, "evening", day)}
                     </div>
