@@ -18,12 +18,6 @@ export class UtilityReading  extends BaseEntity implements IUtilityReading {
   utilityName!: string;
 
   @Column({ type: "float" })
-  previousReading!: number;
-
-  @Column({ type: "float" })
-  currentReading!: number;
-
-  @Column({ type: "float" })
   consumption!: number;
 
   @Column({ type: "float" })

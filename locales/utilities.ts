@@ -382,4 +382,16 @@ export const utilitiesTranslations = {
     en: "Showing",
     vi: "Hiển thị",
   },
+  "utilities.costRange": {
+    en: "Cost / Unit",
+    vi: "Mức / Đơn vị",
+  },
+  "utilities.minCost": {
+    en: "Min cost",
+    vi: "Giá tối thiểu",
+  },
+  "utilities.maxCost": {
+    en: "Max cost",
+    vi: "Giá tối đa",
+  },
 }

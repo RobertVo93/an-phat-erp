@@ -29,8 +29,6 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
         return "bg-green-100 text-green-800"
       case InvoiceStatus.sent:
         return "bg-blue-100 text-blue-800"
-      case InvoiceStatus.partial:
-        return "bg-yellow-100 text-yellow-800"
       case InvoiceStatus.overdue:
         return "bg-red-100 text-red-800"
       case InvoiceStatus.draft:
@@ -165,14 +163,6 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
                     {reading.utilityType === ReadingType.predefined_utility ? (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground mt-4">
                         <div>
-                          <span className="block">{t("invoices.detail.previousReading")}:</span>
-                          <span className="font-medium">{reading.previousReading}</span>
-                        </div>
-                        <div>
-                          <span className="block">{t("invoices.detail.currentReading")}:</span>
-                          <span className="font-medium">{reading.currentReading}</span>
-                        </div>
-                        <div>
                           <span className="block">{t("invoices.detail.consumption")}:</span>
                           <span className="font-medium">{reading.consumption}</span>
                         </div>
@@ -223,20 +213,6 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
                   <span>{t("invoices.total")}:</span>
                   <span>{formatCurrency(invoice.total!)}</span>
                 </div>
-                {invoice.paidAmount! > 0 && (
-                  <>
-                    <div className="flex justify-between text-green-600">
-                      <span>{t("invoices.paidAmount")}:</span>
-                      <span>{formatCurrency(invoice.paidAmount!)}</span>
-                    </div>
-                    {invoice.paidAmount! < invoice.total! && (
-                      <div className="flex justify-between text-red-600 font-medium">
-                        <span>{t("invoices.outstandingAmount")}:</span>
-                        <span>{formatCurrency(invoice.total! - invoice.paidAmount!)}</span>
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
             </CardContent>
           </Card>
