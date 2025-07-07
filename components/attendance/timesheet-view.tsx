@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLanguage } from "@/contexts/language-context"
 import { Save, Calendar } from "lucide-react"
 import type { TimesheetData } from "@/types/attendance"
-import { AttendanceStatus } from "@/types"
+import { AttendanceShift, AttendanceStatus } from "@/types"
 
 interface TimesheetViewProps {
   timesheetData: TimesheetData[]
@@ -14,6 +14,7 @@ interface TimesheetViewProps {
   onMonthChange: (month: number) => void
   onYearChange: (year: number) => void
   onSave: () => void
+  onSelect: (day: number, month: number, year: number, shift: AttendanceShift, employeeId: string) => void
 }
 
 export function TimesheetView({
@@ -23,6 +24,7 @@ export function TimesheetView({
   onMonthChange,
   onYearChange,
   onSave,
+  onSelect
 }: TimesheetViewProps) {
   const { t } = useLanguage()
 
@@ -138,7 +140,8 @@ export function TimesheetView({
                   {days.map((day) => (
                     <div
                       key={`morning-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "morning", day)}`}
+                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "morning", day)} hover:cursor-pointer hover:bg-green-300`}
+                      onClick={() => onSelect(day, currentMonth, currentYear, AttendanceShift.morning, employeeData.employeeId)}
                     >
                       {getCellContent(employeeData, "morning", day)}
                     </div>
@@ -160,7 +163,8 @@ export function TimesheetView({
                   {days.map((day) => (
                     <div
                       key={`afternoon-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "afternoon", day)}`}
+                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "afternoon", day)} hover:cursor-pointer hover:bg-green-300`}
+                      onClick={() => onSelect(day, currentMonth, currentYear, AttendanceShift.afternoon, employeeData.employeeId)}
                     >
                       {getCellContent(employeeData, "afternoon", day)}
                     </div>
@@ -185,7 +189,8 @@ export function TimesheetView({
                   {days.map((day) => (
                     <div
                       key={`evening-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "evening", day)}`}
+                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "evening", day)} hover:cursor-pointer hover:bg-green-300`}
+                      onClick={() => onSelect(day, currentMonth, currentYear, AttendanceShift.evening, employeeData.employeeId)}
                     >
                       {getCellContent(employeeData, "evening", day)}
                     </div>

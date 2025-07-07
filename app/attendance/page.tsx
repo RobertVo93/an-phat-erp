@@ -66,10 +66,10 @@ export default function AttendancePage() {
     getAttendanceRecord,
     stats,
     timesheetData,
-    employees,
-    getEmployeeById,
+    activeEmployees,
     loading,
-    currentMonth, setCurrentMonth, currentYear, setCurrentYear
+    currentMonth, setCurrentMonth, currentYear, setCurrentYear,
+    onQuickSelectInTimesheet
   } = useAttendance()
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
@@ -245,21 +245,11 @@ export default function AttendancePage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("attendance.totalOvertimeHours")}</CardTitle>
-              <Clock className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalOvertimeHours.toFixed(1)}h</div>
-              <p className="text-xs text-muted-foreground">{t("attendance.totalOvertimeToday")}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t("attendance.totalWages")}</CardTitle>
               <DollarSign className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.totalWages.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{stats.totalWages.toFixed(2)} VNĐ</div>
               <p className="text-xs text-muted-foreground">{t("attendance.totalWagesToday")}</p>
             </CardContent>
           </Card>
@@ -314,6 +304,7 @@ export default function AttendancePage() {
             onMonthChange={setCurrentMonth}
             onYearChange={setCurrentYear}
             onSave={handleTimesheetSave}
+            onSelect={onQuickSelectInTimesheet}
           />
         ) : (
           <Card>
@@ -381,10 +372,6 @@ export default function AttendancePage() {
                           {t(`attendance.status.${record.status?.toLowerCase().replace(" ", "")}`)}
                         </Badge>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">{t("attendance.dailyWage")}</p>
-                        <p className="font-medium">${record.dailyWage?.toFixed(2)}</p>
-                      </div>
                     </div>
 
                     {(record.checkIn || record.checkOut) && (
@@ -403,17 +390,6 @@ export default function AttendancePage() {
                         )}
                       </div>
                     )}
-
-                    <div className="grid grid-cols-2 gap-3 text-sm mt-3 pt-3 border-t">
-                      <div>
-                        <p className="text-muted-foreground">{t("attendance.workHours")}</p>
-                        <p className="font-medium">{record.workHours}h</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">{t("attendance.overtime")}</p>
-                        <p className="font-medium">{record.overtimeHours}h</p>
-                      </div>
-                    </div>
                   </Card>
                 ))}
               </div>
@@ -434,9 +410,6 @@ export default function AttendancePage() {
                       <th className="text-left p-2">{t("attendance.shift")}</th>
                       <th className="text-left p-2">{t("attendance.checkIn")}</th>
                       <th className="text-left p-2">{t("attendance.checkOut")}</th>
-                      <th className="text-left p-2">{t("attendance.workHours")}</th>
-                      <th className="text-left p-2">{t("attendance.overtime")}</th>
-                      <th className="text-left p-2">{t("attendance.dailyWage")}</th>
                       <th className="text-left p-2">{t("attendance.status")}</th>
                       <th className="text-left p-2">{t("attendance.actions")}</th>
                     </tr>
@@ -464,9 +437,6 @@ export default function AttendancePage() {
                         </td>
                         <td className="p-2 text-sm">{extractHourMinute(record.checkIn!) || "-"}</td>
                         <td className="p-2 text-sm">{extractHourMinute(record.checkOut!) || "-"}</td>
-                        <td className="p-2 text-sm">{record.workHours}h</td>
-                        <td className="p-2 text-sm">{record.overtimeHours}h</td>
-                        <td className="p-2 text-sm">${record.dailyWage?.toFixed(2)}</td>
                         <td className="p-2">
                           <Badge className={getStatusColor(record.status!)}>
                             {t(`attendance.status.${record.status?.toLowerCase().replace(" ", "")}`)}
@@ -559,7 +529,7 @@ export default function AttendancePage() {
           onUpdate={updateAttendanceRecord}
           record={selectedRecord!}
           mode={formMode}
-          employees={employees}
+          employees={activeEmployees}
         />
 
         <AttendanceViewModal
@@ -573,7 +543,7 @@ export default function AttendancePage() {
           onClose={() => setIsFilterModalOpen(false)}
           onApply={setFilters}
           currentFilters={filters}
-          employees={employees}
+          employees={activeEmployees}
         />
 
         <AttendanceDeleteModal

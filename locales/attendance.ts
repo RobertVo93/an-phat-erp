@@ -464,4 +464,30 @@ export const attendanceTranslations = {
     en: "Close",
     vi: "Đóng",
   },
+
+  // department
+  "attendance.departments.it": {
+    en: "IT",
+    vi: "Công Nghệ Thông Tin",
+  },
+  "attendance.departments.marketing": {
+    en: "Marketing",
+    vi: "Marketing",
+  },
+  "attendance.departments.finance": {
+    en: "Finance",
+    vi: "Tài Chính",
+  },
+  "attendance.departments.sales": {
+    en: "Sales",
+    vi: "Bán Hàng",
+  },
+  "attendance.departments.hr": {
+    en: "HR",
+    vi: "Nhân Sự",
+  },
+  "attendance.departments.operations": {
+    en: "Operations",
+    vi: "Vận Hành",
+  },
 }

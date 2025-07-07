@@ -8,9 +8,6 @@ export interface AttendanceRecord extends IBase{
   checkOut?: Date;
   shift?: AttendanceShift;
   status?: AttendanceStatus;
-  workHours?: number;
-  overtimeHours?: number;
-  dailyWage?: number;
   notes?: string;
 
   employee?: IEmployee;
@@ -30,7 +27,6 @@ export interface AttendanceStats {
   totalPresent: number
   totalAbsent: number
   totalLate: number
-  totalOvertimeHours: number
   totalWages: number
 }
 

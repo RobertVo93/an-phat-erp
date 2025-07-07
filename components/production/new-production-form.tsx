@@ -99,7 +99,7 @@ export function NewProductionForm({
           name: utility.name,
           unit: utility.unit,
           quantity: 1,
-          cost: utility.monthlyCost!,
+          cost: utility.costPerUnit,
           totalCost: updated[index].quantity! * utility.costPerUnit!,
         }
       }

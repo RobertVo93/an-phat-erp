@@ -22,15 +22,6 @@ export class AttendanceRecordEntity extends BaseEntity implements IAttendanceRec
   @Column({ type: "enum", enum: AttendanceStatus, nullable: true })
   status?: AttendanceStatus;
 
-  @Column({ type: "float", nullable: true })
-  workHours?: number;
-
-  @Column({ type: "float", nullable: true })
-  overtimeHours?: number;
-
-  @Column({ type: "float", nullable: true })
-  dailyWage?: number;
-
   @Column({ nullable: true })
   notes?: string;
 
