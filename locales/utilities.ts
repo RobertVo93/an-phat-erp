@@ -140,6 +140,10 @@ export const utilitiesTranslations = {
     en: "Description",
     vi: "Mô tả",
   },
+  "utilities.information": {
+    en: "Cost Information",
+    vi: "Thông tin về giá",
+  },
 
   // Utility types
   "utilities.electricity": {
@@ -213,6 +217,10 @@ export const utilitiesTranslations = {
   "utilities.minutes": {
     en: "minutes",
     vi: "phút",
+  },
+  "utilities.hours": {
+    en: "hours",
+    vi: "giờ",
   },
 
   // Actions
@@ -361,5 +369,17 @@ export const utilitiesTranslations = {
   "utilities.utility": {
     en: "utility",
     vi: "tiện ích",
+  },
+  "utilities.createdAt": {
+    en: "Created at",
+    vi: "Tạo lúc",
+  },
+  "utilities.lastUpdated": {
+    en: "Last updated",
+    vi: "Cập nhật gần nhất",
+  },
+  "utilities.showing": {
+    en: "Showing",
+    vi: "Hiển thị",
   },
 }

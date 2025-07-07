@@ -6,15 +6,10 @@ export interface Utility extends IBase{
   type?: UtilityType
   name?: string
   provider?: string
-  accountNumber?: string
   location?: string
-  monthlyUsage?: number
   unit?: UtilityUnit
   costPerUnit?: number
-  monthlyCost?: number
-  lastReading?: string
   status?: UtilityStatus
-  dueDate?: string
   description?: string
 }
 
@@ -28,11 +23,9 @@ export interface UtilityFilters {
   status?: string
   location?: string
   provider?: string
-  dueDateFrom?: string
-  dueDateTo?: string
   costFrom?: number
   costTo?: number
 }
 
-export type UtilitySortField = "type" | "provider" | "location" | "monthlyCost" | "dueDate" | "status"
+export type UtilitySortField = "type" | "provider" | "location" | "status"
 export type SortDirection = "asc" | "desc"

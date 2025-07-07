@@ -22,7 +22,6 @@ export function useUtilities() {
       const matchesSearch =
         utility.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         utility.provider?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        utility.accountNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         utility.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         utility.id?.toLowerCase().includes(searchTerm.toLowerCase())
 
@@ -30,12 +29,8 @@ export function useUtilities() {
       const matchesStatus = !filters.status || utility.status === filters.status
       const matchesLocation = !filters.location || utility.location === filters.location
       const matchesProvider = !filters.provider || utility.provider === filters.provider
-
-      const matchesDueDateFrom = !filters.dueDateFrom || utility.dueDate! >= filters.dueDateFrom
-      const matchesDueDateTo = !filters.dueDateTo || utility.dueDate! <= filters.dueDateTo
-
-      const matchesCostFrom = filters.costFrom === undefined || utility.monthlyCost! >= filters.costFrom
-      const matchesCostTo = filters.costTo === undefined || utility.monthlyCost! <= filters.costTo
+      const matchesCostFrom = filters.costFrom === undefined || utility.costPerUnit! >= filters.costFrom
+      const matchesCostTo = filters.costTo === undefined || utility.costPerUnit! <= filters.costTo
 
       return (
         matchesSearch &&
@@ -43,8 +38,6 @@ export function useUtilities() {
         matchesStatus &&
         matchesLocation &&
         matchesProvider &&
-        matchesDueDateFrom &&
-        matchesDueDateTo &&
         matchesCostFrom &&
         matchesCostTo
       )
@@ -54,11 +47,6 @@ export function useUtilities() {
     filtered.sort((a, b) => {
       let aValue: any = a[sortField]
       let bValue: any = b[sortField]
-
-      if (sortField === "monthlyCost") {
-        aValue = Number(aValue)
-        bValue = Number(bValue)
-      }
 
       if (aValue < bValue) return sortDirection === "asc" ? -1 : 1
       if (aValue > bValue) return sortDirection === "asc" ? 1 : -1
@@ -138,15 +126,11 @@ export function useUtilities() {
     const totalUtilities = utilities.length
     const activeUtilities = utilities.filter((u) => u.status === UtilityStatus.active).length
     const overdueUtilities = utilities.filter((u) => u.status === UtilityStatus.overdue).length
-    const totalMonthlyCost = utilities.reduce((sum, u) => sum + u.monthlyCost!, 0)
-    const avgMonthlyCost = totalUtilities > 0 ? totalMonthlyCost / totalUtilities : 0
 
     return {
       totalUtilities,
       activeUtilities,
       overdueUtilities,
-      totalMonthlyCost,
-      avgMonthlyCost,
     }
   }, [utilities])
 

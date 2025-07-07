@@ -98,7 +98,9 @@ export enum UtilityUnit {
   kwh = "kwh",
   m3 = "m3",
   gb = "gb",
-  minutes = "minutes"
+  minutes = "minutes",
+  hours = "hours",
+  other = "other"
 }
 
 export enum ProductStatus {
