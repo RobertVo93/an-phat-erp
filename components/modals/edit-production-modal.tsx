@@ -214,6 +214,22 @@ export function EditProductionModal({
     return materialsCost + utilitiesCost + laborCost;
   };
 
+  const calculateRevenue = () => {
+    if (!formData?.product || !formData?.quantity) return 0
+    return formData?.product?.price! * formData?.quantity!
+  }
+
+  const calculateTotalProfit = () => {
+    if (!formData?.product || !formData.quantity) return 0
+    return formData?.product?.price! * formData.quantity - calculateTotalCost()
+  }
+
+  const calculateEfficiency = () => {
+    const totalIncome = formData?.product?.price! * formData?.quantity!
+    const efficiency = ((totalIncome! - calculateTotalCost()) / totalIncome!) * 100  // ((total income - total expense) / total income) * 100
+    return efficiency
+  }
+
   function hasValidArray(arr: any) {
     return Array.isArray(arr) &&
       arr.length > 0 &&
@@ -579,7 +595,7 @@ export function EditProductionModal({
               <CardTitle className="text-lg">{t("production.edit.expensesSummary")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">
                     {
@@ -617,9 +633,18 @@ export function EditProductionModal({
                   <div className="text-2xl font-bold text-purple-600">{calculateTotalCost().toLocaleString()} đ</div>
                   <div className="text-sm text-gray-600">{t("production.edit.totalExpense")}</div>
                 </div>
+
+                <div className="text-center p-4 bg-emerald-50 rounded-lg">
+                  <div className="text-2xl font-bold text-emerald-600">{calculateRevenue().toLocaleString()} đ</div>
+                  <div className="text-sm text-gray-600">{t("production.edit.revenue")}</div>
+                </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{(formData?.product?.price! * formData?.quantity! - calculateTotalCost()).toLocaleString()} đ</div>
+                  <div className="text-2xl font-bold text-green-600">{calculateTotalProfit().toLocaleString()} đ</div>
                   <div className="text-sm text-gray-600">{t("production.edit.totalProfit")}</div>
+                </div>
+                <div className="text-center p-4 bg-lime-50 rounded-lg">
+                  <div className="text-2xl font-bold text-lime-600">{calculateEfficiency().toLocaleString()} %</div>
+                  <div className="text-sm text-gray-600">{t("production.edit.efficiency")}</div>
                 </div>
               </div>
             </CardContent>

@@ -1,4 +1,4 @@
-import { ProductionStatus, ProductionUnit } from "@/types/enums";
+import { ProductionStatus } from "@/types/enums";
 import { Product } from "./product";
 import { IBase } from "./base.interface";
 import { ProductionMaterial } from "./productionMaterial";

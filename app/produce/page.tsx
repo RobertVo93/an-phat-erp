@@ -88,7 +88,7 @@ export default function ProducePage() {
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-2">
             <TabsTrigger value="today" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">{t("production.today")}</span>
@@ -105,10 +105,9 @@ export default function ProducePage() {
           <TabsContent value="today" className="space-y-4 sm:space-y-6">
             {/* Summary Cards */}
             <ProductionSummaryCards
-              todayProduction={250}
               materialCost={6.75}
               utilityCost={5.75}
-              efficiency={90}
+              employeeCost={2}
             />
 
             {/* Production Records */}

@@ -110,6 +110,12 @@ export enum ProductStatus {
   outOfStock = "outOfStock"
 }
 
+export enum ProductUnit {
+  kg = "kg",
+  piece = "piece",
+  other = "other"
+}
+
 export enum CustomerStatus {
   active = "active",
   inactive = "inactive",
@@ -153,12 +159,6 @@ export enum ProductionStatus {
   inProgress = "in-progress",
   paused = "paused",
   cancelled = "cancelled"
-}
-
-export enum ProductionUnit {
-  kg = "kg",
-  piece = "piece",
-  other = "other",
 }
 
 export enum EmployeeType {

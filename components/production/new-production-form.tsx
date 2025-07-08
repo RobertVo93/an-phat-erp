@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
 import type { SelectedUtility, ProductionRecord } from "@/types/production"
-import { Employee, Product, ProductionStatus, ProductionUnit, Utility } from "@/types"
+import { Employee, Product, ProductionStatus, Utility } from "@/types"
 import { formatLocalDatetime } from "@/lib/utils"
 import { ProductionMaterial } from "@/types/productionMaterial"
 import { useLanguage } from "@/contexts/language-context"
@@ -35,7 +35,6 @@ export function NewProductionForm({
   const { t } = useLanguage()
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [quantity, setQuantity] = useState<number>(1)
-  const [unit, setUnit] = useState<ProductionUnit>(ProductionUnit.kg)
   const [selectedMaterials, setSelectedMaterials] = useState<ProductionMaterial[]>([])
   const [selectedUtilities, setSelectedUtilities] = useState<ProductionUtility[]>([])
   const [selectedEmployees, setSelectedEmployees] = useState<ProductionLabor[]>([])
@@ -156,6 +155,22 @@ export function NewProductionForm({
     return materialsCost + utilitiesCost + laborCost;
   };
 
+  const calculateTotalProfit = () => {
+    if (!selectedProduct || !quantity) return 0
+    return selectedProduct?.price! * quantity - calculateTotalCost()
+  }
+
+  const calculateRevenue = () => {
+    if (!selectedProduct || !quantity) return 0
+    return selectedProduct?.price! * quantity
+  }
+
+  const calculateEfficiency = () => {
+    const totalIncome = selectedProduct?.price! * quantity
+    const efficiency = ((totalIncome! - calculateTotalCost()) / totalIncome!) * 100  // ((total income - total expense) / total income) * 100
+    return efficiency
+  }
+
   const onSelectProduct = (id: string) => {
     const selectingProduct = availableProducts.find((pro) => pro.id === id)
     setSelectedProduct(selectingProduct!)
@@ -212,7 +227,7 @@ export function NewProductionForm({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Thông tin sản phẩm */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="product" className="text-sm">
             {t("production.form.product")}
@@ -295,21 +310,22 @@ export function NewProductionForm({
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div>
-                  <span className="text-gray-600">{t("production.form.unit")}: </span>
-                  {/* TODO: Update unit */}
-                  {/* <span className="font-medium">{t(`production.form.${material.material.}`)}</span> */}
+              {material.material &&
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span className="text-gray-600">{t("production.form.unit")}: </span>
+                    <span className="font-medium">{t(`production.form.${material.material?.unit}`)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">{t("production.form.unitPrice")}: </span>
+                    <span className="font-medium">{material.material?.cost!.toLocaleString()} đ</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">{t("production.form.totalCost")}: </span>
+                    <span className="font-medium">{material.totalCost?.toLocaleString()} đ</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-gray-600">{t("production.form.unitPrice")}: </span>
-                  <span className="font-medium">{material.material?.cost!.toLocaleString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">{t("production.form.totalCost")}: </span>
-                  <span className="font-medium">{material.totalCost}</span>
-                </div>
-              </div>
+              }
               <Button
                 variant="outline"
                 size="sm"
@@ -371,20 +387,22 @@ export function NewProductionForm({
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div>
-                  <span className="text-gray-600">{t("production.form.unit")}: </span>
-                  <span className="font-medium">{utility.utility?.unit && t(`production.form.${utility.utility?.unit}`)}</span>
+              {utility.utility &&
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span className="text-gray-600">{t("production.form.unit")}: </span>
+                    <span className="font-medium">{utility.utility?.unit && t(`production.form.${utility.utility?.unit}`)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">{t("production.form.unitPrice")}: </span>
+                    <span className="font-medium">{utility.utility?.costPerUnit!.toLocaleString()} đ</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">{t("production.form.totalCost")}: </span>
+                    <span className="font-medium">{utility.totalCost ? utility.totalCost!.toLocaleString() : 0} đ</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-gray-600">{t("production.form.unitPrice")}: </span>
-                  <span className="font-medium">{utility.utility?.costPerUnit!.toString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">{t("production.form.totalCost")}: </span>
-                  <span className="font-medium">{utility.totalCost ? utility.totalCost!.toString() : 0}</span>
-                </div>
-              </div>
+              }
               <Button
                 variant="outline"
                 size="sm"
@@ -446,17 +464,18 @@ export function NewProductionForm({
                   />
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div>
-                  <span className="text-gray-600">{t("production.form.position")}: </span>
-                  <span className="font-medium">{selectedEmployee.employee?.position}</span>
+              {selectedEmployee.employee &&
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span className="text-gray-600">{t("production.form.position")}: </span>
+                    <span className="font-medium">{selectedEmployee.employee?.position}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">{t("production.form.wage")}: </span>
+                    <span className="font-medium">{selectedEmployee.totalCost?.toLocaleString()} đ</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-gray-600">{t("production.form.wage")}: </span>
-                  <span className="font-medium">{selectedEmployee.totalCost?.toLocaleString()}</span>
-                </div>
-              </div>
+              }
               <Button
                 variant="outline"
                 size="sm"
@@ -513,20 +532,14 @@ export function NewProductionForm({
             </div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
               <span>{t("production.form.totalExpense")}:</span>
-              <span>{calculateTotalCost().toFixed(0).toLocaleString()} đ</span>
+              <span>{calculateTotalCost().toLocaleString()} đ</span>
             </div>
             {(selectedProduct && quantity) && (
               <div>
                 <div className="flex justify-between text-xs text-gray-600">
                   <span>{t("production.form.expensePerUnit")}:</span>
                   <span>
-                    {(calculateTotalCost() / quantity).toFixed(0).toLocaleString()} đ
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs text-green-600">
-                  <span>{t("production.form.totalProfit")}:</span>
-                  <span>
-                    {((selectedProduct?.price! * quantity) - calculateTotalCost()).toFixed(0).toLocaleString()} đ
+                    {(calculateTotalCost() / quantity).toLocaleString()} đ
                   </span>
                 </div>
               </div>
@@ -543,9 +556,21 @@ export function NewProductionForm({
         <CardContent>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
-              <span>{t("production.form.totalProfit")}:</span>
-              <span>{((selectedProduct?.price! * quantity) - calculateTotalCost()).toFixed(0).toLocaleString()} đ</span>
+              <span>{t("production.form.revenue")}:</span>
+              <span>{calculateRevenue().toLocaleString()} đ</span>
             </div>
+            <div className="flex justify-between text-base font-semibold">
+              <span>{t("production.form.totalProfit")}:</span>
+              <span>{calculateTotalProfit().toLocaleString()} đ</span>
+            </div>
+            {(calculateTotalProfit() && calculateTotalCost()) ?
+              <div className="flex justify-between text-xs text-gray-600">
+                <span>{t("production.form.efficiency")}:</span>
+                <span>
+                  {calculateEfficiency().toFixed(2).toLocaleString()} %
+                </span>
+              </div> : null
+            }
           </div>
         </CardContent>
       </Card>

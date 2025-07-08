@@ -34,21 +34,17 @@ export const productionTranslations = {
   },
 
   // ProductionSummaryCards
-  "production.summary.todayOuputQuantity": {
-    en: "Today's Output Quantity",
-    vi: "Sản Lượng Hôm Nay",
-  },
   "production.summary.materialCost": {
     en: "Material Cost",
-    vi: "Chi Phí NL",
+    vi: "Chi Phí Nguyên Liệu",
   },
   "production.summary.utilityCost": {
     en: "Utility Cost",
-    vi: "Chi Phí NL",
+    vi: "Chi Phí Tiện Ích",
   },
-  "production.summary.efficiency": {
-    en: "Efficiency",
-    vi: "Hiệu Suất",
+  "production.summary.employeeCost": {
+    en: "Employee Cost",
+    vi: "Chi Phí Nhân Lực",
   },
 
   // ProductionRecords
@@ -145,6 +141,10 @@ export const productionTranslations = {
   "production.recordItem.piece": {
     en: "piece",
     vi: "bánh",
+  },
+  "production.recordItem.other": {
+    en: "other",
+    vi: "khác",
   },
 
   // ProductionHistory
@@ -466,6 +466,14 @@ export const productionTranslations = {
     en: "minutes",
     vi: "phút",
   },
+  "production.form.efficiency": {
+    en: "Efficiency",
+    vi: "Hiệu suất",
+  },
+  "production.form.revenue": {
+    en: "Revenue",
+    vi: "Doanh thu",
+  },
 
   // ProductionDetailModal
   "production.detail.title": {
@@ -568,6 +576,22 @@ export const productionTranslations = {
     en: "Price per Unit",
     vi: "Giá 1 đơn vị",
   },
+  "production.detail.revenueSummary": {
+    en: "Revenue Summary",
+    vi: "Tổng Kết Doanh Thu",
+  },
+  "production.detail.revenue": {
+    en: "Revenue",
+    vi: "Doanh Thu",
+  },
+  "production.detail.profit": {
+    en: "Profit",
+    vi: "Lợi Nhuận",
+  },
+  "production.detail.efficiency": {
+    en: "Efficiency",
+    vi: "Hiệu Suất",
+  },
 
   // EditProductionModal
   "production.edit.title": {
@@ -647,8 +671,8 @@ export const productionTranslations = {
     vi: "Thành tiền"
   },
   "production.edit.wage": {
-    en: "Total Cost",
-    vi: "Thành tiền"
+    en: "Wage",
+    vi: "Lương"
   },
   "production.edit.action": {
     en: "Action",
@@ -753,5 +777,9 @@ export const productionTranslations = {
   "production.edit.totalProfit": {
     en: "Total profit",
     vi: "Tổng lợi nhuận",
+  },
+  "production.edit.revenue": {
+    en: "Revenue",
+    vi: "Doanh Thu",
   },
 }

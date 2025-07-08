@@ -32,6 +32,14 @@ export function ProductionDetailModal({ record, isOpen, onClose }: ProductionDet
 function ProductionDetailView({ record }: { record: ProductionRecord }) {
   const { t } = useLanguage()
 
+  const calculateTotalMaterialCost = () => {
+    return record.productionMaterials?.reduce((sum, m) => sum + m.totalCost!, 0)
+  };
+
+  const calculateTotalUtilityCost = () => {
+    return record.productionUtilities?.reduce((sum, u) => sum + u.totalCost!, 0)
+  };
+
   function calculateTotalSalary(): number {
     if (!Array.isArray(record?.productionLabors)) return 0;
 
@@ -41,25 +49,25 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
     }, 0);
   }
 
-  const calculateTotalCost = () => {
-    const materialsCost = record.productionMaterials!
-      .filter((m) => typeof m?.totalCost === "number")
-      .reduce((sum, m) => sum + m.totalCost!, 0);
-
-    const utilitiesCost = record.productionUtilities!
-      .filter((u) => typeof u?.totalCost === "number")
-      .reduce((sum, u) => sum + u.totalCost!, 0);
-
-    const laborCost = record.productionLabors!
-      .filter((e) => typeof e?.totalCost === "number")
-      .reduce((sum, e) => sum + e.totalCost!, 0);
-
-    return materialsCost + utilitiesCost + laborCost;
+  const calculateRevenue = () => {
+    return record.product?.price! * record.quantity!
   };
+
+  const calculateProfit = () => {
+    const totalCost = calculateTotalMaterialCost()! + calculateTotalUtilityCost()! + calculateTotalSalary()!
+    return record.product?.price! * record.quantity! - totalCost
+  }
+
+  const calculateEfficiency = () => {
+    const totalCost = calculateTotalMaterialCost()! + calculateTotalUtilityCost()! + calculateTotalSalary()!
+    const totalIncome = record.product?.price! * record?.quantity!
+    const efficiency = ((totalIncome! - totalCost) / totalIncome!) * 100  // ((total income - total expense) / total income) * 100
+    return efficiency
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base sm:text-lg">{t("production.detail.productionInformation")}</CardTitle>
@@ -72,43 +80,12 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.quantity")}:</span>
               <span className="font-medium">
-                {record.quantity}
-                {/* {record.unit} TODO: add unit */}
+                {record.quantity} {t(`production.recordItem.${record.product?.unit}`)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.date")}:</span>
               <span className="font-medium">{formatDate(record.date!)}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base sm:text-lg">{t("production.detail.expenseSummary")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">{t("production.detail.materials")}:</span>
-              <span className="font-medium">
-                {record.productionMaterials?.reduce((sum, m) => sum + m.totalCost!, 0).toLocaleString()} đ
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">{t("production.detail.utility")}:</span>
-              <span className="font-medium">
-                {record.productionUtilities?.reduce((sum, u) => sum + u.totalCost!, 0).toLocaleString()} đ
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">{t("production.detail.labor")}:</span>
-              <span className="font-medium">
-                {calculateTotalSalary().toLocaleString()} đ
-              </span>
-            </div>
-            <div className="flex justify-between border-t pt-2">
-              <span className="font-semibold">{t("production.detail.totalExpense")}:</span>
-              <span className="font-semibold">{record.totalCost!.toLocaleString()} đ</span>
             </div>
           </CardContent>
         </Card>
@@ -172,7 +149,7 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
                   <div>
                     <div className="font-medium">{pl.employee?.name} - {pl.employee?.position}</div>
                     <div className="text-xs text-gray-600">
-                      {t("production.detail.salary")}: {pl.employee?.salary?.toLocaleString()} đ
+                      {t("production.detail.salary")}: {pl.totalCost?.toLocaleString()} đ
                     </div>
                   </div>
                 </div>
@@ -182,9 +159,68 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
         </Card>
       </div>
 
-      <div className="text-center p-4 bg-green-50 rounded-lg">
-        <div className="text-2xl font-bold text-green-600">{(record?.product?.price! * record?.quantity! - calculateTotalCost()).toLocaleString()} đ</div>
-        <div className="text-sm text-gray-600">{t("production.detail.totalProfit")}</div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base sm:text-lg">{t("production.detail.expenseSummary")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t("production.detail.materials")}:</span>
+              <span className="font-medium">
+                {calculateTotalMaterialCost()?.toLocaleString()} đ
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t("production.detail.utility")}:</span>
+              <span className="font-medium">
+                {calculateTotalUtilityCost()?.toLocaleString()} đ
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t("production.detail.labor")}:</span>
+              <span className="font-medium">
+                {calculateTotalSalary().toLocaleString()} đ
+              </span>
+            </div>
+            <div className="flex justify-between border-t pt-2">
+              <span className="font-semibold">{t("production.detail.totalExpense")}:</span>
+              <span className="font-semibold">{record.totalCost!.toLocaleString()} đ</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t("production.detail.pricePerUnit")}:</span>
+              <span className="font-medium">
+                {(record.totalCost! / record.quantity!).toLocaleString()} đ
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base sm:text-lg">{t("production.detail.revenueSummary")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t("production.detail.revenue")}:</span>
+              <span className="font-medium">
+                {calculateRevenue().toLocaleString()} đ
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t("production.detail.profit")}:</span>
+              <span className="font-medium">
+                {calculateProfit().toLocaleString()} đ
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t("production.detail.efficiency")}:</span>
+              <span className="font-medium">
+                {calculateEfficiency().toLocaleString()} %
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
