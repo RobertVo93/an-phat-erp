@@ -27,6 +27,9 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex-1">
             <h3 className="font-semibold text-sm sm:text-base">{record.product?.name}</h3>
+            <h3 className="text-xs text-gray-600">{record.quantity}</h3>
+            {/* TODO: Update unit */}
+            {/* <h3 className="text-xs text-gray-600">{record.quantity} {t(`production.recordItem.${record.product.unit}`)}</h3> */}
           </div>
           <Badge variant={record.status === ProductionStatus.completed ? "default" : "secondary"} className="text-xs">
             {record.status === ProductionStatus.completed ? (
@@ -87,9 +90,9 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
               <span className="font-medium">{utility.utility?.name!}</span>
               <div className="text-right">
                 <div>
-                  {utility.quantity} {utility.unit}
+                  {utility.quantity} {t(`production.form.${utility.utility?.unit}`)}
                 </div>
-                <div className="text-xs text-gray-600">{utility.cost!} đ</div>
+                <div className="text-xs text-gray-600">{utility.totalCost!} đ</div>
               </div>
             </div>
           ))}

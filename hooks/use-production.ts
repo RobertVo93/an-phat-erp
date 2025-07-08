@@ -1,9 +1,8 @@
-import { availableEmployees } from './../lib/production-data';
 "use client"
 
 import { useEffect, useState } from "react"
 import type { ProductionRecord } from "@/types/production"
-import { Employee, Product, Utility } from "@/types"
+import { Employee, EmployeeStatus, Product, ProductStatus, Utility, UtilityStatus } from "@/types"
 import { getProducts as apiGetProducts } from "@/lib/httpclient"
 import { createProduction, getAllProductions, updateProduction } from "@/lib/httpclient/production.client"
 import { isTodayLocalDatetime } from "@/lib/utils"
@@ -28,13 +27,22 @@ export function useProduction() {
       setLoading(true)
       const prResponse = await getAllProductions()
       setHistoryProductionRecords(prResponse.data as ProductionRecord[])
+
+      // get active products
       const pro = await apiGetProducts()
-      setAvailableProducts(pro.data)
-      setAvailableMaterials(pro.data)
+      const activeProducts = (pro.data as Product[]).filter((pro) => pro.status === ProductStatus.active)
+      setAvailableProducts(activeProducts)
+      setAvailableMaterials(activeProducts)
+
+      // get active utilities
       const ult = await getAllUtilities()
-      setAvailableUtilities(ult.data)
+      const activeUtilities = (ult.data as Utility[]).filter((ult) => ult.status === UtilityStatus.active)
+      setAvailableUtilities(activeUtilities)
+
+      // get active employee
       const emp = await getEmployee()
-      setAvailableEmployees(emp.data)
+      const activeEmployees = (emp.data as Employee[]).filter((e) => e.status === EmployeeStatus.active)
+      setAvailableEmployees(activeEmployees)
     } catch (e) {
       console.error(e)
     } finally {

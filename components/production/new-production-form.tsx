@@ -8,10 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
 import type { SelectedUtility, ProductionRecord } from "@/types/production"
-import { Employee, Product, ProductionStatus, Utility } from "@/types"
+import { Employee, Product, ProductionStatus, ProductionUnit, Utility } from "@/types"
 import { formatLocalDatetime } from "@/lib/utils"
 import { ProductionMaterial } from "@/types/productionMaterial"
 import { useLanguage } from "@/contexts/language-context"
+import { ProductionLabor } from "@/types/ProductionLabor"
+import { ProductionUtility } from "@/types/productionUtility"
 
 interface NewProductionFormProps {
   availableProducts: Product[]
@@ -33,9 +35,10 @@ export function NewProductionForm({
   const { t } = useLanguage()
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [quantity, setQuantity] = useState<number>(1)
+  const [unit, setUnit] = useState<ProductionUnit>(ProductionUnit.kg)
   const [selectedMaterials, setSelectedMaterials] = useState<ProductionMaterial[]>([])
-  const [selectedUtilities, setSelectedUtilities] = useState<SelectedUtility[]>([])
-  const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([])
+  const [selectedUtilities, setSelectedUtilities] = useState<ProductionUtility[]>([])
+  const [selectedEmployees, setSelectedEmployees] = useState<ProductionLabor[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const addMaterial = () => {
@@ -74,16 +77,10 @@ export function NewProductionForm({
 
   const addUtility = () => {
     if (selectedUtilities.length < availableUtilities.length) {
+      const addedUtility: Utility = {}
       setSelectedUtilities([
         ...selectedUtilities,
-        {
-          id: "",
-          name: "",
-          quantity: 0,
-          unit: "",
-          cost: 0,
-          totalCost: 0,
-        },
+        addedUtility,
       ])
     }
   }
@@ -91,21 +88,19 @@ export function NewProductionForm({
   const updateUtility = (index: number, field: string, value: any) => {
     const updated = [...selectedUtilities]
     if (field === "id") {
-      const utility = availableUtilities.find((u) => u.id === value)
-      if (utility) {
+      const findUtility = availableUtilities.find((u) => u.id === value)
+      if (findUtility) {
         updated[index] = {
           ...updated[index],
-          id: utility.id,
-          name: utility.name,
-          unit: utility.unit,
+          id: findUtility.id,
+          utility: findUtility,
           quantity: 1,
-          cost: utility.costPerUnit,
-          totalCost: updated[index].quantity! * utility.costPerUnit!,
+          totalCost: findUtility.costPerUnit
         }
       }
     } else if (field === "quantity") {
       updated[index][field] = Number.parseFloat(value) || 0
-      updated[index].totalCost = updated[index].quantity! * updated[index].cost!
+      updated[index].totalCost = updated[index].quantity! * updated[index].utility?.costPerUnit!
     }
     setSelectedUtilities(updated)
   }
@@ -128,8 +123,15 @@ export function NewProductionForm({
     if (field === "id") {
       const employee = availableEmployees.find((e) => e.id === value)
       if (employee) {
-        updated[index] = employee
+        updated[index] = {
+          ...updated[index],
+          id: employee.id,
+          employee: employee,
+          totalCost: employee.salary
+        }
       }
+    } else if (field === "totalCost") {
+      updated[index].totalCost = Number.parseFloat(value) || 0
     }
     setSelectedEmployees(updated)
   }
@@ -139,14 +141,17 @@ export function NewProductionForm({
   }
 
   const calculateTotalCost = () => {
-    const materialsCost = selectedMaterials.reduce(
-      (sum, m) => sum + (typeof m?.totalCost === "number" ? m.totalCost : 0), 0);
+    const materialsCost = selectedMaterials
+      .filter((m) => typeof m?.totalCost === "number")
+      .reduce((sum, m) => sum + m.totalCost!, 0);
 
-    const utilitiesCost = selectedUtilities.reduce(
-      (sum, u) => sum + (typeof u?.totalCost === "number" ? u.totalCost : 0), 0);
+    const utilitiesCost = selectedUtilities
+      .filter((u) => typeof u?.totalCost === "number")
+      .reduce((sum, u) => sum + u.totalCost!, 0);
 
-    const laborCost = selectedEmployees.reduce(
-      (sum, e) => sum + (typeof e?.salary === "number" ? e.salary : 0), 0);
+    const laborCost = selectedEmployees
+      .filter((e) => typeof e?.totalCost === "number")
+      .reduce((sum, e) => sum + e.totalCost!, 0);
 
     return materialsCost + utilitiesCost + laborCost;
   };
@@ -190,7 +195,6 @@ export function NewProductionForm({
     const newProduction: ProductionRecord = {
       date: formatLocalDatetime(new Date()),
       quantity: quantity,
-      unit: "",
       status: ProductionStatus.inProgress,
       shift: "",
       operator: "",
@@ -199,7 +203,6 @@ export function NewProductionForm({
       productionUtilities: selectedUtilities,
       productionLabors: selectedEmployees,
       totalCost: calculateTotalCost(),
-      efficiency: 0,
     }
 
     createNewProduction(newProduction)
@@ -209,7 +212,7 @@ export function NewProductionForm({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Thông tin sản phẩm */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="product" className="text-sm">
             {t("production.form.product")}
@@ -293,10 +296,11 @@ export function NewProductionForm({
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                {/* <div>
-                  <span className="text-gray-600">Đơn vị: </span>
-                  <span className="font-medium">{material.unit}</span>
-                </div> */}
+                <div>
+                  <span className="text-gray-600">{t("production.form.unit")}: </span>
+                  {/* TODO: Update unit */}
+                  {/* <span className="font-medium">{t(`production.form.${material.material.}`)}</span> */}
+                </div>
                 <div>
                   <span className="text-gray-600">{t("production.form.unitPrice")}: </span>
                   <span className="font-medium">{material.material?.cost!.toLocaleString()}</span>
@@ -335,7 +339,7 @@ export function NewProductionForm({
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
                   <Label className="text-xs">{t("production.form.utility")}</Label>
-                  <Select value={utility.id} onValueChange={(value) => updateUtility(index, "id", value)}>
+                  <Select value={utility.utility?.id} onValueChange={(value) => updateUtility(index, "id", value)}>
                     <SelectTrigger className="h-9">
                       <SelectValue placeholder={t("production.form.select")} />
                     </SelectTrigger>
@@ -347,8 +351,8 @@ export function NewProductionForm({
                             i !== index && selected?.id === util.id
                           )
                         )
-                        .map((util) => (
-                          <SelectItem key={util.id} value={util.id!}>
+                        .map((util, ind) => (
+                          <SelectItem key={ind} value={util.id!}>
                             {util.name}
                           </SelectItem>
                         ))}
@@ -370,15 +374,15 @@ export function NewProductionForm({
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <span className="text-gray-600">{t("production.form.unit")}: </span>
-                  <span className="font-medium">{utility.unit}</span>
+                  <span className="font-medium">{utility.utility?.unit && t(`production.form.${utility.utility?.unit}`)}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">{t("production.form.unitPrice")}: </span>
-                  <span className="font-medium">{utility.cost!.toString()}</span>
+                  <span className="font-medium">{utility.utility?.costPerUnit!.toString()}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">{t("production.form.totalCost")}: </span>
-                  <span className="font-medium">{utility.totalCost!.toString()}</span>
+                  <span className="font-medium">{utility.totalCost ? utility.totalCost!.toString() : 0}</span>
                 </div>
               </div>
               <Button
@@ -405,40 +409,52 @@ export function NewProductionForm({
           </Button>
         </div>
         <div className="space-y-3">
-          {selectedEmployees.map((employee, index) => (
+          {selectedEmployees.map((selectedEmployee, index) => (
             <div key={index} className="border rounded-lg p-3 space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
                   <Label className="text-xs">{t("production.form.employee")}</Label>
-                  <Select value={employee.id} onValueChange={(value) => updateEmployee(index, "id", value)}>
+                  <Select value={selectedEmployee.employee?.id} onValueChange={(value) => updateEmployee(index, "id", value)}>
                     <SelectTrigger className="h-9">
                       <SelectValue placeholder={t("production.form.select")} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableEmployees
                         .filter((emp) =>
-                          emp.id === employee?.id ||
+                          emp.id === selectedEmployee?.id ||
                           !selectedEmployees.some((selected, i) =>
                             i !== index && selected?.id === emp.id
                           )
                         )
-                        .map((emp) => (
-                          <SelectItem key={emp.id} value={emp.id!}>
+                        .map((emp, ind) => (
+                          <SelectItem key={ind} value={emp.id!}>
                             {emp.name} - {emp.position}
                           </SelectItem>
                         ))}
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">{t("production.form.employeeSalary")}</Label>
+                  <Input
+                    placeholder="1"
+                    type="number"
+                    min={1}
+                    value={selectedEmployee.totalCost || ""}
+                    onChange={(e) => updateEmployee(index, "totalCost", e.target.value)}
+                    className="h-9"
+                  />
+                </div>
               </div>
+
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <span className="text-gray-600">{t("production.form.position")}: </span>
-                  <span className="font-medium">{employee.position}</span>
+                  <span className="font-medium">{selectedEmployee.employee?.position}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">{t("production.form.totalCost")}: </span>
-                  <span className="font-medium">{employee.salary?.toLocaleString()}</span>
+                  <span className="text-gray-600">{t("production.form.wage")}: </span>
+                  <span className="font-medium">{selectedEmployee.totalCost?.toLocaleString()}</span>
                 </div>
               </div>
               <Button
@@ -465,34 +481,71 @@ export function NewProductionForm({
             <div className="flex justify-between">
               <span>{t("production.form.materialExpense")}:</span>
               <span className="font-medium">
-                {selectedMaterials.reduce((sum, m) => sum + (m.totalCost ?? 0), 0).toLocaleString()} đ
+                {
+                  selectedMaterials
+                    .filter((e) => typeof e.totalCost === "number")
+                    .reduce((sum, e) => sum + (e.totalCost ?? 0), 0)
+                    .toLocaleString()
+                } đ
               </span>
             </div>
             <div className="flex justify-between">
               <span>{t("production.form.utilityExpense")}:</span>
               <span className="font-medium">
-                {selectedUtilities.reduce((sum, u) => sum + u.totalCost!, 0).toLocaleString()} đ
+                {
+                  selectedUtilities
+                    .filter((e) => typeof e.totalCost === "number")
+                    .reduce((sum, e) => sum + (e.totalCost ?? 0), 0)
+                    .toLocaleString()
+                } đ
               </span>
             </div>
             <div className="flex justify-between">
               <span>{t("production.form.laborExpense")}:</span>
-              {/* <span className="font-medium">
-                {selectedEmployees.reduce((sum, e) => sum + e.totalCost, 0).toLocaleString()} đ
-              </span> */}
+              <span className="font-medium">
+                {
+                  selectedEmployees
+                    .filter((e) => typeof e.totalCost === "number")
+                    .reduce((sum, e) => sum + (e.totalCost ?? 0), 0)
+                    .toLocaleString()
+                } đ
+              </span>
             </div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
               <span>{t("production.form.totalExpense")}:</span>
-              <span>{calculateTotalCost().toLocaleString()}</span>
+              <span>{calculateTotalCost().toFixed(0).toLocaleString()} đ</span>
             </div>
-            {quantity && (
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>{t("production.form.expensePerUnit")}:</span>
-                {/* <span>
-                  {(calculateTotalCost() / quantity).toFixed(0).toLocaleString()} đ/
-                  {availableProducts.find((p) => p.id === selectedProduct)?.unit || "đơn vị"}
-                </span> */}
+            {(selectedProduct && quantity) && (
+              <div>
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>{t("production.form.expensePerUnit")}:</span>
+                  <span>
+                    {(calculateTotalCost() / quantity).toFixed(0).toLocaleString()} đ
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs text-green-600">
+                  <span>{t("production.form.totalProfit")}:</span>
+                  <span>
+                    {((selectedProduct?.price! * quantity) - calculateTotalCost()).toFixed(0).toLocaleString()} đ
+                  </span>
+                </div>
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tổng kết lợi nhuận*/}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">{t("production.form.profitSummary")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between border-t pt-2 text-base font-semibold">
+              <span>{t("production.form.totalProfit")}:</span>
+              <span>{((selectedProduct?.price! * quantity) - calculateTotalCost()).toFixed(0).toLocaleString()} đ</span>
+            </div>
           </div>
         </CardContent>
       </Card>

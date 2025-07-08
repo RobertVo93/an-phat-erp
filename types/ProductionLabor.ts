@@ -5,4 +5,6 @@ export interface ProductionLabor {
   id?: string;
   productionRecord?: ProductionRecord;
   employee?: Employee;
+
+  totalCost?: number
 }

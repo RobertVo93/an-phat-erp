@@ -155,6 +155,12 @@ export enum ProductionStatus {
   cancelled = "cancelled"
 }
 
+export enum ProductionUnit {
+  kg = "kg",
+  piece = "piece",
+  other = "other",
+}
+
 export enum EmployeeType {
   fullTime = "fullTime",
   partTime = "partTime",

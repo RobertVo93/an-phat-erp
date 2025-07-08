@@ -138,6 +138,14 @@ export const productionTranslations = {
     en: "Cancelled",
     vi: "Đã dừng",
   },
+  "production.recordItem.kg": {
+    en: "kg",
+    vi: "kg",
+  },
+  "production.recordItem.piece": {
+    en: "piece",
+    vi: "bánh",
+  },
 
   // ProductionHistory
   "production.history.title": {
@@ -302,6 +310,22 @@ export const productionTranslations = {
     en: "Input quantity",
     vi: "Nhập số lượng"
   },
+  "production.form.productionUnit": {
+    en: "Unit",
+    vi: "Đơn vị"
+  },
+  "production.form.kg": {
+    en: "kg",
+    vi: "kg"
+  },
+  "production.form.piece": {
+    en: "piece",
+    vi: "bánh"
+  },
+  "production.form.other": {
+    en: "other",
+    vi: "khác"
+  },
   "production.form.materials": {
     en: "Materials",
     vi: "Nguyên Liệu"
@@ -312,11 +336,15 @@ export const productionTranslations = {
   },
   "production.form.unitPrice": {
     en: "Unit Price",
-    vi: "Đơn giá"
+    vi: "Giá 1 đơn vị"
   },
   "production.form.totalCost": {
     en: "Total Cost",
     vi: "Thành tiền"
+  },
+  "production.form.wage": {
+    en: "Wage",
+    vi: "Lương"
   },
   "production.form.remove": {
     en: "Remove",
@@ -346,6 +374,10 @@ export const productionTranslations = {
     en: "Employee",
     vi: "Nhân viên"
   },
+  "production.form.employeeSalary": {
+    en: "Salary",
+    vi: "Lương"
+  },
   "production.form.hours": {
     en: "Hours",
     vi: "Số giờ"
@@ -361,6 +393,10 @@ export const productionTranslations = {
   "production.form.expensesSummary": {
     en: "Expenses Sumary",
     vi: "Tổng Kết Chi Phí"
+  },
+  "production.form.profitSummary": {
+    en: "Profit Sumary",
+    vi: "Tổng Kết Lợi Nhuận"
   },
   "production.form.materialExpense": {
     en: "Material expenses",
@@ -381,6 +417,10 @@ export const productionTranslations = {
   "production.form.expensePerUnit": {
     en: "Expense per Unit",
     vi: "Chi phí trên đơn vị"
+  },
+  "production.form.totalProfit": {
+    en: "Total profit",
+    vi: "Tổng lợi nhuận"
   },
   "production.form.cancel": {
     en: "Cancel",
@@ -409,6 +449,22 @@ export const productionTranslations = {
   "production.form.selectedEmployeesRequired": {
     en: "Employee is required",
     vi: "Nhân viên là bắt buộc"
+  },
+  "production.form.kwh": {
+    en: "kwh",
+    vi: "kwh"
+  },
+  "production.form.m3": {
+    en: "m³",
+    vi: "m³",
+  },
+  "production.form.gb": {
+    en: "GB",
+    vi: "GB",
+  },
+  "production.form.minutes": {
+    en: "minutes",
+    vi: "phút",
   },
 
   // ProductionDetailModal
@@ -500,6 +556,18 @@ export const productionTranslations = {
     en: "Salary",
     vi: "Tiền công",
   },
+  "production.detail.other": {
+    en: "other unit",
+    vi: "đơn vị khác",
+  },
+  "production.detail.totalProfit": {
+    en: "Total profit",
+    vi: "Tổng lợi nhuận",
+  },
+  "production.detail.pricePerUnit": {
+    en: "Price per Unit",
+    vi: "Giá 1 đơn vị",
+  },
 
   // EditProductionModal
   "production.edit.title": {
@@ -572,9 +640,13 @@ export const productionTranslations = {
   },
   "production.edit.unitPrice": {
     en: "Unit Price",
-    vi: "Đơn giá"
+    vi: "Giá 1 đơn vị"
   },
   "production.edit.totalCost": {
+    en: "Total Cost",
+    vi: "Thành tiền"
+  },
+  "production.edit.wage": {
     en: "Total Cost",
     vi: "Thành tiền"
   },
@@ -654,7 +726,7 @@ export const productionTranslations = {
     en: "Save Change",
     vi: "Lưu Thay Đổi"
   },
-    "production.edit.completed": {
+  "production.edit.completed": {
     en: "Completed",
     vi: "Hoàn thành"
   },
@@ -669,5 +741,17 @@ export const productionTranslations = {
   "production.edit.paused": {
     en: "Paused",
     vi: "Tạm dừng"
+  },
+  "production.edit.other": {
+    en: "other unit",
+    vi: "đơn vị khác",
+  },
+  "production.edit.utility": {
+    en: "Utility",
+    vi: "Tiện ích",
+  },
+  "production.edit.totalProfit": {
+    en: "Total profit",
+    vi: "Tổng lợi nhuận",
   },
 }

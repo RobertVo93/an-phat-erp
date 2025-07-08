@@ -259,10 +259,7 @@ export function ProductionHistory({
                   <TableHead className="text-xs">{t("production.history.product")}</TableHead>
                   <TableHead className="text-xs">{t("production.history.quantity")}</TableHead>
                   <TableHead className="text-xs">{t("production.history.status")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.workingShift")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.operator")}</TableHead>
                   <TableHead className="text-xs">{t("production.history.expense")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.efficiency")}</TableHead>
                   <TableHead className="text-xs">{t("production.history.action")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -279,19 +276,6 @@ export function ProductionHistory({
                     <TableCell className="text-xs">{record.shift}</TableCell>
                     <TableCell className="text-xs">{record.operator}</TableCell>
                     <TableCell className="text-xs">{record.totalCost!.toLocaleString()} đ</TableCell>
-                    <TableCell className="text-xs">
-                      <span
-                        className={
-                          record.efficiency! >= 90
-                            ? "text-green-600"
-                            : record.efficiency! >= 80
-                              ? "text-yellow-600"
-                              : "text-red-600"
-                        }
-                      >
-                        {record.efficiency}%
-                      </span>
-                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Button

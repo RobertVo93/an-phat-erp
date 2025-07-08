@@ -369,4 +369,8 @@ export const employeesTranslations = {
     en: "Operations",
     vi: "Vận Hành",
   },
+  "employees.noEmployeesFound": {
+    en: "No employee found",
+    vi: "Không tìm thấy nhân viên",
+  },
 }
