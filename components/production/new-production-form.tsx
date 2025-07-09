@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
-import type { SelectedUtility, ProductionRecord } from "@/types/production"
+import type { ProductionRecord } from "@/types/production"
 import { Employee, Product, ProductionStatus, Utility } from "@/types"
-import { formatLocalDatetime } from "@/lib/utils"
 import { ProductionMaterial } from "@/types/productionMaterial"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductionLabor } from "@/types/ProductionLabor"
@@ -35,6 +34,7 @@ export function NewProductionForm({
   const { t } = useLanguage()
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [quantity, setQuantity] = useState<number>(1)
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toLocaleDateString("sv-SE"))
   const [selectedMaterials, setSelectedMaterials] = useState<ProductionMaterial[]>([])
   const [selectedUtilities, setSelectedUtilities] = useState<ProductionUtility[]>([])
   const [selectedEmployees, setSelectedEmployees] = useState<ProductionLabor[]>([])
@@ -208,7 +208,7 @@ export function NewProductionForm({
     if (!validateForm()) return
 
     const newProduction: ProductionRecord = {
-      date: formatLocalDatetime(new Date()),
+      date: selectedDate,
       quantity: quantity,
       status: ProductionStatus.inProgress,
       shift: "",
@@ -226,6 +226,22 @@ export function NewProductionForm({
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Thông tin ngày sản xuất */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="product" className="text-sm">
+            {t("production.form.productionDate")}
+          </Label>
+          <Input
+            id="productionDate"
+            type="date"
+            className="h-11"
+            value={ selectedDate ? selectedDate : "" }
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
+        </div>
+      </div>
+
       {/* Thông tin sản phẩm */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -275,7 +291,7 @@ export function NewProductionForm({
         <div className="space-y-3">
           {selectedMaterials.map((material, index) => (
             <div key={index} className="border rounded-lg p-3 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
                   <Label className="text-xs">{t("production.form.materials")}</Label>
                   <Select value={material.id} onValueChange={(value) => updateMaterial(index, "id", value)}>
@@ -304,11 +320,32 @@ export function NewProductionForm({
                     placeholder="1"
                     type="number"
                     min={1}
+                    max={material.material?.stock}
                     value={material.quantity || ""}
-                    onChange={(e) => updateMaterial(index, "quantity", e.target.value)}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      const stock = material.material?.stock ?? Infinity;
+                      // value in min-max range
+                      if (!isNaN(value)) {
+                        const clampedValue = Math.min(Math.max(value, 1), stock);
+                        updateMaterial(index, "quantity", clampedValue);
+                      } else {
+                        updateMaterial(index, "quantity", "");
+                      }
+                    }}
                     className="h-9"
                   />
                 </div>
+                {material.material &&
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t("production.form.inStock")}</Label>
+                    <Input
+                      value={material.material?.stock || 0}
+                      readOnly
+                      className="h-9 bg-slate-200 pointer-events-none"
+                    />
+                  </div>
+                }
               </div>
               {material.material &&
                 <div className="grid grid-cols-3 gap-2 text-xs">

@@ -29,6 +29,8 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
         return "bg-blue-100 text-blue-800"
       case ProductionStatus.cancelled:
         return "bg-red-100 text-red-800"
+      case ProductionStatus.lackMaterial:
+        return "bg-red-100 text-red-800"
       case ProductionStatus.paused:
         return "bg-yellow-100 text-yellow-800"
       default:
@@ -42,7 +44,12 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex-1">
             <h3 className="font-semibold text-sm sm:text-base">{record.product?.name}</h3>
-            <h3 className="text-xs text-gray-600">{record.quantity?.toLocaleString()} {t(`production.recordItem.${record.product?.unit}`)}</h3>
+            <h3 className="text-xs text-gray-600">
+              {record.quantity?.toLocaleString()} {t(`production.recordItem.${record.product?.unit}`)}
+            </h3>
+            <h3 className="text-xs text-gray-600">
+              {new Date(record.date!).toISOString().slice(0, 10)}
+            </h3>
           </div>
           <Badge className={getStatusColor(record.status!)}>
             {record.status === ProductionStatus.completed ? (

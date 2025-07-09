@@ -134,6 +134,10 @@ export const productionTranslations = {
     en: "Cancelled",
     vi: "Đã dừng",
   },
+  "production.recordItem.lack-material": {
+    en: "Lack of Materials",
+    vi: "Thiếu Nguyên liệu",
+  },
   "production.recordItem.kg": {
     en: "kg",
     vi: "kg",
@@ -192,6 +196,10 @@ export const productionTranslations = {
     en: "Cancelled",
     vi: "Đã hủy"
   },
+  "production.history.lack-material": {
+    en: "Lack of Materials",
+    vi: "Thiếu Nguyên liệu"
+  },
   "production.history.paused": {
     en: "Paused",
     vi: "Tạm dừng"
@@ -233,8 +241,8 @@ export const productionTranslations = {
     vi: "Tổng đơn"
   },
   "production.history.totalProduction": {
-    en: "Total production",
-    vi: "Tổng sản lượng"
+    en: "Total quantity",
+    vi: "Tổng số lượng"
   },
   "production.history.totalExpense": {
     en: "Total expense",
@@ -474,6 +482,18 @@ export const productionTranslations = {
     en: "Revenue",
     vi: "Doanh thu",
   },
+  "production.form.inStock": {
+    en: "In stock",
+    vi: "Trong kho",
+  },
+  "production.form.productionDate": {
+    en: "Production Date",
+    vi: "Ngày Sản Xuất",
+  },
+  "production.form.selectDate": {
+    en: "Select date",
+    vi: "Chọn ngày",
+  },
 
   // ProductionDetailModal
   "production.detail.title": {
@@ -591,6 +611,10 @@ export const productionTranslations = {
   "production.detail.efficiency": {
     en: "Efficiency",
     vi: "Hiệu Suất",
+  },
+  "production.detail.inStock": {
+    en: "In stock",
+    vi: "Trong kho",
   },
 
   // EditProductionModal
@@ -761,6 +785,10 @@ export const productionTranslations = {
   "production.edit.cancelled": {
     en: "Cancelled",
     vi: "Đã hủy"
+  },
+  "production.edit.lack-material": {
+    en: "Lack of Materials",
+    vi: "Thiếu Nguyên liệu"
   },
   "production.edit.paused": {
     en: "Paused",

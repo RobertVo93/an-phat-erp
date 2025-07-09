@@ -9,9 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus, Trash2, Save, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Employee, Product, ProductionStatus, Utility, UtilityUnit } from "@/types"
+import { Employee, Product, ProductionStatus, Utility } from "@/types"
 import { ProductionMaterial } from "@/types/productionMaterial"
-import { ProductionRecord, SelectedEmployee, SelectedUtility } from "@/types/production"
+import { ProductionRecord } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductionLabor } from "@/types/ProductionLabor"
 import { ProductionUtility } from "@/types/productionUtility"
@@ -47,6 +47,7 @@ export function EditProductionModal({
   const statusOptions = [
     { value: ProductionStatus.inProgress, label: t("production.edit.in-progress"), color: "bg-yellow-100 text-yellow-800" },
     { value: ProductionStatus.completed, label: t("production.edit.completed"), color: "bg-green-100 text-green-800" },
+    { value: ProductionStatus.lackMaterial, label: t("production.edit.lack-material"), color: "bg-red-100 text-red-800" },
     { value: ProductionStatus.paused, label: t("production.edit.paused"), color: "bg-orange-100 text-orange-800" },
     { value: ProductionStatus.cancelled, label: t("production.edit.cancelled"), color: "bg-red-100 text-red-800" },
   ]
@@ -293,7 +294,23 @@ export function EditProductionModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Thông tin cơ bản */}
+          {/* Thông tin ngày sản xuất */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="product" className="text-sm">
+                {t("production.form.productionDate")}
+              </Label>
+              <Input
+                id="productionDate"
+                type="date"
+                className="h-11"
+                value={formData?.date ? new Date(formData?.date).toLocaleDateString("sv-SE") : ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          {/* Thông tin sản phẩm */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">{t("production.edit.basicInformation")}</CardTitle>
@@ -405,11 +422,32 @@ export function EditProductionModal({
                           placeholder="1"
                           type="number"
                           min={1}
+                          max={material.material?.stock}
                           value={material.quantity ?? 0}
-                          onChange={(e) => updateMaterial(index, "quantity", e.target.value)}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value, 10);
+                            const stock = material.material?.stock ?? Infinity;
+                            // value in min-max range
+                            if (!isNaN(value)) {
+                              const clampedValue = Math.min(Math.max(value, 1), stock);
+                              updateMaterial(index, "quantity", clampedValue);
+                            } else {
+                              updateMaterial(index, "quantity", "");
+                            }
+                          }}
                           className="h-9"
                         />
                       </div>
+                      {material.material &&
+                        <div className="space-y-1">
+                          <Label className="text-xs">{t("production.form.inStock")}</Label>
+                          <Input
+                            value={material.material?.stock || 0}
+                            readOnly
+                            className="h-9 bg-slate-200 pointer-events-none"
+                          />
+                        </div>
+                      }
                       <div className="space-y-1">
                         <Label className="text-xs">{t("production.edit.totalCost")}</Label>
                         <Input

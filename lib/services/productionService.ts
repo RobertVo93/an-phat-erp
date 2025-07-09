@@ -9,6 +9,7 @@ import { ProductionUtilityEntity } from "../database/entities/production-utility
 import { ProductionLabor } from "@/types/ProductionLabor";
 import { ProductionLaborEntity } from "../database/entities/production-labor.entity";
 import { ProductionStatus } from "@/types";
+import { Not } from "typeorm";
 
 export async function getAllProductionRecords() {
   const repo = AppDataSource.getRepository(ProductionRecordEntity);
@@ -242,6 +243,32 @@ export async function updateProduction(
     }
   }
 
+  // 6. Check other production records for material sufficiency
+  const incompleteRecords = await productionRecordRepo.find({
+    where: { status: Not(ProductionStatus.completed) },
+    relations: ["productionMaterials", "productionMaterials.material"],
+  });
+
+  for (const record of incompleteRecords) {
+    let hasLack = false;
+
+    for (const pm of record.productionMaterials!) {
+      const material = await productRepo.findOneBy({ id: pm.material?.id });
+      if (!material) continue;
+
+      if ((material.stock ?? 0) < (pm.quantity ?? 0)) {
+        hasLack = true;
+        break;
+      }
+    }
+
+    if (hasLack && record.status !== ProductionStatus.lackMaterial) {
+      record.status = ProductionStatus.lackMaterial;
+      await productionRecordRepo.save(record);
+    }
+  }
+
+  // return
   const fullUpdatedRecord = await productionRecordRepo.findOne({
     where: { id: updatedProductionRecord.id },
     relations: [

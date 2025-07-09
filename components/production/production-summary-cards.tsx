@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
-import { Package, Zap, TrendingUp } from "lucide-react"
+import { Package, Zap, UsersRound } from "lucide-react"
 
 interface ProductionSummaryCardsProps {
   materialCost: number
@@ -23,7 +23,7 @@ export function ProductionSummaryCards({
           <Package className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-lg sm:text-2xl font-bold">{materialCost}</div>
+          <div className="text-lg sm:text-2xl font-bold">{materialCost.toLocaleString()} đ</div>
         </CardContent>
       </Card>
 
@@ -33,17 +33,17 @@ export function ProductionSummaryCards({
           <Zap className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-lg sm:text-2xl font-bold">{utilityCost}</div>
+          <div className="text-lg sm:text-2xl font-bold">{utilityCost.toLocaleString()} đ</div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">{t("production.summary.employeeCost")}</CardTitle>
-          <Package className="h-4 w-4 text-muted-foreground" />
+          <UsersRound className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-lg sm:text-2xl font-bold">{employeeCost}</div>
+          <div className="text-lg sm:text-2xl font-bold">{employeeCost.toLocaleString()} đ</div>
         </CardContent>
       </Card>
     </div>

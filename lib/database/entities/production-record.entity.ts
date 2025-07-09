@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "./base.entity";
-import { ProductionStatus, ProductionUnit } from "@/types/enums";
+import { ProductionStatus } from "@/types/enums";
 import { ProductionRecord as IProductionRecord } from "@/types/production";
 import { ProductEntity } from "./product.entity";
 import type { Product as IProduct } from "@/types";

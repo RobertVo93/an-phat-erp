@@ -81,6 +81,8 @@ export function ProductionHistory({
         return "bg-blue-100 text-blue-800"
       case ProductionStatus.cancelled:
         return "bg-red-100 text-red-800"
+      case ProductionStatus.lackMaterial:
+        return "bg-red-100 text-red-800"
       case ProductionStatus.paused:
         return "bg-yellow-100 text-yellow-800"
       default:
@@ -170,6 +172,7 @@ export function ProductionHistory({
               <SelectContent>
                 <SelectItem value="all">{t("production.history.all")}</SelectItem>
                 <SelectItem value={ProductionStatus.completed}>{t("production.history.completed")}</SelectItem>
+                <SelectItem value={ProductionStatus.lackMaterial}>{t("production.history.lack-material")}</SelectItem>
                 <SelectItem value={ProductionStatus.inProgress}>{t("production.history.in-progress")}</SelectItem>
                 <SelectItem value={ProductionStatus.cancelled}>{t("production.history.cancelled")}</SelectItem>
                 <SelectItem value={ProductionStatus.paused}>{t("production.history.paused")}</SelectItem>

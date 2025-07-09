@@ -2,12 +2,9 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CalendarIcon, Plus, History, BarChart3, Loader2 } from "lucide-react"
-import { format } from "date-fns"
+import { Plus, History, BarChart3, Loader2 } from "lucide-react"
 import { ERPLayout } from "@/components/erp-layout"
 import { EditProductionModal } from "@/components/modals/edit-production-modal"
 import { ProductionSummaryCards } from "@/components/production/production-summary-cards"
@@ -19,7 +16,6 @@ import { useProduction } from "@/hooks/use-production"
 import { useLanguage } from "@/contexts/language-context"
 
 export default function ProducePage() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [activeTab, setActiveTab] = useState("today")
   const {
     selectedRecord,
@@ -33,6 +29,9 @@ export default function ProducePage() {
     historyRecords,
     availableUtilities,
     availableEmployees,
+    materialCost, 
+    utilityCost, 
+    employeeCost,
 
     handleViewRecord,
     handleEditRecord,
@@ -62,23 +61,6 @@ export default function ProducePage() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? format(selectedDate, "dd/MM/yyyy") : (t("production.selectDate"))}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-
             <Button className="w-full sm:w-auto" onClick={openNewProduction}>
               <Plus className="mr-2 h-4 w-4" />
               {t("production.newProduction")}
@@ -105,9 +87,9 @@ export default function ProducePage() {
           <TabsContent value="today" className="space-y-4 sm:space-y-6">
             {/* Summary Cards */}
             <ProductionSummaryCards
-              materialCost={6.75}
-              utilityCost={5.75}
-              employeeCost={2}
+              materialCost={materialCost}
+              utilityCost={utilityCost}
+              employeeCost={employeeCost}
             />
 
             {/* Production Records */}

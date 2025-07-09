@@ -157,6 +157,7 @@ export enum StockChangeType {
 export enum ProductionStatus {
   completed = "completed",
   inProgress = "in-progress",
+  lackMaterial = "lack-material",
   paused = "paused",
   cancelled = "cancelled"
 }
