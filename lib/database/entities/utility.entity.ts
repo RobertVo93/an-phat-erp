@@ -17,13 +17,7 @@ export class UtilityEntity extends BaseEntity implements IUtility {
   provider?: string;
 
   @Column({ nullable: true })
-  accountNumber?: string;
-
-  @Column({ nullable: true })
   location?: string;
-
-  @Column({ type: "float", nullable: true })
-  monthlyUsage?: number;
 
   @Column({ type: "enum", enum: UtilityUnit, nullable: true })
   unit?: UtilityUnit;
@@ -31,17 +25,8 @@ export class UtilityEntity extends BaseEntity implements IUtility {
   @Column({ type: "float", nullable: true })
   costPerUnit?: number;
 
-  @Column({ type: "float", nullable: true })
-  monthlyCost?: number;
-
-  @Column({ nullable: true })
-  lastReading?: string;
-
   @Column({ type: "enum", enum: UtilityStatus, nullable: true })
   status?: UtilityStatus;
-
-  @Column({ nullable: true })
-  dueDate?: string;
 
   @Column({ nullable: true })
   description?: string;

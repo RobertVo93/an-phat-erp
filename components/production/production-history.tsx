@@ -73,15 +73,25 @@ export function ProductionHistory({
     setProductFilter(productId)
   }
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      completed: "default",
-      "in-progress": "secondary",
-      cancelled: "destructive",
-      paused: "outline",
-    } as const
+  const getStatusColor = (status: ProductionStatus) => {
+    switch (status) {
+      case ProductionStatus.completed:
+        return "bg-green-100 text-green-800"
+      case ProductionStatus.inProgress:
+        return "bg-blue-100 text-blue-800"
+      case ProductionStatus.cancelled:
+        return "bg-red-100 text-red-800"
+      case ProductionStatus.lackMaterial:
+        return "bg-red-100 text-red-800"
+      case ProductionStatus.paused:
+        return "bg-yellow-100 text-yellow-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
 
-    return <Badge variant={variants[status as keyof typeof variants] || "secondary"}>{t(`production.history.${status}`)}</Badge>
+  const getStatusBadge = (status: ProductionStatus) => {
+    return <Badge className={getStatusColor(status)}>{t(`production.history.${status}`)}</Badge>
   }
 
   const resetFilters = () => {
@@ -101,7 +111,7 @@ export function ProductionHistory({
       record.id,
       record.date,
       record.product,
-      `${record.quantity} ${record.unit}`,
+      `${record.quantity}`,
       record.shift,
       record.operator,
       record.totalCost!.toLocaleString(),
@@ -128,11 +138,11 @@ export function ProductionHistory({
           <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline" size="sm" onClick={resetFilters} className="text-xs">
               <RefreshCw className="w-3 h-3 mr-1" />
-                {t("production.history.reset")}
+              {t("production.history.reset")}
             </Button>
             <Button variant="outline" size="sm" onClick={exportData} className="text-xs">
               <Download className="w-3 h-3 mr-1" />
-                {t("production.history.exportExcel")}
+              {t("production.history.exportExcel")}
             </Button>
           </div>
         </div>
@@ -162,6 +172,7 @@ export function ProductionHistory({
               <SelectContent>
                 <SelectItem value="all">{t("production.history.all")}</SelectItem>
                 <SelectItem value={ProductionStatus.completed}>{t("production.history.completed")}</SelectItem>
+                <SelectItem value={ProductionStatus.lackMaterial}>{t("production.history.lack-material")}</SelectItem>
                 <SelectItem value={ProductionStatus.inProgress}>{t("production.history.in-progress")}</SelectItem>
                 <SelectItem value={ProductionStatus.cancelled}>{t("production.history.cancelled")}</SelectItem>
                 <SelectItem value={ProductionStatus.paused}>{t("production.history.paused")}</SelectItem>
@@ -259,10 +270,7 @@ export function ProductionHistory({
                   <TableHead className="text-xs">{t("production.history.product")}</TableHead>
                   <TableHead className="text-xs">{t("production.history.quantity")}</TableHead>
                   <TableHead className="text-xs">{t("production.history.status")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.workingShift")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.operator")}</TableHead>
                   <TableHead className="text-xs">{t("production.history.expense")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.efficiency")}</TableHead>
                   <TableHead className="text-xs">{t("production.history.action")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -272,26 +280,9 @@ export function ProductionHistory({
                     <TableCell className="font-medium text-xs">{record.productionNumber}</TableCell>
                     <TableCell className="text-xs">{format(new Date(record.date!), "dd/MM/yyyy")}</TableCell>
                     <TableCell className="text-xs">{record.product?.name!}</TableCell>
-                    <TableCell className="text-xs">
-                      {record.quantity} {record.unit}
-                    </TableCell>
+                    <TableCell className="text-xs">{record.quantity}</TableCell>
                     <TableCell className="text-xs">{getStatusBadge(record.status!)}</TableCell>
-                    <TableCell className="text-xs">{record.shift}</TableCell>
-                    <TableCell className="text-xs">{record.operator}</TableCell>
                     <TableCell className="text-xs">{record.totalCost!.toLocaleString()} đ</TableCell>
-                    <TableCell className="text-xs">
-                      <span
-                        className={
-                          record.efficiency! >= 90
-                            ? "text-green-600"
-                            : record.efficiency! >= 80
-                              ? "text-yellow-600"
-                              : "text-red-600"
-                        }
-                      >
-                        {record.efficiency}%
-                      </span>
-                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Button
@@ -302,7 +293,7 @@ export function ProductionHistory({
                         >
                           <Eye className="h-3 w-3" />
                         </Button>
-                        {record.status !== "cancelled" && (
+                        {record.status !== ProductionStatus.completed && (
                           <Button
                             variant="outline"
                             size="sm"

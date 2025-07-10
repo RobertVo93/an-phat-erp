@@ -1,9 +1,8 @@
-import { availableEmployees } from './../lib/production-data';
 "use client"
 
 import { useEffect, useState } from "react"
 import type { ProductionRecord } from "@/types/production"
-import { Employee, Product, Utility } from "@/types"
+import { Employee, EmployeeStatus, Product, ProductStatus, Utility, UtilityStatus } from "@/types"
 import { getProducts as apiGetProducts } from "@/lib/httpclient"
 import { createProduction, getAllProductions, updateProduction } from "@/lib/httpclient/production.client"
 import { isTodayLocalDatetime } from "@/lib/utils"
@@ -23,18 +22,32 @@ export function useProduction() {
   const [availableEmployees, setAvailableEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState<boolean>(false)
 
+  // for summary card
+  const [todayMaterialCost, setTodayMaterialCost] = useState<number>(0)
+  const [todayUtilityCost, setTodayUtilityCost] = useState<number>(0)
+  const [todayEmployeeCost, setTodayEmployeeCost] = useState<number>(0)
+
   const onInit = async () => {
     try {
       setLoading(true)
       const prResponse = await getAllProductions()
       setHistoryProductionRecords(prResponse.data as ProductionRecord[])
+
+      // get active products
       const pro = await apiGetProducts()
-      setAvailableProducts(pro.data)
-      setAvailableMaterials(pro.data)
+      const activeProducts = (pro.data as Product[]).filter((pro) => pro.status === ProductStatus.active)
+      setAvailableProducts(activeProducts)
+      setAvailableMaterials(activeProducts)
+
+      // get active utilities
       const ult = await getAllUtilities()
-      setAvailableUtilities(ult.data)
+      const activeUtilities = (ult.data as Utility[]).filter((ult) => ult.status === UtilityStatus.active)
+      setAvailableUtilities(activeUtilities)
+
+      // get active employee
       const emp = await getEmployee()
-      setAvailableEmployees(emp.data)
+      const activeEmployees = (emp.data as Employee[]).filter((e) => e.status === EmployeeStatus.active)
+      setAvailableEmployees(activeEmployees)
     } catch (e) {
       console.error(e)
     } finally {
@@ -84,11 +97,7 @@ export function useProduction() {
     try {
       setLoading(true)
       const updated = await updateProduction(updatedRecord.id!, updatedRecord)
-      setHistoryProductionRecords((prev) =>
-        prev.map((item) =>
-          item.id === updated.id ? updated : item
-        )
-      );
+      if(updated) onInit()
       setIsEditModalOpen(false)
       setEditingRecord(null)
     } catch (e) {
@@ -98,6 +107,33 @@ export function useProduction() {
     }
   }
 
+  const calculateTodaySummary = (todayRecords: ProductionRecord[]) => {
+    const totalTodayMaterialCost = todayRecords.reduce((sum, record) => {
+      const materialCost = record.productionMaterials?.reduce((matSum, material) => {
+        return matSum + (material.totalCost || 0);
+      }, 0) || 0;
+      return sum + materialCost;
+    }, 0);
+
+    const totalTodayUtilityCost = todayRecords.reduce((sum, record) => {
+      const utilityCost = record.productionUtilities?.reduce((ultSum, utility) => {
+        return ultSum + (utility.totalCost || 0);
+      }, 0) || 0;
+      return sum + utilityCost;
+    }, 0);
+
+    const totalTodayEmployeeCost = todayRecords.reduce((sum, record) => {
+      const employeeCost = record.productionLabors?.reduce((empSum, employee) => {
+        return empSum + (employee.totalCost || 0);
+      }, 0) || 0;
+      return sum + employeeCost;
+    }, 0);
+
+    setTodayMaterialCost(totalTodayMaterialCost)
+    setTodayUtilityCost(totalTodayUtilityCost)
+    setTodayEmployeeCost(totalTodayEmployeeCost)
+  }
+
   useEffect(() => {
     onInit()
   }, [])
@@ -105,6 +141,7 @@ export function useProduction() {
   useEffect(() => {
     const todayRecords = historyProductionRecords.filter(item => isTodayLocalDatetime(item.date!))
     setTodayProductionRecords(todayRecords)
+    calculateTodaySummary(todayRecords)
   }, [historyProductionRecords])
 
   return {
@@ -128,5 +165,8 @@ export function useProduction() {
     openNewProduction,
     closeNewProduction,
     createNewProduction,
+    materialCost: todayMaterialCost,
+    utilityCost: todayUtilityCost,
+    employeeCost: todayEmployeeCost,
   }
 }

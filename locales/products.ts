@@ -100,6 +100,10 @@ export const productsTranslations = {
     en: "Last Updated",
     vi: "Cập Nhật Lần Cuối",
   },
+  "products.unit": {
+    en: "Unit",
+    vi: "Đơn vị",
+  },
 
   // Form translations
   "products.form.name": {
@@ -157,6 +161,26 @@ export const productsTranslations = {
   "products.form.supplier": {
     en: "Supplier",
     vi: "Nhà Cung Cấp",
+  },
+  "products.form.unit": {
+    en: "Unit",
+    vi: "Đơn vị",
+  },
+  "products.form.selectUnit": {
+    en: "Select unit",
+    vi: "Chọn đơn vị",
+  },
+  "products.form.kg": {
+    en: "kg",
+    vi: "kg",
+  },
+  "products.form.piece": {
+    en: "piece",
+    vi: "bánh",
+  },
+  "products.form.other": {
+    en: "other",
+    vi: "khác",
   },
   // Filter translations
   "products.filter.allCollections": {

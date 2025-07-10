@@ -119,6 +119,7 @@ export function useProducts() {
         createdAt: new Date().toISOString() as any,
         updatedAt: new Date().toISOString() as any,
       }
+      console.log("newProduct", newProduct)
       if (newProduct.image && newProduct.image.startsWith("data:")) {
         // Convert base64 to File
         const file = base64ToFile(newProduct.image, "product-image.png");

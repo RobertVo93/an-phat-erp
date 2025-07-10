@@ -23,9 +23,6 @@ export class ProductionRecordEntity extends BaseEntity implements IProductionRec
   @Column({ type: "int", nullable: true })
   quantity?: number;
 
-  @Column({ nullable: true })
-  unit?: string;
-
   @Column({ type: "enum", enum: ProductionStatus, nullable: true })
   status?: ProductionStatus;
 
@@ -37,9 +34,6 @@ export class ProductionRecordEntity extends BaseEntity implements IProductionRec
 
   @Column({ type: "float", nullable: true })
   totalCost?: number;
-
-  @Column({ type: "float", nullable: true })
-  efficiency?: number;
 
   //// Relations ////
   @ManyToOne(() => ProductEntity, (product: ProductEntity) => product.productionRecords, { nullable: true })
