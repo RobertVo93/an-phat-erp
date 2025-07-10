@@ -9,6 +9,7 @@ import { ProductionUtilityEntity } from "../database/entities/production-utility
 import { ProductionLabor } from "@/types/ProductionLabor";
 import { ProductionLaborEntity } from "../database/entities/production-labor.entity";
 import { ProductionStatus } from "@/types";
+import { Not } from "typeorm";
 
 export async function getAllProductionRecords() {
   const repo = AppDataSource.getRepository(ProductionRecordEntity);
@@ -74,10 +75,9 @@ export async function createProductionRecord(
     if (!utility) continue;
 
     const productionUtility = productionUtilityRepo.create({
-      utility,
+      utility: utility,
       quantity: item.quantity ?? 0,
-      cost: item.cost ?? 0,
-      unit: item.unit ?? utility.unit ?? "",
+      totalCost: item.totalCost ?? 0,
       productionRecord: savedProductionRecord,
     });
 
@@ -99,6 +99,7 @@ export async function createProductionRecord(
     const productionLabor = productionLaborRepo.create({
       employee: employee,
       productionRecord: savedProductionRecord,
+      totalCost: item.totalCost
     });
 
     productionLaborList.push(productionLabor);
@@ -138,25 +139,22 @@ export async function updateProduction(
   const utilityRepo = AppDataSource.getRepository(UtilityEntity);
   const employeeRepo = AppDataSource.getRepository(EmployeeEntity);
 
-
   const existingRecord = await productionRecordRepo.findOne({
     where: { id },
     relations: ["productionMaterials", "productionUtilities", "productionLabors"],
   });
 
-  if (!existingRecord) {
-    throw new Error("ProductionRecord not found");
-  }
+  if (!existingRecord) throw new Error("ProductionRecord not found");
 
   productionRecordRepo.merge(existingRecord, data);
   const updatedProductionRecord = await productionRecordRepo.save(existingRecord);
 
-  // 1. Remove old productionMaterials, productionUtilities, productionLabors
+  // 1. Remove old related records
   await productionMaterialRepo.delete({ productionRecord: { id } });
   await productionUtilityRepo.delete({ productionRecord: { id } });
   await productionLaborRepo.delete({ productionRecord: { id } });
 
-  // 2. Re-create productionMaterials
+  // 2. Re-create materials
   const newMaterials: ProductionMaterialEntity[] = [];
   for (const item of productionMaterials) {
     if (!item.material?.id) continue;
@@ -167,7 +165,7 @@ export async function updateProduction(
     const newPM = productionMaterialRepo.create({
       quantity: item.quantity ?? 0,
       totalCost: item.totalCost ?? 0,
-      material: material,
+      material,
       productionRecord: updatedProductionRecord,
     });
 
@@ -177,20 +175,19 @@ export async function updateProduction(
     await productionMaterialRepo.save(newMaterials);
   }
 
-  // 3. Re-create productionUtilities
+  // 3. Re-create utilities
   const newUtilities: ProductionUtilityEntity[] = [];
   for (const item of productionUtilities) {
-    const utilityId = item.id;
+    const utilityId = item.utility?.id;
     if (!utilityId) continue;
 
     const utility = await utilityRepo.findOneBy({ id: utilityId });
     if (!utility) continue;
 
     const newPU = productionUtilityRepo.create({
-      utility: utility,
+      utility,
       quantity: item.quantity ?? 0,
-      cost: item.cost ?? 0,
-      unit: item.unit ?? utility.unit ?? "",
+      totalCost: item.totalCost ?? 0,
       productionRecord: updatedProductionRecord,
     });
 
@@ -200,18 +197,19 @@ export async function updateProduction(
     await productionUtilityRepo.save(newUtilities);
   }
 
-  // 4. Re-create productionLabors
+  // 4. Re-create labors
   const newLabors: ProductionLaborEntity[] = [];
   for (const item of parseProductionLabors) {
-    const employeeId = item.id;
+    const employeeId = item.employee?.id;
     if (!employeeId) continue;
 
     const employee = await employeeRepo.findOneBy({ id: employeeId });
     if (!employee) continue;
 
     const newPL = productionLaborRepo.create({
-      employee: employee,
+      employee,
       productionRecord: updatedProductionRecord,
+      totalCost: item.totalCost ?? 0,
     });
 
     newLabors.push(newPL);
@@ -220,20 +218,20 @@ export async function updateProduction(
     await productionLaborRepo.save(newLabors);
   }
 
-  // 5. update product stock if status is completed
+  // 5. Adjust product stock if production is completed
   if (
     updatedProductionRecord.status === ProductionStatus.completed &&
     updatedProductionRecord.product &&
     typeof updatedProductionRecord.quantity === "number"
   ) {
-    // 5.1. add ouput product
+    // 5.1 Increase product stock
     const product = await productRepo.findOneBy({ id: updatedProductionRecord.product.id });
     if (product) {
       product.stock = (product.stock ?? 0) + updatedProductionRecord.quantity;
       await productRepo.save(product);
     }
 
-    // 5.2. remove input materials
+    // 5.2 Decrease materials stock
     for (const item of newMaterials) {
       if (!item.material || typeof item.quantity !== "number") continue;
 
@@ -245,6 +243,32 @@ export async function updateProduction(
     }
   }
 
+  // 6. Check other production records for material sufficiency
+  const incompleteRecords = await productionRecordRepo.find({
+    where: { status: Not(ProductionStatus.completed) },
+    relations: ["productionMaterials", "productionMaterials.material"],
+  });
+
+  for (const record of incompleteRecords) {
+    let hasLack = false;
+
+    for (const pm of record.productionMaterials!) {
+      const material = await productRepo.findOneBy({ id: pm.material?.id });
+      if (!material) continue;
+
+      if ((material.stock ?? 0) < (pm.quantity ?? 0)) {
+        hasLack = true;
+        break;
+      }
+    }
+
+    if (hasLack && record.status !== ProductionStatus.lackMaterial) {
+      record.status = ProductionStatus.lackMaterial;
+      await productionRecordRepo.save(record);
+    }
+  }
+
+  // return
   const fullUpdatedRecord = await productionRecordRepo.findOne({
     where: { id: updatedProductionRecord.id },
     relations: [

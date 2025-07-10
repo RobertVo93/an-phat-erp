@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import type { AttendanceRecord, AttendanceFilters, AttendanceStats, TimesheetData } from "@/types/attendance"
 import { getEmployee } from "@/lib/httpclient/employee.client"
-import { AttendanceStatus, Employee } from "@/types"
+import { AttendanceShift, AttendanceStatus, Employee, EmployeeStatus } from "@/types"
 import { getAllAttendanceRecords, addAttendanceRecord as apiAddAttendanceRecord, updateAttendanceRecord as apiUpdateAttendanceRecord, deleteAttendanceRecord as apiDeleteAttendanceRecord } from "@/lib/httpclient/attendance.client"
 
 export function useAttendance() {
@@ -15,7 +15,7 @@ export function useAttendance() {
   const [sortBy, setSortBy] = useState<keyof AttendanceRecord>("date")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [viewMode, setViewMode] = useState<"list" | "timesheet">("list")
-  const [employees, setEmployees] = useState<Employee[]>([])
+  const [activeEmployees, setActiveEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState<boolean>(false)
 
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1)
@@ -93,20 +93,31 @@ export function useAttendance() {
 
   // Statistics
   const stats: AttendanceStats = useMemo(() => {
-    const totalPresent = filteredRecords.filter((record) => record.status === AttendanceStatus.present).length
-    const totalAbsent = filteredRecords.filter((record) => record.status === AttendanceStatus.absent).length
-    const totalLate = filteredRecords.filter((record) => record.status === AttendanceStatus.late).length
-    const totalOvertimeHours = filteredRecords.reduce((sum, record) => sum + record.overtimeHours!, 0)
-    const totalWages = filteredRecords.reduce((sum, record) => sum + record.dailyWage!, 0)
+    const monthlyRecords = filteredRecords.filter((record) => {
+      if (!record.date) return false;
+      const date = new Date(record.date);
+      return (
+        date.getMonth() + 1 === currentMonth &&
+        date.getFullYear() === currentYear
+      );
+    });
+
+    const totalPresent = monthlyRecords.filter((record) => record.status === AttendanceStatus.present).length;
+    const totalAbsent = monthlyRecords.filter((record) => record.status === AttendanceStatus.absent).length;
+    const totalLate = monthlyRecords.filter((record) => record.status === AttendanceStatus.late).length;
+
+    const totalWages = monthlyRecords.reduce(
+      (sum, record) => sum + (record.status === AttendanceStatus.present ? (record.employee?.salary ?? 0) : 0),
+      0
+    );
 
     return {
       totalPresent,
       totalAbsent,
       totalLate,
-      totalOvertimeHours,
       totalWages,
-    }
-  }, [filteredRecords])
+    };
+  }, [filteredRecords, currentMonth, currentYear]);
 
   // Timesheet data
   const timesheetData = useMemo(() => {
@@ -121,23 +132,27 @@ export function useAttendance() {
 
     const employees = new Map<string, TimesheetData>();
 
+    // init all "active" employees
+    activeEmployees.forEach((emp) => {
+      employees.set(emp.id!, {
+        employeeId: emp.id!,
+        employeeName: emp.name!,
+        shifts: {
+          morning: {},
+          afternoon: {},
+          evening: {},
+        },
+        totalDays: 0,
+      });
+    });
+
+    // attendance sheet
     filteredByMonth.forEach((record) => {
       if (!record.employee?.id) return;
 
-      if (!employees.has(record.employee.id)) {
-        employees.set(record.employee.id, {
-          employeeId: record.employee.id,
-          employeeName: record.employee.name!,
-          shifts: {
-            morning: {},
-            afternoon: {},
-            evening: {},
-          },
-          totalDays: 0,
-        });
-      }
+      const employee = employees.get(record.employee.id);
+      if (!employee) return;
 
-      const employee = employees.get(record.employee.id)!;
       const day = new Date(record.date!).getDate().toString();
       employee.shifts[record.shift!][day] = record;
 
@@ -202,9 +217,63 @@ export function useAttendance() {
     try {
       setLoading(true)
       const employeeData = await getEmployee()
-      setEmployees(employeeData.data)
+      const employeeList = employeeData.data as Employee[]
+      const activeList = employeeList.filter((emp) => emp.status === EmployeeStatus.active);
+      setActiveEmployees(activeList)
       const attendanceData = await getAllAttendanceRecords()
       setAttendanceRecords(attendanceData.data)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onQuickSelectInTimesheet = async (
+    day: number,
+    month: number,
+    year: number,
+    shift: AttendanceShift,
+    employeeId: string,
+  ) => {
+    try {
+      setLoading(true)
+      const date: string = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const selectedEmployee = activeEmployees.find((emp) => emp.id === employeeId)
+      if (!selectedEmployee) return;
+
+      const baseDate = new Date(date);
+      let checkIn = new Date(baseDate);
+      let checkOut = new Date(baseDate);
+
+      // set checkin-out time for shifts
+      switch (shift) {
+        case "morning":
+          checkIn.setHours(7, 0, 0, 0);   // 7:00 AM
+          checkOut.setHours(11, 0, 0, 0); // 11:00 AM
+          break;
+        case "afternoon":
+          checkIn.setHours(13, 0, 0, 0);  // 1:00 PM
+          checkOut.setHours(17, 0, 0, 0); // 5:00 PM
+          break;
+        case "evening":
+          checkIn.setHours(18, 0, 0, 0);  // 6:00 PM
+          checkOut.setHours(20, 0, 0, 0); // 8:00 PM
+          break;
+      }
+      const newRecord: AttendanceRecord = {
+        date: date,
+        employee: selectedEmployee,
+        checkIn: checkIn,
+        checkOut: checkOut,
+        shift: shift,
+        status: AttendanceStatus.present,
+        notes: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      const added = await apiAddAttendanceRecord(newRecord)
+      setAttendanceRecords((prev) => [...prev, added])
     } catch (e) {
       console.error(e)
     } finally {
@@ -242,9 +311,9 @@ export function useAttendance() {
     getAttendanceRecord,
     stats,
     timesheetData,
-    employees,
-    getEmployeeById: (id: string) => employees.find((emp) => emp.id === id),
+    activeEmployees,
     loading,
-    currentMonth, setCurrentMonth, currentYear, setCurrentYear
+    currentMonth, setCurrentMonth, currentYear, setCurrentYear,
+    onQuickSelectInTimesheet
   }
 }

@@ -38,7 +38,6 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
     otherFees: 0,
     otherFeesDescription: '',
     total: 0,
-    paidAmount: 0,
     status: InvoiceStatus.draft,
     notes: "",
     readings: []
@@ -58,7 +57,6 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
         otherFees: invoice.otherFees,
         otherFeesDescription: invoice.otherFeesDescription,
         total: invoice.total,
-        paidAmount: invoice.paidAmount,
         status: invoice.status,
         notes: invoice.notes,
         readings: invoice.readings,
@@ -74,7 +72,6 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
         otherFees: 0,
         otherFeesDescription: '',
         total: 0,
-        paidAmount: 0,
         status: InvoiceStatus.draft,
         notes: "",
         readings: []
@@ -84,7 +81,10 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
   }, [invoice, mode, isOpen, allUtilities])
 
   const calculateTotals = () => {
-    const subtotal = formData.readings?.reduce((sum, reading) => sum + reading.total, 0)
+    const subtotal = formData.readings?.reduce((sum, reading) => {
+      const total = reading.consumption * reading.unitPrice;
+      return sum + total;
+    }, 0);
     const taxAmount = (subtotal! * formData.taxRate!) / 100
     const total = subtotal! + taxAmount + formData.otherFees!
 
@@ -100,8 +100,6 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
       id: "",
       utilityType: ReadingType.other,
       utilityName: "",
-      previousReading: 0,
-      currentReading: 0,
       consumption: 0,
       unitPrice: 0,
       total: 0,
@@ -116,38 +114,48 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
   const updateReading = (index: number, field: keyof UtilityReading, value: string | number) => {
     const updatedReadings = [...formData.readings!]
 
-    if (field === "utilityType") {
-      updatedReadings[index] = {
-        ...updatedReadings[index],
-        utilityType: value as ReadingType,
+    switch (field) {
+      case "utilityType": {
+        updatedReadings[index] = {
+          ...updatedReadings[index],
+          utilityType: value as ReadingType,
+        }
+        break;
       }
-    } else if (field === "utilityName") {
-      const selectedUtility = allUtilities.find((ult) => ult.id === value.toString())
-      updatedReadings[index] = {
-        ...updatedReadings[index],
-        utilityName: selectedUtility ? selectedUtility.name! : value.toString() ,
-        utility: selectedUtility ? selectedUtility : undefined
+      case "utilityName": {
+        const selectedUtility = allUtilities.find((ult) => ult.id === value.toString())
+        updatedReadings[index] = {
+          ...updatedReadings[index],
+          utilityName: selectedUtility ? selectedUtility.name! : value.toString(),
+          utility: selectedUtility ? selectedUtility : undefined,
+          consumption: 1,
+          unitPrice: selectedUtility?.costPerUnit! ?? 1,
+          total: selectedUtility?.costPerUnit! ? selectedUtility?.costPerUnit! : 1,
+        }
+        break;
       }
-    } else {
-      updatedReadings[index] = {
-        ...updatedReadings[index],
-        [field]: value,
+      case "consumption": {
+        updatedReadings[index] = {
+          ...updatedReadings[index],
+          [field]: Number(value),
+          total: updatedReadings[index].unitPrice * Number(value)
+        }
+        break;
       }
-    }
-
-    // Recalculate consumption and total if readings or unit price change
-    if (field === "previousReading" || field === "currentReading" || field === "unitPrice") {
-      const reading = updatedReadings[index]
-
-      // For utility types that don't use meter readings (like internet)
-      if (reading.utilityType === UtilityType.other.toString()) {
-        updatedReadings[index].consumption = 1
-        updatedReadings[index].total = reading.unitPrice
-      } else {
-        // Calculate consumption based on readings
-        const consumption = Math.max(0, reading.currentReading - reading.previousReading)
-        updatedReadings[index].consumption = consumption
-        updatedReadings[index].total = consumption * reading.unitPrice
+      case "unitPrice": {
+        updatedReadings[index] = {
+          ...updatedReadings[index],
+          [field]: Number(value),
+          total: updatedReadings[index].consumption * Number(value)
+        }
+        break;
+      }
+      default: {
+        updatedReadings[index] = {
+          ...updatedReadings[index],
+          [field]: value,
+        }
+        break;
       }
     }
 
@@ -194,8 +202,7 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
       ...formData,
       subtotal: totals.subtotal,
       taxAmount: totals.taxAmount,
-      total: totals.total,
-      paidAmount: mode === "create" ? 0 : invoice?.paidAmount || 0,
+      total: totals.total
     }
 
     onSave(invoiceData)
@@ -232,7 +239,6 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
                       <SelectItem value={InvoiceStatus.draft}>{t("invoices.status.draft")}</SelectItem>
                       <SelectItem value={InvoiceStatus.sent}>{t("invoices.status.sent")}</SelectItem>
                       <SelectItem value={InvoiceStatus.paid}>{t("invoices.status.paid")}</SelectItem>
-                      <SelectItem value={InvoiceStatus.partial}>{t("invoices.status.partial")}</SelectItem>
                       <SelectItem value={InvoiceStatus.overdue}>{t("invoices.status.overdue")}</SelectItem>
                       <SelectItem value={InvoiceStatus.cancelled}>{t("invoices.status.cancelled")}</SelectItem>
                     </SelectContent>
@@ -287,66 +293,6 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
               </div>
             </CardContent>
           </Card>
-
-          {/* Property & Tenant Info */}
-          {/* <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Thông tin căn hộ & người thuê</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="propertyName">{t("invoices.propertyName")}</Label>
-                  <Input
-                    id="propertyName"
-                    value={formData.propertyName}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, propertyName: e.target.value }))}
-                    className={errors.propertyName ? "border-red-500" : ""}
-                  />
-                  {errors.propertyName && <p className="text-sm text-red-500 mt-1">{errors.propertyName}</p>}
-                </div>
-
-                <div className="md:col-span-2">
-                  <Label htmlFor="propertyAddress">{t("invoices.propertyAddress")}</Label>
-                  <Input
-                    id="propertyAddress"
-                    value={formData.propertyAddress}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, propertyAddress: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="tenantName">{t("invoices.tenantName")}</Label>
-                  <Input
-                    id="tenantName"
-                    value={formData.tenantName}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, tenantName: e.target.value }))}
-                    className={errors.tenantName ? "border-red-500" : ""}
-                  />
-                  {errors.tenantName && <p className="text-sm text-red-500 mt-1">{errors.tenantName}</p>}
-                </div>
-
-                <div>
-                  <Label htmlFor="tenantPhone">{t("invoices.tenantPhone")}</Label>
-                  <Input
-                    id="tenantPhone"
-                    value={formData.tenantPhone}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, tenantPhone: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="tenantEmail">{t("invoices.tenantEmail")}</Label>
-                  <Input
-                    id="tenantEmail"
-                    type="email"
-                    value={formData.tenantEmail}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, tenantEmail: e.target.value }))}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card> */}
 
           {/* Utility Readings */}
           <Card>
@@ -421,40 +367,11 @@ export function InvoiceFormModal({ allUtilities, isOpen, onClose, onSave, invoic
                       }
 
                       {!(reading.utilityType === UtilityType.other.toString()) &&
-                        <>
-                          <div>
-                            <Label>{t("invoices.previousReading")}</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={reading.previousReading}
-                              onChange={(e) =>
-                                updateReading(index, "previousReading", Number.parseInt(e.target.value) || 0)
-                              }
-                            />
-                          </div>
-
-                          <div>
-                            <Label>{t("invoices.currentReading")}</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={reading.currentReading}
-                              onChange={(e) =>
-                                updateReading(index, "currentReading", Number.parseInt(e.target.value) || 0)
-                              }
-                            />
-                          </div>
-                        </>
-                      }
-
-                      {!(reading.utilityType === UtilityType.other.toString()) &&
                         <div className={``}>
                           <Label>{t("invoices.consumption")}</Label>
                           <Input
                             type="number"
                             min="0"
-                            readOnly={true}
                             value={reading.consumption}
                             onChange={(e) => updateReading(index, "consumption", Number.parseInt(e.target.value) || 0)}
                           />

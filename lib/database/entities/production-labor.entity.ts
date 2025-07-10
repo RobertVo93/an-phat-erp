@@ -9,6 +9,9 @@ import type { Employee as IEmployee } from "@/types";
 
 @Entity({ name: "production_labors" })
 export class ProductionLaborEntity extends BaseEntity implements IProductionLabor {
+  @Column({ type: "float", nullable: true })
+  totalCost?: number;
+
   @ManyToOne(() => ProductionRecordEntity, (production) => production.productionLabors, { onDelete: "CASCADE" })
   @JoinColumn({ name: "production_id" })
   productionRecord?: IProductionRecord;

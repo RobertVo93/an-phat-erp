@@ -71,8 +71,6 @@ export default function InvoicePage() {
         return "bg-green-100 text-green-800"
       case InvoiceStatus.sent:
         return "bg-blue-100 text-blue-800"
-      case InvoiceStatus.partial:
-        return "bg-yellow-100 text-yellow-800"
       case InvoiceStatus.overdue:
         return "bg-red-100 text-red-800"
       case InvoiceStatus.draft:
@@ -206,17 +204,6 @@ export default function InvoicePage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("invoices.stats.paidAmount")}</CardTitle>
-              <FileText className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg sm:text-xl font-bold">{formatCurrency(stats.paidAmount)}</div>
-              <p className="text-xs text-muted-foreground">{t("invoices.stats.paidAmount")}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t("invoices.stats.pendingCount")}</CardTitle>
               <FileText className="h-4 w-4 text-yellow-600" />
             </CardHeader>
@@ -287,7 +274,6 @@ export default function InvoicePage() {
                           {t(`invoices.status.${invoice.status}`)}
                         </Badge>
                       </div>
-                      {/* <p className="text-sm text-muted-foreground">{invoice.customerName!}</p> */}
                     </div>
 
                     <DropdownMenu>
@@ -306,15 +292,17 @@ export default function InvoicePage() {
                           <Eye className="mr-2 h-4 w-4" />
                           {t("invoices.view")}
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setSelectedInvoice(invoice)
-                            setShowEditModal(true)
-                          }}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          {t("invoices.edit")}
-                        </DropdownMenuItem>
+                        {invoice.status !== InvoiceStatus.paid &&
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedInvoice(invoice)
+                              setShowEditModal(true)
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            {t("invoices.edit")}
+                          </DropdownMenuItem>
+                        }
                         <DropdownMenuItem onClick={() => handleDownload(invoice)}>
                           <Download className="mr-2 h-4 w-4" />
                           {t("invoices.download")}
@@ -341,7 +329,7 @@ export default function InvoicePage() {
                     </DropdownMenu>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                  <div className="grid grid-cols-3 gap-4 text-sm mb-3">
                     <div>
                       <span className="text-muted-foreground">{t("invoices.issueDate")}:</span>
                       <p className="font-medium">{formatDate(invoice.issueDate?.toString()!)}</p>
@@ -354,20 +342,7 @@ export default function InvoicePage() {
                       <span className="text-muted-foreground">{t("invoices.totalMoney")}:</span>
                       <p className="font-medium">{formatCurrency(invoice.total!)}</p>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">{t("invoices.paidAmount")}:</span>
-                      <p className="font-medium text-green-600">{formatCurrency(invoice.paidAmount!)}</p>
-                    </div>
                   </div>
-
-                  {invoice.paidAmount! < invoice.total! && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">{t("invoices.outstandingAmount")}: </span>
-                      <span className="font-medium text-red-600">
-                        {formatCurrency(invoice.total! - invoice.paidAmount!)}
-                      </span>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>

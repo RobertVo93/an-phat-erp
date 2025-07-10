@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
 import type { InvoiceFilters } from "@/types/invoice"
+import { InvoiceStatus } from "@/types"
 
 interface InvoiceFilterModalProps {
   isOpen: boolean
@@ -54,12 +55,11 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("invoices.status.allStatuses")}</SelectItem>
-                <SelectItem value="draft">{t("invoices.status.draft")}</SelectItem>
-                <SelectItem value="sent">{t("invoices.status.sent")}</SelectItem>
-                <SelectItem value="paid">{t("invoices.status.paid")}</SelectItem>
-                <SelectItem value="partial">{t("invoices.status.partial")}</SelectItem>
-                <SelectItem value="overdue">{t("invoices.status.overdue")}</SelectItem>
-                <SelectItem value="cancelled">{t("invoices.status.cancelled")}</SelectItem>
+                <SelectItem value={InvoiceStatus.draft}>{t("invoices.status.draft")}</SelectItem>
+                <SelectItem value={InvoiceStatus.sent}>{t("invoices.status.sent")}</SelectItem>
+                <SelectItem value={InvoiceStatus.paid}>{t("invoices.status.paid")}</SelectItem>
+                <SelectItem value={InvoiceStatus.overdue}>{t("invoices.status.overdue")}</SelectItem>
+                <SelectItem value={InvoiceStatus.cancelled}>{t("invoices.status.cancelled")}</SelectItem>
               </SelectContent>
             </Select>
           </div>

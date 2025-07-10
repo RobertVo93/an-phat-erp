@@ -98,7 +98,9 @@ export enum UtilityUnit {
   kwh = "kwh",
   m3 = "m3",
   gb = "gb",
-  minutes = "minutes"
+  minutes = "minutes",
+  hours = "hours",
+  other = "other"
 }
 
 export enum ProductStatus {
@@ -106,6 +108,12 @@ export enum ProductStatus {
   inactive = "inactive",
   lowStock = "lowStock",
   outOfStock = "outOfStock"
+}
+
+export enum ProductUnit {
+  kg = "kg",
+  piece = "piece",
+  other = "other"
 }
 
 export enum CustomerStatus {
@@ -149,6 +157,7 @@ export enum StockChangeType {
 export enum ProductionStatus {
   completed = "completed",
   inProgress = "in-progress",
+  lackMaterial = "lack-material",
   paused = "paused",
   cancelled = "cancelled"
 }
@@ -170,7 +179,6 @@ export enum InvoiceStatus {
   draft = "draft",
   sent = "sent",
   paid = "paid",
-  partial = "partial",
   overdue = "overdue",
   cancelled = "cancelled"
 }

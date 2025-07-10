@@ -20,10 +20,11 @@ export async function addAttendanceRecord(data: Partial<AttendanceRecordEntity>)
   const savedAttendance = await attendanceRepo.save(attendance);
 
   // 2. create payroll
-  const { employee, date, status, dailyWage, workHours, overtimeHours } = savedAttendance;
+  const { employee, date, status } = savedAttendance;
 
   if (employee && date && status === AttendanceStatus.present) {
-    const payPeriod = date.slice(0, 7);
+    const parsedDate = new Date(date);
+    const payPeriod = `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, '0')}`;
 
     let payroll = await payrollRepo.findOne({
       where: {
@@ -58,7 +59,6 @@ export async function updateAttendanceRecord(id: string, data: Partial<Attendanc
   const attendanceRepo = AppDataSource.getRepository(AttendanceRecordEntity);
   const payrollRepo = AppDataSource.getRepository(PayrollRecordEntity);
 
-  // check existing attendance
   const existingAttendance = await attendanceRepo.findOne({
     where: { id },
     relations: { employee: true },
@@ -71,6 +71,7 @@ export async function updateAttendanceRecord(id: string, data: Partial<Attendanc
   const prevEmployee = existingAttendance.employee;
   const prevStatus = existingAttendance.status;
   const prevDate = existingAttendance.date;
+  const prevPayPeriod = prevDate?.toString().slice(0, 7); // YYYY-MM
 
   // update attendance
   await attendanceRepo.update(id, data);
@@ -88,16 +89,20 @@ export async function updateAttendanceRecord(id: string, data: Partial<Attendanc
   const newEmployee = updatedAttendance.employee;
   const newStatus = updatedAttendance.status;
   const newDate = updatedAttendance.date;
+  const newPayPeriod = newDate?.toString().slice(0, 7); // YYYY-MM
 
-  const oldPayPeriod = prevDate?.slice(0, 7);
-  const newPayPeriod = newDate?.slice(0, 7);
+  const isOldValid = prevStatus === AttendanceStatus.present && prevEmployee && prevPayPeriod;
+  const isNewValid = newStatus === AttendanceStatus.present && newEmployee && newPayPeriod;
 
   // decrease workshifts from old employee (case we change attendance employee)
-  if (prevEmployee && prevStatus === AttendanceStatus.present && (prevEmployee.id !== newEmployee?.id || prevDate !== newDate)) {
-    let oldPayroll = await payrollRepo.findOne({
+  if (
+    isOldValid &&
+    (!isNewValid || prevEmployee.id !== newEmployee?.id || prevPayPeriod !== newPayPeriod)
+  ) {
+    const oldPayroll = await payrollRepo.findOne({
       where: {
         employee: { id: prevEmployee.id },
-        payPeriod: oldPayPeriod,
+        payPeriod: prevPayPeriod,
       },
       relations: ["employee"],
     });
@@ -115,7 +120,11 @@ export async function updateAttendanceRecord(id: string, data: Partial<Attendanc
   }
 
   // add workshifts from old employee (case we change attendance employee)
-  if (newEmployee && newStatus === AttendanceStatus.present && newDate) {
+  if (isNewValid && (
+    !isOldValid ||
+    prevEmployee.id !== newEmployee.id ||
+    prevPayPeriod !== newPayPeriod
+  )) {
     let newPayroll = await payrollRepo.findOne({
       where: {
         employee: { id: newEmployee.id },
@@ -161,7 +170,7 @@ export async function deleteAttendanceRecord(id: string) {
 
   // update payroll
   if (employee && date && status === AttendanceStatus.present) {
-    const payPeriod = date.slice(0, 7);
+    const payPeriod = new Date(date).toISOString().slice(0, 7); // YYYY-MM
 
     const payroll = await payrollRepo.findOne({
       where: {
@@ -173,11 +182,11 @@ export async function deleteAttendanceRecord(id: string) {
 
     if (payroll) {
       payroll.workingShifts = Math.max(0, payroll.workingShifts - 1);
+      payroll.totalSalary = payroll.workingShifts * (employee.salary ?? 0);
 
       if (payroll.workingShifts === 0 && payroll.status === PayrollStatus.pending) {
         await payrollRepo.remove(payroll);
       } else {
-        payroll.totalSalary = payroll.workingShifts * (employee.salary ?? 0);
         await payrollRepo.save(payroll);
       }
     }

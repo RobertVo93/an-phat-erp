@@ -21,14 +21,37 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
     return record.productionLabors?.reduce((sum, l) => sum + l.employee?.salary!, 0)
   }
 
+  const getStatusColor = (status: ProductionStatus) => {
+    switch (status) {
+      case ProductionStatus.completed:
+        return "bg-green-100 text-green-800"
+      case ProductionStatus.inProgress:
+        return "bg-blue-100 text-blue-800"
+      case ProductionStatus.cancelled:
+        return "bg-red-100 text-red-800"
+      case ProductionStatus.lackMaterial:
+        return "bg-red-100 text-red-800"
+      case ProductionStatus.paused:
+        return "bg-yellow-100 text-yellow-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
   return (
     <div className="border rounded-lg p-3 sm:p-4 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex-1">
             <h3 className="font-semibold text-sm sm:text-base">{record.product?.name}</h3>
+            <h3 className="text-xs text-gray-600">
+              {record.quantity?.toLocaleString()} {t(`production.recordItem.${record.product?.unit}`)}
+            </h3>
+            <h3 className="text-xs text-gray-600">
+              {new Date(record.date!).toISOString().slice(0, 10)}
+            </h3>
           </div>
-          <Badge variant={record.status === ProductionStatus.completed ? "default" : "secondary"} className="text-xs">
+          <Badge className={getStatusColor(record.status!)}>
             {record.status === ProductionStatus.completed ? (
               <CheckCircle className="w-3 h-3 mr-1" />
             ) : (
@@ -73,7 +96,7 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
               <span className="font-medium">{material.material?.name}</span>
               <div className="text-right">
                 <div>
-                  {material.quantity}
+                  {material.quantity?.toLocaleString()} {t(`production.recordItem.${material.material?.unit}`)}
                 </div>
                 <div className="text-xs text-gray-600">{material.material?.cost!.toLocaleString()} đ</div>
               </div>
@@ -87,29 +110,29 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
               <span className="font-medium">{utility.utility?.name!}</span>
               <div className="text-right">
                 <div>
-                  {utility.quantity} {utility.unit}
+                  {utility.quantity} {t(`production.form.${utility.utility?.unit}`)}
                 </div>
-                <div className="text-xs text-gray-600">{utility.cost!} đ</div>
+                <div className="text-xs text-gray-600">{utility.totalCost?.toLocaleString()} đ</div>
               </div>
             </div>
           ))}
         </TabsContent>
 
         <TabsContent value="labor" className="space-y-2 mt-3">
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 p-2 bg-gray-50 rounded">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 p-2 bg-gray-50 rounded">
             <div className="text-center">
               <div className="font-medium text-sm sm:text-base">{record.productionLabors?.length!} {t("production.recordItem.person")}</div>
               <div className="text-xs text-gray-600">{t("production.recordItem.labors")}</div>
             </div>
             <div className="text-center">
-              <div className="font-medium text-sm sm:text-base">{calculateLabor()} đ</div>
+              <div className="font-medium text-sm sm:text-base">{calculateLabor()?.toLocaleString()} đ</div>
               <div className="text-xs text-gray-600">{t("production.recordItem.laborExpenses")}</div>
             </div>
           </div>
         </TabsContent>
 
         <TabsContent value="summary" className="space-y-2 mt-3">
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 p-2 bg-gray-50 rounded">
+          <div className="grid grid-cols-1 gap-2 sm:gap-4 p-2 bg-gray-50 rounded">
             <div className="text-center">
               <div className="font-medium text-sm sm:text-base">{record.totalCost!.toLocaleString()} đ</div>
               <div className="text-xs text-gray-600">{t("production.recordItem.totalExpense")}</div>

@@ -3,6 +3,7 @@ import { BaseEntity } from "./base.entity";
 import { ProductionRecordEntity } from "./production-record.entity";
 import { UtilityEntity } from "./utility.entity";
 import type { ProductionUtility as IProductionUtility } from "@/types/productionUtility";
+import { UtilityUnit } from "@/types";
 
 @Entity({ name: "production_utilities" })
 export class ProductionUtilityEntity extends BaseEntity implements IProductionUtility{
@@ -17,9 +18,6 @@ export class ProductionUtilityEntity extends BaseEntity implements IProductionUt
   @Column({ type: "float", nullable: true })
   quantity?: number;
 
-  @Column({ nullable: true })
-  unit?: string;
-
   @Column({ type: "float", nullable: true })
-  cost?: number;
+  totalCost?: number;
 }

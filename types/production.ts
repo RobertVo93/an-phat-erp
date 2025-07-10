@@ -9,7 +9,6 @@ export interface ProductionRecord extends IBase{
   productionNumber?: string
   date?: string
   quantity?: number
-  unit?: string
   status?: ProductionStatus
   shift?: string
   operator?: string
@@ -20,7 +19,6 @@ export interface ProductionRecord extends IBase{
   productionLabors?: ProductionLabor[]
 
   totalCost?: number
-  efficiency?: number
 }
 
 export interface Utility {

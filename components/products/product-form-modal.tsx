@@ -14,7 +14,7 @@ import { useLanguage } from "@/contexts/language-context"
 import { Loader2, X } from "lucide-react"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { Collection } from "@/types/collection"
-import { ProductStatus } from "@/types/enums";
+import { ProductStatus, ProductUnit } from "@/types/enums";
 
 interface ProductFormModalProps {
   product?: Product | null
@@ -32,6 +32,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
 
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
+    unit: ProductUnit.other,
     description: "",
     price: 0,
     cost: 0,
@@ -65,6 +66,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
     if (product) {
       setFormData({
         name: product.name,
+        unit: product.unit,
         description: product.description,
         price: product.price || 0,
         cost: product.cost || 0,
@@ -110,7 +112,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Basic Information */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">{t("products.form.name")} *</Label>
               <Input
@@ -119,6 +121,24 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 required
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sku">{t("products.form.unit")} *</Label>
+              <Select
+                value={formData.unit}
+                onValueChange={(value: ProductUnit) => setFormData((prev) => ({...prev, unit: value}))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t("products.form.selectUnit")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(ProductUnit).map((unit, index) => (
+                    <SelectItem key={index} value={unit}>
+                      {t(`products.form.${unit}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="sku">{t("products.form.sku")} *</Label>
