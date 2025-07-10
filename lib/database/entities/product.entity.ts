@@ -10,6 +10,10 @@ import { WarehouseProductEntity } from "./warehouse-product.entity";
 import { WarehouseProduct as IWarehouseProduct } from "@/types/warehouseProduct";
 import { StockProductEntity } from "./stock-product.entity";
 import type { StockProduct as IStockProduct} from "@/types/stock-product";
+import { ProductionRecordEntity } from "./production-record.entity";
+import type { ProductionRecord as IProductionRecord } from "@/types/production";
+import { ProductionMaterialEntity } from "./production-material.entity";
+import type { ProductionMaterial as IProductionMaterial } from "@/types/productionMaterial";
 
 @Entity({ name: "products" })
 export class ProductEntity extends BaseEntity implements IProduct {
@@ -58,4 +62,10 @@ export class ProductEntity extends BaseEntity implements IProduct {
 
   @OneToMany(() => WarehouseProductEntity, (wp) => wp.product, { nullable: true })
   warehouseProducts?: IWarehouseProduct[];
+
+  @OneToMany(() => ProductionRecordEntity, (pr) => pr.product , {nullable: true})
+  productionRecords?: IProductionRecord[];
+
+  @OneToMany(() => ProductionMaterialEntity, (pm) => pm.material, {nullable: true})
+  productionMaterials?: IProductionMaterial[]
 } 
