@@ -110,7 +110,7 @@ export default function UtilityPage() {
   }
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`
+    return `${amount.toLocaleString()} VNĐ`
   }
 
   const handleCreateUtility = () => {
@@ -224,26 +224,6 @@ export default function UtilityPage() {
               <p className="text-xs text-muted-foreground">{t("utilities.overdue")}</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">{t("utilities.totalMonthlyCost")}</CardTitle>
-              <Zap className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg sm:text-2xl font-bold">{formatCurrency(stats.totalMonthlyCost)}</div>
-              <p className="text-xs text-muted-foreground">{t("utilities.monthly")}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">{t("utilities.avgMonthlyCost")}</CardTitle>
-              <Zap className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg sm:text-2xl font-bold">{formatCurrency(stats.avgMonthlyCost)}</div>
-              <p className="text-xs text-muted-foreground">{t("utilities.avgMonthly")}</p>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Sort Controls */}
@@ -258,8 +238,6 @@ export default function UtilityPage() {
                 <SelectItem value="type">{t("utilities.type")}</SelectItem>
                 <SelectItem value="provider">{t("utilities.provider")}</SelectItem>
                 <SelectItem value="location">{t("utilities.location")}</SelectItem>
-                <SelectItem value="monthlyCost">{t("utilities.monthlyCost")}</SelectItem>
-                <SelectItem value="dueDate">{t("utilities.dueDate")}</SelectItem>
                 <SelectItem value="status">{t("utilities.status")}</SelectItem>
               </SelectContent>
             </Select>
@@ -279,7 +257,7 @@ export default function UtilityPage() {
             <CardTitle>{t("utilities.title")}</CardTitle>
             <CardDescription>
               {totalPages > 0
-                ? `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalPages)} of ${totalPages} utilities`
+                ? `${t("utilities.showing")} ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalPages)} ${t("utilities.of")} ${totalPages} ${t("utilities.utilities")}`
                 : t("utilities.noUtilities")}
             </CardDescription>
           </CardHeader>
@@ -321,27 +299,12 @@ export default function UtilityPage() {
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs text-muted-foreground">
                             <div>{t("utilities.provider")}: {utility.provider}</div>
-                            <div>{t("utilities.account")}: {utility.accountNumber}</div>
                             <div>{t("utilities.location")}: {utility.location}</div>
-                          </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-muted-foreground">
-                            <span>
-                              {t("utilities.usage")}: {utility.monthlyUsage} {t(`utilities.${utility.unit!.toLowerCase()}`)}
-                            </span>
-                            <span className="hidden sm:inline">•</span>
-                            <span>
-                              {t("utilities.rate")}: {formatCurrency(utility.costPerUnit!)}/{t(`utilities.${utility.unit!.toLowerCase()}`)}
-                            </span>
-                            <span className="hidden sm:inline">•</span>
-                            <span>{t("utilities.due")}: {utility.dueDate}</span>
+                            <div>{t("utilities.costPerUnit")}: {formatCurrency(utility.costPerUnit!)}/{t(`utilities.${utility.unit!.toLowerCase()}`)}</div>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                          <div className="text-lg font-bold">{formatCurrency(utility.monthlyCost!)}</div>
-                          <div className="text-xs text-muted-foreground">{t("utilities.monthlyCost")}</div>
-                        </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm">

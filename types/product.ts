@@ -1,4 +1,4 @@
-import { ProductStatus } from "@/types/enums";
+import { ProductStatus, ProductUnit } from "@/types/enums";
 import { IBase } from "./base.interface";
 import { Collection as ICollection } from "./collection";
 import { OrderItem as IOrderItem } from "./order";
@@ -6,6 +6,7 @@ import { StockProduct } from "./stock-product";
 
 export interface Product extends IBase {
   name?: string
+  unit?: ProductUnit
   description?: string
   price?: number
   cost?: number
@@ -24,6 +25,7 @@ export interface Product extends IBase {
 
 export interface ProductFormData {
   name?: string
+  unit?: ProductUnit
   description?: string
   price?: number
   cost?: number

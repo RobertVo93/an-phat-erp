@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import type { Invoice, InvoiceFilters, InvoiceSortConfig } from "@/types/invoice"
-import { Utility } from "@/types"
+import { InvoiceStatus, Utility } from "@/types"
 import { getAllUtilities as apiGetAllUtilities } from "@/lib/httpclient/utility.client"
 import { addInvoice as apiAddInvoice, getAllInvoices as apiGetAllInvoices, updateInvoice as apiUpdateInvoice, deleteInvoice as apiDeleteInvoice } from "@/lib/httpclient/invoice.client"
 
@@ -157,17 +157,14 @@ export function useInvoices() {
   const stats = useMemo(() => {
     const totalInvoices = invoices?.length
     const totalAmount = invoices?.reduce((sum, invoice) => sum + invoice.total!, 0)
-    const paidAmount = invoices?.reduce((sum, invoice) => sum + invoice.paidAmount!, 0)
-    const overdueCount = invoices?.filter((invoice) => invoice.status === "overdue").length
-    const pendingCount = invoices?.filter((invoice) => invoice.status === "sent" || invoice.status === "partial").length
+    const overdueCount = invoices?.filter((invoice) => invoice.status === InvoiceStatus.overdue).length
+    const pendingCount = invoices?.filter((invoice) => invoice.status === InvoiceStatus.paid).length
 
     return {
       totalInvoices,
       totalAmount,
-      paidAmount,
       overdueCount,
       pendingCount,
-      outstandingAmount: totalAmount - paidAmount,
     }
   }, [invoices])
 

@@ -11,8 +11,10 @@ import { Plus, Trash2, Save, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Employee, Product, ProductionStatus, Utility } from "@/types"
 import { ProductionMaterial } from "@/types/productionMaterial"
-import { ProductionRecord, SelectedEmployee, SelectedUtility } from "@/types/production"
+import { ProductionRecord } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
+import { ProductionLabor } from "@/types/ProductionLabor"
+import { ProductionUtility } from "@/types/productionUtility"
 
 interface EditProductionModalProps {
   isOpen: boolean
@@ -38,15 +40,16 @@ export function EditProductionModal({
   const { t } = useLanguage()
   const [formData, setFormData] = useState<ProductionRecord | null>(record)
   const [selectedMaterials, setSelectedMaterials] = useState<ProductionMaterial[]>([])
-  const [selectedUtilities, setSelectedUtilities] = useState<SelectedUtility[]>([])
-  const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([])
+  const [selectedUtilities, setSelectedUtilities] = useState<ProductionUtility[]>([])
+  const [selectedEmployees, setSelectedEmployees] = useState<ProductionLabor[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const statusOptions = [
-    { value: "in-progress", label: t("production.edit.in-progress"), color: "bg-yellow-100 text-yellow-800" },
-    { value: "completed", label: t("production.edit.completed"), color: "bg-green-100 text-green-800" },
-    { value: "paused", label: t("production.edit.paused"), color: "bg-orange-100 text-orange-800" },
-    { value: "cancelled", label: t("production.edit.cancelled"), color: "bg-red-100 text-red-800" },
+    { value: ProductionStatus.inProgress, label: t("production.edit.in-progress"), color: "bg-yellow-100 text-yellow-800" },
+    { value: ProductionStatus.completed, label: t("production.edit.completed"), color: "bg-green-100 text-green-800" },
+    { value: ProductionStatus.lackMaterial, label: t("production.edit.lack-material"), color: "bg-red-100 text-red-800" },
+    { value: ProductionStatus.paused, label: t("production.edit.paused"), color: "bg-orange-100 text-orange-800" },
+    { value: ProductionStatus.cancelled, label: t("production.edit.cancelled"), color: "bg-red-100 text-red-800" },
   ]
 
   const shiftOptions = [
@@ -64,24 +67,10 @@ export function EditProductionModal({
       setSelectedMaterials(record.productionMaterials!)
 
       // Load utilities
-      const selectedUtilities = availableUtilities
-        .filter((utility) =>
-          record.productionUtilities?.some((u) => u.utility?.name === utility.name)
-        )
-        .map((utility) => {
-          const matched = record.productionUtilities?.find((u) => u.utility?.name === utility.name);
-          return {
-            ...utility,
-            quantity: matched?.quantity ?? 0,
-            cost: matched?.cost ?? utility.monthlyCost,
-            totalCost: (matched?.quantity ?? 0) * (matched?.cost! ?? utility.monthlyCost),
-          };
-        }) as SelectedUtility[];
-      setSelectedUtilities(selectedUtilities)
+      setSelectedUtilities(record.productionUtilities!)
 
-      // Load employees (giả sử có thông tin nhân viên)
-      const employees = record.productionLabors?.map(prl => prl.employee).filter(Boolean) as Employee[]
-      setSelectedEmployees(employees)
+      // Load employees
+      setSelectedEmployees(record.productionLabors!)
     }
   }, [record, isOpen])
 
@@ -145,37 +134,31 @@ export function EditProductionModal({
 
   // Utility functions
   const addUtility = () => {
-    setSelectedUtilities([
-      ...selectedUtilities,
-      {
-        id: "",
-        name: "",
-        quantity: 0,
-        unit: "",
-        cost: 0,
-        totalCost: 0,
-      },
-    ])
+    if (selectedUtilities.length < availableUtilities.length) {
+      const addedUtility: Utility = {}
+      setSelectedUtilities([
+        ...selectedUtilities,
+        addedUtility,
+      ])
+    }
   }
 
   const updateUtility = (index: number, field: string, value: any) => {
     const updated = [...selectedUtilities]
     if (field === "id") {
-      const utility = availableUtilities.find((u) => u.id === value)
-      if (utility) {
+      const findUtility = availableUtilities.find((u) => u.id === value)
+      if (findUtility) {
         updated[index] = {
           ...updated[index],
-          id: utility.id,
-          name: utility.name,
-          unit: utility.unit,
-          cost: utility.costPerUnit,
+          id: findUtility.id,
+          utility: findUtility,
           quantity: 1,
-          totalCost: updated[index].quantity! * utility.costPerUnit!,
+          totalCost: findUtility.costPerUnit
         }
       }
     } else if (field === "quantity") {
       updated[index][field] = Number.parseFloat(value) || 0
-      updated[index].totalCost = updated[index].quantity! * updated[index].cost!
+      updated[index].totalCost = updated[index].quantity! * updated[index].utility?.costPerUnit!
     }
     setSelectedUtilities(updated)
   }
@@ -187,12 +170,9 @@ export function EditProductionModal({
   // Employee functions
   const addEmployee = () => {
     if (selectedEmployees.length < availableEmployees.length) {
-      const newEmployee: Employee = {
-        salary: 0
-      }
       setSelectedEmployees([
         ...selectedEmployees,
-        newEmployee,
+        {},
       ])
     }
   }
@@ -202,28 +182,54 @@ export function EditProductionModal({
     if (field === "id") {
       const employee = availableEmployees.find((e) => e.id === value)
       if (employee) {
-        updated[index] = employee
+        updated[index] = {
+          ...updated[index],
+          id: employee.id,
+          employee: employee,
+          totalCost: employee.salary
+        }
       }
+    } else if (field === "totalCost") {
+      updated[index].totalCost = Number.parseFloat(value) || 0
     }
     setSelectedEmployees(updated)
   }
 
   const removeEmployee = (index: number) => {
-    setSelectedEmployees(selectedEmployees?.filter((_, i) => i !== index))
+    setSelectedEmployees(selectedEmployees.filter((_, i) => i !== index))
   }
 
   const calculateTotalCost = () => {
-    const materialsCost = selectedMaterials.reduce(
-      (sum, m) => sum + (typeof m?.totalCost === "number" ? m.totalCost : 0), 0);
+    const materialsCost = selectedMaterials
+      .filter((m) => typeof m?.totalCost === "number")
+      .reduce((sum, m) => sum + m.totalCost!, 0);
 
-    const utilitiesCost = selectedUtilities.reduce(
-      (sum, u) => sum + (typeof u?.totalCost === "number" ? u.totalCost : 0), 0);
+    const utilitiesCost = selectedUtilities
+      .filter((u) => typeof u?.totalCost === "number")
+      .reduce((sum, u) => sum + u.totalCost!, 0);
 
-    const laborCost = selectedEmployees.reduce(
-      (sum, e) => sum + (typeof e?.salary === "number" ? e.salary : 0), 0);
+    const laborCost = selectedEmployees
+      .filter((e) => typeof e?.totalCost === "number")
+      .reduce((sum, e) => sum + e.totalCost!, 0);
 
     return materialsCost + utilitiesCost + laborCost;
   };
+
+  const calculateRevenue = () => {
+    if (!formData?.product || !formData?.quantity) return 0
+    return formData?.product?.price! * formData?.quantity!
+  }
+
+  const calculateTotalProfit = () => {
+    if (!formData?.product || !formData.quantity) return 0
+    return formData?.product?.price! * formData.quantity - calculateTotalCost()
+  }
+
+  const calculateEfficiency = () => {
+    const totalIncome = formData?.product?.price! * formData?.quantity!
+    const efficiency = ((totalIncome! - calculateTotalCost()) / totalIncome!) * 100  // ((total income - total expense) / total income) * 100
+    return efficiency
+  }
 
   function hasValidArray(arr: any) {
     return Array.isArray(arr) &&
@@ -265,7 +271,6 @@ export function EditProductionModal({
       shift: shiftOptions.find((s) => s.value === formData?.shift)?.label.split(" ")[1] || record.shift,
       operator: formData?.operator,
       date: formData?.date,
-      efficiency: Number(formData?.efficiency),
       productionMaterials: selectedMaterials,
       productionUtilities: selectedUtilities,
       productionLabors: selectedEmployees,
@@ -289,7 +294,23 @@ export function EditProductionModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Thông tin cơ bản */}
+          {/* Thông tin ngày sản xuất */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="product" className="text-sm">
+                {t("production.form.productionDate")}
+              </Label>
+              <Input
+                id="productionDate"
+                type="date"
+                className="h-11"
+                value={formData?.date ? new Date(formData?.date).toLocaleDateString("sv-SE") : ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          {/* Thông tin sản phẩm */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">{t("production.edit.basicInformation")}</CardTitle>
@@ -401,19 +422,32 @@ export function EditProductionModal({
                           placeholder="1"
                           type="number"
                           min={1}
+                          max={material.material?.stock}
                           value={material.quantity ?? 0}
-                          onChange={(e) => updateMaterial(index, "quantity", e.target.value)}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value, 10);
+                            const stock = material.material?.stock ?? Infinity;
+                            // value in min-max range
+                            if (!isNaN(value)) {
+                              const clampedValue = Math.min(Math.max(value, 1), stock);
+                              updateMaterial(index, "quantity", clampedValue);
+                            } else {
+                              updateMaterial(index, "quantity", "");
+                            }
+                          }}
                           className="h-9"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">{t("production.edit.unitPrice")}</Label>
-                        <Input
-                          value={material.material?.cost?.toLocaleString() ?? ""}
-                          disabled
-                          className="h-9"
-                        />
-                      </div>
+                      {material.material &&
+                        <div className="space-y-1">
+                          <Label className="text-xs">{t("production.form.inStock")}</Label>
+                          <Input
+                            value={material.material?.stock || 0}
+                            readOnly
+                            className="h-9 bg-slate-200 pointer-events-none"
+                          />
+                        </div>
+                      }
                       <div className="space-y-1">
                         <Label className="text-xs">{t("production.edit.totalCost")}</Label>
                         <Input
@@ -458,22 +492,25 @@ export function EditProductionModal({
                   <div key={index} className="border rounded-lg p-3 space-y-3">
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
                       <div className="space-y-1">
-                        <Label className="text-xs">Tiện ích</Label>
-                        <Select value={utility.id} onValueChange={(value) => updateUtility(index, "id", value)}>
+                        <Label className="text-xs">{t("production.edit.utility")}</Label>
+                        <Select
+                          value={utility.utility?.id ?? ""}
+                          onValueChange={(value) => updateUtility(index, "id", value)}
+                        >
                           <SelectTrigger className="h-9">
                             <SelectValue placeholder={t("production.edit.select")} />
                           </SelectTrigger>
                           <SelectContent>
                             {availableUtilities
                               .filter((util) =>
-                                util.id === utility.id ||
+                                util.id === utility.utility?.id ||
                                 !selectedUtilities.some((selected, i) =>
-                                  i !== index && selected?.id === util.id
+                                  i !== index && selected.utility?.id === util.id
                                 )
                               )
                               .map((util) => (
-                                <SelectItem key={util.id} value={util.id!}>
-                                  {util.name}
+                                <SelectItem key={util.id!} value={util.id!}>
+                                  {util.name!}
                                 </SelectItem>
                               ))}
                           </SelectContent>
@@ -485,25 +522,17 @@ export function EditProductionModal({
                           placeholder="1"
                           type="number"
                           min={1}
-                          value={utility.quantity || ""}
+                          value={utility.quantity ?? 0}
                           onChange={(e) => updateUtility(index, "quantity", e.target.value)}
                           className="h-9"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">{t("production.edit.unit")}</Label>
-                        <Input value={utility.unit} disabled className="h-9" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">{t("production.edit.unitPrice")}</Label>
-                        <Input value={utility.cost!.toLocaleString()} disabled className="h-9" />
-                      </div>
-                      <div className="space-y-1">
                         <Label className="text-xs">{t("production.edit.totalCost")}</Label>
-                        <Input value={utility.totalCost?.toLocaleString()} disabled className="h-9" />
+                        <Input value={utility.totalCost?.toLocaleString() ?? ""} disabled className="h-9" />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs opacity-0">Action</Label>
+                        <Label className="text-xs opacity-0">{t("production.edit.action")}</Label>
                         <Button
                           variant="outline"
                           size="sm"
@@ -539,16 +568,16 @@ export function EditProductionModal({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
                       <div className="space-y-1 lg:col-span-2">
                         <Label className="text-xs">{t("production.edit.employee")}</Label>
-                        <Select value={employee.id} onValueChange={(value) => updateEmployee(index, "id", value)}>
+                        <Select value={employee.employee?.id} onValueChange={(value) => updateEmployee(index, "id", value)}>
                           <SelectTrigger className="h-9">
                             <SelectValue placeholder={t("production.edit.selectEmployee")} />
                           </SelectTrigger>
                           <SelectContent>
                             {availableEmployees
                               .filter((emp) =>
-                                emp.id === employee?.id ||
+                                emp.id === employee.employee?.id ||
                                 !selectedEmployees.some((selected, i) =>
-                                  i !== index && selected?.id === emp.id
+                                  i !== index && selected?.employee?.id === emp.id
                                 )
                               )
                               .map((emp) => (
@@ -570,13 +599,16 @@ export function EditProductionModal({
                         </Select>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">{t("production.edit.position")}</Label>
-                        <Input value={employee.position} disabled className="h-9" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">{t("production.edit.totalCost")}</Label>
+                        <Label className="text-xs">{t("production.edit.wage")}</Label>
                         <div className="flex gap-1">
-                          <Input value={employee.salary?.toLocaleString()} disabled className="h-9" />
+                          <Input
+                            placeholder="1"
+                            type="number"
+                            min={1}
+                            value={employee.totalCost || ""}
+                            onChange={(e) => updateEmployee(index, "totalCost", e.target.value)}
+                            className="h-9"
+                          />
                           <Button
                             variant="outline"
                             size="sm"
@@ -604,25 +636,53 @@ export function EditProductionModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">
-                    {selectedMaterials.reduce((sum, m) => sum + m.totalCost!, 0).toLocaleString()} đ
+                    {
+                      selectedMaterials
+                        .filter((e) => typeof e.totalCost === "number")
+                        .reduce((sum, e) => sum + (e.totalCost ?? 0), 0)
+                        .toLocaleString()
+                    } đ
                   </div>
                   <div className="text-sm text-gray-600">{t("production.edit.materialExpense")}</div>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
-                    {selectedUtilities.reduce((sum, u) => sum + u.cost!, 0).toLocaleString()} đ
+                <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {
+                      selectedUtilities
+                        .filter((e) => typeof e.totalCost === "number")
+                        .reduce((sum, e) => sum + (e.totalCost ?? 0), 0)
+                        .toLocaleString()
+                    } đ
                   </div>
                   <div className="text-sm text-gray-600">{t("production.edit.utilityExpense")}</div>
                 </div>
                 <div className="text-center p-4 bg-orange-50 rounded-lg">
                   <div className="text-2xl font-bold text-orange-600">
-                    {selectedEmployees?.reduce((sum, e) => sum + e.salary!, 0).toLocaleString()} đ
+                    {
+                      selectedEmployees
+                        .filter((e) => typeof e.totalCost === "number")
+                        .reduce((sum, e) => sum + (e.totalCost ?? 0), 0)
+                        .toLocaleString()
+                    } đ
                   </div>
                   <div className="text-sm text-gray-600">{t("production.edit.laborExpense")}</div>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
                   <div className="text-2xl font-bold text-purple-600">{calculateTotalCost().toLocaleString()} đ</div>
                   <div className="text-sm text-gray-600">{t("production.edit.totalExpense")}</div>
+                </div>
+
+                <div className="text-center p-4 bg-emerald-50 rounded-lg">
+                  <div className="text-2xl font-bold text-emerald-600">{calculateRevenue().toLocaleString()} đ</div>
+                  <div className="text-sm text-gray-600">{t("production.edit.revenue")}</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{calculateTotalProfit().toLocaleString()} đ</div>
+                  <div className="text-sm text-gray-600">{t("production.edit.totalProfit")}</div>
+                </div>
+                <div className="text-center p-4 bg-lime-50 rounded-lg">
+                  <div className="text-2xl font-bold text-lime-600">{calculateEfficiency().toLocaleString()} %</div>
+                  <div className="text-sm text-gray-600">{t("production.edit.efficiency")}</div>
                 </div>
               </div>
             </CardContent>

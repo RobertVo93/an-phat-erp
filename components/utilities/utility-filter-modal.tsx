@@ -148,32 +148,10 @@ export function UtilityFilterModal({ utilities, isOpen, onClose, onApplyFilters,
           </div>
 
           <div className="space-y-4">
-            <Label>Due Date Range</Label>
+            <Label>{t("utilities.costRange")}</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-sm">From</Label>
-                <Input
-                  type="date"
-                  value={filters.dueDateFrom || ""}
-                  onChange={(e) => setFilters({ ...filters, dueDateFrom: e.target.value || undefined })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm">To</Label>
-                <Input
-                  type="date"
-                  value={filters.dueDateTo || ""}
-                  onChange={(e) => setFilters({ ...filters, dueDateTo: e.target.value || undefined })}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <Label>Monthly Cost Range</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm">Min Cost ($)</Label>
+                <Label className="text-sm">{t("utilities.minCost")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -185,7 +163,7 @@ export function UtilityFilterModal({ utilities, isOpen, onClose, onApplyFilters,
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm">Max Cost ($)</Label>
+                <Label className="text-sm">{t("utilities.maxCost")}</Label>
                 <Input
                   type="number"
                   step="0.01"

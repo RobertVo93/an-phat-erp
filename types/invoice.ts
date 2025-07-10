@@ -5,8 +5,6 @@ export interface UtilityReading {
   id: string
   utilityType: ReadingType
   utilityName: string
-  previousReading: number
-  currentReading: number
   consumption: number
   unitPrice: number
   total: number
@@ -25,7 +23,6 @@ export interface Invoice extends IBase{
   otherFees?: number
   otherFeesDescription?: string
   total?: number
-  paidAmount?: number
   status?: InvoiceStatus
   notes?: string
 

@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToMany, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
-import { ProductStatus } from "../../../types/enums";
+import { ProductStatus, ProductUnit } from "../../../types/enums";
 import { CollectionEntity } from "./collection.entity";
 import { OrderItemEntity } from "./order-item.entity";
 import { Collection as ICollection } from "@/types/collection";
@@ -19,6 +19,9 @@ import type { ProductionMaterial as IProductionMaterial } from "@/types/producti
 export class ProductEntity extends BaseEntity implements IProduct {
   @Column({ nullable: false })
   name?: string;
+
+  @Column({ type: "enum", enum: ProductUnit, nullable: false })
+  unit?: ProductUnit;
 
   @Column({ nullable: true })
   description?: string;

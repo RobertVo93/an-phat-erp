@@ -190,7 +190,7 @@ export const invoicesTranslations = {
   },
   "invoices.unitPrice": {
     en: "Unit Price",
-    vi: "Đơn giá",
+    vi: "Giá một đơn vị",
   },
   "invoices.total": {
     en: "Total",

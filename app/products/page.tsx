@@ -275,7 +275,7 @@ export default function ProductsPage() {
                         </div>
 
                         {/* Details Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-muted-foreground">
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs text-muted-foreground">
                           <div>
                             <span className="font-medium">SKU:</span>
                             <div className="truncate">{product.sku}</div>
@@ -283,6 +283,10 @@ export default function ProductsPage() {
                           <div>
                             <span className="font-medium">{t("products.stock")}:</span>
                             <div>{product.stock}</div>
+                          </div>
+                          <div>
+                            <span className="font-medium">{t("products.unit")}:</span>
+                            <div>{t(`products.form.${product.unit}`)}</div>
                           </div>
                           <div>
                             <span className="font-medium">{t("products.form.price")}:</span>

@@ -5,6 +5,5 @@ export interface ProductionUtility {
   productionRecordId?: string;
   utility?: Utility;
   quantity?: number;
-  unit?: string;
-  cost?: number;
+  totalCost?: number;
 }

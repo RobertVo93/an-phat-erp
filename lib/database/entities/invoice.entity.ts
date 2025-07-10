@@ -38,9 +38,6 @@ export class InvoiceEntity extends BaseEntity implements IInvoice {
   @Column({ type: "float", nullable: true })
   total?: number;
 
-  @Column({ type: "float", nullable: true })
-  paidAmount?: number;
-
   @Column({ type: "enum", enum: InvoiceStatus, nullable: true })
   status?: InvoiceStatus;
 
