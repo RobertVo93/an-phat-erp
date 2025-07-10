@@ -1,93 +1,16 @@
 import type {
-  ProductionRecord,
-  Product,
-  Material,
-  Utility,
   Employee,
   DailyProductionData,
   CostBreakdownData,
+  Utility,
 } from "@/types/production"
 
-export const productionRecords: ProductionRecord[] = [
-  {
-    id: "PR001",
-    date: "2024-01-15",
-    product: "Mì Gạo",
-    quantity: 150,
-    unit: "kg",
-    status: "completed",
-    statusText: "Hoàn thành",
-    shift: "Sáng",
-    operator: "Nguyễn Văn A",
-    rawMaterials: [
-      { name: "Gạo", quantity: 120, unit: "kg", cost: 240000 },
-      { name: "Nước", quantity: 200, unit: "L", cost: 20000 },
-      { name: "Muối", quantity: 2, unit: "kg", cost: 10000 },
-    ],
-    utilities: [
-      { name: "Điện", quantity: 45, unit: "kWh", cost: 135000 },
-      { name: "Gas", quantity: 15, unit: "m³", cost: 75000 },
-      { name: "Nước", quantity: 200, unit: "L", cost: 20000 },
-    ],
-    labor: {
-      hours: 8,
-      workers: 3,
-      cost: 480000,
-    },
-    totalCost: 980000,
-    efficiency: 92,
-  },
-  {
-    id: "PR002",
-    date: "2024-01-15",
-    product: "Mì Lúa Mì",
-    quantity: 100,
-    unit: "kg",
-    status: "in-progress",
-    statusText: "Đang sản xuất",
-    shift: "Chiều",
-    operator: "Trần Thị B",
-    rawMaterials: [
-      { name: "Bột mì", quantity: 80, unit: "kg", cost: 200000 },
-      { name: "Nước", quantity: 150, unit: "L", cost: 15000 },
-      { name: "Trứng", quantity: 20, unit: "quả", cost: 60000 },
-    ],
-    utilities: [
-      { name: "Điện", quantity: 35, unit: "kWh", cost: 105000 },
-      { name: "Gas", quantity: 12, unit: "m³", cost: 60000 },
-    ],
-    labor: {
-      hours: 6,
-      workers: 2,
-      cost: 240000,
-    },
-    totalCost: 680000,
-    efficiency: 88,
-  },
-]
-
-export const availableProducts: Product[] = [
-  { id: "rice-noodles", name: "Mì Gạo", unit: "kg" },
-  { id: "wheat-noodles", name: "Mì Lúa Mì", unit: "kg" },
-  { id: "instant-noodles", name: "Mì Ăn Liền", unit: "gói" },
-  { id: "pho-noodles", name: "Bánh Phở", unit: "kg" },
-]
-
-export const availableMaterials: Material[] = [
-  { id: "rice", name: "Gạo", unit: "kg", price: 25000 },
-  { id: "wheat-flour", name: "Bột mì", unit: "kg", price: 18000 },
-  { id: "water", name: "Nước", unit: "L", price: 5000 },
-  { id: "salt", name: "Muối", unit: "kg", price: 8000 },
-  { id: "eggs", name: "Trứng", unit: "quả", price: 3500 },
-  { id: "oil", name: "Dầu ăn", unit: "L", price: 45000 },
-  { id: "starch", name: "Tinh bột", unit: "kg", price: 22000 },
-]
 
 export const availableUtilities: Utility[] = [
-  { id: "electricity", name: "Điện", unit: "kWh", price: 3500 },
-  { id: "gas", name: "Gas", unit: "m³", price: 15000 },
-  { id: "water-utility", name: "Nước (tiện ích)", unit: "m³", price: 12000 },
-  { id: "steam", name: "Hơi nước", unit: "kg", price: 8000 },
+  { id: "electricity", name: "Điện", unit: "kWh", cost: 3500 },
+  { id: "gas", name: "Gas", unit: "m³", cost: 15000 },
+  { id: "water-utility", name: "Nước (tiện ích)", unit: "m³", cost: 12000 },
+  { id: "steam", name: "Hơi nước", unit: "kg", cost: 8000 },
 ]
 
 export const availableEmployees: Employee[] = [
