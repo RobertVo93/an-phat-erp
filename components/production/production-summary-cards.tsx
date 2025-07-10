@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/contexts/language-context"
 import { Factory, Package, Zap, TrendingUp } from "lucide-react"
 
 interface ProductionSummaryCardsProps {
@@ -14,57 +15,47 @@ export function ProductionSummaryCards({
   utilityCost,
   efficiency,
 }: ProductionSummaryCardsProps) {
+  const { t } = useLanguage()
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">Sản Lượng Hôm Nay</CardTitle>
+          <CardTitle className="text-xs sm:text-sm font-medium">{t("production.summary.todayOuputQuantity")}</CardTitle>
           <Factory className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-lg sm:text-2xl font-bold">{todayProduction} kg</div>
-          <p className="text-xs text-muted-foreground">
-            <span className="text-green-600">+12%</span> so với hôm qua
-          </p>
+          <div className="text-lg sm:text-2xl font-bold">{todayProduction}</div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">Chi Phí NL</CardTitle>
+          <CardTitle className="text-xs sm:text-sm font-medium">{t("production.summary.materialCost")}</CardTitle>
           <Package className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-lg sm:text-2xl font-bold">{materialCost}M đ</div>
-          <p className="text-xs text-muted-foreground">
-            <span className="text-red-600">+5%</span> so với hôm qua
-          </p>
+          <div className="text-lg sm:text-2xl font-bold">{materialCost}</div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">Chi Phí TI</CardTitle>
+          <CardTitle className="text-xs sm:text-sm font-medium">{t("production.summary.utilityCost")}</CardTitle>
           <Zap className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-lg sm:text-2xl font-bold">{utilityCost}M đ</div>
-          <p className="text-xs text-muted-foreground">
-            <span className="text-green-600">-3%</span> so với hôm qua
-          </p>
+          <div className="text-lg sm:text-2xl font-bold">{utilityCost}</div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xs sm:text-sm font-medium">Hiệu Suất</CardTitle>
+          <CardTitle className="text-xs sm:text-sm font-medium">{t("production.summary.efficiency")}</CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-lg sm:text-2xl font-bold">{efficiency}%</div>
-          <p className="text-xs text-muted-foreground">
-            <span className="text-green-600">+2%</span> so với hôm qua
-          </p>
         </CardContent>
       </Card>
     </div>

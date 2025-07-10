@@ -1,81 +1,38 @@
 import { ProductionStatus } from "@/types/enums";
+import { Product } from "./product";
+import { IBase } from "./base.interface";
+import { ProductionMaterial } from "./productionMaterial";
+import { ProductionUtility } from "./productionUtility";
+import { ProductionLabor } from "./ProductionLabor";
+export interface ProductionRecord extends IBase{
+  id?: string
+  productionNumber?: string
+  date?: string
+  quantity?: number
+  unit?: string
+  status?: ProductionStatus
+  shift?: string
+  operator?: string
 
-export interface ProductionRecord {
-  id: string
-  date: string
-  product: string
-  quantity: number
-  unit: string
-  status: ProductionStatus
-  statusText: string
-  shift: string
-  operator: string
-  rawMaterials: Array<{
-    name: string
-    quantity: number
-    unit: string
-    cost: number
-  }>
-  utilities: Array<{
-    name: string
-    quantity: number
-    unit: string
-    cost: number
-  }>
-  labor: {
-    hours: number
-    workers: number
-    cost: number
-  }
-  totalCost: number
-  efficiency: number
-}
+  product?: Product
+  productionMaterials?: ProductionMaterial[]
+  productionUtilities?: ProductionUtility[]
+  productionLabors?: ProductionLabor[]
 
-export interface Product {
-  id: string
-  name: string
-  unit: string
-}
-
-export interface Material {
-  id: string
-  name: string
-  unit: string
-  price: number
+  totalCost?: number
+  efficiency?: number
 }
 
 export interface Utility {
-  id: string
-  name: string
-  unit: string
-  price: number
+  id?: string
+  name?: string
+  unit?: string
+  cost?: number
 }
 
-export interface Employee {
-  id: string
-  name: string
-  position: string
-  hourlyRate: number
-  department: string
-  avatar: string
-}
-
-export interface SelectedMaterial {
-  id: string
-  name: string
-  quantity: number
-  unit: string
-  price: number
-  totalCost: number
-}
-
-export interface SelectedUtility {
-  id: string
-  name: string
-  quantity: number
-  unit: string
-  price: number
-  totalCost: number
+export interface SelectedUtility extends Utility{
+  quantity?: number
+  totalCost?: number
 }
 
 export interface SelectedEmployee {
