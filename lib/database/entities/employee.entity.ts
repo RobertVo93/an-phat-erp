@@ -5,7 +5,9 @@ import { AttendanceRecordEntity } from "./attendance-record.entity";
 import { AttendanceRecord as IAttendanceRecord } from "@/types/attendance";
 import { Employee as IEmployee } from "@/types/employee";
 import { PayrollRecordEntity } from "./payroll-record.entity";
-import { PayrollRecord as IPayrollRecord} from "@/types";
+import { PayrollRecord as IPayrollRecord } from "@/types";
+import { ProductionLaborEntity } from "./production-labor.entity";
+import type { ProductionLabor as IProductionLabor } from "@/types/ProductionLabor";
 
 @Entity({ name: "employees" })
 export class EmployeeEntity extends BaseEntity implements IEmployee {
@@ -51,5 +53,7 @@ export class EmployeeEntity extends BaseEntity implements IEmployee {
 
   @OneToMany(() => PayrollRecordEntity, (payroll) => payroll.employee, { nullable: true })
   payrollRecords?: IPayrollRecord[];
+
+  @OneToMany(() => ProductionLaborEntity, (pl) => pl.employee, { cascade: true })
+  productionLabors?: IProductionLabor[];
 }
- 

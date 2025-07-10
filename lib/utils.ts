@@ -48,6 +48,17 @@ export function extractHourMinute(date: Date | string | null) {
   return `${hours}:${minutes}`;
 }
 
+export function isTodayLocalDatetime(dateStr: string): boolean {
+  const inputDate = new Date(dateStr);
+
+  const now = new Date();
+  return (
+    inputDate.getFullYear() === now.getFullYear() &&
+    inputDate.getMonth() === now.getMonth() &&
+    inputDate.getDate() === now.getDate()
+  );
+}
+
 export function base64ToFile(base64: string, filename: string): File {
   const arr = base64.split(',');
   const mime = arr[0].match(/:(.*?);/)?.[1] || '';

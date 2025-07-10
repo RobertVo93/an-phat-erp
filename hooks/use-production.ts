@@ -1,13 +1,46 @@
+import { availableEmployees } from './../lib/production-data';
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { ProductionRecord } from "@/types/production"
+import { Employee, Product, Utility } from "@/types"
+import { getProducts as apiGetProducts } from "@/lib/httpclient"
+import { createProduction, getAllProductions, updateProduction } from "@/lib/httpclient/production.client"
+import { isTodayLocalDatetime } from "@/lib/utils"
+import { getAllUtilities } from "@/lib/httpclient/utility.client"
+import { getEmployee } from '@/lib/httpclient/employee.client';
 
 export function useProduction() {
   const [selectedRecord, setSelectedRecord] = useState<ProductionRecord | null>(null)
+  const [todayProductionRecords, setTodayProductionRecords] = useState<ProductionRecord[]>([])
+  const [historyProductionRecords, setHistoryProductionRecords] = useState<ProductionRecord[]>([])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState<ProductionRecord | null>(null)
   const [isNewProductionOpen, setIsNewProductionOpen] = useState(false)
+  const [availableProducts, setAvailableProducts] = useState<Product[]>([])
+  const [availableMaterials, setAvailableMaterials] = useState<Product[]>([])
+  const [availableUtilities, setAvailableUtilities] = useState<Utility[]>([])
+  const [availableEmployees, setAvailableEmployees] = useState<Employee[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+
+  const onInit = async () => {
+    try {
+      setLoading(true)
+      const prResponse = await getAllProductions()
+      setHistoryProductionRecords(prResponse.data as ProductionRecord[])
+      const pro = await apiGetProducts()
+      setAvailableProducts(pro.data)
+      setAvailableMaterials(pro.data)
+      const ult = await getAllUtilities()
+      setAvailableUtilities(ult.data)
+      const emp = await getEmployee()
+      setAvailableEmployees(emp.data)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleViewRecord = (record: ProductionRecord) => {
     setSelectedRecord(record)
@@ -16,12 +49,6 @@ export function useProduction() {
   const handleEditRecord = (record: ProductionRecord) => {
     setEditingRecord(record)
     setIsEditModalOpen(true)
-  }
-
-  const handleSaveEdit = (updatedRecord: ProductionRecord) => {
-    console.log("Updated record:", updatedRecord)
-    setIsEditModalOpen(false)
-    setEditingRecord(null)
   }
 
   const closeDetailModal = () => {
@@ -41,11 +68,58 @@ export function useProduction() {
     setIsNewProductionOpen(false)
   }
 
+  const createNewProduction = async (data: ProductionRecord) => {
+    try {
+      setLoading(true)
+      const created = await createProduction(data)
+      setHistoryProductionRecords(prev => [...prev, created])
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveEdit = async (updatedRecord: ProductionRecord) => {
+    try {
+      setLoading(true)
+      const updated = await updateProduction(updatedRecord.id!, updatedRecord)
+      setHistoryProductionRecords((prev) =>
+        prev.map((item) =>
+          item.id === updated.id ? updated : item
+        )
+      );
+      setIsEditModalOpen(false)
+      setEditingRecord(null)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    onInit()
+  }, [])
+
+  useEffect(() => {
+    const todayRecords = historyProductionRecords.filter(item => isTodayLocalDatetime(item.date!))
+    setTodayProductionRecords(todayRecords)
+  }, [historyProductionRecords])
+
   return {
     selectedRecord,
     isEditModalOpen,
     editingRecord,
     isNewProductionOpen,
+    loading,
+    availableProducts,
+    availableMaterials,
+    availableUtilities,
+    availableEmployees,
+    todayRecords: todayProductionRecords,
+    historyRecords: historyProductionRecords,
+
     handleViewRecord,
     handleEditRecord,
     handleSaveEdit,
@@ -53,5 +127,6 @@ export function useProduction() {
     closeEditModal,
     openNewProduction,
     closeNewProduction,
+    createNewProduction,
   }
 }

@@ -6,7 +6,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CalendarIcon, Plus, History, BarChart3 } from "lucide-react"
+import { CalendarIcon, Plus, History, BarChart3, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import { ERPLayout } from "@/components/erp-layout"
 import { EditProductionModal } from "@/components/modals/edit-production-modal"
@@ -16,7 +16,7 @@ import { ProductionDetailModal } from "@/components/production/production-detail
 import { ProductionHistory } from "@/components/production/production-history"
 import { NewProductionForm } from "@/components/production/new-production-form"
 import { useProduction } from "@/hooks/use-production"
-import { productionRecords } from "@/lib/production-data"
+import { useLanguage } from "@/contexts/language-context"
 
 export default function ProducePage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
@@ -26,6 +26,14 @@ export default function ProducePage() {
     isEditModalOpen,
     editingRecord,
     isNewProductionOpen,
+    loading,
+    availableProducts,
+    availableMaterials,
+    todayRecords,
+    historyRecords,
+    availableUtilities,
+    availableEmployees,
+
     handleViewRecord,
     handleEditRecord,
     handleSaveEdit,
@@ -33,17 +41,24 @@ export default function ProducePage() {
     closeEditModal,
     openNewProduction,
     closeNewProduction,
+    createNewProduction
   } = useProduction()
+  const { t } = useLanguage()
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Quản Lý Sản Xuất</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("production.management")}</h1>
             <p className="text-gray-600 mt-1 text-sm sm:text-base">
-              Theo dõi quy trình sản xuất, tiêu thụ nguyên liệu và chi phí
+
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
@@ -51,7 +66,7 @@ export default function ProducePage() {
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Chọn ngày"}
+                  {selectedDate ? format(selectedDate, "dd/MM/yyyy") : (t("production.selectDate"))}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -66,7 +81,7 @@ export default function ProducePage() {
 
             <Button className="w-full sm:w-auto" onClick={openNewProduction}>
               <Plus className="mr-2 h-4 w-4" />
-              Sản Xuất Mới
+              {t("production.newProduction")}
             </Button>
           </div>
         </div>
@@ -76,24 +91,29 @@ export default function ProducePage() {
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3">
             <TabsTrigger value="today" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Hôm Nay</span>
-              <span className="sm:hidden">Hôm Nay</span>
+              <span className="hidden sm:inline">{t("production.today")}</span>
+              <span className="sm:hidden">{t("production.today")}</span>
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-2">
               <History className="w-4 h-4" />
-              <span className="hidden sm:inline">Lịch Sử</span>
-              <span className="sm:hidden">Lịch Sử</span>
+              <span className="hidden sm:inline">{t("production.history")}</span>
+              <span className="sm:hidden">{t("production.history")}</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Tab Content - Hôm Nay */}
           <TabsContent value="today" className="space-y-4 sm:space-y-6">
             {/* Summary Cards */}
-            <ProductionSummaryCards todayProduction={250} materialCost={6.75} utilityCost={5.75} efficiency={90} />
+            <ProductionSummaryCards
+              todayProduction={250}
+              materialCost={6.75}
+              utilityCost={5.75}
+              efficiency={90}
+            />
 
             {/* Production Records */}
             <ProductionRecords
-              records={productionRecords}
+              records={todayRecords}
               onViewRecord={handleViewRecord}
               onEditRecord={handleEditRecord}
             />
@@ -101,7 +121,11 @@ export default function ProducePage() {
 
           {/* Tab Content - Lịch Sử */}
           <TabsContent value="history" className="space-y-4 sm:space-y-6">
-            <ProductionHistory onViewRecord={handleViewRecord} onEditRecord={handleEditRecord} />
+            <ProductionHistory
+              historyRecords={historyRecords}
+              onViewRecord={handleViewRecord}
+              onEditRecord={handleEditRecord}
+            />
           </TabsContent>
         </Tabs>
 
@@ -109,12 +133,19 @@ export default function ProducePage() {
         <Dialog open={isNewProductionOpen} onOpenChange={closeNewProduction}>
           <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Tạo Đơn Sản Xuất Mới</DialogTitle>
+              <DialogTitle>{t("production.createNewProduction")}</DialogTitle>
               <DialogDescription>
-                Ghi lại đợt sản xuất mới với thông tin tiêu thụ nguyên liệu và sản lượng
+                {t("production.createNewProductionDescription")}
               </DialogDescription>
             </DialogHeader>
-            <NewProductionForm onClose={closeNewProduction} />
+            <NewProductionForm
+              availableMaterials={availableMaterials}
+              availableProducts={availableProducts}
+              availableUtilities={availableUtilities}
+              availableEmployees={availableEmployees}
+              onClose={closeNewProduction}
+              createNewProduction={createNewProduction}
+            />
           </DialogContent>
         </Dialog>
 
@@ -124,6 +155,10 @@ export default function ProducePage() {
         {/* Edit Production Modal */}
         {editingRecord && (
           <EditProductionModal
+            availableMaterials={availableMaterials}
+            availableProducts={availableProducts}
+            availableUtilities={availableUtilities}
+            availableEmployees={availableEmployees}
             isOpen={isEditModalOpen}
             onClose={closeEditModal}
             record={editingRecord}
