@@ -40,9 +40,6 @@ export function AttendanceFormModal({
     checkIn: new Date(),
     checkOut: new Date(),
     status: AttendanceStatus.present,
-    workHours: 0,
-    overtimeHours: 0,
-    dailyWage: 0,
     notes: "",
     employee: undefined,
   })
@@ -58,9 +55,6 @@ export function AttendanceFormModal({
         checkIn: new Date(),
         checkOut: new Date(),
         status: AttendanceStatus.present,
-        workHours: 0,
-        overtimeHours: 0,
-        dailyWage: 0,
         notes: "",
         employee: undefined,
       })
@@ -83,12 +77,6 @@ export function AttendanceFormModal({
     if (!formData.status) {
       newErrors.status = t("attendance.form.statusRequired")
     }
-    if (formData.workHours! < 0) {
-      newErrors.workHours = t("attendance.form.workHoursRequired")
-    }
-    if (formData.dailyWage! < 0) {
-      newErrors.dailyWage = t("attendance.form.dailyWageRequired")
-    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -104,9 +92,6 @@ export function AttendanceFormModal({
       checkIn: formData.checkIn || undefined,
       checkOut: formData.checkOut || undefined,
       status: formData.status as AttendanceStatus,
-      workHours: formData.workHours,
-      overtimeHours: formData.overtimeHours,
-      dailyWage: formData.dailyWage,
       notes: formData.notes || "",
       employee: formData.employee
     }
@@ -205,7 +190,7 @@ export function AttendanceFormModal({
                       <div className="flex flex-col">
                         <span className="font-medium">{employee.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {employee.id} - {employee.department}
+                          {employee.id} - {t(`attendance.departments.${employee.department?.toLowerCase()}`)}
                         </span>
                       </div>
                     </SelectItem>
@@ -277,49 +262,6 @@ export function AttendanceFormModal({
                 </SelectContent>
               </Select>
               {errors.status && <p className="text-sm text-red-500">{errors.status}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="workHours">{t("attendance.form.workHours")}</Label>
-              <Input
-                id="workHours"
-                type="number"
-                step="0.25"
-                min="0"
-                max="24"
-                value={formData.workHours}
-                readOnly
-                // onChange={(e) => handleInputChange("workHours", Number.parseFloat(e.target.value) || 0)}
-                className={errors.workHours ? "border-red-500" : ""}
-              />
-              {errors.workHours && <p className="text-sm text-red-500">{errors.workHours}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="overtimeHours">{t("attendance.form.overtimeHours")}</Label>
-              <Input
-                id="overtimeHours"
-                type="number"
-                step="0.25"
-                min="0"
-                max="12"
-                value={formData.overtimeHours}
-                onChange={(e) => handleInputChange("overtimeHours", Number.parseFloat(e.target.value) || 0)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dailyWage">{t("attendance.form.dailyWage")}</Label>
-              <Input
-                id="dailyWage"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.dailyWage}
-                onChange={(e) => handleInputChange("dailyWage", Number.parseFloat(e.target.value) || 0)}
-                className={errors.dailyWage ? "border-red-500" : ""}
-              />
-              {errors.dailyWage && <p className="text-sm text-red-500">{errors.dailyWage}</p>}
             </div>
           </div>
 

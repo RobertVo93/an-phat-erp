@@ -38,13 +38,13 @@ export function AttendanceDeleteModal({ isOpen, onClose, onConfirm, record }: At
 
           <div className="bg-gray-50 p-3 rounded-lg">
             <p className="text-sm">
-              <strong>{t("attendance.employee")}:</strong> {record.employeeName}
+              <strong>{t("attendance.employee")}:</strong> {record.employee?.name}
             </p>
             <p className="text-sm">
-              <strong>{t("attendance.date")}:</strong> {new Date(record.date).toLocaleDateString("vi-VN")}
+              <strong>{t("attendance.date")}:</strong> {new Date(record.date!).toLocaleDateString("vi-VN")}
             </p>
             <p className="text-sm">
-              <strong>{t("attendance.shift")}:</strong> {t(`attendance.shift.${record.shift.toLowerCase()}`)}
+              <strong>{t("attendance.shift")}:</strong> {t(`attendance.shift.${record.shift?.toLowerCase()}`)}
             </p>
           </div>
         </div>

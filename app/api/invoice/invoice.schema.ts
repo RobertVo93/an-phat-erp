@@ -5,8 +5,6 @@ import { UtilitySchema } from "../utility/utility.schema";
 export const UtilityReadingSchema = z.object({
   utilityType: z.string().optional(),
   utilityName: z.string(),
-  previousReading: z.number(),
-  currentReading: z.number(),
   consumption: z.number(),
   unitPrice: z.number(),
   total: z.number(),
@@ -27,7 +25,6 @@ export const InvoiceSchema = z.object({
   otherFees: z.number().optional(),
   otherFeesDescription: z.string().optional(),
   total: z.number().optional(),
-  paidAmount: z.number().optional(),
   status: z.nativeEnum(InvoiceStatus).optional(),
   notes: z.string().optional(),
   readings: z.array(UtilityReadingSchema).optional(),

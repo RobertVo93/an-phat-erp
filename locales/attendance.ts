@@ -45,16 +45,16 @@ export const attendanceTranslations = {
 
   // Statistics
   "attendance.totalPresent": {
-    en: "Present Today",
-    vi: "Có Mặt Hôm Nay",
+    en: "Present This Month",
+    vi: "Có Mặt Tháng Này",
   },
   "attendance.totalAbsent": {
-    en: "Absent Today",
-    vi: "Vắng Mặt Hôm Nay",
+    en: "Absent This Month",
+    vi: "Vắng Mặt Tháng Này",
   },
   "attendance.totalLate": {
-    en: "Late Arrivals",
-    vi: "Đi Muộn",
+    en: "Late Arrivals This Month",
+    vi: "Đi Muộn Tháng Này",
   },
   "attendance.totalOvertimeHours": {
     en: "Overtime Hours",
@@ -84,9 +84,9 @@ export const attendanceTranslations = {
     en: "Total overtime today",
     vi: "Tổng giờ làm thêm hôm nay",
   },
-  "attendance.totalWagesToday": {
-    en: "Total wages today",
-    vi: "Tổng tiền công hôm nay",
+  "attendance.totalWagesMonth": {
+    en: "Total wages month",
+    vi: "Tổng tiền công tháng",
   },
 
   // Table headers
@@ -463,5 +463,31 @@ export const attendanceTranslations = {
   "attendance.close": {
     en: "Close",
     vi: "Đóng",
+  },
+
+  // department
+  "attendance.departments.it": {
+    en: "IT",
+    vi: "Công Nghệ Thông Tin",
+  },
+  "attendance.departments.marketing": {
+    en: "Marketing",
+    vi: "Marketing",
+  },
+  "attendance.departments.finance": {
+    en: "Finance",
+    vi: "Tài Chính",
+  },
+  "attendance.departments.sales": {
+    en: "Sales",
+    vi: "Bán Hàng",
+  },
+  "attendance.departments.hr": {
+    en: "HR",
+    vi: "Nhân Sự",
+  },
+  "attendance.departments.operations": {
+    en: "Operations",
+    vi: "Vận Hành",
   },
 }

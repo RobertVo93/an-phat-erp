@@ -39,7 +39,6 @@ export function UtilityDeleteModal({ isOpen, onClose, onConfirm, utility }: Util
           <div className="p-3 bg-gray-50 rounded-lg">
             <p className="font-medium">{t(`utilities.${utility.type!.toLowerCase()}`)}</p>
             <p className="text-sm text-muted-foreground">{utility.provider}</p>
-            <p className="text-sm text-muted-foreground">{utility.accountNumber}</p>
           </div>
         </div>
 
