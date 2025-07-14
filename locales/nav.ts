@@ -112,4 +112,8 @@ export const navTranslations = {
     en: "Utility Report",
     vi: "Báo Cáo Tiện Ích",
   },
+  "nav.productionReport": {
+    en: "Production Report",
+    vi: "Báo Cáo Sản Xuất",
+  },
 }

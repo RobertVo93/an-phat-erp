@@ -195,3 +195,14 @@ export enum ReadingType {
   predefined_utility = "predefined_utility",
   other = "other"
 }
+
+export enum ReportViewBy {
+  daily = "daily",
+  monthly = "monthly",
+  yearly = "yearly"
+}
+
+export enum ReportViewType {
+  table = "table",
+  chart = "chart"
+}

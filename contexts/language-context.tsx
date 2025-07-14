@@ -19,6 +19,7 @@ import { warehouseTranslations } from "@/locales/warehouse"
 import { stockInTranslations } from "@/locales/stock-in"
 import { commonTranslations } from "@/locales/common"
 import { productionTranslations } from "@/locales/production"
+import { reportProductionTranslations } from "@/locales/report-production"
 
 
 type Language = "en" | "vi"
@@ -47,7 +48,8 @@ const translations: Translations = {
   ...warehouseTranslations,
   ...stockInTranslations,
   ...commonTranslations,
-  ...productionTranslations
+  ...productionTranslations,
+  ...reportProductionTranslations,
 }
 
 interface LanguageContextType {
