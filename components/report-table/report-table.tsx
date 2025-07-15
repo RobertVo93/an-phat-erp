@@ -1,37 +1,74 @@
-import { ReportTableProps } from '@/types/report-production';
+import { useLanguage } from '@/contexts/language-context';
+import { ProductionFormat } from '@/types/report-production';
+import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from '@tanstack/react-table';
 import React from 'react';
 
-export const ReportTable = ({
-  headers,
-  data,
-}: ReportTableProps) => {
+interface Props {
+  data: ProductionFormat[]
+}
+
+export default function ReportTable({
+  data
+}: Props) {
+  const columnHelper = createColumnHelper<ProductionFormat>();
+  const { t } = useLanguage()
+  const columns = [
+    columnHelper.accessor('name', {
+      header: t(`pro.table.product`),
+    }),
+    columnHelper.accessor('quantity', {
+      header: t(`pro.table.quantity`),
+    }),
+    columnHelper.accessor('totalPrice', {
+      header: t(`pro.table.totalPrice`),
+      cell: (info) => `${info.getValue().toLocaleString()} đ`,
+    }),
+    columnHelper.accessor('totalCost', {
+      header: t(`pro.table.totalCost`),
+      cell: (info) => `${info.getValue().toLocaleString()} đ`,
+    }),
+    columnHelper.accessor('profit', {
+      header: t(`pro.table.profit`),
+      cell: (info) => `${info.getValue().toLocaleString()} đ`,
+    }),
+    columnHelper.accessor('time', {
+      header: t(`pro.table.time`),
+      cell: (info) => `${info.getValue()}`,
+    }),
+  ];
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
-    <div className="overflow-x-auto bg-white">
-      <table className="min-w-full">
-        <thead className="">
-          <tr className="border-b border-gray-200">
-            {headers.map((header, index) => (
-              <th
-                key={index}
-                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                {header.title}
-              </th>
-            ))}
-          </tr>
+    <div className="overflow-x-auto">
+      <table className="table-auto border-collapse w-full text-sm">
+        <thead className="bg-gray-100">
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th key={header.id} className="p-2 border text-left">
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
+                </th>
+              ))}
+            </tr>
+          ))}
         </thead>
-        <tbody className="divide-y divide-gray-200">
-          {data.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {headers.map((header, cellIndex) => (
-                <td
-                  key={cellIndex}
-                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                >
-                  {header.key === "number" ?
-                    Number(rowIndex) + 1 :
-                    row[header.key]
-                  }
+        <tbody>
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id} className="hover:bg-gray-50">
+              {row.getVisibleCells().map((cell) => (
+                <td key={cell.id} className="p-2 border">
+                  {flexRender(
+                    cell.column.columnDef.cell,
+                    cell.getContext()
+                  )}
                 </td>
               ))}
             </tr>
@@ -40,4 +77,4 @@ export const ReportTable = ({
       </table>
     </div>
   );
-};
+}

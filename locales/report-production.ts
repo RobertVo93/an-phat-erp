@@ -4,6 +4,10 @@ export const reportProductionTranslations = {
     en: "Production Report",
     vi: "Báo Cáo Sản Xuất"
   },
+  "pro.description": {
+    en: "This is the Producion Report, where you can see what you produced",
+    vi: "Đây là Báo Cáo Sản Xuất, nơi bạn có thể xem đã sản xuất gì"
+  },
   "pro.filter": {
     en: "Filter",
     vi: "Lọc"
@@ -97,10 +101,6 @@ export const reportProductionTranslations = {
   },
   
   // table
-  "pro.table.number": {
-    en: "No.",
-    vi: "STT"
-  },
   "pro.table.product": {
     en: "Product",
     vi: "Sản phẩm"

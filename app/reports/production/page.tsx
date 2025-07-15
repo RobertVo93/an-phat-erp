@@ -4,12 +4,12 @@ import { ERPLayout } from "@/components/erp-layout"
 import { Button } from "@/components/ui/button"
 import { Download, Filter, Loader2 } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-import { ReportTable } from "@/components/report-table/report-table"
 import { ReportColumn } from "@/types/report-production"
 import { ReportProductionFilterModal } from "@/components/modals/report-production-filter-modal"
 import { useReportProduction } from "@/hooks/useReportProduction"
 import { ReportViewBy, ReportViewType } from "@/types"
-import { ReportChart } from "@/components/report-chart/report-chart"
+import ReportChart from "@/components/report-chart/report-chart"
+import ReportTable from "@/components/report-table/report-table"
 
 export default function EmployeeReportPage() {
   const { t } = useLanguage()
@@ -27,16 +27,6 @@ export default function EmployeeReportPage() {
     setViewType,
     setViewBy
   } = useReportProduction()
-
-  const reportProductionHeaders: ReportColumn[] = [
-    { key: "number", title: t("pro.table.number") },
-    { key: "name", title: t("pro.table.product") },
-    { key: "quantity", title: t("pro.table.quantity") },
-    { key: "totalPrice", title: t("pro.table.totalPrice") },
-    { key: "totalCost", title: t("pro.table.totalCost") },
-    { key: "profit", title: t("pro.table.profit") },
-    { key: "time", title: t("pro.table.time") },
-  ];
 
   return (
     <ERPLayout>
@@ -89,21 +79,30 @@ export default function EmployeeReportPage() {
           <Button
             variant={viewBy === ReportViewBy.daily ? "default" : "outline"}
             size="sm"
-            onClick={() => setViewBy(ReportViewBy.daily)}
+            onClick={() => {
+              setViewBy(ReportViewBy.daily)
+              setFilter({})
+            }}
           >
             {t(`pro.daily`)}
           </Button>
           <Button
             variant={viewBy === ReportViewBy.monthly ? "default" : "outline"}
             size="sm"
-            onClick={() => setViewBy(ReportViewBy.monthly)}
+            onClick={() => {
+              setViewBy(ReportViewBy.monthly)
+              setFilter({})
+            }}
           >
             {t(`pro.monthly`)}
           </Button>
           <Button
             variant={viewBy === ReportViewBy.yearly ? "default" : "outline"}
             size="sm"
-            onClick={() => setViewBy(ReportViewBy.yearly)}
+            onClick={() => {
+              setViewBy(ReportViewBy.yearly)
+              setFilter({})
+            }}
           >
             {t(`pro.yearly`)}
           </Button>
@@ -115,7 +114,7 @@ export default function EmployeeReportPage() {
       <div className="mt-4">
         {viewType === ReportViewType.table ?
           <div className="">
-            <ReportTable headers={reportProductionHeaders} data={data} />
+            <ReportTable data={data}/>
           </div>
           :
           <div className="">
