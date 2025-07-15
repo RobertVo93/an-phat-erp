@@ -1,15 +1,5 @@
-import { ReportViewBy, ReportViewType } from "./enums";
+import { ReportViewBy } from "./enums";
 import { Product } from "./product";
-
-export interface ReportColumn {
-  key: string
-  title: string
-}
-
-export interface ReportTableProps {
-  headers: ReportColumn[]
-  data: Record<string, any | number>[]
-}
 
 export interface ProductionFormat {
   productId: string
@@ -23,6 +13,7 @@ export interface ProductionFormat {
 
 export interface ReportProductionFilter {
   products?: Product[]
+  viewBy: ReportViewBy
   dateFrom?: string
   dateTo?: string
 }

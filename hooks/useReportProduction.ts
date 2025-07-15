@@ -12,9 +12,8 @@ export function useReportProduction() {
   const [rawRecords, setRawRecords] = useState<ProductionRecord[]>([])
   const [productions, setProductions] = useState<ProductionFormat[]>([])
   const [showFilterModal, setShowFilterModal] = useState<boolean>(false)
-  const [filter, setFilter] = useState<ReportProductionFilter>({})
+  const [filter, setFilter] = useState<ReportProductionFilter>({ viewBy: ReportViewBy.daily })
   const [viewType, setViewType] = useState<ReportViewType>(ReportViewType.table)
-  const [viewBy, setViewBy] = useState<ReportViewBy>(ReportViewBy.daily)
   const [activeProducts, setActiveProducts] = useState<Product[]>([])
 
   function parseProductionRecordHandler(record: ProductionRecord): ProductionFormat {
@@ -66,6 +65,48 @@ export function useReportProduction() {
     return new Date(a).getTime() - new Date(b).getTime()
   }
 
+  function groupProductionsByView(
+    data: ProductionFormat[],
+    viewBy: ReportViewBy
+  ): ProductionFormat[] {
+    const grouped: Record<string, ProductionFormat> = {}
+
+    for (const item of data) {
+      let timeKey = ''
+
+      if (viewBy === ReportViewBy.daily) {
+        timeKey = item.time.slice(0, 10) // yyyy-mm-dd
+      } else if (viewBy === ReportViewBy.monthly) {
+        timeKey = item.time.slice(0, 7) // yyyy-mm
+      } else if (viewBy === ReportViewBy.yearly) {
+        timeKey = item.time.slice(0, 4) // yyyy
+      }
+
+      const key = `${item.productId}_${timeKey}`
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          productId: item.productId,
+          name: item.name,
+          quantity: 0,
+          totalPrice: 0,
+          totalCost: 0,
+          profit: 0,
+          time: timeKey,
+        }
+      }
+
+      grouped[key].quantity += item.quantity
+      grouped[key].totalPrice += item.totalPrice
+      grouped[key].totalCost += item.totalCost
+      grouped[key].profit += item.profit
+    }
+
+    return Object.values(grouped).sort(
+      (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+    )
+  }
+
   const filteredAndSortedProductions = useMemo(() => {
     const filtered = productions.filter((production) => {
       const matchesProduct = !filter.products?.length
@@ -75,17 +116,17 @@ export function useReportProduction() {
       const matchesDateFrom = (() => {
         if (!filter.dateFrom) return true
 
-        if (viewBy === ReportViewBy.daily) {
+        if (filter.viewBy === ReportViewBy.daily) {
           return compareDate(production.time, filter.dateFrom) >= 0
         }
 
-        if (viewBy === ReportViewBy.monthly) {
-          const prodMonth = production.time.slice(0, 7).replace("-", "/") // yyyy/mm
-          const fromMonth = filter.dateFrom.replace("-", "/")            // yyyy/mm
+        if (filter.viewBy === ReportViewBy.monthly) {
+          const prodMonth = production.time.slice(0, 7).replace("-", "/")
+          const fromMonth = filter.dateFrom.replace("-", "/")
           return compareMonthYear(prodMonth, fromMonth) >= 0
         }
 
-        if (viewBy === ReportViewBy.yearly) {
+        if (filter.viewBy === ReportViewBy.yearly) {
           return parseInt(production.time.slice(0, 4)) >= Number(filter.dateFrom)
         }
 
@@ -95,17 +136,17 @@ export function useReportProduction() {
       const matchesDateTo = (() => {
         if (!filter.dateTo) return true
 
-        if (viewBy === ReportViewBy.daily) {
+        if (filter.viewBy === ReportViewBy.daily) {
           return compareDate(production.time, filter.dateTo) <= 0
         }
 
-        if (viewBy === ReportViewBy.monthly) {
+        if (filter.viewBy === ReportViewBy.monthly) {
           const prodMonth = production.time.slice(0, 7).replace("-", "/")
           const toMonth = filter.dateTo.replace("-", "/")
           return compareMonthYear(prodMonth, toMonth) <= 0
         }
 
-        if (viewBy === ReportViewBy.yearly) {
+        if (filter.viewBy === ReportViewBy.yearly) {
           return parseInt(production.time.slice(0, 4)) <= Number(filter.dateTo)
         }
 
@@ -115,11 +156,11 @@ export function useReportProduction() {
       return matchesProduct && matchesDateFrom && matchesDateTo
     })
 
-    filtered.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+    // Gộp theo viewBy sau khi lọc
+    const aggregated = groupProductionsByView(filtered, filter.viewBy)
 
-    return filtered
-  }, [productions, filter, viewBy])
-
+    return aggregated
+  }, [productions, filter])
 
   useEffect(() => {
     onInit()
@@ -131,7 +172,7 @@ export function useReportProduction() {
       .map(parseProductionRecordHandler)
 
     setProductions(formattedRecords)
-  }, [filter, rawRecords, viewBy])
+  }, [filter, rawRecords])
 
   return {
     loading,
@@ -139,12 +180,10 @@ export function useReportProduction() {
     showFilterModal,
     filter,
     viewType,
-    viewBy,
     activeProducts,
 
     setFilter,
     setShowFilterModal,
     setViewType,
-    setViewBy,
   }
 }

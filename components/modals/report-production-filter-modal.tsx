@@ -6,7 +6,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useLanguage } from "@/contexts/language-context"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ReportProductionFilter } from "@/types/report-production"
 import { Button } from "../ui/button"
 import { Product, ReportViewBy } from "@/types"
@@ -16,7 +16,6 @@ interface Props {
   open: boolean
   currentFilter: ReportProductionFilter
   activeProducts: Product[]
-  viewBy: ReportViewBy
   setShowFilterModal: (open: boolean) => void
   setCurrentFilter: (filters: ReportProductionFilter) => void
 }
@@ -25,7 +24,6 @@ export function ReportProductionFilterModal({
   open,
   currentFilter,
   activeProducts,
-  viewBy,
   setCurrentFilter,
   setShowFilterModal
 }: Props) {
@@ -37,8 +35,8 @@ export function ReportProductionFilterModal({
   }
 
   const handleReset = () => {
-    setFilter({ })
-    setCurrentFilter({ })
+    setFilter({ viewBy: ReportViewBy.daily })
+    setCurrentFilter({ viewBy: ReportViewBy.daily })
 
     onClose()
   }
@@ -52,6 +50,10 @@ export function ReportProductionFilterModal({
     switch (key) {
       case ("products"): {
         setFilter(({ ...filter, products: value }))
+        return
+      }
+      case ("viewBy"): {
+        setFilter(({ ...filter, viewBy: value as ReportViewBy }))
         return
       }
       case ("dateFrom"): {
@@ -129,7 +131,7 @@ export function ReportProductionFilterModal({
         </div>
 
         {/* select view by */}
-        {/* <div>
+        <div>
           <Label htmlFor="date">{t("pro.filter.viewBy")}</Label>
           <Select value={filter.viewBy} onValueChange={(value: ReportViewBy) => updateFilter("viewBy", value)}>
             <SelectTrigger className="">
@@ -141,12 +143,12 @@ export function ReportProductionFilterModal({
               ))}
             </SelectContent>
           </Select>
-        </div> */}
+        </div>
 
         {/* select period */}
         <div>
           <Label htmlFor="date">{t("pro.filter.dateRange")}</Label>
-          {viewBy === ReportViewBy.daily &&
+          {filter.viewBy === ReportViewBy.daily &&
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="date"
@@ -162,7 +164,7 @@ export function ReportProductionFilterModal({
               />
             </div>
           }
-          {viewBy === ReportViewBy.monthly &&
+          {filter.viewBy === ReportViewBy.monthly &&
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="month"
@@ -178,7 +180,7 @@ export function ReportProductionFilterModal({
               />
             </div>
           }
-          {viewBy === ReportViewBy.yearly &&
+          {filter.viewBy === ReportViewBy.yearly &&
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="number"

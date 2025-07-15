@@ -4,10 +4,9 @@ import { ERPLayout } from "@/components/erp-layout"
 import { Button } from "@/components/ui/button"
 import { Download, Filter, Loader2 } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-import { ReportColumn } from "@/types/report-production"
 import { ReportProductionFilterModal } from "@/components/modals/report-production-filter-modal"
 import { useReportProduction } from "@/hooks/useReportProduction"
-import { ReportViewBy, ReportViewType } from "@/types"
+import { ReportViewType } from "@/types"
 import ReportChart from "@/components/report-chart/report-chart"
 import ReportTable from "@/components/report-table/report-table"
 
@@ -20,12 +19,10 @@ export default function EmployeeReportPage() {
     showFilterModal,
     filter,
     viewType,
-    viewBy,
     activeProducts,
     setFilter,
     setShowFilterModal,
     setViewType,
-    setViewBy
   } = useReportProduction()
 
   return (
@@ -56,7 +53,7 @@ export default function EmployeeReportPage() {
         </div>
       </div>
 
-      {/* View Type & View By*/}
+      {/* View Type*/}
       <div className="mt-4 flex flex-col items-start gap-4">
         <div className="flex items-center gap-2">
           <Button
@@ -74,40 +71,6 @@ export default function EmployeeReportPage() {
             {t(`pro.chart`)}
           </Button>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewBy === ReportViewBy.daily ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setViewBy(ReportViewBy.daily)
-              setFilter({})
-            }}
-          >
-            {t(`pro.daily`)}
-          </Button>
-          <Button
-            variant={viewBy === ReportViewBy.monthly ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setViewBy(ReportViewBy.monthly)
-              setFilter({})
-            }}
-          >
-            {t(`pro.monthly`)}
-          </Button>
-          <Button
-            variant={viewBy === ReportViewBy.yearly ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setViewBy(ReportViewBy.yearly)
-              setFilter({})
-            }}
-          >
-            {t(`pro.yearly`)}
-          </Button>
-
-        </div>
       </div>
 
       {/* body */}
@@ -118,7 +81,7 @@ export default function EmployeeReportPage() {
           </div>
           :
           <div className="">
-            <ReportChart />
+            <ReportChart data={data}/>
           </div>
         }
       </div>
@@ -128,7 +91,6 @@ export default function EmployeeReportPage() {
         open={showFilterModal}
         currentFilter={filter}
         activeProducts={activeProducts}
-        viewBy={viewBy}
         setCurrentFilter={setFilter}
         setShowFilterModal={setShowFilterModal}
       />

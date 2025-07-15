@@ -125,4 +125,14 @@ export const reportProductionTranslations = {
     en: "Time",
     vi: "Thời Gian"
   },
+
+  // chart
+  "pro.chart.now": {
+    en: "Now",
+    vi: "Hiện tại"
+  },
+  "pro.chart.previous": {
+    en: "Previous",
+    vi: "Trước đó"
+  },
 }
