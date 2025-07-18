@@ -105,15 +105,11 @@ export const navTranslations = {
     vi: "Báo Cáo Khách Hàng",
   },
   "nav.operatingReport": {
-    en: "Operating Report",
-    vi: "Báo Cáo Hoạt Động",
+    en: "Production Report",
+    vi: "Báo Cáo Sản Xuất",
   },
   "nav.utilityReport": {
     en: "Utility Report",
     vi: "Báo Cáo Tiện Ích",
-  },
-  "nav.productionReport": {
-    en: "Production Report",
-    vi: "Báo Cáo Sản Xuất",
-  },
+  }
 }

@@ -196,10 +196,10 @@ export enum ReadingType {
   other = "other"
 }
 
-export enum ReportViewBy {
-  daily = "daily",
-  monthly = "monthly",
-  yearly = "yearly"
+export enum ReportPeriod {
+  day = "day",
+  month = "month",
+  year = "year"
 }
 
 export enum ReportViewType {

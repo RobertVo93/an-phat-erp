@@ -1,16 +1,16 @@
 "use client"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useLanguage } from "@/contexts/language-context"
-import { useState } from "react"
-import { ReportProductionFilter } from "@/types/report-production"
+import { useEffect, useState } from "react"
+import { ReportProductionFilter } from "@/types/report-production.interface"
 import { Button } from "../ui/button"
-import { Product, ReportViewBy } from "@/types"
+import { Product } from "@/types"
 import { Checkbox } from "@radix-ui/react-checkbox"
+import { getCurrentWeekRange } from "@/lib/period_utils"
 
 interface Props {
   open: boolean
@@ -35,8 +35,9 @@ export function ReportProductionFilterModal({
   }
 
   const handleReset = () => {
-    setFilter({ viewBy: ReportViewBy.daily })
-    setCurrentFilter({ viewBy: ReportViewBy.daily })
+    const [mon, sun] = getCurrentWeekRange()
+    setFilter({ dateFrom: mon, dateTo: sun })
+    setCurrentFilter({ dateFrom: mon, dateTo: sun })
 
     onClose()
   }
@@ -49,19 +50,17 @@ export function ReportProductionFilterModal({
   const updateFilter = (key: keyof ReportProductionFilter, value: any) => {
     switch (key) {
       case ("products"): {
-        setFilter(({ ...filter, products: value }))
-        return
-      }
-      case ("viewBy"): {
-        setFilter(({ ...filter, viewBy: value as ReportViewBy }))
+        if (!filter.products || filter.products?.length! < 5) {
+          setFilter(({ ...filter, products: value }))
+        }
         return
       }
       case ("dateFrom"): {
-        setFilter(({ ...filter, dateFrom: value }))
+        setFilter(({ ...filter, dateFrom: new Date(value) }))
         return
       }
       case ("dateTo"): {
-        setFilter(({ ...filter, dateTo: value }))
+        setFilter(({ ...filter, dateTo: new Date(value) }))
         return
       }
       default: {
@@ -70,22 +69,26 @@ export function ReportProductionFilterModal({
     }
   }
 
+  useEffect(() => {
+    setFilter(currentFilter)
+  }, [currentFilter])
+
   return (
     <Dialog open={open} onOpenChange={setShowFilterModal}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">{t("pro.filter.title")}</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{t("rp.filter.filter")}</DialogTitle>
         </DialogHeader>
 
         {/* select product */}
         <div>
-          <Label>{t("pro.filter.product")}</Label>
+          <Label>{t("rp.filter.product")}</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-full justify-start">
                 {filter.products?.length
                   ? filter.products.map((p) => p.name).join(", ")
-                  : t("pro.filter.searchProduct")}
+                  : t("rp.filter.searchProduct")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full max-h-60 overflow-y-auto p-0" align="start">
@@ -130,85 +133,32 @@ export function ReportProductionFilterModal({
           )}
         </div>
 
-        {/* select view by */}
-        <div>
-          <Label htmlFor="date">{t("pro.filter.viewBy")}</Label>
-          <Select value={filter.viewBy} onValueChange={(value: ReportViewBy) => updateFilter("viewBy", value)}>
-            <SelectTrigger className="">
-              <SelectValue defaultValue={filter.viewBy?.toString()} />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(ReportViewBy).map((vb, ind) => (
-                <SelectItem key={ind} value={vb}>{t(`pro.filter.${vb}`)}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* select period */}
         <div>
-          <Label htmlFor="date">{t("pro.filter.dateRange")}</Label>
-          {filter.viewBy === ReportViewBy.daily &&
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="date"
-                placeholder="From"
-                value={filter.dateFrom || ""}
-                onChange={(e) => updateFilter("dateFrom", e.target.value)}
-              />
-              <Input
-                type="date"
-                placeholder="To"
-                value={filter.dateTo || ""}
-                onChange={(e) => updateFilter("dateTo", e.target.value)}
-              />
-            </div>
-          }
-          {filter.viewBy === ReportViewBy.monthly &&
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="month"
-                placeholder="From"
-                value={filter.dateFrom || ""}
-                onChange={(e) => updateFilter("dateFrom", e.target.value)}
-              />
-              <Input
-                type="month"
-                placeholder="To"
-                value={filter.dateTo || ""}
-                onChange={(e) => updateFilter("dateTo", e.target.value)}
-              />
-            </div>
-          }
-          {filter.viewBy === ReportViewBy.yearly &&
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="number"
-                placeholder={t(`pro.filter.yearFrom`)}
-                value={filter.dateFrom || ""}
-                min="2024"
-                max="2100"
-                onChange={(e) => updateFilter("dateFrom", e.target.value)}
-              />
-              <Input
-                type="number"
-                placeholder={t(`pro.filter.yearTo`)}
-                value={filter.dateTo || ""}
-                min="2024"
-                max="2100"
-                onChange={(e) => updateFilter("dateTo", e.target.value)}
-              />
-            </div>
-          }
+          <Label htmlFor="date">{t("rp.filter.timeRange")}</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="date"
+              placeholder={t("rp.filter.from")}
+              value={new Date(filter.dateFrom!).toLocaleDateString("sv-SE")}
+              onChange={(e) => updateFilter("dateFrom", e.target.value)}
+            />
+            <Input
+              type="date"
+              placeholder={t("rp.filter.to")}
+              value={new Date(filter.dateTo!).toLocaleDateString("sv-SE")}
+              onChange={(e) => updateFilter("dateTo", e.target.value)}
+            />
+          </div>
         </div>
 
         {/* buttons action */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
           <Button variant="outline" onClick={handleReset} className="flex-1 h-11">
-            {t("pro.filter.reset")}
+            {t("rp.filter.reset")}
           </Button>
           <Button className="flex-1 h-11" onClick={handleApply}>
-            {t("pro.filter.apply")}
+            {t("rp.filter.apply")}
           </Button>
         </div>
       </DialogContent>

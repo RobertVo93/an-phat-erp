@@ -90,7 +90,6 @@ export const navItems: NavItem[] = [
 				href: "/reports/activity",
 			},
 			{ id: "reports_utility", name: "reports_utility", title: "Utility Report", translationKey: "nav.utilityReport", icon: Zap, href: "/reports/utility" },
-			{ id: "reports_production", name: "reports_production", title: "Production Report", translationKey: "nav.productionReport", icon: Zap, href: "/reports/production" },
 		],
 	},
 ]

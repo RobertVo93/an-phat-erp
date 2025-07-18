@@ -1,138 +1,221 @@
 export const reportProductionTranslations = {
   // page
-  "pro.title": {
+  "rp.page.title": {
     en: "Production Report",
     vi: "Báo Cáo Sản Xuất"
   },
-  "pro.description": {
-    en: "This is the Producion Report, where you can see what you produced",
-    vi: "Đây là Báo Cáo Sản Xuất, nơi bạn có thể xem đã sản xuất gì"
+  "rp.page.description": {
+    en: "Detailed analysis of production and business activities",
+    vi: "Phân tích chi tiết hoạt động sản xuất và kinh doanh"
   },
-  "pro.filter": {
+  "rp.page.day": {
+    en: "Day",
+    vi: "Ngày"
+  },
+  "rp.page.month": {
+    en: "Month",
+    vi: "Tháng"
+  },
+  "rp.page.year": {
+    en: "Year",
+    vi: "Năm"
+  },
+  "rp.page.filter": {
     en: "Filter",
     vi: "Lọc"
   },
-  "pro.exportReport": {
-    en: "Export Excel",
-    vi: "Xuất ra Excel"
+  "rp.page.exportReport": {
+    en: "Export Report",
+    vi: "Xuất Báo Cáo"
   },
-  "pro.table": {
-    en: "Table",
-    vi: "Bảng"
+  "rp.page.totalProduction": {
+    en: "Total Production",
+    vi: "Tổng Sản Lượng"
   },
-  "pro.chart": {
-    en: "Chart",
-    vi: "Biểu đồ"
+  "rp.page.totalRevenue": {
+    en: "Total Revenue",
+    vi: "Tổng Doanh Thu"
   },
-  "pro.daily": {
-    en: "Daily",
-    vi: "Ngày"
-  },
-  "pro.monthly": {
-    en: "Monthly",
-    vi: "Tháng"
-  },
-  "pro.yearly": {
-    en: "Yearly",
-    vi: "Năm"
-  },
-
-
-  // filter modal
-  "pro.filter.title": {
-    en: "Filter",
-    vi: "Lọc"
-  },
-  "pro.filter.product": {
-    en: "Product",
-    vi: "Sản Phẩm"
-  },
-  "pro.filter.searchProduct": {
-    en: "Search Product...",
-    vi: "Tìm Sản Phẩm..."
-  },
-  "pro.filter.viewBy": {
-    en: "View By",
-    vi: "Xem theo"
-  },
-  "pro.filter.daily": {
-    en: "Daily",
-    vi: "Ngày"
-  },
-  "pro.filter.monthly": {
-    en: "Monthly",
-    vi: "Tháng"
-  },
-  "pro.filter.yearly": {
-    en: "Yearly",
-    vi: "Năm"
-  },
-  "pro.filter.viewType": {
-    en: "Report Type",
-    vi: "Dạng Báo Cáo"
-  },
-  "pro.filter.table": {
-    en: "Table",
-    vi: "Bảng"
-  },
-  "pro.filter.chart": {
-    en: "Chart",
-    vi: "Biểu đồ"
-  },
-  "pro.filter.dateRange": {
-    en: "Date range",
-    vi: "Khoảng thời gian"
-  },
-  "pro.filter.yearFrom": {
-    en: "Year from",
-    vi: "Năm đầu"
-  },
-  "pro.filter.yearTo": {
-    en: "Year to",
-    vi: "Năm cuối"
-  },
-  "pro.filter.reset": {
-    en: "Reset",
-    vi: "Đặt Lại",
-  },
-  "pro.filter.apply": {
-    en: "Apply",
-    vi: "Áp dụng"
-  },
-  
-  // table
-  "pro.table.product": {
-    en: "Product",
-    vi: "Sản phẩm"
-  },
-  "pro.table.quantity": {
-    en: "Quantity",
-    vi: "Số Lượng"
-  },
-  "pro.table.totalPrice": {
-    en: "Total Price",
-    vi: "Tổng Thu"
-  },
-  "pro.table.totalCost": {
-    en: "Total Cost",
+  "rp.page.totalExpense": {
+    en: "Total Expense",
     vi: "Tổng Chi Phí"
   },
-  "pro.table.profit": {
+  "rp.page.totalProfit": {
     en: "Profit",
     vi: "Lợi Nhuận"
   },
-  "pro.table.time": {
-    en: "Time",
-    vi: "Thời Gian"
+  "rp.page.production": {
+    en: "Production",
+    vi: "Sản Xuất"
+  },
+  "rp.page.comparison": {
+    en: "Comparison",
+    vi: "So Sánh"
+  },
+  "rp.page.products": {
+    en: "Products",
+    vi: "Sản Phẩm"
+  },
+  "rp.page.productionTitle": {
+    en: "Production Trends & Efficiency",
+    vi: "Xu Hướng Sản Xuất & Hiệu Suất"
+  },
+  "rp.page.productionDescription": {
+    en: "Production and Efficiency Trends Over Time",
+    vi: "Sản lượng và hiệu suất sản xuất theo thời gian"
+  },
+  "rp.page.monthlyComparisonTitle": {
+    en: "Monthly Comparison",
+    vi: "So Sánh Theo Tháng"
+  },
+  "rp.page.monthlyComparisonDescription": {
+    en: "Comparison of Production Between This Year and Last Year",
+    vi: "So sánh sản lượng năm nay với năm trước"
+  },
+  "rp.page.productPerformanceTitle": {
+    en: "Product Performance",
+    vi: "Hiệu Suất Sản Phẩm"
+  },
+  "rp.page.productPerformanceDesciprtion": {
+    en: "Analysis of Performance and Profitability by Product",
+    vi: "Phân tích hiệu suất và lợi nhuận từng sản phẩm"
+  },
+  "rp.page.profitMargin": {
+    en: "Profit Margin",
+    vi: "Biên lợi nhuận"
+  },
+  "rp.page.output": {
+    en: "Output",
+    vi: "Sản lượng"
+  },
+  "rp.page.revenue": {
+    en: "Revenue",
+    vi: "Doanh thu"
+  },
+  "rp.page.expense": {
+    en: "Expense",
+    vi: "Chi phí"
+  },
+  "rp.page.profit": {
+    en: "Profit",
+    vi: "Lợi nhuận"
+  },
+  "rp.page.findComparingProduct": {
+    en: "Select products to compare",
+    vi: "Chọn sản phẩm để so sánh"
+  },
+  "rp.page.efficiency": {
+    en: "Efficiency",
+    vi: "Hiệu suất"
+  },
+  "rp.page.kg": {
+    en: "kg",
+    vi: "kg"
+  },
+  "rp.page.piece": {
+    en: "piece",
+    vi: "bánh"
+  },
+  "rp.page.other": {
+    en: "",
+    vi: ""
+  },
+  "rp.page.thisYear": {
+    en: "This year",
+    vi: "Năm nay"
+  },
+  "rp.page.lastYear": {
+    en: "Last year",
+    vi: "Năm trước"
+  },
+  "rp.page.growth": {
+    en: "Growth",
+    vi: "Tăng trưởng"
+  },
+  "rp.page.comparedToLastMonth": {
+    en: "compared to last month",
+    vi: "so với tháng trước"
+  },
+  "rp.page.1": {
+    en: "January",
+    vi: "Tháng 1"
+  },
+  "rp.page.2": {
+    en: "February",
+    vi: "Tháng 2"
+  },
+  "rp.page.3": {
+    en: "March",
+    vi: "Tháng 3"
+  },
+  "rp.page.4": {
+    en: "April",
+    vi: "Tháng 4"
+  },
+  "rp.page.5": {
+    en: "May",
+    vi: "Tháng 5"
+  },
+  "rp.page.6": {
+    en: "June",
+    vi: "Tháng 6"
+  },
+  "rp.page.7": {
+    en: "July",
+    vi: "Tháng 7"
+  },
+  "rp.page.8": {
+    en: "August",
+    vi: "Tháng 8"
+  },
+  "rp.page.9": {
+    en: "September",
+    vi: "Tháng 9"
+  },
+  "rp.page.10": {
+    en: "October",
+    vi: "Tháng 10"
+  },
+  "rp.page.11": {
+    en: "November",
+    vi: "Tháng 11"
+  },
+  "rp.page.12": {
+    en: "December",
+    vi: "Tháng 12"
   },
 
-  // chart
-  "pro.chart.now": {
-    en: "Now",
-    vi: "Hiện tại"
+  // filter modal
+  "rp.filter.filter": {
+    en: "Filter",
+    vi: "Lọc"
   },
-  "pro.chart.previous": {
-    en: "Previous",
-    vi: "Trước đó"
+  "rp.filter.product": {
+    en: "Product",
+    vi: "Sản phẩm"
+  },
+  "rp.filter.searchProduct": {
+    en: "Search Product",
+    vi: "Tìm Sản Phẩm"
+  },
+  "rp.filter.timeRange": {
+    en: "Time range",
+    vi: "Khoảng thời gian"
+  },
+  "rp.filter.from": {
+    en: "From",
+    vi: "Từ"
+  },
+  "rp.filter.to": {
+    en: "To",
+    vi: "Tới"
+  },
+  "rp.filter.reset": {
+    en: "Reset",
+    vi: "Cài lại"
+  },
+  "rp.filter.apply": {
+    en: "Apply",
+    vi: "Áp dụng"
   },
 }
