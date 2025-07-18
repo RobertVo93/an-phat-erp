@@ -127,6 +127,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     "reports_customer",
     "reports_activity",
     "reports_utility",
+    "reports_production",
   ],
   manager: [
     "home",
@@ -142,6 +143,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     "reports_daily",
     "reports_stock",
     "reports_activity",
+		"reports_production",
   ],
   staff: ["home", "orders", "products", "collections", "attendance", "warehouse", "stock_in", "stock_out"],
   customer: ["home", "orders"],
