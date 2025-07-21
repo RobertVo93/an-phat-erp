@@ -184,6 +184,10 @@ export const reportProductionTranslations = {
     en: "December",
     vi: "Tháng 12"
   },
+  "rp.page.pickDateRange": {
+    en: "Pick a date range",
+    vi: "Chọn khoản thời gian"
+  },
 
   // filter modal
   "rp.filter.filter": {

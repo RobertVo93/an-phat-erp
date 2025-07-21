@@ -70,3 +70,10 @@ export function base64ToFile(base64: string, filename: string): File {
   }
   return new File([u8arr], filename, { type: mime });
 }
+
+export const formatLargeCurrency = (amount: number, fixed: number): string => {
+  if (amount >= 1_000_000) {
+    return `${(amount / 1_000_000).toFixed(fixed)}M đ`
+  }
+  return `${amount.toLocaleString()} đ`
+}
