@@ -6,29 +6,29 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useLanguage } from "@/contexts/language-context"
 import { useEffect, useState } from "react"
-import { ReportProductionFilter } from "@/types/report-production.interface"
 import { Button } from "../ui/button"
 import { Product } from "@/types"
 import { Checkbox } from "@radix-ui/react-checkbox"
 import { getCurrentWeekRange } from "@/lib/period_utils"
+import { ReportStockFilter } from "@/types/report-stock.interface"
 
 interface Props {
   open: boolean
-  currentFilter: ReportProductionFilter
+  currentFilter: ReportStockFilter
   activeProducts: Product[]
   setShowFilterModal: (open: boolean) => void
-  setCurrentFilter: (filters: ReportProductionFilter) => void
+  setCurrentFilter: (filters: ReportStockFilter) => void
 }
 
-export function ReportProductionFilterModal({
+export function ReportStockFilterModal({
   open,
   currentFilter,
   activeProducts,
   setCurrentFilter,
-  setShowFilterModal,
+  setShowFilterModal
 }: Props) {
   const { t } = useLanguage()
-  const [filter, setFilter] = useState<ReportProductionFilter>(currentFilter)
+  const [filter, setFilter] = useState<ReportStockFilter>(currentFilter)
 
   const onClose = () => {
     setShowFilterModal(false)
@@ -47,7 +47,7 @@ export function ReportProductionFilterModal({
     onClose()
   }
 
-  const updateFilter = (key: keyof ReportProductionFilter, value: any) => {
+  const updateFilter = (key: keyof ReportStockFilter, value: any) => {
     switch (key) {
       case ("products"): {
         if (!filter.products || filter.products?.length! < 5) {

@@ -9,8 +9,12 @@ import { useEffect, useMemo, useState } from "react"
 import type { DateRange } from "react-day-picker"
 import { isWithinInterval, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
 import { getCurrentWeekRange } from "@/lib/period_utils"
+import { useLanguage } from "@/contexts/language-context"
+import { enUS, vi, Locale } from "date-fns/locale"
 
 export function useReportProduction() {
+  const { language } = useLanguage()
+  const [locale, setLocale] = useState<Locale>(enUS)
   const [loading, setLoading] = useState<boolean>(false)
   const [rawRecords, setRawRecords] = useState<ProductionRecord[]>([])
   const [reportRows, setReportRows] = useState<IReportRow[]>([])
@@ -432,6 +436,16 @@ export function useReportProduction() {
     }
   }, [rawRecords])
 
+  // change date range
+  const handleDateRangeChange = (range: { from?: Date; to?: Date } | undefined) => {
+    if (!range) return
+    setFilter(prev => ({
+      ...prev,
+      dateFrom: range.from ?? prev.dateFrom,
+      dateTo: range.to ?? prev.dateTo
+    }))
+  }
+
   useEffect(() => {
     onInit()
     const [mon, sun] = getCurrentWeekRange()
@@ -443,6 +457,10 @@ export function useReportProduction() {
     const rows = parseProductionRecordsToReport(completed, filter.products!, reportPeriod)
     setReportRows(rows)
   }, [rawRecords, filter, reportPeriod])
+
+  useEffect(() => {
+    language === "vi" ? setLocale(vi) : setLocale(enUS)
+  }, [language])
 
   return {
     loading,
@@ -456,11 +474,13 @@ export function useReportProduction() {
     rawRecords,
     productPerformanceData,
     summary,
+    locale,
 
     setComparingProduct,
     setFilter,
     setShowFilterModal,
     setReportPeriod,
-    getColorByIndex
+    getColorByIndex,
+    handleDateRangeChange,
   }
 }
