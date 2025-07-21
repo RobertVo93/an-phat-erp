@@ -202,7 +202,7 @@ export enum ReportPeriod {
   year = "year"
 }
 
-export enum ReportViewType {
+export enum ReportViewMode {
   table = "table",
   chart = "chart"
 }

@@ -1,131 +1,206 @@
+"use client"
+
 import { ERPLayout } from "@/components/erp-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Download, Filter } from "lucide-react"
+import { CalendarIcon, ChartArea, Download, Filter, Loader2, Table } from "lucide-react"
+import { useReportStock } from "@/hooks/useReportStock"
+import { ReportStockFilterModal } from "@/components/modals/report-stock-filter-modal"
+import { useLanguage } from "@/contexts/language-context"
+import { ReportPeriod, ReportViewMode } from "@/types"
+import ReportStockTable from "@/components/report-stock-table/ReportStockTable"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import ReportStockChart from "@/components/report-stock-chart/ReportStockChart"
+import { formatLargeCurrency } from "@/lib/utils"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 export default function StockReportPage() {
-  const stockData = [
-    {
-      product: "Laptop Dell XPS 13",
-      category: "Electronics",
-      currentStock: 25,
-      minStock: 10,
-      maxStock: 50,
-      status: "Normal",
-    },
-    { product: "iPhone 15 Pro", category: "Electronics", currentStock: 15, minStock: 20, maxStock: 40, status: "Low" },
-    { product: "Office Chair", category: "Furniture", currentStock: 8, minStock: 5, maxStock: 30, status: "Normal" },
-    {
-      product: "Wireless Mouse",
-      category: "Accessories",
-      currentStock: 0,
-      minStock: 10,
-      maxStock: 25,
-      status: "Out of Stock",
-    },
-  ]
+  const { t } = useLanguage()
+  const {
+    loading,
+    showFilterModal,
+    filter,
+    activeProducts,
+    viewMode,
+    reportPeriod,
+    data,
+    summary,
+    locale,
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Normal":
-        return "bg-green-100 text-green-800"
-      case "Low":
-        return "bg-yellow-100 text-yellow-800"
-      case "Out of Stock":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
+    setViewMode,
+    setReportPeriod,
+    setFilter,
+    setShowFilterModal,
+    handleDateRangeChange
+  } = useReportStock()
 
   return (
     <ERPLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
+
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Stock Report</h2>
-            <p className="text-muted-foreground">Monitor inventory levels and stock status</p>
+            <h2 className="text-3xl font-bold tracking-tight">{t("rs.page.title")}</h2>
+            <p className="text-muted-foreground">{t("rs.page.description")}</p>
+          </div>
+        </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === ReportViewMode.table ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode(ReportViewMode.table)}
+            >
+              <Table className="mr-2 h-4 w-4" />
+              {t("rs.page.table")}
+            </Button>
+            <Button
+              variant={viewMode === ReportViewMode.chart ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode(ReportViewMode.chart)}
+            >
+              <ChartArea className="mr-2 h-4 w-4" />
+              {t("rs.page.chart")}
+            </Button>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline">
+            {/* select period */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn("w-[280px] justify-start text-left font-normal")}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {filter.dateFrom ? (
+                    filter.dateTo ? (
+                      <>
+                        {format(filter.dateFrom, "dd/MM/yyyy", { locale: locale })} -{" "}
+                        {format(filter.dateTo, "dd/MM/yyyy", { locale: locale })}
+                      </>
+                    ) : (
+                      format(filter.dateFrom, "dd/MM/yyyy", { locale: locale })
+                    )
+                  ) : (
+                    <span>{t("rp.page.pickDateRange")}</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  initialFocus
+                  mode="range"
+                  locale={locale}
+                  defaultMonth={filter.dateFrom}
+                  selected={{ from: filter.dateFrom, to: filter.dateTo }}
+                  onSelect={handleDateRangeChange}
+                  numberOfMonths={2}
+                  hideWeekdays
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Select value={reportPeriod} onValueChange={(value: ReportPeriod) => setReportPeriod(value)}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ReportPeriod.day}>{t(`rp.page.day`)}</SelectItem>
+                <SelectItem value={ReportPeriod.month}>{t(`rp.page.month`)}</SelectItem>
+                <SelectItem value={ReportPeriod.year}>{t(`rp.page.year`)}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={() => setShowFilterModal((prev) => !prev)}>
               <Filter className="mr-2 h-4 w-4" />
-              Filter
+              {t("rs.page.filter")}
             </Button>
             <Button>
               <Download className="mr-2 h-4 w-4" />
-              Export
+              {t("rs.page.export")}
             </Button>
           </div>
         </div>
 
+        {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("rs.page.totalProduct")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">4</div>
-              <p className="text-xs text-muted-foreground">Active products</p>
+              <div className="text-2xl font-bold">{summary.activeNumber}</div>
+              <p className="text-xs text-muted-foreground">{t("rs.page.activeProduct")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("rs.page.lowStock")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1</div>
-              <p className="text-xs text-muted-foreground">Products below minimum</p>
+              <div className="text-2xl font-bold">{summary.lowStockNumber}</div>
+              <p className="text-xs text-muted-foreground">{t("rs.page.productbelowMinimum")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("rs.page.outOfStock")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1</div>
-              <p className="text-xs text-muted-foreground">Products unavailable</p>
+              <div className="text-2xl font-bold">{summary.outOfStockNumer}</div>
+              <p className="text-xs text-muted-foreground">{t("rs.page.productUnavailable")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("rs.page.totalValue")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$48,392</div>
-              <p className="text-xs text-muted-foreground">Current inventory value</p>
+              <div className="text-2xl font-bold">{formatLargeCurrency(summary.totalValue, 1)}</div>
+              <p className="text-xs text-muted-foreground">{t("rs.page.currentInventoryValue")}</p>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Stock Status</CardTitle>
-            <CardDescription>Current stock levels for all products</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stockData.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{item.product}</p>
-                    <p className="text-sm text-muted-foreground">{item.category}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Min: {item.minStock} | Max: {item.maxStock}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{item.currentStock} units</p>
-                    </div>
-                    <Badge className={getStatusColor(item.status)}>{item.status}</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {(data && data.length === 0) ?
+          <div className="w-full flex justify-center mt-4">
+            {t("rs.page.noStockAction")}
+          </div> :
+          <div>
+            {/* Table */}
+            {viewMode === ReportViewMode.table &&
+              <div>
+                <ReportStockTable data={data} />
+              </div>
+            }
+            {/* Chart */}
+            {viewMode === ReportViewMode.chart &&
+              <div>
+                <ReportStockChart data={data} reportPeriod={reportPeriod} />
+              </div>
+            }
+          </div>
+        }
       </div>
+
+      {/* Filter Modal */}
+      <ReportStockFilterModal
+        open={showFilterModal}
+        currentFilter={filter}
+        activeProducts={activeProducts}
+        setCurrentFilter={setFilter}
+        setShowFilterModal={setShowFilterModal}
+      />
     </ERPLayout>
   )
 }

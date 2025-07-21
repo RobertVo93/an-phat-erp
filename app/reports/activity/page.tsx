@@ -15,11 +15,16 @@ import {
   Line,
   ComposedChart,
 } from "recharts"
-import { Download, Filter, TrendingUp, Package, DollarSign, Loader2 } from "lucide-react"
+import { Download, Filter, TrendingUp, Package, DollarSign, Loader2, CalendarIcon } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { useReportProduction } from "@/hooks/useReportProduction"
 import { ReportProductionFilterModal } from "@/components/modals/report-production-filter-modal"
 import { ReportPeriod } from "@/types"
+import { formatLargeCurrency } from "@/lib/utils"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 export default function ActivityReportPage() {
   const { t } = useLanguage()
@@ -35,21 +40,15 @@ export default function ActivityReportPage() {
     monthlyComparisonData,
     productPerformanceData,
     summary,
+    locale,
 
     setComparingProduct,
     setFilter,
     setShowFilterModal,
     setReportPeriod,
     getColorByIndex,
-
+    handleDateRangeChange, 
   } = useReportProduction()
-
-  const formatLargeCurrency = (amount: number): string => {
-    if (amount >= 1_000_000) {
-      return `${(amount / 1_000_000).toFixed(1)}M đ`
-    }
-    return `${amount.toLocaleString()} đ`
-  }
 
   return (
     <ERPLayout>
@@ -67,6 +66,43 @@ export default function ActivityReportPage() {
             <p className="text-muted-foreground">{t("rp.page.description")}</p>
           </div>
           <div className="flex space-x-2">
+            {/* select period */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn("w-[280px] justify-start text-left font-normal")}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {filter.dateFrom ? (
+                    filter.dateTo ? (
+                      <>
+                        {format(filter.dateFrom, "dd/MM/yyyy", { locale: locale })} -{" "}
+                        {format(filter.dateTo, "dd/MM/yyyy", { locale: locale })}
+                      </>
+                    ) : (
+                      format(filter.dateFrom, "dd/MM/yyyy", { locale: locale })
+                    )
+                  ) : (
+                    <span>{t("rp.page.pickDateRange")}</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  initialFocus
+                  mode="range"
+                  locale={locale}
+                  defaultMonth={filter.dateFrom}
+                  selected={{ from: filter.dateFrom, to: filter.dateTo }}
+                  onSelect={handleDateRangeChange}
+                  numberOfMonths={2}
+                  hideWeekdays
+                />
+              </PopoverContent>
+            </Popover>
+
+
             <Select value={reportPeriod} onValueChange={(value: ReportPeriod) => setReportPeriod(value)}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Kỳ báo cáo" />
@@ -96,7 +132,7 @@ export default function ActivityReportPage() {
               <DollarSign className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatLargeCurrency(summary.revenue.thisMonth)}</div>
+              <div className="text-2xl font-bold">{formatLargeCurrency(summary.revenue.thisMonth, 1)}</div>
               <div className="flex items-center text-xs">
                 <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
                 <span className="text-green-500">
@@ -113,7 +149,7 @@ export default function ActivityReportPage() {
               <Package className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatLargeCurrency(summary.cost.thisMonth)}</div>
+              <div className="text-2xl font-bold">{formatLargeCurrency(summary.cost.thisMonth, 1)}</div>
               <div className="flex items-center text-xs">
                 <TrendingUp className="mr-1 h-3 w-3 text-red-500" />
                 <span className="text-red-500">
@@ -130,7 +166,7 @@ export default function ActivityReportPage() {
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatLargeCurrency(summary.profit.thisMonth)}</div>
+              <div className="text-2xl font-bold">{formatLargeCurrency(summary.profit.thisMonth, 1)}</div>
               <div className="flex items-center text-xs">
                 <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
                 <span className="text-green-500">
@@ -256,15 +292,15 @@ export default function ActivityReportPage() {
                         </div>
                         <div>
                           <p className="text-gray-600">{t("rp.page.revenue")}</p>
-                          <p className="font-medium">{formatLargeCurrency(product.revenue)}</p>
+                          <p className="font-medium">{formatLargeCurrency(product.revenue, 1)}</p>
                         </div>
                         <div>
                           <p className="text-gray-600">{t("rp.page.expense")}</p>
-                          <p className="font-medium">{formatLargeCurrency(product.cost)}</p>
+                          <p className="font-medium">{formatLargeCurrency(product.cost, 1)}</p>
                         </div>
                         <div>
                           <p className="text-gray-600">{t("rp.page.profit")}</p>
-                          <p className="font-medium text-green-600">{formatLargeCurrency(product.profit)}</p>
+                          <p className="font-medium text-green-600">{formatLargeCurrency(product.profit, 1)}</p>
                         </div>
                       </div>
                     </div>
