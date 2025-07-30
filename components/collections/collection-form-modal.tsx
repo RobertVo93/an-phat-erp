@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { useLanguage } from "@/contexts/language-context"
 import type { Collection } from "@/types/collection"
 import { ImageUpload } from "@/components/ui/image-upload"
-import { CollectionCategory, CollectionStatus } from "@/types/enums"
+import { CollectionStatus } from "@/types/enums"
 
 interface CollectionFormModalProps {
   collection?: Collection | null
@@ -26,7 +26,6 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    category: "",
     status: CollectionStatus.draft,
     createdAt: new Date().toISOString().split("T")[0],
     image: "",
@@ -37,7 +36,6 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
       setFormData({
         name: collection.name || "",
         description: collection.description || "",
-        category: collection.category || "",
         status: collection.status || CollectionStatus.draft,
         createdAt: collection.createdAt as any || new Date().toISOString().split("T")[0],
         image: collection.image || "", // Add image field
@@ -46,7 +44,6 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
       setFormData({
         name: "",
         description: "",
-        category: "",
         status: CollectionStatus.draft,
         createdAt: new Date().toISOString().split("T")[0],
         image: "",
@@ -78,48 +75,30 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">{t("collections.form.name")} *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder={t("collections.form.namePlaceholder")}
-              required
-            />
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">{t("collections.form.category")} *</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
+              <Label htmlFor="name">{t("collections.form.name")} *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder={t("collections.form.namePlaceholder")}
                 required
-              >
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">{t("collections.form.status")}</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as CollectionStatus })}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("collections.form.selectCategory")} />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={CollectionCategory.fashion}>{t("collections.category.fashion")}</SelectItem>
-                  <SelectItem value={CollectionCategory.electronics}>{t("collections.category.electronics")}</SelectItem>
-                  <SelectItem value={CollectionCategory.home}>{t("collections.category.home")}</SelectItem>
-                  <SelectItem value={CollectionCategory.office}>{t("collections.category.office")}</SelectItem>
+                  <SelectItem value={CollectionStatus.active}>{t("collections.status.active")}</SelectItem>
+                  <SelectItem value={CollectionStatus.draft}>{t("collections.status.draft")}</SelectItem>
+                  <SelectItem value={CollectionStatus.archived}>{t("collections.status.archived")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">{t("collections.form.status")}</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as CollectionStatus })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={CollectionStatus.active}>{t("collections.status.active")}</SelectItem>
-                    <SelectItem value={CollectionStatus.draft}>{t("collections.status.draft")}</SelectItem>
-                    <SelectItem value={CollectionStatus.archived}>{t("collections.status.archived")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
           </div>
 
           <div className="space-y-2">
