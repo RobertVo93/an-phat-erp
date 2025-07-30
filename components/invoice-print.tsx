@@ -2,16 +2,13 @@
 
 import { Order } from "@/types/order"
 import { forwardRef } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 interface InvoicePrintProps {
   order: Order
 }
 
 export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ order }, ref) => {
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`
-  }
-
   const currentDate = new Date().toLocaleDateString()
 
   if(!order) return;
