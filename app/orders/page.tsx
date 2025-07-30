@@ -34,11 +34,10 @@ export default function OrdersPage() {
   const { t } = useLanguage()
   const {
     allCustomers,
-    allProducts,
     loading,
-    getCustomersAndProducts,
+    allWarehouses,
     searchAndFilterOrders,
-    createOrder
+    createOrder,
   } = useOrders()
 
   const [showNewOrderModal, setShowNewOrderModal] = useState(false)
@@ -76,6 +75,8 @@ export default function OrdersPage() {
       case OrderStatus.pending:
         return "bg-gray-100 text-gray-800"
       case OrderStatus.cancelled:
+        return "bg-red-100 text-red-800"
+      case OrderStatus.lackProduct:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -464,8 +465,7 @@ export default function OrdersPage() {
       <NewOrderModal
         open={showNewOrderModal}
         customers={allCustomers}
-        products={allProducts}
-        getCustomersAndProducts={getCustomersAndProducts}
+        allWarehouses={allWarehouses}
         onOpenChange={setShowNewOrderModal}
         createOrder={createOrder}
       />
