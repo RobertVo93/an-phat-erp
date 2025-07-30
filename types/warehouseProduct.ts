@@ -7,3 +7,8 @@ export interface WarehouseProduct extends IBase{
   warehouse?: Warehouse
   product?: Product
 }
+
+export interface IWarehouseSummary {
+  product: Product
+  totalQuantity: number
+}

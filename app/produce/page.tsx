@@ -32,6 +32,7 @@ export default function ProducePage() {
     materialCost, 
     utilityCost, 
     employeeCost,
+    availableWarehouses,
 
     handleViewRecord,
     handleEditRecord,
@@ -124,6 +125,7 @@ export default function ProducePage() {
               availableProducts={availableProducts}
               availableUtilities={availableUtilities}
               availableEmployees={availableEmployees}
+              availableWarehouses={availableWarehouses}
               onClose={closeNewProduction}
               createNewProduction={createNewProduction}
             />
@@ -140,6 +142,7 @@ export default function ProducePage() {
             availableProducts={availableProducts}
             availableUtilities={availableUtilities}
             availableEmployees={availableEmployees}
+            availableWarehouses={availableWarehouses}
             isOpen={isEditModalOpen}
             onClose={closeEditModal}
             record={editingRecord}

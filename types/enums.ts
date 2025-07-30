@@ -56,7 +56,8 @@ export enum OrderStatus {
   shipped = "shipped",
   delivered = "delivered",
   completed = "completed",
-  cancelled = "cancelled"
+  cancelled = "cancelled",
+  lackProduct = "lackProduct"
 }
 
 export enum PaymentStatus {

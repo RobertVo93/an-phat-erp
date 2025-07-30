@@ -1,3 +1,5 @@
+import { Product } from "@/types"
+import { IWarehouseSummary, WarehouseProduct } from "@/types/warehouseProduct"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -76,4 +78,24 @@ export const formatLargeCurrency = (amount: number, fixed: number): string => {
     return `${(amount / 1_000_000).toFixed(fixed)}M đ`
   }
   return `${amount.toLocaleString()} đ`
+}
+
+export function groupWarehouseProductsByProduct(whProducts: WarehouseProduct[]): IWarehouseSummary[] {
+  const result: Record<string, { product: Product; totalQuantity: number }> = {}
+
+  for (const item of whProducts) {
+    const productId = item.product?.id
+    if (!productId) continue
+
+    if (!result[productId]) {
+      result[productId] = {
+        product: item.product!,
+        totalQuantity: item.quantity ?? 0,
+      }
+    } else {
+      result[productId].totalQuantity += item.quantity ?? 0
+    }
+  }
+
+  return Object.values(result)
 }
