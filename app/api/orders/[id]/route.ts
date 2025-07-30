@@ -87,73 +87,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   try {
     await ensureDataSource();
     const data = await req.json();
-    const orderItemRepo = AppDataSource.getRepository(OrderItemEntity);
-
-    const existingOrder = await AppDataSource.getRepository(OrderEntity).findOne({
-      where: { id: params.id },
-      relations: ["items"],
-    });
-
-    if (!existingOrder) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
-
-    const existingItemIds = new Set(existingOrder.items.map((item) => item.id));
-
-    const updatedOrderItems = [];
-
-    for (const itemInput of data.items) {
-      if (itemInput.id && existingItemIds.has(itemInput.id)) {
-        // update old data
-        await orderItemRepo.update(itemInput.id, {
-          product: { id: itemInput.product.id },
-          quantity: itemInput.quantity,
-          unitPrice: itemInput.unitPrice,
-          total: itemInput.total,
-        });
-        updatedOrderItems.push(itemInput.id);
-        existingItemIds.delete(itemInput.id);
-      } else {
-        // create new data
-        const newItem = orderItemRepo.create({
-          product: { id: itemInput.product.id },
-          quantity: itemInput.quantity,
-          unitPrice: itemInput.unitPrice,
-          total: itemInput.total,
-        });
-        await orderItemRepo.save(newItem);
-        updatedOrderItems.push(newItem.id);
-      }
-    }
-
-    // remove item
-    for (const unusedItemId of existingItemIds) {
-      await orderItemRepo.delete(unusedItemId!);
-    }
-
-    const orderData = {
-      ...data,
-      customer: data.customer.id,
-      items: updatedOrderItems,
-    };
-
-    const parse = UpdateOrderSchema.safeParse(orderData);
-    if (!parse.success) {
-      return NextResponse.json({ error: "Invalid input", details: parse.error.errors }, { status: 400 });
-    }
-
-    const { items, customer, ...rest } = parse.data;
-    const updateData: CreateOrderInput = {
-      ...rest,
-      deliveryDate: rest.deliveryDate ? new Date(rest.deliveryDate) : undefined,
-      customer,
-      items,
-      shippingFee: rest.shippingFee,
-      tax: rest.tax,
-    };
-
-    const updated = await updateOrder(params.id, updateData);
-
+    const updated = await updateOrder(params.id, data);
     if (!updated) return NextResponse.json({ error: "Order not found" }, { status: 404 });
     return NextResponse.json(updated);
   } catch (error) {

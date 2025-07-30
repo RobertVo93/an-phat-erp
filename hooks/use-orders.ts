@@ -3,48 +3,36 @@
 import { useEffect, useState } from "react"
 import type { Order, OrderSearchParams } from "@/types/order"
 import { Customer } from "@/types/customer"
-import { Product } from "@/types/product"
 import { getCustomers } from "@/lib/httpclient/customer.client"
-import { getProducts } from "@/lib/httpclient/product.client"
-import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
+import { CustomerStatus, OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
 import { createOrder as apiCreateOrder, getOrders } from "@/lib/httpclient/order.client"
+import { Warehouse } from "@/types"
+import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(false)
   const [allCustomers, setAllCustomers] = useState<Customer[]>([])
-  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const [allWarehouses, setAllWarehouses] = useState<Warehouse[]>([])
 
-  const getCustomersAndProducts = async () => {
+  const onInit = async () => {
     try {
       setLoading(true)
+      const orderResponse = await getOrders()
+      setOrders(orderResponse.data)
+
       const cus = await getCustomers()
-      setAllCustomers(cus.data);
+      const activeCustomers = (cus.data as Customer[]).filter((customer) => customer.status === CustomerStatus.active)
+      setAllCustomers(activeCustomers);
 
-      const pro = await getProducts()
-      setAllProducts(pro.data)
+      const wh = await getWarehouses()
+      setAllWarehouses(wh.data)
     } catch (e) {
       console.error(e)
     } finally {
       setLoading(false)
     }
   }
-
-  const getAllOrders = async () => {
-    try {
-      setLoading(true)
-      const res = await getOrders()
-      setOrders(res.data)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    getAllOrders()
-  }, [])
 
   const searchAndFilterOrders = (params: OrderSearchParams) => {
     let filteredOrders = [...orders]
@@ -144,7 +132,7 @@ export function useOrders() {
         id: `ORD-${String(orders.length + 1).padStart(3, "0")}`,
         createdAt: new Date(),
         updatedAt: new Date(),
-        deliveryDate: new Date(),
+        deliveryDate: orderData.deliveryDate,
         totalAmount: orderData.totalAmount || 0,
         status: orderData.status || OrderStatus.pending,
         paymentStatus: orderData.paymentStatus || PaymentStatus.pending,
@@ -156,14 +144,52 @@ export function useOrders() {
         tags: orderData.tags,
         shippingFee: orderData.shippingFee,
         tax: orderData.tax,
+        warehouse: orderData.warehouse ? {
+          ...orderData.warehouse,
+          warehouseProducts: orderData.warehouse.warehouseProducts
+            ? [...orderData.warehouse.warehouseProducts.map(wp => ({ ...wp }))]
+            : []
+        } : undefined
       }
-      const created = await apiCreateOrder(newOrder)
-      setOrders((prev) => [created, ...prev])
+
+
+      const { createdOrder, updatedOrders } = await apiCreateOrder(newOrder)
+
+      // change warehouse stock
+      for (const item of newOrder.items!) {
+        const productId = item.product?.id
+        const quantityToDeduct = item.quantity ?? 0
+        if (!productId || quantityToDeduct <= 0) continue
+
+        const targetWP = newOrder.warehouse?.warehouseProducts?.find(
+          wp => wp.product?.id === productId && (wp.quantity ?? 0) >= quantityToDeduct
+        )
+
+        if (targetWP) {
+          targetWP.quantity! -= quantityToDeduct
+        }
+      }
+
+      // update orders
+      const affectedOrderIds = new Set<string>([
+        createdOrder.id,
+        ...(updatedOrders || []).map((o: Order) => o.id),
+      ])
+
+      setOrders(prev => {
+        const filtered = prev.filter(order => !affectedOrderIds.has(order.id!))
+        return [createdOrder, ...(updatedOrders || []), ...filtered]
+      })
+    } catch (e) {
+      console.error(e)
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    onInit()
+  }, [])
 
   return {
     orders,
@@ -171,7 +197,6 @@ export function useOrders() {
     searchAndFilterOrders,
     createOrder,
     allCustomers,
-    allProducts,
-    getCustomersAndProducts
+    allWarehouses,
   }
 }

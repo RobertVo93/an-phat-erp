@@ -193,46 +193,8 @@ export async function POST(req: NextRequest) {
   try {
     await ensureDataSource();
     const data = await req.json();
-
-    const orderItemRepo = AppDataSource.getRepository(OrderItemEntity);
-    const createdOrderItems = [];
-    for (const itemInput of data.items) {
-      const orderItem = orderItemRepo.create({
-        product: { id: itemInput.product.id },
-        quantity: itemInput.quantity,
-        unitPrice: itemInput.unitPrice,
-        total: itemInput.total,
-      });
-      await orderItemRepo.save(orderItem);
-      createdOrderItems.push(orderItem);
-    }
-
-    const orderData = {
-      ...data,
-      customer: data.customer.id,
-      items: createdOrderItems.map(item => item.id),
-    };
-
-    const parse = CreateOrderSchema.safeParse(orderData);
-
-    if (!parse.success) {
-      return NextResponse.json({ error: "Invalid input", details: parse.error.errors }, { status: 400 });
-    }
-    const { items, customer, ...rest } = parse.data;
-    const createData: CreateOrderInput = {
-      ...rest,
-      deliveryDate: rest.deliveryDate ? new Date(rest.deliveryDate) : undefined,
-      customer,
-      items,
-      shippingFee: rest.shippingFee,
-      tax: rest.tax
-    };
-    try {
-      const created = await createOrder(createData);
-      return NextResponse.json(created, { status: 201 });
-    } catch (err) {
-      return NextResponse.json({ error: (err instanceof Error ? err.message : String(err)) }, { status: 400 });
-    }
+    const created = await createOrder(data);
+    return NextResponse.json(created, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });
   }

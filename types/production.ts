@@ -4,6 +4,7 @@ import { IBase } from "./base.interface";
 import { ProductionMaterial } from "./productionMaterial";
 import { ProductionUtility } from "./productionUtility";
 import { ProductionLabor } from "./ProductionLabor";
+import { Warehouse } from "./warehouse";
 export interface ProductionRecord extends IBase{
   id?: string
   productionNumber?: string
@@ -17,6 +18,7 @@ export interface ProductionRecord extends IBase{
   productionMaterials?: ProductionMaterial[]
   productionUtilities?: ProductionUtility[]
   productionLabors?: ProductionLabor[]
+  warehouse?: Warehouse
 
   totalCost?: number
 }

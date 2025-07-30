@@ -2,6 +2,7 @@ import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
 import { IBase } from "./base.interface";
 import { Customer as ICustomer } from "./customer";
 import { Product as IProduct } from "./product";
+import { Warehouse as IWarehouse } from "./warehouse";
 
 export interface Order extends IBase {
   orderNumber?: string
@@ -18,6 +19,7 @@ export interface Order extends IBase {
 
   items?: OrderItem[]
   customer?: ICustomer
+  warehouse?: IWarehouse
 }
 
 export interface OrderItem extends IBase {

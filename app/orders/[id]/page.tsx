@@ -16,10 +16,18 @@ import { Order } from "@/types/order"
 import { getOrderById, updateOrder as apiUpdateOrder } from "@/lib/httpclient/order.client"
 import { useParams } from "next/navigation"
 import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
-import { formatDate } from "@/lib/utils"
+import { formatCurrency, formatDate } from "@/lib/utils"
+import { getCustomers } from "@/lib/httpclient/customer.client"
+import { getProducts } from "@/lib/httpclient"
+import { getWarehouses } from "@/lib/httpclient/warehouse.client"
+import { Customer, Product, Warehouse } from "@/types"
 
 export default function OrderDetailPage() {
   const { t } = useLanguage()
+
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([])
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const [allWarehouses, setAllWarehouses] = useState<Warehouse[]>([])
 
   const [showEditModal, setShowEditModal] = useState(false)
   const [orderData, setOrderData] = useState<Order>()
@@ -28,12 +36,22 @@ export default function OrderDetailPage() {
   const params = useParams()
   const [subtotal, setSubtotal] = useState<number>(0)
 
-  const getOrder = async () => {
+  const onInit = async () => {
     try {
       setLoading(true)
+
       const res = await getOrderById(`${params.id}`)
       setOrderData(res)
       setSubtotal((res as Order)?.items!.reduce((sum, item) => sum + item.total!, 0)!)
+
+      const cus = await getCustomers()
+      setAllCustomers(cus.data);
+
+      const pro = await getProducts()
+      setAllProducts(pro.data)
+
+      const wh = await getWarehouses()
+      setAllWarehouses(wh.data)
     } catch (e) {
       console.error(e)
     } finally {
@@ -42,7 +60,7 @@ export default function OrderDetailPage() {
   }
 
   useEffect(() => {
-    getOrder()
+    onInit()
   }, [params])
 
   const getStatusColor = (status: string) => {
@@ -53,9 +71,13 @@ export default function OrderDetailPage() {
         return "bg-yellow-100 text-yellow-800"
       case OrderStatus.shipped:
         return "bg-blue-100 text-blue-800"
+      case OrderStatus.delivered:
+        return "bg-purple-100 text-purple-800"
       case OrderStatus.pending:
         return "bg-gray-100 text-gray-800"
       case OrderStatus.cancelled:
+        return "bg-red-100 text-red-800"
+      case OrderStatus.lackProduct:
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -122,11 +144,6 @@ export default function OrderDetailPage() {
     }
   }
 
-  const formatCurrency = (amount: number | undefined) => {
-    if (!amount) return;
-    return `$${amount!.toLocaleString()}`
-  }
-
   const getInitials = (name: string) => {
     if (!name) return "";
 
@@ -182,7 +199,7 @@ export default function OrderDetailPage() {
         id: updateOrder.id,
         createdAt: updateOrder.createdAt,
         updatedAt: new Date(),
-        deliveryDate: new Date(),
+        deliveryDate: updateOrder.deliveryDate,
         totalAmount: updateOrder.totalAmount || 0,
         status: updateOrder.status || OrderStatus.pending,
         paymentStatus: updateOrder.paymentStatus || PaymentStatus.pending,
@@ -194,10 +211,11 @@ export default function OrderDetailPage() {
         tags: updateOrder.tags,
         shippingFee: updateOrder.shippingFee,
         tax: updateOrder.tax,
+        warehouse: updateOrder.warehouse,
       }
-      const updated = await apiUpdateOrder(orderData?.id!, updateOrderData)
+      const { updatedOrder, affectedOrders } = await apiUpdateOrder(orderData?.id!, updateOrderData)
       setSubtotal(updateOrderData?.items!.reduce((sum, item) => sum + item.total!, 0)!)
-      setOrderData(updated)
+      setOrderData(updatedOrder)
     } catch (e) {
       console.error(e)
     } finally {
@@ -205,7 +223,7 @@ export default function OrderDetailPage() {
     }
   }
 
-  if(!orderData) return;
+  if (!orderData) return;
 
   return (
     <ERPLayout>
@@ -229,7 +247,7 @@ export default function OrderDetailPage() {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex space-x-2">
-              <Button variant="outline" onClick={() => setShowEditModal(true)}>
+              <Button className={`${orderData.status === OrderStatus.completed && 'hidden'}`} variant="outline" onClick={() => setShowEditModal(true)}>
                 <Edit className="mr-2 h-4 w-4" />
                 {t("orders.editOrder")}
               </Button>
@@ -304,8 +322,8 @@ export default function OrderDetailPage() {
                   <span className="text-sm font-medium">{formatDate(orderData?.deliveryDate!)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{t("orders.expectedDelivery")}:</span>
-                  {/* <span className="text-sm font-medium">{orderData.expectedDelivery}</span> */}
+                  <span className="text-sm text-muted-foreground">{t("orders.warehouse")}:</span>
+                  <span className="text-sm font-medium">{orderData.warehouse?.name!}</span>
                 </div>
               </div>
             </CardContent>
@@ -399,7 +417,7 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">{t("orders.total")}</p>
-                    <p className="font-bold">{item.total}</p>
+                    <p className="font-bold">{formatCurrency(item.total!)}</p>
                   </div>
                 </div>
               ))}
@@ -499,7 +517,7 @@ export default function OrderDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t("orders.totalAmount")}</p>
-                <p className="font-bold text-lg">{orderData?.totalAmount!}</p>
+                <p className="font-bold text-lg">{formatCurrency(orderData?.totalAmount!)}</p>
               </div>
             </div>
           </CardContent>
@@ -514,6 +532,9 @@ export default function OrderDetailPage() {
         <EditOrderModal
           open={showEditModal}
           order={orderData!}
+          customers={allCustomers}
+          products={allProducts}
+          allWarehouses={allWarehouses}
           onOpenChange={setShowEditModal}
           onSave={handleSaveOrder}
         />
