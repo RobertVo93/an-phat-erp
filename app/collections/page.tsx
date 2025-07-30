@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { ERPLayout } from "@/components/erp-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,12 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Plus,
   Search,
-  Filter,
   Edit,
   Trash2,
   Eye,
   Download,
-  X,
   ImageIcon,
   ChevronLeft,
   ChevronRight,
@@ -27,74 +24,39 @@ import { useLanguage } from "@/contexts/language-context"
 import { useCollections } from "@/hooks/use-collections"
 import { CollectionViewModal } from "@/components/collections/collection-view-modal"
 import { CollectionFormModal } from "@/components/collections/collection-form-modal"
-import { CollectionFilterModal } from "@/components/collections/collection-filter-modal"
 import { CollectionDeleteModal } from "@/components/collections/collection-delete-modal"
-import type { Collection } from "@/types/collection"
-import { CollectionCategory, CollectionStatus } from "@/types/enums"
 import { formatDate } from "@/lib/utils"
 
 export default function CollectionsPage() {
   const { t } = useLanguage()
   const {
-    loading,
     collections,
-    allCollections,
     filters,
-    setFilters,
     currentPage,
-    setCurrentPage,
     itemsPerPage,
-    setItemsPerPage,
     totalPages,
     totalCollections,
-    createCollection,
-    updateCollection,
-    deleteCollection,
-    resetFilters,
+    loading,
+    CollectionStatus,
+    startIndex,
+    endIndex,
+    viewModal,
+    deleteModal,
+    formModal,
+    getStatusColor,
+    handleView,
+    handleEdit,
+    handleDelete,
+    setItemsPerPage,
+    setCurrentPage,
+    setFilters,
+    handleCreate,
+    handleSave,
+    handleConfirmDelete,
+    setViewModal,
+    setFormModal,
+    setDeleteModal,
   } = useCollections()
-
-  // Modal states
-  const [viewModal, setViewModal] = useState<{ open: boolean; collection: Collection | null }>({
-    open: false,
-    collection: null,
-  })
-  const [formModal, setFormModal] = useState<{ open: boolean; collection: Collection | null }>({
-    open: false,
-    collection: null,
-  })
-  const [filterModal, setFilterModal] = useState(false)
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; collection: Collection | null }>({
-    open: false,
-    collection: null,
-  })
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case CollectionStatus.active:
-        return "bg-green-100 text-green-800"
-      case CollectionStatus.draft:
-        return "bg-yellow-100 text-yellow-800"
-      case CollectionStatus.archived:
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case CollectionCategory.fashion:
-        return "bg-pink-100 text-pink-800"
-      case CollectionCategory.electronics:
-        return "bg-blue-100 text-blue-800"
-      case CollectionCategory.home:
-        return "bg-green-100 text-green-800"
-      case CollectionCategory.office:
-        return "bg-purple-100 text-purple-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
 
   const getStatusText = (status: string) => {
     switch (status) {
@@ -109,51 +71,6 @@ export default function CollectionsPage() {
     }
   }
 
-  const getCategoryText = (category: string) => {
-    switch (category) {
-      case CollectionCategory.fashion:
-        return t("collections.category.fashion")
-      case CollectionCategory.electronics:
-        return t("collections.category.electronics")
-      case CollectionCategory.home:
-        return t("collections.category.home")
-      case CollectionCategory.office:
-        return t("collections.category.office")
-      default:
-        return category
-    }
-  }
-
-  const handleView = (collection: Collection) => {
-    setViewModal({ open: true, collection })
-  }
-
-  const handleEdit = (collection: Collection) => {
-    setFormModal({ open: true, collection })
-  }
-
-  const handleDelete = (collection: Collection) => {
-    setDeleteModal({ open: true, collection })
-  }
-
-  const handleCreate = () => {
-    setFormModal({ open: true, collection: null })
-  }
-
-  const handleSave = (collectionData: any) => {
-    if (formModal.collection) {
-      updateCollection(formModal.collection.id!, collectionData)
-    } else {
-      createCollection(collectionData)
-    }
-  }
-
-  const handleConfirmDelete = () => {
-    if (deleteModal.collection) {
-      deleteCollection(deleteModal.collection.id!)
-    }
-  }
-
   const exportToCSV = () => {
     const csvContent = [
       [t("common.id"), t("common.name"), t("common.description"), t("common.category"), t("common.status"), t("common.products"), t("common.createdAt")],
@@ -161,7 +78,6 @@ export default function CollectionsPage() {
         col.id,
         col.name,
         col.description,
-        getCategoryText(col.category!),
         getStatusText(col.status!),
         col.products?.length,
         col.createdAt,
@@ -176,10 +92,6 @@ export default function CollectionsPage() {
     link.download = "collections.csv"
     link.click()
   }
-
-  const hasActiveFilters = filters.status || filters.category || filters.name || filters.search
-  const startIndex = (currentPage - 1) * itemsPerPage + 1
-  const endIndex = Math.min(currentPage * itemsPerPage, totalCollections)
 
   return (
     <ERPLayout>
@@ -221,58 +133,30 @@ export default function CollectionsPage() {
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               />
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setFilterModal(true)}
-              className={`${hasActiveFilters ? "border-blue-500 text-blue-600" : ""} flex-shrink-0`}
-              size="sm"
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">{t("collections.filter")}</span>
-              <span className="sm:hidden">{t("common.filter")}</span>
-              {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-2">
-                  {[filters.status, filters.category, filters.name, filters.search].filter(Boolean).length}
-                </Badge>
-              )}
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={resetFilters}>
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+            <div className="flex items-center space-x-2 w-[150px]">
+              <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("collections.form.allStatus")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("collections.form.allStatus")}</SelectItem>
+                  <SelectItem value={CollectionStatus.active}>{t("collections.status.active")}</SelectItem>
+                  <SelectItem value={CollectionStatus.draft}>{t("collections.status.draft")}</SelectItem>
+                  <SelectItem value={CollectionStatus.archived}>{t("collections.status.archived")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
         {/* Statistics Cards - Mobile Grid */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-xs md:text-sm font-medium">{t("collections.totalCollections")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">{allCollections.length}</div>
-              <p className="text-xs text-muted-foreground hidden md:block">{t("collections.activeCollectionsDesc")}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium">{t("collections.totalProducts")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-2xl font-bold">
-                {allCollections.reduce((sum, col) => sum + (col.products?.length || 0), 0)}
-              </div>
-              <p className="text-xs text-muted-foreground hidden md:block">{t("collections.acrossAllCollections")}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium">{t("collections.totalValue")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-2xl font-bold">$76,450</div>
-              <p className="text-xs text-muted-foreground hidden md:block">{t("collections.combinedValue")}</p>
+              <div className="text-xl md:text-2xl font-bold">{totalCollections}</div>
             </CardContent>
           </Card>
           <Card>
@@ -281,9 +165,8 @@ export default function CollectionsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl md:text-2xl font-bold">
-                {allCollections.filter((col) => col.status === CollectionStatus.active).length}
+                {collections.filter((col) => col.status === CollectionStatus.active).length}
               </div>
-              <p className="text-xs text-muted-foreground hidden md:block">{t("collections.currentlyActive")}</p>
             </CardContent>
           </Card>
         </div>
@@ -352,9 +235,6 @@ export default function CollectionsPage() {
                               <div className="flex flex-wrap items-center gap-1 mt-1">
                                 <Badge className={`${getStatusColor(collection.status!)} text-xs`}>
                                   {getStatusText(collection.status!)}
-                                </Badge>
-                                <Badge variant="outline" className={`${getCategoryColor(collection.category!)} text-xs`}>
-                                  {getCategoryText(collection.category!)}
                                 </Badge>
                               </div>
                             </div>
@@ -475,14 +355,6 @@ export default function CollectionsPage() {
         open={formModal.open}
         onOpenChange={(open) => setFormModal({ open, collection: null })}
         onSave={handleSave}
-      />
-
-      <CollectionFilterModal
-        filters={filters}
-        open={filterModal}
-        onOpenChange={setFilterModal}
-        onFiltersChange={setFilters}
-        onReset={resetFilters}
       />
 
       <CollectionDeleteModal

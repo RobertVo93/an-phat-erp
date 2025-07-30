@@ -1,12 +1,12 @@
-import { CollectionStatus, CollectionCategory } from "@/types/enums";
+import { CollectionStatus } from "@/types/enums";
 import { IBase } from "./base.interface";
 import { Product } from "./product";
 
 export interface Collection extends IBase {
+  number?: string
   name?: string
   description?: string
   status?: CollectionStatus
-  category?: CollectionCategory
   image?: string
 
   products?: Product[]
@@ -19,6 +19,5 @@ export interface CollectionFilters {
   sortOrder?: "asc" | "desc";
   name?: string;
   status?: string;
-  category?: string;
   search?: string;
 }

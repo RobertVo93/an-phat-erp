@@ -24,13 +24,6 @@ export enum CollectionStatus {
   archived = "archived"
 }
 
-export enum CollectionCategory {
-  fashion = "fashion",
-  electronics = "electronics",
-  home = "home",
-  office = "office"
-}
-
 export enum WarehouseStatus {
   active = "active",
   maintenance = "maintenance",

@@ -20,6 +20,10 @@ export const collectionsTranslations = {
     en: "Products in Collection",
     vi: "Sản Phẩm Trong Bộ Sưu Tập",
   },
+  "collections.stock": {
+    en: "Stock",
+    vi: "Tồn Kho",
+  },
   "collections.title": {
     en: "Collections",
     vi: "Bộ Sưu Tập",
@@ -64,10 +68,6 @@ export const collectionsTranslations = {
     en: "Active Collections",
     vi: "Bộ Sưu Tập Hoạt Động",
   },
-  "collections.activeCollectionsDesc": {
-    en: "Active collections",
-    vi: "Bộ sưu tập đang hoạt động",
-  },
   "collections.acrossAllCollections": {
     en: "Across all collections",
     vi: "Trên tất cả bộ sưu tập",
@@ -75,10 +75,6 @@ export const collectionsTranslations = {
   "collections.combinedValue": {
     en: "Combined collection value",
     vi: "Tổng giá trị bộ sưu tập",
-  },
-  "collections.currentlyActive": {
-    en: "Currently active",
-    vi: "Hiện đang hoạt động",
   },
   "collections.allCollections": {
     en: "All Collections",
@@ -177,6 +173,10 @@ export const collectionsTranslations = {
   "collections.form.selectStatus": {
     en: "Select status",
     vi: "Chọn trạng thái",
+  },
+  "collections.form.collectionCode": {
+    en: "Collection Code",
+    vi: "Mã Bộ Sưu Tập",
   },
 
   // Actions

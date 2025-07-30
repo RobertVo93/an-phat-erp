@@ -22,6 +22,9 @@ export async function getAllCollections({
   const repo = AppDataSource.getRepository(CollectionEntity);
   const qb = repo.createQueryBuilder("collection");
 
+  // Join products relation
+  qb.leftJoinAndSelect("collection.products", "product");
+
   // Filtering
   if (filters.name) qb.andWhere("collection.name ILIKE :name", { name: `%${filters.name}%` });
   if (filters.status) qb.andWhere("collection.status = :status", { status: filters.status });
