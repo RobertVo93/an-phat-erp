@@ -7,6 +7,8 @@ import type { Customer as ICustomer } from "@/types/customer";
 import { OrderItem as IOrderItem } from "@/types/order";
 import { Order as IOrder } from "@/types/order";
 import { AppDataSource } from "../typeorm";
+import { WarehouseEntity } from "./warehouse.entity";
+import type { Warehouse as IWarehouse } from "@/types/warehouse";
 
 @Entity({ name: "orders" })
 export class OrderEntity extends BaseEntity implements IOrder {
@@ -51,13 +53,16 @@ export class OrderEntity extends BaseEntity implements IOrder {
   @OneToMany(() => OrderItemEntity, (item: OrderItemEntity) => item.order, { cascade: true, nullable: true })
   items!: IOrderItem[];
 
+  @ManyToOne(() => WarehouseEntity, (warehouse) => warehouse.orders, { nullable: true })
+  @JoinColumn({ name: "warehouse_id" })
+  warehouse?: IWarehouse;
   //////Auto order numbering//////
   @BeforeInsert()
   async generateOrderNumber() {
     const repo = AppDataSource.getRepository(OrderEntity);
     const latest = await repo
       .createQueryBuilder("order")
-      .orderBy("CAST(SUBSTRING(order.orderNumber FROM 5) AS INTEGER)", "DESC") 
+      .orderBy("CAST(SUBSTRING(order.orderNumber FROM 5) AS INTEGER)", "DESC")
       .getOne();
 
     const lastNumber = latest?.orderNumber

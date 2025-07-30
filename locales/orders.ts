@@ -190,6 +190,10 @@ export const ordersTranslations = {
     en: "Cancelled",
     vi: "Đã Hủy",
   },
+  "orders.status.lackProduct": {
+    en: "Lack Products",
+    vi: "Thiếu Sản Phẩm",
+  },
 
   // Payment status
   "orders.paymentStatus.pending": {
@@ -310,6 +314,14 @@ export const ordersTranslations = {
     en: "Delivery Date & Time",
     vi: "Ngày & Giờ Giao Hàng",
   },
+  "orders.warehouse": {
+    en: "Warehouse",
+    vi: "Kho hàng",
+  },
+  "orders.selectWarehouse": {
+    en: "Select warehouse",
+    vi: "Chọn kho hàng",
+  },
   "orders.tags": {
     en: "Tags",
     vi: "Thẻ",
@@ -345,6 +357,10 @@ export const ordersTranslations = {
   "orders.saveChanges": {
     en: "Save Changes",
     vi: "Lưu Thay Đổi",
+  },
+  "orders.stock": {
+    en: "In stock",
+    vi: "Trong kho",
   },
 
   // Edit Order Modal

@@ -15,22 +15,22 @@ import { Customer } from "@/types/customer"
 import { Product } from "@/types/product"
 import { Order, OrderItem } from "@/types/order"
 import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
-import { formatLocalDatetime } from "@/lib/utils"
+import { formatLargeCurrency, formatLocalDatetime, groupWarehouseProductsByProduct } from "@/lib/utils"
+import { Warehouse } from "@/types"
+
 interface NewOrderModalProps {
   open: boolean
   customers: Customer[]
-  products: Product[]
+  allWarehouses: Warehouse[]
   onOpenChange: (open: boolean) => void
-  getCustomersAndProducts: () => void
   createOrder: (orderData: Partial<Order>) => void
 }
 
 export function NewOrderModal({
   open,
   customers,
-  products,
+  allWarehouses,
   onOpenChange,
-  getCustomersAndProducts,
   createOrder
 }: NewOrderModalProps) {
   const { t } = useLanguage()
@@ -45,12 +45,14 @@ export function NewOrderModal({
     items: [],
     notes: "",
     tags: [],
+    warehouse: undefined
   })
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [productSearch, setProductSearch] = useState("")
   const [customerSearch, setCustomerSearch] = useState("")
   const [showProductList, setShowProductList] = useState(false)
   const [showCustomerList, setShowCustomerList] = useState(false)
+  const [warehouseProductTotal, setWarehouseProductTotal] = useState<number>(0)
 
   const filteredCustomers = customers.filter(
     (customer) =>
@@ -69,12 +71,6 @@ export function NewOrderModal({
     setShowCustomerList(false)
   }
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name!.toLowerCase().includes(productSearch.toLowerCase()) &&
-      !orderItems.some((item) => item.product!.id === product.id),
-  )
-
   const addProduct = (product: Product) => {
     const newItem: OrderItem = {
       product,
@@ -87,8 +83,8 @@ export function NewOrderModal({
     setShowProductList(false)
   }
 
-  const updateQuantity = (index: number, quantity: number) => {
-    if (quantity <= 0) return
+  const updateQuantity = (index: number, quantity: number, stock: number) => {
+    if (quantity <= 0 || quantity > stock) return
     const updatedItems = [...orderItems]
     updatedItems[index].quantity = quantity
     updatedItems[index].total = quantity * updatedItems[index].unitPrice!
@@ -134,16 +130,18 @@ export function NewOrderModal({
       items: [],
       tags: [],
       tax: 0,
-      shippingFee: 0
+      shippingFee: 0,
+      warehouse: undefined
     })
     setOrderItems([])
     setCustomerSearch("")
     onOpenChange(false)
   }
 
-  useEffect(() => {
-    getCustomersAndProducts()
-  }, [open])
+  const getWarehouseProductTotal = (productId: string) => {
+    return groupWarehouseProductsByProduct(orderData.warehouse?.warehouseProducts!)
+      .find((wp) => (wp.product.id === productId))?.totalQuantity || 0
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -263,11 +261,9 @@ export function NewOrderModal({
                     <SelectValue placeholder={t("orders.selectOrderStatus")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={OrderStatus.pending}>{t("orders.status.pending")}</SelectItem>
-                    <SelectItem value={OrderStatus.processing}>{t("orders.status.processing")}</SelectItem>
-                    <SelectItem value={OrderStatus.shipped}>{t("orders.status.shipped")}</SelectItem>
-                    <SelectItem value={OrderStatus.delivered}>{t("orders.status.delivered")}</SelectItem>
-                    <SelectItem value={OrderStatus.cancelled}>{t("orders.status.cancelled")}</SelectItem>
+                    {Object.keys(OrderStatus).map((status, index) => (
+                      <SelectItem value={status} key={index}>{t(`orders.status.${status}`)}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -280,6 +276,26 @@ export function NewOrderModal({
                   value={orderData.deliveryDate ? formatLocalDatetime(orderData.deliveryDate) : ""}
                   onChange={(e) => setOrderData({ ...orderData, deliveryDate: new Date(e.target.value) })}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="warehouse">{t("orders.warehouse")} *</Label>
+                <Select
+                  value={orderData.warehouse?.id}
+                  onValueChange={(value: string) => {
+                    setOrderData({ ...orderData, warehouse: allWarehouses.find((wh) => wh.id === value) })
+                    setOrderItems([])
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("orders.selectWarehouse")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allWarehouses.map((wh, ind) => (
+                      <SelectItem value={wh.id!} key={ind}>{wh.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -355,24 +371,26 @@ export function NewOrderModal({
                 {/* Product Search Results */}
                 {showProductList && (
                   <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    {filteredProducts.length > 0 ? (
-                      filteredProducts.map((product) => (
-                        <div
-                          key={product.id}
-                          className="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
-                          onClick={() => addProduct(product)}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{product.name}</p>
-                              <p className="text-sm text-gray-500">
-                                ${product.price} • {t("orders.modal.productStock")}: {product.stock}
-                              </p>
+                    {orderData.warehouse?.warehouseProducts ? (
+                      groupWarehouseProductsByProduct(orderData.warehouse?.warehouseProducts!)
+                        .filter(product => !orderItems.some(item => item.product?.id === product.product.id))
+                        .map((product, index) => (
+                          <div
+                            key={index}
+                            className={`p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 ${product.product.stock === 0 && 'pointer-events-none bg-gray-300'}`}
+                            onClick={() => addProduct(product.product)}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-medium">{product.product.name}</p>
+                                <p className="text-sm text-gray-500">
+                                  {formatLargeCurrency(product.product.price!, 2)} • {t("orders.modal.productStock")}: {product.totalQuantity}
+                                </p>
+                              </div>
+                              <Badge variant="outline">{product.product.sku}</Badge>
                             </div>
-                            <Badge variant="outline">{product.sku}</Badge>
                           </div>
-                        </div>
-                      ))
+                        ))
                     ) : (
                       <div className="p-3 text-center text-gray-500">{t("orders.noProductsFound")}</div>
                     )}
@@ -403,7 +421,7 @@ export function NewOrderModal({
                       </div>
 
                       {/* Controls Row */}
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-3 gap-3">
                         {/* Quantity Controls */}
                         <div className="space-y-1">
                           <Label className="text-xs text-gray-500">{t("orders.quantity")}:</Label>
@@ -412,7 +430,7 @@ export function NewOrderModal({
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={() => updateQuantity(index, item.quantity! - 1)}
+                              onClick={() => updateQuantity(index, item.quantity! - 1, getWarehouseProductTotal(item.product?.id!))}
                               className="h-8 w-8 p-0"
                             >
                               <Minus className="h-3 w-3" />
@@ -420,20 +438,31 @@ export function NewOrderModal({
                             <Input
                               type="number"
                               value={item.quantity}
-                              onChange={(e) => updateQuantity(index, Number.parseInt(e.target.value) || 1)}
+                              onChange={(e) => updateQuantity(index, Number.parseInt(e.target.value) || 1, getWarehouseProductTotal(item.product?.id!))}
                               className="h-8 w-20 text-center text-xs"
                               min="1"
+                              max={getWarehouseProductTotal(item.product?.id!)}
                             />
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={() => updateQuantity(index, item.quantity! + 1)}
+                              onClick={() => updateQuantity(index, item.quantity! + 1, getWarehouseProductTotal(item.product?.id!))}
                               className="h-8 w-8 p-0"
                             >
                               <Plus className="h-3 w-3" />
                             </Button>
                           </div>
+                        </div>
+
+                        {/* in stock */}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-gray-500">{t("orders.stock")}:</Label>
+                          <Input
+                            readOnly
+                            value={getWarehouseProductTotal(item.product?.id!)}
+                            className="h-8 text-xs bg-gray-300 pointer-events-none w-20"
+                          />
                         </div>
 
                         {/* Price */}
@@ -453,7 +482,7 @@ export function NewOrderModal({
                       {/* Total */}
                       <div className="flex justify-between items-center pt-2 border-t">
                         <span className="text-sm font-medium">{t("orders.total")}:</span>
-                        <span className="text-sm font-bold">${item.total!.toFixed(2)}</span>
+                        <span className="text-sm font-bold">{formatLargeCurrency(item.total!, 2)}</span>
                       </div>
                     </div>
                   ))}
@@ -477,19 +506,19 @@ export function NewOrderModal({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>{t("orders.subtotal")}:</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatLargeCurrency(subtotal, 2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>{t("orders.modal.taxRate")}:</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatLargeCurrency(tax, 2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>{t("orders.shipping")}:</span>
-                  <span>${shipping.toFixed(2)}</span>
+                  <span>{formatLargeCurrency(shipping, 2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>{t("orders.total")}:</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>{formatLargeCurrency(total, 2)}</span>
                 </div>
               </div>
             </CardContent>
@@ -508,7 +537,8 @@ export function NewOrderModal({
               !orderData.shippingAddress ||
               !orderData.paymentMethod ||
               !orderData.status ||
-              orderItems.length === 0
+              orderItems.length === 0 ||
+              !orderData.warehouse
             }
           >
             {t("orders.createOrder")}

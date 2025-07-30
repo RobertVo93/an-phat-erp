@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react"
 import type { ProductionRecord } from "@/types/production"
-import { Employee, EmployeeStatus, Product, ProductStatus, Utility, UtilityStatus } from "@/types"
+import { Employee, EmployeeStatus, Product, ProductStatus, Utility, UtilityStatus, Warehouse, WarehouseStatus } from "@/types"
 import { getProducts as apiGetProducts } from "@/lib/httpclient"
 import { createProduction, getAllProductions, updateProduction } from "@/lib/httpclient/production.client"
 import { isTodayLocalDatetime } from "@/lib/utils"
 import { getAllUtilities } from "@/lib/httpclient/utility.client"
 import { getEmployee } from '@/lib/httpclient/employee.client';
+import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 
 export function useProduction() {
   const [selectedRecord, setSelectedRecord] = useState<ProductionRecord | null>(null)
@@ -20,6 +21,7 @@ export function useProduction() {
   const [availableMaterials, setAvailableMaterials] = useState<Product[]>([])
   const [availableUtilities, setAvailableUtilities] = useState<Utility[]>([])
   const [availableEmployees, setAvailableEmployees] = useState<Employee[]>([])
+  const [availableWarehouses, setAvailableWarehouses] = useState<Warehouse[]>([])
   const [loading, setLoading] = useState<boolean>(false)
 
   // for summary card
@@ -48,6 +50,11 @@ export function useProduction() {
       const emp = await getEmployee()
       const activeEmployees = (emp.data as Employee[]).filter((e) => e.status === EmployeeStatus.active)
       setAvailableEmployees(activeEmployees)
+
+      // get active warehouses
+      const wh = await getWarehouses()
+      const activeWarehouses = (wh.data as Warehouse[]).filter((wh) => wh.status === WarehouseStatus.active)
+      setAvailableWarehouses(activeWarehouses)
     } catch (e) {
       console.error(e)
     } finally {
@@ -97,7 +104,7 @@ export function useProduction() {
     try {
       setLoading(true)
       const updated = await updateProduction(updatedRecord.id!, updatedRecord)
-      if(updated) onInit()
+      if (updated) onInit()
       setIsEditModalOpen(false)
       setEditingRecord(null)
     } catch (e) {
@@ -154,6 +161,7 @@ export function useProduction() {
     availableMaterials,
     availableUtilities,
     availableEmployees,
+    availableWarehouses,
     todayRecords: todayProductionRecords,
     historyRecords: historyProductionRecords,
 

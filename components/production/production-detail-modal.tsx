@@ -87,6 +87,10 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
               <span className="text-gray-600">{t("production.detail.date")}:</span>
               <span className="font-medium">{formatDate(record.date!)}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t("production.detail.warehouse")}:</span>
+              <span className="font-medium">{record.warehouse?.name}</span>
+            </div>
           </CardContent>
         </Card>
       </div>

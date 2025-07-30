@@ -1,8 +1,9 @@
-import { ProductionStatus, ProductionUnit } from '@/types';
+import { ProductionStatus } from '@/types';
 import { z } from "zod";
 import { ExtendedProductSchema } from '../products/product.schema';
 import { UtilitySchema } from '../utility/utility.schema';
 import { EmployeeSchema } from '../employee/employee.schema';
+import { WarehouseSchema } from '../stock-change/stockChange.schema';
 
 export const ProductionMaterialSchema = z.object({
   id: z.string().optional(),
@@ -31,7 +32,6 @@ export const ProductionSchema = z.object({
   id: z.string().optional(),
   date: z.string().optional(),
   quantity: z.number().optional(),
-  unit: z.nativeEnum(ProductionUnit).optional(),
   status: z.nativeEnum(ProductionStatus).optional(),
   shift: z.string().optional(),
   operator: z.string().optional(),
@@ -40,6 +40,7 @@ export const ProductionSchema = z.object({
   productionMaterials: z.array(ProductionMaterialSchema).optional(),
   utilities: z.array(ProductionUtilitySchema).optional(),
   labor: z.array(ProductionLaborSchema).optional(),
+  warehouse: WarehouseSchema.optional(),
 
   totalCost: z.number().optional(),
   efficiency: z.number().optional()

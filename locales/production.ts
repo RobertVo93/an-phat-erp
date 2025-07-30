@@ -366,6 +366,10 @@ export const productionTranslations = {
     en: "Add",
     vi: "Thêm"
   },
+  "production.form.selectWarehouseFirst": {
+    en: "Select warehouse first",
+    vi: "Chọn kho trước"
+  },
   "production.form.select": {
     en: "Select",
     vi: "Chọn"
@@ -442,6 +446,10 @@ export const productionTranslations = {
     en: "Product is required",
     vi: "Sản phẩm là bắt buộc"
   },
+  "production.form.selectedWarehouseRequired": {
+    en: "Warehouse is required",
+    vi: "Kho là bắt buộc"
+  },
   "production.form.quantityMustGreaterThanZero": {
     en: "Quantity must greater than 0",
     vi: "Số lượng phải lớn hơn 0"
@@ -494,6 +502,14 @@ export const productionTranslations = {
     en: "Select date",
     vi: "Chọn ngày",
   },
+  "production.form.warehouse": {
+    en: "Warehouse",
+    vi: "Kho",
+  },
+  "production.form.selectWarehouse": {
+    en: "Select warehouse",
+    vi: "Chọn kho",
+  },
 
   // ProductionDetailModal
   "production.detail.title": {
@@ -519,6 +535,10 @@ export const productionTranslations = {
   "production.detail.date": {
     en: "Date",
     vi: "Ngày"
+  },
+  "production.detail.warehouse": {
+    en: "Warehouse",
+    vi: "Kho"
   },
   "production.detail.shift": {
     en: "Shift",

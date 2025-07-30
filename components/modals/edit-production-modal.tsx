@@ -9,12 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus, Trash2, Save, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Employee, Product, ProductionStatus, Utility } from "@/types"
+import { Employee, Product, ProductionStatus, Utility, Warehouse } from "@/types"
 import { ProductionMaterial } from "@/types/productionMaterial"
 import { ProductionRecord } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductionLabor } from "@/types/ProductionLabor"
 import { ProductionUtility } from "@/types/productionUtility"
+import { groupWarehouseProductsByProduct } from "@/lib/utils"
 
 interface EditProductionModalProps {
   isOpen: boolean
@@ -22,6 +23,7 @@ interface EditProductionModalProps {
   availableProducts: Product[]
   availableUtilities: Utility[]
   availableEmployees: Employee[]
+  availableWarehouses: Warehouse[]
   onClose: () => void
   record: ProductionRecord
   onSave: (updatedRecord: any) => void
@@ -32,6 +34,7 @@ export function EditProductionModal({
   availableProducts,
   availableUtilities,
   availableEmployees,
+  availableWarehouses,
   isOpen,
   onClose,
   record,
@@ -274,8 +277,10 @@ export function EditProductionModal({
       productionMaterials: selectedMaterials,
       productionUtilities: selectedUtilities,
       productionLabors: selectedEmployees,
+      warehouse: formData?.warehouse,
       totalCost: calculateTotalCost(),
     }
+
     onSave(updatedRecord)
     onClose()
   }
@@ -307,6 +312,29 @@ export function EditProductionModal({
                 value={formData?.date ? new Date(formData?.date).toLocaleDateString("sv-SE") : ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="product" className="text-sm">
+                {t("production.form.warehouse")}
+              </Label>
+              <Select
+                value={formData?.warehouse?.id}
+                onValueChange={(value: string) => {
+                  setFormData((prev) => ({ ...prev, warehouse: availableWarehouses.find((wh) => wh.id === value) }))
+                  setSelectedMaterials([])
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t("production.form.selectWarehouse")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableWarehouses.map((wh, ind) => (
+                    <SelectItem value={wh.id!} key={ind}>{wh.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.selectedWarehouse && <p className="text-sm text-red-500">{errors.selectedWarehouse}</p>}
             </div>
           </div>
 
@@ -401,18 +429,21 @@ export function EditProductionModal({
                             <SelectValue placeholder={t("production.edit.select")} />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableMaterials
-                              .filter((mat) =>
-                                mat.id === material.material?.id ||
-                                !selectedMaterials.some((selected, i) =>
-                                  i !== index && selected.material?.id === mat.id
+                            {formData?.warehouse?.warehouseProducts ?
+                              groupWarehouseProductsByProduct(formData.warehouse.warehouseProducts!)
+                                .filter((groupProduct) =>
+                                  groupProduct.product.id === material.material?.id ||
+                                  !selectedMaterials.some((selected, i) =>
+                                    i !== index && selected.material?.id === groupProduct.product.id
+                                  )
                                 )
-                              )
-                              .map((mat) => (
-                                <SelectItem key={mat.id!} value={mat.id!}>
-                                  {mat.name!}
-                                </SelectItem>
-                              ))}
+                                .map((item, index) => (
+                                  <SelectItem key={index} value={item.product.id!}>
+                                    {item.product.name}
+                                  </SelectItem>
+                                ))
+                              : null
+                            }
                           </SelectContent>
                         </Select>
                       </div>
@@ -422,11 +453,14 @@ export function EditProductionModal({
                           placeholder="1"
                           type="number"
                           min={1}
-                          max={material.material?.stock}
-                          value={material.quantity ?? 0}
+                          max={groupWarehouseProductsByProduct(formData?.warehouse?.warehouseProducts!)
+                            .find((item) => (item.product.id === material?.material?.id))?.totalQuantity || 0
+                          }
+                          value={material.quantity || ""}
                           onChange={(e) => {
                             const value = parseInt(e.target.value, 10);
-                            const stock = material.material?.stock ?? Infinity;
+                            const stock = (groupWarehouseProductsByProduct(formData?.warehouse?.warehouseProducts!)
+                              .find((item) => (item.product.id === material?.material?.id))?.totalQuantity || 0) ?? Infinity;
                             // value in min-max range
                             if (!isNaN(value)) {
                               const clampedValue = Math.min(Math.max(value, 1), stock);
@@ -438,15 +472,19 @@ export function EditProductionModal({
                           className="h-9"
                         />
                       </div>
-                      {material.material &&
+                      {formData?.warehouse?.warehouseProducts ?
                         <div className="space-y-1">
                           <Label className="text-xs">{t("production.form.inStock")}</Label>
                           <Input
-                            value={material.material?.stock || 0}
+                            value={
+                              groupWarehouseProductsByProduct(formData.warehouse.warehouseProducts!)
+                                .find((item) => (item.product.id === material?.material?.id))?.totalQuantity ||
+                              0}
                             readOnly
                             className="h-9 bg-slate-200 pointer-events-none"
                           />
                         </div>
+                        : null
                       }
                       <div className="space-y-1">
                         <Label className="text-xs">{t("production.edit.totalCost")}</Label>

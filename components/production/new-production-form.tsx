@@ -8,17 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus } from "lucide-react"
 import type { ProductionRecord } from "@/types/production"
-import { Employee, Product, ProductionStatus, Utility } from "@/types"
+import { Employee, Product, ProductionStatus, Utility, Warehouse } from "@/types"
 import { ProductionMaterial } from "@/types/productionMaterial"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductionLabor } from "@/types/ProductionLabor"
 import { ProductionUtility } from "@/types/productionUtility"
+import { groupWarehouseProductsByProduct } from "@/lib/utils"
 
 interface NewProductionFormProps {
   availableProducts: Product[]
   availableMaterials: Product[]
   availableUtilities: Utility[]
   availableEmployees: Employee[]
+  availableWarehouses: Warehouse[]
   onClose: () => void
   createNewProduction: (data: ProductionRecord) => void
 }
@@ -28,6 +30,7 @@ export function NewProductionForm({
   availableMaterials,
   availableUtilities,
   availableEmployees,
+  availableWarehouses,
   onClose,
   createNewProduction
 }: NewProductionFormProps) {
@@ -38,10 +41,11 @@ export function NewProductionForm({
   const [selectedMaterials, setSelectedMaterials] = useState<ProductionMaterial[]>([])
   const [selectedUtilities, setSelectedUtilities] = useState<ProductionUtility[]>([])
   const [selectedEmployees, setSelectedEmployees] = useState<ProductionLabor[]>([])
+  const [selectedWarehouse, setSelectedWarehouse] = useState<Warehouse>()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const addMaterial = () => {
-    if (selectedMaterials.length < availableMaterials.length) {
+    if (selectedWarehouse && selectedMaterials.length < availableMaterials.length) {
       const addedMaterial: Product = {}
       setSelectedMaterials([
         ...selectedMaterials,
@@ -187,6 +191,9 @@ export function NewProductionForm({
     if (!selectedProduct) {
       newErrors.selectedProduct = t("production.form.selectedProductRequired")
     }
+    if (!selectedWarehouse) {
+      newErrors.selectedWarehouse = t("production.form.selectedWarehouseRequired")
+    }
     if (quantity === 0) {
       newErrors.quantity = t("production.form.quantityMustGreaterThanZero")
     }
@@ -217,6 +224,7 @@ export function NewProductionForm({
       productionMaterials: selectedMaterials,
       productionUtilities: selectedUtilities,
       productionLabors: selectedEmployees,
+      warehouse: selectedWarehouse,
       totalCost: calculateTotalCost(),
     }
 
@@ -226,7 +234,7 @@ export function NewProductionForm({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Thông tin ngày sản xuất */}
+      {/* Thông tin ngày sản xuất và kho */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="product" className="text-sm">
@@ -236,9 +244,32 @@ export function NewProductionForm({
             id="productionDate"
             type="date"
             className="h-11"
-            value={ selectedDate ? selectedDate : "" }
+            value={selectedDate ? selectedDate : ""}
             onChange={(e) => setSelectedDate(e.target.value)}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="product" className="text-sm">
+            {t("production.form.warehouse")}
+          </Label>
+          <Select
+            value={selectedWarehouse?.id}
+            onValueChange={(value: string) => {
+              setSelectedWarehouse(availableWarehouses.find((wh) => wh.id === value))
+              setSelectedMaterials([])
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t("production.form.selectWarehouse")} />
+            </SelectTrigger>
+            <SelectContent>
+              {availableWarehouses.map((wh, ind) => (
+                <SelectItem value={wh.id!} key={ind}>{wh.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.selectedWarehouse && <p className="text-sm text-red-500">{errors.selectedWarehouse}</p>}
         </div>
       </div>
 
@@ -283,10 +314,14 @@ export function NewProductionForm({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base sm:text-lg font-semibold">{t("production.form.materials")}</h3>
-          <Button variant="outline" size="sm" onClick={addMaterial} className="text-xs">
+          {selectedWarehouse ? <Button variant="outline" size="sm" onClick={addMaterial} className="text-xs">
             <Plus className="w-3 h-3 mr-1" />
             {t("production.form.add")}
-          </Button>
+          </Button> :
+          <div>
+            {t("production.form.selectWarehouseFirst")}
+          </div>  
+        }
         </div>
         <div className="space-y-3">
           {selectedMaterials.map((material, index) => (
@@ -299,18 +334,19 @@ export function NewProductionForm({
                       <SelectValue placeholder={t("production.form.select")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableMaterials
-                        .filter((mat) =>
-                          mat.id === material.material?.id ||
-                          !selectedMaterials.some((selected, i) =>
-                            i !== index && selected.material?.id === mat.id
+                      {selectedWarehouse &&
+                        groupWarehouseProductsByProduct(selectedWarehouse.warehouseProducts!)
+                          .filter((groupProduct) =>
+                            groupProduct.product.id === material.material?.id ||
+                            !selectedMaterials.some((selected, i) =>
+                              i !== index && selected.material?.id === groupProduct.product.id
+                            )
                           )
-                        )
-                        .map((mat) => (
-                          <SelectItem key={mat.id} value={mat.id!}>
-                            {mat.name}
-                          </SelectItem>
-                        ))}
+                          .map((item, index) => (
+                            <SelectItem key={index} value={item.product.id!}>
+                              {item.product.name}
+                            </SelectItem>
+                          ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -320,11 +356,14 @@ export function NewProductionForm({
                     placeholder="1"
                     type="number"
                     min={1}
-                    max={material.material?.stock}
+                    max={groupWarehouseProductsByProduct(selectedWarehouse?.warehouseProducts!)
+                      .find((item) => (item.product.id === material?.id))?.totalQuantity || 0
+                    }
                     value={material.quantity || ""}
                     onChange={(e) => {
                       const value = parseInt(e.target.value, 10);
-                      const stock = material.material?.stock ?? Infinity;
+                      const stock = (groupWarehouseProductsByProduct(selectedWarehouse?.warehouseProducts!)
+                        .find((item) => (item.product.id === material?.id))?.totalQuantity || 0) ?? Infinity;
                       // value in min-max range
                       if (!isNaN(value)) {
                         const clampedValue = Math.min(Math.max(value, 1), stock);
@@ -336,11 +375,14 @@ export function NewProductionForm({
                     className="h-9"
                   />
                 </div>
-                {material.material &&
+                {selectedWarehouse &&
                   <div className="space-y-1">
                     <Label className="text-xs">{t("production.form.inStock")}</Label>
                     <Input
-                      value={material.material?.stock || 0}
+                      value={
+                        groupWarehouseProductsByProduct(selectedWarehouse.warehouseProducts!)
+                          .find((item) => (item.product.id === material.material?.id))?.totalQuantity || 0
+                      }
                       readOnly
                       className="h-9 bg-slate-200 pointer-events-none"
                     />
@@ -375,10 +417,10 @@ export function NewProductionForm({
           ))}
           {errors.selectedMaterials && <p className="text-sm text-red-500">{errors.selectedMaterials}</p>}
         </div>
-      </div>
+      </div >
 
       {/* Tiện ích */}
-      <div className="space-y-4">
+      < div className="space-y-4" >
         <div className="flex items-center justify-between">
           <h3 className="text-base sm:text-lg font-semibold">{t("production.form.utility")}</h3>
           <Button variant="outline" size="sm" onClick={addUtility} className="text-xs">
@@ -452,10 +494,10 @@ export function NewProductionForm({
           ))}
         </div>
         {errors.selectedUtilities && <p className="text-sm text-red-500">{errors.selectedUtilities}</p>}
-      </div>
+      </div >
 
       {/* Nhân công */}
-      <div className="space-y-4">
+      < div className="space-y-4" >
         <div className="flex items-center justify-between">
           <h3 className="text-base sm:text-lg font-semibold">{t("production.form.labor")}</h3>
           <Button variant="outline" size="sm" onClick={addEmployee} className="text-xs">
@@ -525,10 +567,10 @@ export function NewProductionForm({
           ))}
         </div>
         {errors.selectedEmployees && <p className="text-sm text-red-500">{errors.selectedEmployees}</p>}
-      </div>
+      </div >
 
       {/* Tổng kết chi phí */}
-      <Card>
+      < Card >
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">{t("production.form.expensesSummary")}</CardTitle>
         </CardHeader>
@@ -583,10 +625,10 @@ export function NewProductionForm({
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card >
 
       {/* Tổng kết lợi nhuận*/}
-      <Card>
+      < Card >
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">{t("production.form.profitSummary")}</CardTitle>
         </CardHeader>
@@ -610,7 +652,7 @@ export function NewProductionForm({
             }
           </div>
         </CardContent>
-      </Card>
+      </Card >
 
       <div className="flex flex-col sm:flex-row justify-end gap-2">
         <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
@@ -620,6 +662,6 @@ export function NewProductionForm({
           {t("production.form.saveProductionSheet")}
         </Button>
       </div>
-    </div>
+    </div >
   )
 }

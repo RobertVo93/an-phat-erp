@@ -11,6 +11,8 @@ import { ProductionUtilityEntity } from "./production-utility.entity";
 import type { ProductionUtility as IProductionUtility } from "@/types/productionUtility";
 import { ProductionLaborEntity } from "./production-labor.entity";
 import { ProductionLabor as IProductionLabor } from "@/types/ProductionLabor";
+import { WarehouseEntity } from "./warehouse.entity";
+import type { Warehouse as IWarehouse } from "@/types";
 
 @Entity({ name: "production_records" })
 export class ProductionRecordEntity extends BaseEntity implements IProductionRecord {
@@ -48,6 +50,10 @@ export class ProductionRecordEntity extends BaseEntity implements IProductionRec
 
   @OneToMany(() => ProductionLaborEntity, (pl) => pl.productionRecord, { cascade: true })
   productionLabors?: IProductionLabor[];
+
+  @ManyToOne(() => WarehouseEntity, (warehouse) => warehouse.productionRecords, { nullable: true })
+  @JoinColumn({ name: "warehouse_id" })
+  warehouse?: IWarehouse;
 
   // Auto numbering
   @BeforeInsert()
