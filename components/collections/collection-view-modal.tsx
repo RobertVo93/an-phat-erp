@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
 import type { Collection } from "@/types/collection"
 import { formatDate, formatCurrency } from "@/lib/utils"
-import { CollectionCategory, CollectionStatus } from "@/types/enums"
+import { CollectionStatus } from "@/types/enums"
 
 interface CollectionViewModalProps {
   collection: Collection | null
@@ -45,21 +45,6 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
     }
   }
 
-  const getCategoryText = (category: string) => {
-    switch (category) {
-      case CollectionCategory.fashion:
-        return t("collections.category.fashion")
-      case CollectionCategory.electronics:
-        return t("collections.category.electronics")
-      case CollectionCategory.home:
-        return t("collections.category.home")
-      case CollectionCategory.office:
-        return t("collections.category.office")
-      default:
-        return category
-    }
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -79,20 +64,16 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Mã Bộ Sưu Tập</label>
-                  <p className="text-sm font-mono">{collection.id}</p>
+                  <label className="text-sm font-medium text-gray-500">{t("collections.form.collectionCode")}</label>
+                  <p className="text-sm font-mono">{collection.number}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Danh Mục</label>
-                  <p className="text-sm">{getCategoryText(collection.category!)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Ngày Tạo</label>
+                  <label className="text-sm font-medium text-gray-500">{t("collections.createdAt")}</label>
                   <p className="text-sm">{formatDate(collection.createdAt!)}</p>
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Mô Tả</label>
+                <label className="text-sm font-medium text-gray-500">{t("collections.form.description")}</label>
                 <p className="text-sm">{collection.description}</p>
               </div>
             </CardContent>
@@ -118,7 +99,7 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold">{formatCurrency(product.price ?? 0)}</p>
-                        <p className="text-xs text-gray-500">Tồn kho: {product.stock}</p>
+                        <p className="text-xs text-gray-500">{t("collections.stock")}: {product.stock}</p>
                       </div>
                     </div>
                   ))}

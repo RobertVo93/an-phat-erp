@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { useLanguage } from "@/contexts/language-context"
 import type { CollectionFilters } from "@/types/collection"
-import { CollectionCategory, CollectionStatus } from "@/types/enums"
+import { CollectionStatus } from "@/types/enums"
 import { useState } from "react"
 
 interface CollectionFilterModalProps {
@@ -25,12 +25,11 @@ export function CollectionFilterModal({
   onReset,
 }: CollectionFilterModalProps) {
   const [status, setStatus] = useState<string>(filters.status || "")
-  const [category, setCategory] = useState<string>(filters.category || "")
   const { t } = useLanguage()
 
   const handleApply = () => {
     onOpenChange(false)
-    onFiltersChange({ ...filters, status, category })
+    onFiltersChange({ ...filters, status })
   }
 
   const handleReset = () => {
@@ -57,25 +56,6 @@ export function CollectionFilterModal({
                 <SelectItem value={CollectionStatus.active}>{t("collections.status.active")}</SelectItem>
                 <SelectItem value={CollectionStatus.draft}>{t("collections.status.draft")}</SelectItem>
                 <SelectItem value={CollectionStatus.archived}>{t("collections.status.archived")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="category">Danh Mục</Label>
-            <Select
-              value={category}
-              onValueChange={(value) => setCategory(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("collections.form.allCategories")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("collections.form.allCategories")}</SelectItem>
-                <SelectItem value={CollectionCategory.fashion}>{t("collections.category.fashion")}</SelectItem>
-                <SelectItem value={CollectionCategory.electronics}>{t("collections.category.electronics")}</SelectItem>
-                <SelectItem value={CollectionCategory.home}>{t("collections.category.home")}</SelectItem>
-                <SelectItem value={CollectionCategory.office}>{t("collections.category.office")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
