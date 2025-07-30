@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
 import type { Collection } from "@/types/collection"
-import { formatDate } from "@/lib/utils"
+import { formatDate, formatCurrency } from "@/lib/utils"
 import { CollectionCategory, CollectionStatus } from "@/types/enums"
 
 interface CollectionViewModalProps {
@@ -117,7 +117,7 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">${product.price}</p>
+                        <p className="text-sm font-semibold">{formatCurrency(product.price ?? 0)}</p>
                         <p className="text-xs text-gray-500">Tồn kho: {product.stock}</p>
                       </div>
                     </div>

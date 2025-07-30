@@ -7,11 +7,20 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number): string {
+// Central currency formatting utility for VND, easily extendable for other currencies in the future
+export function formatCurrencyVND(amount: number): string {
+  // Always format as VND with symbol
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount)
+}
+
+// Optionally, update the default formatCurrency to use VND for now
+export function formatCurrency(amount: number): string {
+  return formatCurrencyVND(amount)
 }
 
 export function formatDate(date: string | Date): string {
@@ -73,11 +82,12 @@ export function base64ToFile(base64: string, filename: string): File {
   return new File([u8arr], filename, { type: mime });
 }
 
-export const formatLargeCurrency = (amount: number, fixed: number): string => {
+// Update formatLargeCurrency to use the new utility and VND symbol
+export const formatLargeCurrency = (amount: number, fixed: number = 2): string => {
   if (amount >= 1_000_000) {
-    return `${(amount / 1_000_000).toFixed(fixed)}M đ`
+    return `${(amount / 1_000_000).toFixed(fixed)}M ₫`
   }
-  return `${amount.toLocaleString()} đ`
+  return `${amount.toLocaleString()} ₫`
 }
 
 export function groupWarehouseProductsByProduct(whProducts: WarehouseProduct[]): IWarehouseSummary[] {

@@ -7,6 +7,7 @@ import { useLanguage } from "@/contexts/language-context"
 import { Zap, Droplets, Thermometer, Wifi, Phone, Tv, Shield, BrushIcon as Broom } from "lucide-react"
 import type { Utility } from "@/types/utility"
 import { UtilityStatus, UtilityType } from "@/types"
+import { formatCurrency } from "@/lib/utils"
 
 interface UtilityViewModalProps {
   isOpen: boolean
@@ -55,10 +56,6 @@ export function UtilityViewModal({ isOpen, onClose, utility }: UtilityViewModalP
       default:
         return Zap
     }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return `${amount.toLocaleString()} VNĐ`
   }
 
   const formatDate = (dateString: string) => {
