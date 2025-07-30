@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import type { Collection, CollectionFilters } from "@/types/collection"
-import { CollectionStatus, CollectionCategory } from "@/types/enums"
+import { CollectionStatus } from "@/types/enums"
 import { getCollections, createCollection as apiCreateCollection, updateCollection as apiUpdateCollection, deleteCollection as apiDeleteCollection } from "@/lib/httpclient"
 import debounce from "lodash/debounce"
 import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3"
@@ -13,40 +13,49 @@ export function useCollections() {
   const [filters, setFilters] = useState<CollectionFilters>({
     page: 1,
     limit: 8,
-    sortBy: "name",
-    sortOrder: "asc",
+    sortBy: "createdAt",
+    sortOrder: "desc",
     name: "",
     status: "",
-    category: "",
     search: "",
   })
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(8)
-  const [sortBy, setSortBy] = useState<keyof Collection>("name")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [totalCollections, setTotalCollections] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Modal states
+  const [viewModal, setViewModal] = useState<{ open: boolean; collection: Collection | null }>({
+    open: false,
+    collection: null,
+  })
+  const [formModal, setFormModal] = useState<{ open: boolean; collection: Collection | null }>({
+    open: false,
+    collection: null,
+  })
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; collection: Collection | null }>({
+    open: false,
+    collection: null,
+  })
 
   useEffect(() => {
     const debouncedFetchCollections = debounce(async () => {
       setLoading(true)
-      setError(null)
       try {
-        const res = await getCollections({
+        let filterOptions: any = {
           page: currentPage,
           limit: itemsPerPage,
-          sortBy: sortBy as string,
-          sortOrder,
+          sortBy: filters.sortBy || "createdAt",
+          sortOrder: filters.sortOrder || "desc",
           name: filters.search || undefined,
-          status: filters.status || undefined,
-          category: filters.category || undefined,
           search: filters.search || undefined,
-        })
+        }
+        if (filters.status && filters.status !== "all") {
+          filterOptions.status = filters.status
+        }
+        const res = await getCollections(filterOptions)
         setAllCollections(res.data)
         setTotalCollections(res.total)
       } catch (err: any) {
-        setError(err.message || "Failed to load collections")
       } finally {
         setLoading(false)
       }
@@ -58,7 +67,7 @@ export function useCollections() {
     return () => {
       debouncedFetchCollections.cancel()
     }
-  }, [currentPage, itemsPerPage, sortBy, sortOrder, filters])
+  }, [currentPage, itemsPerPage, filters])
 
   const createCollection = async (newCollection: Partial<Collection>) => {
     try {
@@ -75,7 +84,7 @@ export function useCollections() {
       setAllCollections([created, ...allCollections])
       setTotalCollections((prev) => prev + 1)
     } catch (err: any) {
-      setError(err.message || "Failed to create collection")
+      console.error(err.message || "Failed to create collection")
     }
     finally {
       setLoading(false)
@@ -102,7 +111,7 @@ export function useCollections() {
       const updated = await apiUpdateCollection(id, updatedCollection)
       setAllCollections(allCollections.map((col) => (col.id === id ? { ...col, ...updated } : col)))
     } catch (err: any) {
-      setError(err.message || "Failed to update collection")
+      console.error(err.message || "Failed to update collection")
     }
     finally {
       setLoading(false)
@@ -121,7 +130,7 @@ export function useCollections() {
       setAllCollections(allCollections.filter((col) => col.id !== id))
       setTotalCollections((prev) => prev - 1)
     } catch (err: any) {
-      setError(err.message || "Failed to delete collection")
+      console.error(err.message || "Failed to delete collection")
     }
     finally {
       setLoading(false)
@@ -132,42 +141,81 @@ export function useCollections() {
     return allCollections.find((col) => col.id === id)
   }
 
-  const resetFilters = () => {
-    setFilters({
-      page: 1,
-      limit: 8,
-      sortBy: "name",
-      sortOrder: "asc",
-      name: "",
-      status: "",
-      category: "",
-      search: "",
-    })
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case CollectionStatus.active:
+        return "bg-green-100 text-green-800"
+      case CollectionStatus.draft:
+        return "bg-yellow-100 text-yellow-800"
+      case CollectionStatus.archived:
+        return "bg-gray-100 text-gray-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
   }
+
+  const handleView = (collection: Collection) => {
+    setViewModal({ open: true, collection })
+  }
+
+  const handleEdit = (collection: Collection) => {
+    setFormModal({ open: true, collection })
+  }
+
+  const handleDelete = (collection: Collection) => {
+    setDeleteModal({ open: true, collection })
+  }
+
+  const handleCreate = () => {
+    setFormModal({ open: true, collection: null })
+  }
+
+  const handleSave = (collectionData: any) => {
+    if (formModal.collection) {
+      updateCollection(formModal.collection.id!, collectionData)
+    } else {
+      createCollection(collectionData)
+    }
+  }
+
+  const handleConfirmDelete = () => {
+    if (deleteModal.collection) {
+      deleteCollection(deleteModal.collection.id!)
+    }
+  }
+
+  const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage])
+  const endIndex = useMemo(() => Math.min(currentPage * itemsPerPage, totalCollections), [currentPage, itemsPerPage, totalCollections])
+  const totalPages = useMemo(() => Math.ceil(totalCollections / itemsPerPage), [totalCollections, itemsPerPage])
 
   return {
     collections: allCollections,
-    allCollections,
     filters,
-    setFilters,
     currentPage,
-    setCurrentPage,
     itemsPerPage,
-    setItemsPerPage,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
-    totalPages: Math.ceil(totalCollections / itemsPerPage),
+    totalPages,
     totalCollections,
-    createCollection,
-    updateCollection,
-    deleteCollection,
-    getCollection,
-    resetFilters,
     loading,
-    error,
     CollectionStatus,
-    CollectionCategory,
+    startIndex,
+    endIndex,
+    viewModal,
+    deleteModal,
+    formModal,
+
+    getStatusColor,
+    handleView,
+    handleEdit,
+    handleDelete,
+    getCollection,
+    setItemsPerPage,
+    setCurrentPage,
+    setFilters,
+    handleCreate,
+    handleSave,
+    handleConfirmDelete,
+    setViewModal,
+    setFormModal,
+    setDeleteModal,
   }
 }
