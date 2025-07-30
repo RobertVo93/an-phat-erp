@@ -236,7 +236,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                   value={formData.salary}
                   type="number"
                   onChange={(e) => handleInputChange("salary", e.target.value)}
-                  placeholder="$0.00"
+                  placeholder="0 ₫"
                   className={errors.salary ? "border-red-500" : ""}
                 />
                 {errors.salary && <p className="text-sm text-red-500">{errors.salary}</p>}
