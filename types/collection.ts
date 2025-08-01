@@ -1,5 +1,5 @@
 import { CollectionStatus } from "@/types/enums";
-import { IBase } from "./base.interface";
+import { IBase, IBaseFilters } from "./base.interface";
 import { Product } from "./product";
 
 export interface Collection extends IBase {
@@ -12,11 +12,7 @@ export interface Collection extends IBase {
   products?: Product[]
 }
 
-export interface CollectionFilters {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
+export interface CollectionFilters extends IBaseFilters {
   name?: string;
   status?: string;
   search?: string;

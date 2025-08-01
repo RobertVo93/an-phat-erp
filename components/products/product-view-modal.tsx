@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import type { Product } from "@/types/product"
 import { useLanguage } from "@/contexts/language-context"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, getProductStatusColor } from "@/lib/utils"
 
 interface ProductViewModalProps {
   product: Product | null
@@ -16,29 +16,6 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
   const { t } = useLanguage()
 
   if (!product) return null
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800"
-      case "inactive":
-        return "bg-gray-100 text-gray-800"
-      case "lowStock":
-        return "bg-yellow-100 text-yellow-800"
-      case "outOfStock":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    return t(`products.status.${status}`)
-  }
-
-  const getCategoryText = (category: string) => {
-    return t(`products.category.${category}`)
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -98,8 +75,8 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
               }
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-500">{t("products.form.status")}</label>
-              <Badge className={getStatusColor(product.status!)}>{getStatusText(product.status!)}</Badge>
+              <label className="text-sm font-medium text-gray-500">{t("products.form.status")}</label> <br />
+              <Badge className={getProductStatusColor(product.status!)}>{t(`products.status.${product.status}`)}</Badge>
             </div>
           </div>
 

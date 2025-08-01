@@ -173,13 +173,12 @@ export async function GET(req: NextRequest) {
     await ensureDataSource();
     const { searchParams } = new URL(req.url);
     const page = Number(searchParams.get("page")) || 1;
-    const limit = Number(searchParams.get("limit")) || 20;
-    const sortBy = searchParams.get("sortBy") || "created_at";
+    const limit = Number(searchParams.get("limit")) || 1000;
+    const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrderParam = searchParams.get("sortOrder");
     const sortOrder = sortOrderParam === "asc" || sortOrderParam === "desc" ? sortOrderParam : "desc";
     const name = searchParams.get("name") || undefined;
     const status = searchParams.get("status") || undefined;
-    const category = searchParams.get("category") || undefined;
     const search = searchParams.get("search") || undefined;
 
     const result = await getAllCollections({
@@ -187,7 +186,7 @@ export async function GET(req: NextRequest) {
       limit,
       sortBy,
       sortOrder,
-      filters: { name, status, category, search },
+      filters: { name, status, search },
     });
     return NextResponse.json(result);
   } catch (error) {

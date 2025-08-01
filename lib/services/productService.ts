@@ -17,10 +17,16 @@ export async function getAllProducts({
   sortOrder?: "asc" | "desc";
   filters?: {
     collectionId?: string;
-    name?: string;
     status?: string;
-    supplier?: string;
     search?: string;
+    priceRange?: {
+      min: number;
+      max: number;
+    };
+    stockRange?: {
+      min: number;
+      max: number;
+    };
   };
 } = {}) {
   const repo = AppDataSource.getRepository(ProductEntity);
@@ -34,14 +40,8 @@ export async function getAllProducts({
   if (filters.collectionId && filters.collectionId !== "all") {
     subQuery.andWhere("collection.id = :collectionId", { collectionId: filters.collectionId });
   }
-  if (filters.name) {
-    subQuery.andWhere("product.name ILIKE :name", { name: `%${filters.name}%` });
-  }
   if (filters.status && filters.status !== "all") {
     subQuery.andWhere("product.status = :status", { status: filters.status });
-  }
-  if (filters.supplier) {
-    subQuery.andWhere("product.supplier ILIKE :supplier", { supplier: `%${filters.supplier}%` });
   }
   if (filters.search) {
     subQuery.andWhere(
@@ -49,7 +49,12 @@ export async function getAllProducts({
       { search: `%${filters.search}%` }
     );
   }
-
+  if (filters.priceRange) {
+    subQuery.andWhere("product.price BETWEEN :min AND :max", { min: filters.priceRange.min, max: filters.priceRange.max });
+  }
+  if (filters.stockRange) {
+    subQuery.andWhere("product.stock BETWEEN :min AND :max", { min: filters.stockRange.min, max: filters.stockRange.max });
+  }
   const fullIdsQuery = subQuery.orderBy(`product.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
 
   const allMatchingIds = await fullIdsQuery.getRawMany();

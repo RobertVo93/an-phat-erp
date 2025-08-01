@@ -1,5 +1,5 @@
 import { ProductStatus, ProductUnit } from "@/types/enums";
-import { IBase } from "./base.interface";
+import { IBase, IBaseFilters } from "./base.interface";
 import { Collection as ICollection } from "./collection";
 import { OrderItem as IOrderItem } from "./order";
 import { StockProduct } from "./stock-product";
@@ -40,9 +40,10 @@ export interface ProductFormData {
   collections?: ICollection[]
 }
 
-export interface ProductFilters {
+export interface ProductFilters extends IBaseFilters {
   collectionId?: string
   status?: string
+  search?: string
   priceRange?: {
     min: number
     max: number
