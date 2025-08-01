@@ -35,7 +35,7 @@ export function EmployeeDeleteModal({ isOpen, onClose, onConfirm, employee }: Em
             <p className="font-medium">{employee.name}</p>
             <p className="text-sm text-muted-foreground">{employee.position}</p>
             <p className="text-sm text-muted-foreground">{employee.department}</p>
-            <p className="text-sm text-muted-foreground">ID: {employee.id}</p>
+            <p className="text-sm text-muted-foreground">ID: {employee.number}</p>
           </div>
         </div>
 

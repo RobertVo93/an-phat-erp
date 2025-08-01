@@ -106,7 +106,7 @@ export function EmployeeViewModal({ isOpen, onClose, employee }: EmployeeViewMod
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-2xl font-bold">{employee.name}</h3>
-              <p className="text-sm text-muted-foreground">ID: {employee.id}</p>
+              <p className="text-sm text-muted-foreground">ID: {employee.number}</p>
             </div>
             <div className="flex space-x-2">
               <Badge className={getStatusColor(employee.status!)}>{translateStatus(employee.status!)}</Badge>
@@ -123,29 +123,25 @@ export function EmployeeViewModal({ isOpen, onClose, employee }: EmployeeViewMod
 
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{employee.email}</span>
+                <span className="text-sm">{employee.email || "N/A"}</span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{employee.phone}</span>
+                <span className="text-sm">{employee.phone || "N/A"}</span>
               </div>
 
-              {employee.address && (
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{employee.address}</span>
-                </div>
-              )}
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">{employee.address || "N/A"}</span>
+              </div>
 
-              {employee.emergencyContact && (
-                <div className="flex items-center space-x-2">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {t("employees.form.emergencyContact")}: {employee.emergencyContact}
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {t("employees.form.emergencyContact")}: {employee.emergencyContact || "N/A"}
+                </span>
+              </div>
             </div>
 
             {/* Work Information */}
@@ -154,23 +150,23 @@ export function EmployeeViewModal({ isOpen, onClose, employee }: EmployeeViewMod
 
               <div className="flex items-center space-x-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{employee.position}</span>
+                <span className="text-sm">{employee.position || "N/A"}</span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Building className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{translateDepartment(employee.department!)}</span>
+                <span className="text-sm">{translateDepartment(employee.department || "N/A")}</span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{employee.salary}</span>
+                <span className="text-sm font-medium">{employee.salary || "N/A"}</span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {t("employees.hireDate")}: {formatDate(employee.hireDate!)}
+                  {t("employees.hireDate")}: {formatDate(employee.hireDate!) || "N/A"}
                 </span>
               </div>
             </div>

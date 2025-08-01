@@ -61,7 +61,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
         email: "",
         phone: "",
         position: "",
-        department: "",
+        department: "Operations",
         salary: 0,
         hireDate: new Date(),
         employeeType: EmployeeType.fullTime,
@@ -80,20 +80,8 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
     if (!formData.name?.trim()) {
       newErrors.name = t("employees.form.nameRequired")
     }
-    if (!formData.email?.trim()) {
-      newErrors.email = t("employees.form.emailRequired")
-    }
     if (!formData.phone?.trim()) {
       newErrors.phone = t("employees.form.phoneRequired")
-    }
-    if (!formData.position?.trim()) {
-      newErrors.position = t("employees.form.positionRequired")
-    }
-    if (!formData.department?.trim()) {
-      newErrors.department = t("employees.form.departmentRequired")
-    }
-    if (!formData.salary) {
-      newErrors.salary = t("employees.form.salaryRequired")
     }
     if (!formData.hireDate) {
       newErrors.hireDate = t("employees.form.hireDateRequired")
@@ -149,12 +137,13 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   className={errors.name ? "border-red-500" : ""}
+                  required
                 />
                 {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">{t("employees.form.email")} *</Label>
+                <Label htmlFor="email">{t("employees.form.email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -172,6 +161,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
                   value={formData.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                   className={errors.phone ? "border-red-500" : ""}
+                  required
                 />
                 {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
               </div>
@@ -201,7 +191,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
             <h3 className="text-lg font-semibold">{t("employees.form.workInfo")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="position">{t("employees.form.position")} *</Label>
+                <Label htmlFor="position">{t("employees.form.position")}</Label>
                 <Input
                   id="position"
                   value={formData.position}
@@ -212,7 +202,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="department">{t("employees.form.department")} *</Label>
+                <Label htmlFor="department">{t("employees.form.department")}</Label>
                 <Select value={formData.department} onValueChange={(value) => handleInputChange("department", value)}>
                   <SelectTrigger className={errors.department ? "border-red-500" : ""}>
                     <SelectValue placeholder={t("employees.form.selectDepartment")} />
@@ -230,7 +220,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="salary">{t("employees.form.salary")} *</Label>
+                <Label htmlFor="salary">{t("employees.form.salary")}</Label>
                 <Input
                   id="salary"
                   value={formData.salary}
