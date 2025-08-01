@@ -35,7 +35,7 @@ export function CustomerDeleteModal({ isOpen, onClose, onConfirm, customer }: Cu
           <div className="bg-gray-50 p-3 rounded-md">
             <p className="font-medium">{customer.name}</p>
             <p className="text-sm text-muted-foreground">{customer.email}</p>
-            <p className="text-sm text-muted-foreground">ID: {customer.id}</p>
+            <p className="text-sm text-muted-foreground">ID: {customer.number}</p>
           </div>
         </div>
 

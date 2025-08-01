@@ -1,4 +1,4 @@
-import { Product, ProductStatus } from "@/types"
+import { CustomerStatus, CustomerType, Product, ProductStatus } from "@/types"
 import { IWarehouseSummary, WarehouseProduct } from "@/types/warehouseProduct"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -123,4 +123,38 @@ export const getProductStatusColor = (status: string) => {
     default:
       return "bg-gray-100 text-gray-800"
   }
+}
+
+export const getCustomerStatusColor = (status: string) => {
+  switch (status) {
+    case CustomerStatus.active:
+      return "bg-green-100 text-green-800"
+    case CustomerStatus.inactive:
+      return "bg-red-100 text-red-800"
+    case CustomerStatus.pending:
+      return "bg-yellow-100 text-yellow-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getCustomerTypeColor = (type: string) => {
+  switch (type) {
+    case CustomerType.vip:
+      return "bg-purple-100 text-purple-800"
+    case CustomerType.premium:
+      return "bg-blue-100 text-blue-800"
+    case CustomerType.regular:
+      return "bg-gray-100 text-gray-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getCustomerInitialCharacter = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
 }
