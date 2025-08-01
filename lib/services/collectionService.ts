@@ -4,7 +4,7 @@ import { CollectionEntity } from "@/lib/database/entities/collection.entity";
 export async function getAllCollections({
   page = 1,
   limit = 20,
-  sortBy = "created_at",
+  sortBy = "createdAt",
   sortOrder = "desc",
   filters = {} as Record<string, any>,
 }: {
@@ -15,7 +15,6 @@ export async function getAllCollections({
   filters?: {
     name?: string;
     status?: string;
-    category?: string;
     search?: string;
   };
 } = {}) {
@@ -28,7 +27,6 @@ export async function getAllCollections({
   // Filtering
   if (filters.name) qb.andWhere("collection.name ILIKE :name", { name: `%${filters.name}%` });
   if (filters.status) qb.andWhere("collection.status = :status", { status: filters.status });
-  if (filters.category) qb.andWhere("collection.category = :category", { category: filters.category });
   if (filters.search) {
     qb.andWhere(
       "(collection.name ILIKE :search OR collection.description ILIKE :search)",

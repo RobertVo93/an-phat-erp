@@ -38,7 +38,6 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
     cost: 0,
     stock: 0,
     minStock: 0,
-    sku: "",
     barcode: "",
     status: ProductStatus.active,
     supplier: "",
@@ -72,7 +71,6 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         cost: product.cost || 0,
         stock: product.stock || 0,
         minStock: product.minStock || 0,
-        sku: product.sku,
         barcode: product.barcode,
         status: product.status,
         supplier: product.supplier,
@@ -87,7 +85,6 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         cost: 0,
         stock: 0,
         minStock: 0,
-        sku: "",
         barcode: "",
         status: ProductStatus.active,
         supplier: "",
@@ -113,7 +110,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Basic Information */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-2">
               <Label htmlFor="name">{t("products.form.name")} *</Label>
               <Input
                 id="name"
@@ -122,9 +119,10 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="sku">{t("products.form.unit")} *</Label>
+            <div className="space-y-2 col-span-1">
+              <Label htmlFor="unit">{t("products.form.unit")} *</Label>
               <Select
+                required
                 value={formData.unit}
                 onValueChange={(value: ProductUnit) => setFormData((prev) => ({...prev, unit: value}))}
               >
@@ -139,15 +137,6 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="sku">{t("products.form.sku")} *</Label>
-              <Input
-                id="sku"
-                value={formData.sku}
-                onChange={(e) => setFormData((prev) => ({ ...prev, sku: e.target.value }))}
-                required
-              />
             </div>
           </div>
 
@@ -174,6 +163,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
             <div className="space-y-2">
               <Label>{t("products.form.collections")} *</Label>
               <Select
+                required
                 value=""
                 onValueChange={(value) => selectCollection(value)}
               >
@@ -192,7 +182,6 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
               {formData?.collections?.length && formData?.collections?.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.collections.map((collection) => {
-                    // const categoryLabel = categories.find((c) => c.value === cat)?.label || cat
                     return (
                       <div
                         key={collection.id}
@@ -221,6 +210,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
             <div className="space-y-2">
               <Label>{t("products.form.status")} *</Label>
               <Select
+                required
                 value={formData.status}
                 onValueChange={(value: ProductStatus) => setFormData((prev) => ({ ...prev, status: value }))}
               >
@@ -268,45 +258,23 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
           {/* Stock Information */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="stock">{t("products.form.stock")} *</Label>
+              <Label htmlFor="stock">{t("products.form.stock")}</Label>
               <Input
                 id="stock"
                 type="number"
                 min="0"
                 value={formData.stock}
                 onChange={(e) => setFormData((prev) => ({ ...prev, stock: Number.parseInt(e.target.value) || 0 }))}
-                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="minStock">{t("products.form.minStock")} *</Label>
+              <Label htmlFor="minStock">{t("products.form.minStock")}</Label>
               <Input
                 id="minStock"
                 type="number"
                 min="0"
                 value={formData.minStock}
                 onChange={(e) => setFormData((prev) => ({ ...prev, minStock: Number.parseInt(e.target.value) || 0 }))}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Additional Information */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="barcode">{t("products.form.barcode")}</Label>
-              <Input
-                id="barcode"
-                value={formData.barcode}
-                onChange={(e) => setFormData((prev) => ({ ...prev, barcode: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="supplier">{t("products.form.supplier")}</Label>
-              <Input
-                id="supplier"
-                value={formData.supplier}
-                onChange={(e) => setFormData((prev) => ({ ...prev, supplier: e.target.value }))}
               />
             </div>
           </div>

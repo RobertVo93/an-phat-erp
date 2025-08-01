@@ -176,7 +176,7 @@ export const productsTranslations = {
   },
   "products.form.piece": {
     en: "piece",
-    vi: "bánh",
+    vi: "cái",
   },
   "products.form.other": {
     en: "other",

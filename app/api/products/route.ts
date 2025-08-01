@@ -31,9 +31,6 @@ import { getUserFromRequest } from "@/lib/auth/jwt";
  *         minStock:
  *           type: number
  *           description: Minimum stock threshold
- *         sku:
- *           type: string
- *           description: Stock keeping unit
  *         barcode:
  *           type: string
  *           description: Product barcode
@@ -68,9 +65,6 @@ import { getUserFromRequest } from "@/lib/auth/jwt";
  *         minStock:
  *           type: number
  *           description: Minimum stock threshold
- *         sku:
- *           type: string
- *           description: Stock keeping unit
  *         barcode:
  *           type: string
  *           description: Product barcode
@@ -108,9 +102,6 @@ import { getUserFromRequest } from "@/lib/auth/jwt";
  *         minStock:
  *           type: number
  *           description: Minimum stock threshold
- *         sku:
- *           type: string
- *           description: Stock keeping unit
  *         barcode:
  *           type: string
  *           description: Product barcode
@@ -246,21 +237,21 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 20;
-    const sortBy = searchParams.get("sortBy") || "created_at";
+    const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrderParam = searchParams.get("sortOrder");
     const sortOrder = sortOrderParam === "asc" || sortOrderParam === "desc" ? sortOrderParam : "desc";
-    const name = searchParams.get("name") || undefined;
     const status = searchParams.get("status") || undefined;
-    const supplier = searchParams.get("supplier") || undefined;
     const search = searchParams.get("search") || undefined;
     const collectionId = searchParams.get("collectionId") || undefined;
+    const priceRange = searchParams.get("priceRange") ? JSON.parse(searchParams.get("priceRange") as string) : undefined;
+    const stockRange = searchParams.get("stockRange") ? JSON.parse(searchParams.get("stockRange") as string) : undefined;
 
     const result = await getAllProducts({
       page,
       limit,
       sortBy,
       sortOrder,
-      filters: { collectionId, name, status, supplier, search },
+      filters: { collectionId, status, search, priceRange, stockRange },
     });
     return NextResponse.json(result);
   } catch (error) {

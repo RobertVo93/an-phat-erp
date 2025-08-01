@@ -1,4 +1,4 @@
-import { Product } from "@/types"
+import { Product, ProductStatus } from "@/types"
 import { IWarehouseSummary, WarehouseProduct } from "@/types/warehouseProduct"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -108,4 +108,19 @@ export function groupWarehouseProductsByProduct(whProducts: WarehouseProduct[]):
   }
 
   return Object.values(result)
+}
+
+export const getProductStatusColor = (status: string) => {
+  switch (status) {
+    case ProductStatus.active:
+      return "bg-green-100 text-green-800"
+    case ProductStatus.inactive:
+      return "bg-gray-100 text-gray-800"
+    case ProductStatus.lowStock:
+      return "bg-yellow-100 text-yellow-800"
+    case ProductStatus.outOfStock:
+      return "bg-red-100 text-red-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
 }

@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToMany, OneToMany } from "typeorm";
+import { Entity, Column, ManyToMany, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { ProductStatus, ProductUnit } from "../../../types/enums";
 import { CollectionEntity } from "./collection.entity";
@@ -14,6 +14,7 @@ import { ProductionRecordEntity } from "./production-record.entity";
 import type { ProductionRecord as IProductionRecord } from "@/types/production";
 import { ProductionMaterialEntity } from "./production-material.entity";
 import type { ProductionMaterial as IProductionMaterial } from "@/types/productionMaterial";
+import { AppDataSource } from "../typeorm";
 
 @Entity({ name: "products" })
 export class ProductEntity extends BaseEntity implements IProduct {
@@ -71,4 +72,20 @@ export class ProductEntity extends BaseEntity implements IProduct {
 
   @OneToMany(() => ProductionMaterialEntity, (pm) => pm.material, {nullable: true})
   productionMaterials?: IProductionMaterial[]
+  
+  //////Auto numbering//////
+  @BeforeInsert()
+  async generateNumber() {
+    const repo = AppDataSource.getRepository(ProductEntity);
+    const latest = await repo
+      .createQueryBuilder("record")
+      .orderBy("CAST(SUBSTRING(record.sku FROM 5) AS INTEGER)", "DESC")
+      .getOne();
+
+    const lastNumber = latest?.sku
+      ? parseInt(latest.sku.replace("PRD-", ""), 10)
+      : 0;
+
+    this.sku = `PRD-${String(lastNumber + 1).padStart(5, "0")}`;
+  }
 } 
