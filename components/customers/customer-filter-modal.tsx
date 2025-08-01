@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import type { CustomerFilters } from "@/types/customer"
 import { useLanguage } from "@/contexts/language-context"
 import { CustomerStatus, CustomerType } from "@/types/enums"
@@ -87,55 +86,6 @@ export function CustomerFilterModal({ isOpen, onClose, onApply, currentFilters }
                 <SelectItem value={CustomerType.vip}>{t("customers.type.vip")}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("customers.filter.location")}</Label>
-            <Input
-              placeholder="Enter location..."
-              value={filters.location || ""}
-              onChange={(e) => updateFilter("location", e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("customers.filter.joinDateRange")}</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="date"
-                placeholder="From"
-                value={filters.joinDateFrom || ""}
-                onChange={(e) => updateFilter("joinDateFrom", e.target.value)}
-              />
-              <Input
-                type="date"
-                placeholder="To"
-                value={filters.joinDateTo || ""}
-                onChange={(e) => updateFilter("joinDateTo", e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("customers.filter.orderCountRange")}</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="number"
-                placeholder="Min orders"
-                value={filters.orderCountMin || ""}
-                onChange={(e) =>
-                  updateFilter("orderCountMin", e.target.value ? Number.parseInt(e.target.value) : undefined)
-                }
-              />
-              <Input
-                type="number"
-                placeholder="Max orders"
-                value={filters.orderCountMax || ""}
-                onChange={(e) =>
-                  updateFilter("orderCountMax", e.target.value ? Number.parseInt(e.target.value) : undefined)
-                }
-              />
-            </div>
           </div>
         </div>
 

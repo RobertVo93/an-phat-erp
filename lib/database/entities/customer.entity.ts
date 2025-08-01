@@ -1,12 +1,16 @@
-import { Entity, Column, OneToMany } from "typeorm";
+import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { CustomerStatus, CustomerType } from "../../../types/enums";
 import { OrderEntity } from "./order.entity";
 import { Order as IOrder } from "@/types/order";
 import { Customer as ICustomer } from "@/types/customer";
+import { AppDataSource } from "../typeorm";
 
 @Entity({ name: "customers" })
 export class CustomerEntity extends BaseEntity implements ICustomer {
+  @Column({ unique: true})
+  number?: string;
+
   @Column({ nullable: false })
   name?: string;
 
@@ -40,4 +44,20 @@ export class CustomerEntity extends BaseEntity implements ICustomer {
   //////Related fields//////
   @OneToMany(() => OrderEntity, (order) => order.customer, { nullable: true })
   orders!: IOrder[];
+
+  //////Auto numbering//////
+  @BeforeInsert()
+  async generateNumber() {
+    const repo = AppDataSource.getRepository(CustomerEntity);
+    const latest = await repo
+      .createQueryBuilder("record")
+      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
+      .getOne();
+
+    const lastNumber = latest?.number
+      ? parseInt(latest.number.replace("CUS-", ""), 10)
+      : 0;
+
+    this.number = `CUS-${String(lastNumber + 1).padStart(5, "0")}`;
+  }
 }

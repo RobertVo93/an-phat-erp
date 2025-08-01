@@ -7,7 +7,7 @@ import { useLanguage } from "@/contexts/language-context"
 
 import { Mail, Phone, MapPin, Building, Calendar, ShoppingCart, DollarSign } from "lucide-react"
 import { CustomerStatus, CustomerType } from "@/types/enums"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, getCustomerStatusColor, getCustomerTypeColor } from "@/lib/utils"
 
 interface CustomerViewModalProps {
   isOpen: boolean
@@ -19,32 +19,6 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
   const { t } = useLanguage()
 
   if (!customer) return null
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case CustomerStatus.active:
-        return "bg-green-100 text-green-800"
-      case CustomerStatus.inactive:
-        return "bg-red-100 text-red-800"
-      case CustomerStatus.pending:
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getCustomerTypeColor = (type: string) => {
-    switch (type) {
-      case CustomerType.vip:
-        return "bg-purple-100 text-purple-800"
-      case CustomerType.premium:
-        return "bg-blue-100 text-blue-800"
-      case CustomerType.regular:
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
 
   const translateStatus = (status: string) => {
     switch (status) {
@@ -84,10 +58,10 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-2xl font-bold">{customer.name}</h3>
-              <p className="text-sm text-muted-foreground">ID: {customer.id}</p>
+              <p className="text-sm text-muted-foreground">ID: {customer.number}</p>
             </div>
             <div className="flex space-x-2">
-              <Badge className={getStatusColor(customer.status!.toString())}>{translateStatus(customer.status!.toString())}</Badge>
+              <Badge className={getCustomerStatusColor(customer.status!.toString())}>{translateStatus(customer.status!.toString())}</Badge>
               <Badge variant="outline" className={getCustomerTypeColor(customer.customerType!.toString())}>
                 {translateCustomerType(customer.customerType!.toString())}
               </Badge>
@@ -101,23 +75,23 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
 
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{customer.email}</span>
+                <span className="text-sm">{customer.email || "N/A"}</span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{customer.phone}</span>
+                <span className="text-sm">{customer.phone || "N/A"}</span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{customer.location}</span>
+                <span className="text-sm">{customer.location || "N/A"}</span>
               </div>
 
               {customer.company && (
                 <div className="flex items-center space-x-2">
                   <Building className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{customer.company}</span>
+                  <span className="text-sm">{customer.company || "N/A"}</span>
                 </div>
               )}
             </div>
@@ -135,19 +109,19 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
               <div className="flex items-center space-x-2">
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {customer.orders?.length} {t("customers.orders")}
+                  {customer.orders?.length || 0} {t("customers.orders")}
                 </span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{formatCurrency(customer.totalSpend!)}</span>
+                <span className="text-sm font-medium">{formatCurrency(customer.totalSpend || 0)}</span>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {t("customers.lastOrder")}: {customer.lastOrder ? new Date(customer.lastOrder.toString().replace(" ", "T")).toLocaleDateString("sv-SE") : ""}
+                  {t("customers.lastOrder")}: {customer.lastOrder ? new Date(customer.lastOrder.toString().replace(" ", "T")).toLocaleDateString("sv-SE") : "N/A"}
                 </span>
               </div>
             </div>
