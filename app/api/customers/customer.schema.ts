@@ -3,7 +3,7 @@ import { CustomerStatus, CustomerType } from "@/types/enums";
 
 export const CreateCustomerSchema = z.object({
     name: z.string(),
-    email: z.string().email().optional(),
+    email: z.string().optional(),
     phone: z.string().optional(),
     company: z.string().optional(),
     location: z.string().optional(),
@@ -16,7 +16,7 @@ export const CreateCustomerSchema = z.object({
 
 export const UpdateCustomerSchema = z.object({
     name: z.string().optional(),
-    email: z.string().email().optional(),
+    email: z.string().optional(),
     phone: z.string().optional(),
     company: z.string().optional(),
     location: z.string().optional(),

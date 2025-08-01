@@ -75,11 +75,8 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
     if (!formData.name!.trim()) {
       newErrors.name = t("customers.form.nameRequired")
     }
-    if (!formData.email!.trim()) {
-      newErrors.email = t("customers.form.emailRequired")
-    }
-    if (!formData.phone!.trim()) {
-      newErrors.phone = t("customers.form.phoneRequired")
+    if (!formData.joinDate) {
+      newErrors.joinDate = t("customers.form.joinDateRequired")
     }
 
     setErrors(newErrors)
@@ -125,12 +122,13 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
                 className={errors.name ? "border-red-500" : ""}
+                required
               />
               {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">{t("customers.form.email")} *</Label>
+              <Label htmlFor="email">{t("customers.form.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -142,7 +140,7 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">{t("customers.form.phone")} *</Label>
+              <Label htmlFor="phone">{t("customers.form.phone")}</Label>
               <Input
                 id="phone"
                 value={formData.phone}
@@ -199,16 +197,17 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="joinDate">{t("customers.joined")}</Label>
+              <Label htmlFor="joinDate">{t("customers.joined")} *</Label>
               <Input
                 id="joinDate"
                 type="date"
                 value={
                   formData.joinDate
-                    ? new Date(formData.joinDate.toString().replace(" ", "T")).toLocaleDateString("sv-SE")
+                    ? new Date(formData.joinDate).toLocaleDateString("sv-SE")
                     : ""
                 }
                 onChange={(e) => handleInputChange("joinDate", e.target.value)}
+                required
               />
             </div>
           </div>

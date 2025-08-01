@@ -12,64 +12,72 @@ export function useCustomers() {
   const [filters, setFilters] = useState<CustomerFilters>({})
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [sortBy, setSortBy] = useState<keyof Customer>("name")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [loading, setLoading] = useState(false)
   const [totalRevenue, setTotalRevenue] = useState<number>(0)
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+  const [formMode, setFormMode] = useState<"create" | "edit">("create")
+  const [totalCustomers, setTotalCustomers] = useState<number>(0)
 
-  const filteredAndSortedCustomers = useMemo(() => {
-    const filtered = customers.filter((customer) => {
-      const matchesSearch =
-        customer.name!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.email!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.phone!.includes(searchTerm) ||
-        customer.id!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (customer.company && customer.company.toLowerCase().includes(searchTerm.toLowerCase()))
+  const reloadCustomers = async () => {
+    setLoading(true)
+    try {
+      const res = await getCustomers({
+        status: filters.status as CustomerStatus,
+        customerType: filters.customerType as CustomerType,
+        name: searchTerm,
+        page: currentPage,
+        limit: itemsPerPage,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      })
 
-      const matchesStatus = !filters.status || filters.status === "all" || customer.status === filters.status.toLowerCase()
-      const matchesType =
-        !filters.customerType || filters.customerType === "all" || customer.customerType === filters.customerType.toLowerCase()
-      const matchesLocation =
-        !filters.location || customer.location!.toLowerCase().includes(filters.location.toLowerCase())
+      // calcualte total spends of customers
+      const calculatingCustomers = res.data.map((customer: Customer) => {
+        const totalSpend = customer.orders?.reduce((sum, order) => sum + (order.totalAmount ?? 0), 0) ?? 0
+        return {
+          ...customer,
+          totalSpend,
+        }
+      })
+      setCustomers(calculatingCustomers)
+      setTotalCustomers(res.total)
 
-      return matchesSearch && matchesStatus && matchesType && matchesLocation
-    })
+      const totalSpendAllCustomers = calculatingCustomers.reduce((sum: number, customer: Customer) => sum + customer.totalSpend!, 0)
+      setTotalRevenue(totalSpendAllCustomers)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    // Sort
-    filtered.sort((a, b) => {
-      let aValue = a[sortBy]
-      let bValue = b[sortBy]
+  useEffect(() => {
+    const debouncedFetchProducts = debounce(async () => {
+      setCurrentPage(1)
+      reloadCustomers()
+    }, 1000)
 
-      if (typeof aValue === "string") {
-        aValue = aValue.toLowerCase()
-        bValue = (bValue as string).toLowerCase()
-      }
+    debouncedFetchProducts()
 
-      if (!aValue || !bValue) return 0
+    // Cleanup function to cancel any pending debounced calls
+    return () => {
+      debouncedFetchProducts.cancel()
+    }
+  }, [searchTerm])
 
-      if (sortOrder === "asc") {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
-      }
-    })
-
-    return filtered
-  }, [customers, searchTerm, filters, sortBy, sortOrder])
-
-  const paginatedCustomers = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    return filteredAndSortedCustomers.slice(startIndex, startIndex + itemsPerPage)
-  }, [filteredAndSortedCustomers, currentPage, itemsPerPage])
-
-  const totalPages = Math.ceil(filteredAndSortedCustomers.length / itemsPerPage)
+  useEffect(() => {
+    reloadCustomers()
+  }, [currentPage, itemsPerPage, filters, ])
 
   const addCustomer = async (customer: Omit<Customer, "id">) => {
     try {
       setLoading(true)
       const newCustomer: Customer = {
         ...customer,
-        id: `CUST-${String(customers.length + 1).padStart(3, "0")}`,
         customerType: customer.customerType as CustomerType,
         status: customer.status as CustomerStatus,
         createdAt: new Date().toISOString() as any,
@@ -88,7 +96,6 @@ export function useCustomers() {
     try {
       setLoading(true)
       const updatedCustomer: Customer = {
-        id: `CUST-${String(customers.length + 1).padStart(3, "0")}`,
         ...updates,
         updatedAt: new Date().toISOString() as any,
       }
@@ -113,70 +120,109 @@ export function useCustomers() {
     }
   }
 
-  const getCustomerById = (id: string) => {
-    return customers.find((customer) => customer.id === id)
+  const handleCreateCustomer = () => {
+    setFormMode("create")
+    setSelectedCustomer(null)
+    setIsFormModalOpen(true)
   }
 
-  useEffect(() => {
-    const debouncedFetchProducts = debounce(async () => {
-      setLoading(true)
-      try {
-        const res = await getCustomers({
-          status: filters.status as CustomerStatus,
-          customerType: filters.customerType as CustomerType,
-          name: filters.name,
-        })
+  const handleEditCustomer = (customer: Customer) => {
+    setFormMode("edit")
+    setSelectedCustomer(customer)
+    setIsFormModalOpen(true)
+  }
 
-        // calcualte total spends of customers
-        const calculatingCustomers = res.data.map((customer: Customer) => {
-          const totalSpend = customer.orders?.reduce((sum, order) => sum + (order.totalAmount ?? 0), 0) ?? 0
-          return {
-            ...customer,
-            totalSpend,
-          }
-        })
-        setCustomers(calculatingCustomers)
+  const handleViewCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setIsViewModalOpen(true)
+  }
 
-        const totalSpendAllCustomers = calculatingCustomers.reduce((sum: number, customer: Customer) => sum + customer.totalSpend!, 0)
-        setTotalRevenue(totalSpendAllCustomers)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    }, 1000)
+  const handleDeleteCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setIsDeleteModalOpen(true)
+  }
 
-    debouncedFetchProducts()
-
-    // Cleanup function to cancel any pending debounced calls
-    return () => {
-      debouncedFetchProducts.cancel()
+  const handleSaveCustomer = (customerData: Omit<Customer, "id"> | Customer) => {
+    if (formMode === "create") {
+      addCustomer(customerData as Omit<Customer, "id">)
+    } else if (formMode === "edit" && selectedCustomer) {
+      updateCustomer(selectedCustomer.id!, customerData)
     }
-  }, [currentPage, itemsPerPage, sortBy, sortOrder, filters])
+  }
+
+  const handleConfirmDelete = () => {
+    if (selectedCustomer) {
+      deleteCustomer(selectedCustomer.id!)
+      setIsDeleteModalOpen(false)
+      setSelectedCustomer(null)
+    }
+  }
+
+  // Smart pagination for mobile
+  const getVisiblePages = () => {
+    const delta = 2
+    const range = []
+    const rangeWithDots = []
+
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i)
+    }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, "...")
+    } else {
+      rangeWithDots.push(1)
+    }
+
+    rangeWithDots.push(...range)
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push("...", totalPages)
+    } else if (totalPages > 1) {
+      rangeWithDots.push(totalPages)
+    }
+
+    return rangeWithDots
+  }
+
+  const totalPages = useMemo(() => Math.ceil(totalCustomers / itemsPerPage), [totalCustomers, itemsPerPage])
+  const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage])
+  const endIndex = useMemo(() => Math.min(currentPage * itemsPerPage, customers.length), [currentPage, itemsPerPage, customers])
 
   return {
-    customers: paginatedCustomers,
+    customers,
     allCustomers: customers,
-    filteredCustomers: filteredAndSortedCustomers,
     searchTerm,
-    setSearchTerm,
     filters,
-    setFilters,
     currentPage,
-    setCurrentPage,
     itemsPerPage,
-    setItemsPerPage,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
     totalPages,
-    totalCustomers: filteredAndSortedCustomers.length,
-    addCustomer,
-    updateCustomer,
-    deleteCustomer,
-    getCustomerById,
+    totalCustomers,
     loading,
     totalRevenue,
+    startIndex,
+    endIndex,
+    selectedCustomer,
+    formMode,
+    isFilterModalOpen,
+    isFormModalOpen,
+    isViewModalOpen,
+    isDeleteModalOpen,
+
+    setSearchTerm,
+    setFilters,
+    setCurrentPage,
+    setItemsPerPage,
+    getVisiblePages,
+    handleCreateCustomer,
+    handleViewCustomer,
+    handleEditCustomer,
+    handleDeleteCustomer,
+    setIsFilterModalOpen,
+    setIsFormModalOpen,
+    setIsViewModalOpen,
+    setIsDeleteModalOpen,
+    handleSaveCustomer,
+    handleConfirmDelete,
   }
 }
