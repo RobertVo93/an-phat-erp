@@ -1,4 +1,4 @@
-import { CustomerStatus, CustomerType, Product, ProductStatus } from "@/types"
+import { CustomerStatus, CustomerType, EmployeeStatus, EmployeeType, Product, ProductStatus } from "@/types"
 import { IWarehouseSummary, WarehouseProduct } from "@/types/warehouseProduct"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -145,6 +145,34 @@ export const getCustomerTypeColor = (type: string) => {
     case CustomerType.premium:
       return "bg-blue-100 text-blue-800"
     case CustomerType.regular:
+      return "bg-gray-100 text-gray-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getEmployeeStatusColor = (status: string) => {
+  switch (status) {
+    case EmployeeStatus.active:
+      return "bg-green-100 text-green-800"
+    case EmployeeStatus.onLeave:
+      return "bg-yellow-100 text-yellow-800"
+    case EmployeeStatus.inactive:
+      return "bg-red-100 text-red-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getEmployeeTypeColor = (type: string) => {
+  switch (type) {
+    case EmployeeType.fullTime:
+      return "bg-blue-100 text-blue-800"
+    case EmployeeType.partTime:
+      return "bg-purple-100 text-purple-800"
+    case EmployeeType.contract:
+      return "bg-orange-100 text-orange-800"
+    case EmployeeType.intern:
       return "bg-gray-100 text-gray-800"
     default:
       return "bg-gray-100 text-gray-800"

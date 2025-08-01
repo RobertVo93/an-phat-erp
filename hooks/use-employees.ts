@@ -1,8 +1,9 @@
 "use client"
 
+import { debounce } from "lodash"
 import { useState, useMemo, useEffect } from "react"
 import type { Employee, EmployeeFilters, EmployeeStats } from "@/types/employee"
-import { EmployeeStatus } from "@/types"
+import { EmployeeStatus, EmployeeType } from "@/types"
 import { getEmployee as apiGetEmployee, addEmployee as apiAddEmployee, updateEmployee as apiUpdateEmployee, deleteEmployee as apiDeleteEmployee } from "@/lib/httpclient/employee.client"
 
 export function useEmployees() {
@@ -14,83 +15,60 @@ export function useEmployees() {
   const [sortBy, setSortBy] = useState<keyof Employee>("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [loading, setLoading] = useState<boolean>(false)
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+  const [formMode, setFormMode] = useState<"create" | "edit">("create")
+  const [totalEmployees, setTotalEmployees] = useState(0)
 
-  // Filter and search employees
-  const filteredEmployees = useMemo(() => {
-    const filtered = employees.filter((employee) => {
-      const matchesSearch =
-        searchTerm === "" ||
-        employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.phone?.includes(searchTerm) ||
-        employee.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.id?.toLowerCase().includes(searchTerm.toLowerCase())
+  const reloadEmployees = async () => {
+    setLoading(true)
+    try {
+      const res = await apiGetEmployee({
+        name: searchTerm,
+        status: filters.status as EmployeeStatus,
+        employeeType: filters.employeeType as EmployeeType,
+        department: filters.department as string,
+        position: filters.position as string,
+        hireDateFrom: filters.hireDateFrom as string,
+        hireDateTo: filters.hireDateTo as string,
+        salaryMin: filters.salaryMin as number,
+        salaryMax: filters.salaryMax as number,
+        page: currentPage,
+        limit: itemsPerPage,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      })
 
-      const matchesStatus = !filters.status || employee.status === filters.status
-      const matchesEmployeeType = !filters.employeeType || employee.employeeType === filters.employeeType
-      const matchesDepartment = !filters.department || employee.department === filters.department
-      const matchesPosition =
-        !filters.position || employee.position?.toLowerCase().includes(filters.position.toLowerCase())
-
-      const matchesHireDateFrom = !filters.hireDateFrom || new Date(employee.hireDate!) >= new Date(filters.hireDateFrom)
-      const matchesHireDateTo = !filters.hireDateTo || new Date(employee.hireDate!) <= new Date(filters.hireDateTo)
-
-      const salaryValue = Number.parseFloat(employee.salary!.toString().replace(/[$,]/g, ""))
-      const matchesSalaryMin = !filters.salaryMin || salaryValue >= filters.salaryMin
-      const matchesSalaryMax = !filters.salaryMax || salaryValue <= filters.salaryMax
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesEmployeeType &&
-        matchesDepartment &&
-        matchesPosition &&
-        matchesHireDateFrom &&
-        matchesHireDateTo &&
-        matchesSalaryMin &&
-        matchesSalaryMax
-      )
-    })
-
-    // Sort employees
-    filtered.sort((a, b) => {
-      const aValue = a[sortBy]
-      const bValue = b[sortBy]
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        const comparison = aValue.localeCompare(bValue)
-        return sortOrder === "asc" ? comparison : -comparison
-      }
-
-      if (aValue! < bValue!) return sortOrder === "asc" ? -1 : 1
-      if (aValue! > bValue!) return sortOrder === "asc" ? 1 : -1
-      return 0
-    })
-
-    return filtered
-  }, [employees, searchTerm, filters, sortBy, sortOrder])
-
-  // Pagination
-  const totalEmployees = filteredEmployees.length
-  const totalPages = Math.ceil(totalEmployees / itemsPerPage)
-  const paginatedEmployees = filteredEmployees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  // Statistics
-  const stats: EmployeeStats = useMemo(() => {
-    const totalEmployees = employees.length
-    const activeEmployees = employees.filter((emp) => emp.status === EmployeeStatus.active).length
-    const departments = new Set(employees.map((emp) => emp.department)).size
-    const onLeave = employees.filter((emp) => emp.status === EmployeeStatus.onLeave).length
-
-    return {
-      totalEmployees,
-      activeEmployees,
-      departments,
-      onLeave,
+      setEmployees(res.data)
+      setTotalEmployees(res.total)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
     }
-  }, [employees])
+  }
 
+  useEffect(() => {
+    const debouncedFetchProducts = debounce(async () => {
+      setCurrentPage(1)
+      reloadEmployees()
+    }, 1000)
+
+    debouncedFetchProducts()
+
+    // Cleanup function to cancel any pending debounced calls
+    return () => {
+      debouncedFetchProducts.cancel()
+    }
+  }, [searchTerm])
+
+  useEffect(() => {
+    reloadEmployees()
+  }, [currentPage, itemsPerPage, filters])
+  
   // CRUD operations
   const addEmployee = async (employeeData: Omit<Employee, "id">) => {
     try {
@@ -128,42 +106,108 @@ export function useEmployees() {
     }
   }
 
-  const getEmployee = async () => {
-    try {
-      setLoading(true)
-      const data = await apiGetEmployee()
-      setEmployees(data.data)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
+  const handleCreateEmployee = () => {
+    setSelectedEmployee(null)
+    setFormMode("create")
+    setIsFormModalOpen(true)
+  }
+
+  const handleEditEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee)
+    setFormMode("edit")
+    setIsFormModalOpen(true)
+  }
+
+  const handleViewEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee)
+    setIsViewModalOpen(true)
+  }
+
+  const handleDeleteEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleSaveEmployee = (employeeData: Omit<Employee, "id"> | Employee) => {
+    if (formMode === "create") {
+      addEmployee(employeeData as Omit<Employee, "id">)
+    } else if (formMode === "edit" && selectedEmployee) {
+      updateEmployee(selectedEmployee.id!, employeeData)
     }
   }
 
-  useEffect(() => {
-    getEmployee()
-  }, [])
+  const handleConfirmDelete = () => {
+    if (selectedEmployee) {
+      deleteEmployee(selectedEmployee.id!)
+      setIsDeleteModalOpen(false)
+      setSelectedEmployee(null)
+    }
+  }
+
+  const handleSort = (field: keyof Employee) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(field)
+      setSortOrder("asc")
+    }
+  }
+
+  // Statistics
+  const stats: EmployeeStats = useMemo(() => {
+    const totalEmployees = employees.length
+    const activeEmployees = employees.filter((emp) => emp.status === EmployeeStatus.active).length
+    const departments = new Set(employees.map((emp) => emp.department)).size
+    const onLeave = employees.filter((emp) => emp.status === EmployeeStatus.onLeave).length
+
+    return {
+      totalEmployees,
+      activeEmployees,
+      departments,
+      onLeave,
+    }
+  }, [employees])
+  // Pagination
+  const totalPages = useMemo(() => Math.ceil(totalEmployees / itemsPerPage), [totalEmployees, itemsPerPage])
+  const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage])
+  const endIndex = useMemo(() => Math.min(currentPage * itemsPerPage, totalEmployees), [currentPage, itemsPerPage, totalEmployees])
 
   return {
-    employees: paginatedEmployees,
+    employees,
     searchTerm,
-    setSearchTerm,
     filters,
-    setFilters,
     currentPage,
-    setCurrentPage,
     itemsPerPage,
-    setItemsPerPage,
     sortBy,
-    setSortBy,
     sortOrder,
-    setSortOrder,
     totalPages,
     totalEmployees,
-    addEmployee,
-    updateEmployee,
-    deleteEmployee,
     stats,
-    loading
+    loading,
+    isFormModalOpen,
+    isViewModalOpen,
+    isDeleteModalOpen,
+    isFilterModalOpen,
+    formMode,
+    selectedEmployee,
+    startIndex,
+    endIndex,
+    
+    setSearchTerm,
+    setFilters,
+    setCurrentPage,
+    setItemsPerPage,
+    setSortOrder,
+    setIsFormModalOpen,
+    setIsViewModalOpen,
+    setIsDeleteModalOpen,
+    setIsFilterModalOpen,
+    handleCreateEmployee,
+    handleEditEmployee,
+    handleViewEmployee,
+    handleDeleteEmployee,
+    handleSaveEmployee,
+    handleConfirmDelete,
+    handleSort,
   }
 }

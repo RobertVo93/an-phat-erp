@@ -71,7 +71,7 @@ export function useCustomers() {
 
   useEffect(() => {
     reloadCustomers()
-  }, [currentPage, itemsPerPage, filters, ])
+  }, [currentPage, itemsPerPage, filters])
 
   const addCustomer = async (customer: Omit<Customer, "id">) => {
     try {

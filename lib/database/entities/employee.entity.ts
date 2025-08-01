@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany } from "typeorm";
+import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { EmployeeType, EmployeeStatus } from "../../../types/enums";
 import { AttendanceRecordEntity } from "./attendance-record.entity";
@@ -8,9 +8,13 @@ import { PayrollRecordEntity } from "./payroll-record.entity";
 import { PayrollRecord as IPayrollRecord } from "@/types";
 import { ProductionLaborEntity } from "./production-labor.entity";
 import type { ProductionLabor as IProductionLabor } from "@/types/ProductionLabor";
+import { AppDataSource } from "../typeorm";
 
 @Entity({ name: "employees" })
 export class EmployeeEntity extends BaseEntity implements IEmployee {
+  @Column({ unique: true})
+  number?: string;
+
   @Column({ nullable: false })
   name?: string;
 
@@ -56,4 +60,20 @@ export class EmployeeEntity extends BaseEntity implements IEmployee {
 
   @OneToMany(() => ProductionLaborEntity, (pl) => pl.employee, { cascade: true })
   productionLabors?: IProductionLabor[];
+
+  //////Auto numbering//////
+  @BeforeInsert()
+  async generateNumber() {
+    const repo = AppDataSource.getRepository(EmployeeEntity);
+    const latest = await repo
+      .createQueryBuilder("record")
+      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
+      .getOne();
+
+    const lastNumber = latest?.number
+      ? parseInt(latest.number.replace("EMP-", ""), 10)
+      : 0;
+
+    this.number = `EMP-${String(lastNumber + 1).padStart(5, "0")}`;
+  }
 }
