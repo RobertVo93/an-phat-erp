@@ -5,3 +5,9 @@ export interface IBase {
     updatedAt?: Date
     updatedBy?: string
 }
+export interface IBaseFilters {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+}

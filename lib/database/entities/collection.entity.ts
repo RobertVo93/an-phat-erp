@@ -28,9 +28,9 @@ export class CollectionEntity extends BaseEntity implements ICollection {
   @JoinTable({ name: "collection_products" })
   products!: IProduct[];
   
-  //////Auto order numbering//////
+  //////Auto numbering//////
   @BeforeInsert()
-  async generateOrderNumber() {
+  async generateNumber() {
     const repo = AppDataSource.getRepository(CollectionEntity);
     const latest = await repo
       .createQueryBuilder("record")

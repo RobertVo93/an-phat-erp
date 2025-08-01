@@ -16,64 +16,23 @@ export function useProducts() {
   const [filters, setFilters] = useState<ProductFilters>({})
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [sortBy, setSortBy] = useState<keyof Product>("name")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-
-  const filteredProducts = useMemo(() => {
-    const filtered = allProducts.filter((product) => {
-      // Search filter
-      const matchesSearch =
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
-
-      // Collection filter
-      const matchesCollection =
-        !filters.collectionId ||
-        filters.collectionId === "all" ||
-        (product.collections && product.collections.find(col => col.id === filters.collectionId));
-
-      // Status filter
-      const matchesStatus = !filters.status || filters.status === "all" || product.status === filters.status;
-
-      // Price range filter
-      const matchesPrice =
-        !filters.priceRange || (product.price! >= filters.priceRange.min && product.price! <= filters.priceRange.max)
-
-      // Stock range filter
-      const matchesStock =
-        !filters.stockRange || (product.stock! >= filters.stockRange.min && product.stock! <= filters.stockRange.max)
-
-      return matchesSearch && matchesCollection && matchesStatus && matchesPrice && matchesStock
-    })
-
-    // Sort
-    filtered.sort((a, b) => {
-      let aValue = a[sortBy]
-      let bValue = b[sortBy]
-
-      if (typeof aValue === "string") {
-        aValue = aValue.toLowerCase()
-        bValue = (bValue as string).toLowerCase()
-      }
-
-      if (sortOrder === "asc") {
-        return aValue! < bValue! ? -1 : aValue! > bValue! ? 1 : 0
-      } else {
-        return aValue! > bValue! ? -1 : aValue! < bValue! ? 1 : 0
-      }
-    })
-
-    return filtered
-  }, [allProducts, searchTerm, filters, sortBy, sortOrder])
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [viewModalOpen, setViewModalOpen] = useState(false)
+  const [formModalOpen, setFormModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [filterModalOpen, setFilterModalOpen] = useState(false)
+  const [totalProducts, setTotalProducts] = useState(0)
 
   const getAllCollections = async () => {
+    setLoading(true)
     try {
       const response = await fetch("/api/collections");
       const data = await response.json();
       setAllCollections(data.data)
     } catch (e) {
       console.error(e)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -86,8 +45,14 @@ export function useProducts() {
           status: filters.status || undefined,
           priceRange: filters.priceRange,
           stockRange: filters.stockRange,
+          limit: itemsPerPage,
+          page: currentPage,
+          sortBy: filters.sortBy || "createdAt",
+          sortOrder: filters.sortOrder || "desc",
+          search: searchTerm,
         })
         setAllProducts(res.data);
+        setTotalProducts(res.total)
       } catch (e) {
         console.error(e)
       } finally {
@@ -101,25 +66,16 @@ export function useProducts() {
     return () => {
       debouncedFetchProducts.cancel()
     }
-  }, [currentPage, itemsPerPage, sortBy, sortOrder, filters])
-
-  const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    return filteredProducts.slice(startIndex, startIndex + itemsPerPage)
-  }, [filteredProducts, currentPage, itemsPerPage])
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+  }, [currentPage, itemsPerPage, filters, searchTerm])
 
   const createProduct = async (data: ProductFormData): Promise<void> => {
     setLoading(true)
     try {
       const newProduct: Product = {
-        id: `PRD-${String(allProducts.length + 1).padStart(3, "0")}`,
         ...data,
         createdAt: new Date().toISOString() as any,
         updatedAt: new Date().toISOString() as any,
       }
-      console.log("newProduct", newProduct)
       if (newProduct.image && newProduct.image.startsWith("data:")) {
         // Convert base64 to File
         const file = base64ToFile(newProduct.image, "product-image.png");
@@ -154,7 +110,6 @@ export function useProducts() {
       }
       
       const updatedProduct: Product = {
-        id: `PRD-${String(allProducts.length + 1).padStart(3, "0")}`,
         ...data,
         updatedAt: new Date().toISOString() as any,
       }
@@ -180,34 +135,78 @@ export function useProducts() {
     }
   }
 
-  const getProduct = (id: string): Product | undefined => {
-    return allProducts.find((product) => product.id === id)
+  const handleView = (product: Product) => {
+    setSelectedProduct(product)
+    setViewModalOpen(true)
   }
 
+  const handleEdit = (product: Product) => {
+    setSelectedProduct(product)
+    setFormModalOpen(true)
+  }
+
+  const handleDelete = (product: Product) => {
+    setSelectedProduct(product)
+    setDeleteModalOpen(true)
+  }
+
+  const handleCreate = () => {
+    setSelectedProduct(null)
+    setFormModalOpen(true)
+  }
+
+  const handleFormSubmit = async (data: ProductFormData) => {
+    if (selectedProduct) {
+      await updateProduct(selectedProduct.id!, data)
+    } else {
+      await createProduct(data)
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (selectedProduct) {
+      await deleteProduct(selectedProduct.id!)
+    }
+  }
+
+  const hasActiveFilters = useMemo(() => Object.keys(filters).length > 0, [filters])
+  const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage])
+  const endIndex = useMemo(() => Math.min(currentPage * itemsPerPage, totalProducts), [currentPage, itemsPerPage, totalProducts])
+  const totalPages = useMemo(() => Math.ceil(totalProducts / itemsPerPage), [totalProducts, itemsPerPage])
+
   return {
-    products: paginatedProducts,
-    allProducts,
-    filteredProducts,
+    products: allProducts,
     loading,
     searchTerm,
-    setSearchTerm,
     filters,
-    setFilters,
     currentPage,
-    setCurrentPage,
     itemsPerPage,
-    setItemsPerPage,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
     totalPages,
-    totalProducts: filteredProducts.length,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-    getProduct,
+    totalProducts,
     allCollections,
+    hasActiveFilters,
+    startIndex,
+    endIndex,
+    selectedProduct,
+    viewModalOpen,
+    formModalOpen,
+    deleteModalOpen,
+    filterModalOpen,
+
+    setSearchTerm,
+    setFilters,
+    setCurrentPage,
+    setItemsPerPage,
     getAllCollections,
+    handleCreate,
+    handleView,
+    handleEdit,
+    handleDelete,
+    handleFormSubmit,
+    setFilterModalOpen,
+    setViewModalOpen,
+    setFormModalOpen,
+    setDeleteModalOpen,
+    handleDeleteConfirm,
   }
 }
