@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 20;
-    const sortBy = searchParams.get("sortBy") || "name";
+    const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrder = searchParams.get("sortOrder") || "asc";
     const status = searchParams.get("status") || undefined;
     const name = searchParams.get("name") || undefined;

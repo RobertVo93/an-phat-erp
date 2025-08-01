@@ -174,6 +174,10 @@ export const customersTranslations = {
     en: "Phone is required",
     vi: "Số điện thoại là bắt buộc",
   },
+  "customers.form.joinDateRequired": {
+    en: "Join date is required",
+    vi: "Ngày tham gia là bắt buộc",
+  },
   // View modal translations
   "customers.form.contactInfo": {
     en: "Contact Information",
