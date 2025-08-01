@@ -1,8 +1,9 @@
 import { EmployeeType, EmployeeStatus } from "@/types/enums";
-import { IBase } from "./base.interface";
+import { IBase, IBaseFilters } from "./base.interface";
 import { AttendanceRecord as IAttendanceRecord } from "./attendance";
 
-export interface Employee extends IBase{
+export interface Employee extends IBase {
+  number?: string
   name?: string
   email?: string
   phone?: string
@@ -19,7 +20,8 @@ export interface Employee extends IBase{
   attendanceRecords?: IAttendanceRecord[];
 }
 
-export interface EmployeeFilters {
+export interface EmployeeFilters extends IBaseFilters {
+  name?: string
   status?: string
   employeeType?: string
   department?: string
