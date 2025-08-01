@@ -22,11 +22,4 @@ export interface CustomerFilters extends IBaseFilters {
   status?: string
   name?: string
   customerType?: string
-  location?: string
-  joinDateFrom?: string
-  joinDateTo?: string
-  totalSpentMin?: number
-  totalSpentMax?: number
-  orderCountMin?: number
-  orderCountMax?: number
 }

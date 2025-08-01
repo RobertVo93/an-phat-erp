@@ -1,7 +1,10 @@
-import { Employee } from "@/types";
+import { Employee, EmployeeFilters } from "@/types";
 
-export async function getEmployee() {
+export async function getEmployee(params: EmployeeFilters = {}) {
   const url = new URL("/api/employee", window.location.origin);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
+  });
   const res = await fetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch employee");
   return res.json();
