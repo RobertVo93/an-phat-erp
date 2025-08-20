@@ -20,11 +20,16 @@ export async function getAllOrders({ page = 1, limit = 20, sortBy = "date", sort
   // Filtering
   if (filters.status) qb.andWhere("order.status = :status", { status: filters.status });
   if (filters.customer) qb.andWhere("order.customer ILIKE :customer", { customer: `%${filters.customer}%` });
-  if (filters.dateFrom) qb.andWhere("order.date >= :dateFrom", { dateFrom: filters.dateFrom });
-  if (filters.dateTo) qb.andWhere("order.date <= :dateTo", { dateTo: filters.dateTo });
+  if (filters.dateFrom) qb.andWhere("order.deliveryDate >= :dateFrom", { dateFrom: filters.dateFrom });
+  if (filters.dateTo) qb.andWhere("order.deliveryDate <= :dateTo", { dateTo: filters.dateTo });
+  if (filters.paymentStatus) qb.andWhere("order.paymentStatus = :paymentStatus", { paymentStatus: filters.paymentStatus });
+  if (filters.paymentMethod) qb.andWhere("order.paymentMethod = :paymentMethod", { paymentMethod: filters.paymentMethod });
+  if (filters.totalAmountFrom) qb.andWhere("order.totalAmount >= :totalAmountFrom", { totalAmountFrom: filters.totalAmountFrom });
+  if (filters.totalAmountTo) qb.andWhere("order.totalAmount <= :totalAmountTo", { totalAmountTo: filters.totalAmountTo });
+  if (filters.searchTerm) qb.andWhere("order.orderNumber ILIKE :searchTerm OR order.notes ILIKE :searchTerm or order.shippingAddress ILIKE :searchTerm", { searchTerm: `%${filters.searchTerm}%` });
 
   // Sorting
-  const allowedSortFields = ["deliveryDate", "totalAmount", "status", "paymentStatus", "paymentMethod", "shippingAddress"];
+  const allowedSortFields = ["deliveryDate", "totalAmount", "customer", "orderNumber"];
   const sortField = allowedSortFields.includes(sortBy) ? sortBy : "deliveryDate";
   qb.orderBy(`order.${sortField}`, sortOrder.toUpperCase() as "ASC" | "DESC");
 

@@ -57,9 +57,9 @@ export function EditOrderModal({
 
   const filteredCustomers = customers.filter(
     (customer) =>
-      customer.name!.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      customer.email!.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      customer.company!.toLowerCase().includes(customerSearch.toLowerCase()),
+      customer.name?.toLowerCase().includes(customerSearch?.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(customerSearch?.toLowerCase()) ||
+      customer.company?.toLowerCase().includes(customerSearch?.toLowerCase()),
   )
 
   const selectCustomer = (customer: Customer) => {
