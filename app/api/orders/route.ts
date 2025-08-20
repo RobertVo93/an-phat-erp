@@ -167,19 +167,24 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 20;
-    const sortBy = searchParams.get("sortBy") || "date";
+    const sortBy = searchParams.get("sortBy") || "deliveryDate";
     const sortOrder = searchParams.get("sortOrder") || "desc";
     const status = searchParams.get("status") || undefined;
+    const paymentStatus = searchParams.get("paymentStatus") || undefined;
+    const paymentMethod = searchParams.get("paymentMethod") || undefined;
     const customer = searchParams.get("customer") || undefined;
     const dateFrom = searchParams.get("dateFrom") || undefined;
     const dateTo = searchParams.get("dateTo") || undefined;
+    const totalAmountFrom = searchParams.get("totalAmountFrom") || undefined;
+    const totalAmountTo = searchParams.get("totalAmountTo") || undefined;
+    const searchTerm = searchParams.get("searchTerm") || undefined;
 
     const result = await getAllOrders({
       page,
       limit,
       sortBy,
       sortOrder,
-      filters: { status, customer, dateFrom, dateTo },
+      filters: { status, customer, dateFrom, dateTo, searchTerm, paymentStatus, paymentMethod, totalAmountFrom, totalAmountTo },
     });
     return NextResponse.json(result);
   } catch (error) {
