@@ -17,9 +17,9 @@ import { CustomerSelector } from "@/components/orders/CustomerSelector"
 import { ProductSelector } from "@/components/orders/ProductSelector"
 import { OrderItemsList } from "@/components/orders/OrderItemsList"
 import { OrderSummary } from "@/components/orders/OrderSummary"
-import { useNewOrderModal } from "@/hooks/use-new-order"
+import { useNewOrder } from "@/hooks/use-new-order"
 
-interface NewOrderModalProps {
+interface OrderNewModalProps {
   open: boolean
   customers: Customer[]
   allWarehouses: Warehouse[]
@@ -27,7 +27,7 @@ interface NewOrderModalProps {
   createOrder: (orderData: Partial<Order>) => void
 }
 
-export function NewOrderModal({ open, customers, allWarehouses, onOpenChange, createOrder }: NewOrderModalProps) {
+export function OrderNewModal({ open, customers, allWarehouses, onOpenChange, createOrder }: OrderNewModalProps) {
   const { t } = useLanguage()
   const {
     orderData,
@@ -45,7 +45,7 @@ export function NewOrderModal({ open, customers, allWarehouses, onOpenChange, cr
     removeItem,
     handleSubmit,
     getWarehouseProductTotal,
-  } = useNewOrderModal(createOrder)
+  } = useNewOrder(createOrder)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

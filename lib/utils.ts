@@ -1,4 +1,4 @@
-import { CustomerStatus, CustomerType, EmployeeStatus, EmployeeType, OrderStatus, Product, ProductStatus } from "@/types"
+import { CustomerStatus, CustomerType, EmployeeStatus, EmployeeType, OrderStatus, PaymentStatus, Product, ProductStatus } from "@/types"
 import { IWarehouseSummary, WarehouseProduct } from "@/types/warehouseProduct"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -194,6 +194,19 @@ export const getOrderStatusColor = (status: string) => {
     case OrderStatus.cancelled:
       return "bg-red-100 text-red-800"
     case OrderStatus.lackProduct:
+      return "bg-red-100 text-red-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getPaymentStatusColor = (status: string) => {
+  switch (status) {
+    case PaymentStatus.paid:
+      return "bg-green-100 text-green-800"
+    case PaymentStatus.pending:
+      return "bg-yellow-100 text-yellow-800"
+    case PaymentStatus.failed:
       return "bg-red-100 text-red-800"
     default:
       return "bg-gray-100 text-gray-800"
