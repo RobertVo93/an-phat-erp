@@ -1,28 +1,13 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Customer } from "@/types/customer"
 import { Product } from "@/types/product"
 import { Order, OrderItem } from "@/types/order"
-import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
 import { groupWarehouseProductsByProduct } from "@/lib/utils"
 import { env } from "@/constants/env"
 
-const defaultOrderData: Partial<Order> = {
-    customer: undefined,
-    deliveryDate: new Date(),
-    totalAmount: 0,
-    status: OrderStatus.pending,
-    paymentStatus: PaymentStatus.pending,
-    paymentMethod: PaymentMethod.cash,
-    shippingAddress: "",
-    items: [],
-    notes: "",
-    tags: [],
-    warehouse: undefined
-}
-
-export function useNewOrder(createOrder: (orderData: Partial<Order>) => void) {
-    const [orderData, setOrderData] = useState<Order>(defaultOrderData)
-    const [orderItems, setOrderItems] = useState<OrderItem[]>([])
+export function useEditOrder(order: Order, onUpdate: (orderData: Partial<Order>) => void) {
+    const [orderData, setOrderData] = useState<Order>(order)
+    const [orderItems, setOrderItems] = useState<OrderItem[]>(order.items || [])
     const subtotal = useMemo(() => orderItems.reduce((sum, item) => sum + item.total!, 0), [orderItems])
     const tax = useMemo(() => subtotal * env.NEXT_PUBLIC_TAX_RATE, [subtotal])
     const shipping = useMemo(() => subtotal > 100 ? 0 : 15, [subtotal])
@@ -67,15 +52,13 @@ export function useNewOrder(createOrder: (orderData: Partial<Order>) => void) {
     }
 
     const handleSubmit = (onOpenChange: (open: boolean) => void) => {
-        createOrder({
+        onUpdate({
             ...orderData,
             items: orderItems,
             totalAmount: total,
             shippingFee: shipping,
             tax: tax
         })
-        setOrderData(defaultOrderData)
-        setOrderItems([])
         onOpenChange(false)
     }
 
@@ -83,6 +66,11 @@ export function useNewOrder(createOrder: (orderData: Partial<Order>) => void) {
         return groupWarehouseProductsByProduct(orderData.warehouse?.warehouseProducts!)
             .find((wp) => (wp.product.id === productId))?.totalQuantity || 0
     }
+
+    useEffect(() => {
+        setOrderData(order)
+        setOrderItems(order.items || [])
+    }, [order])
 
     return {
         orderData,

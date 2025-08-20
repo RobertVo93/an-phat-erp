@@ -368,6 +368,10 @@ export const ordersTranslations = {
   },
 
   // Edit Order Modal
+  "orders.completeOrder": {
+    en: "Complete Order",
+    vi: "Hoàn Thành Đơn Hàng",
+  },
   "orders.editOrderTitle": {
     en: "Edit Order",
     vi: "Chỉnh Sửa Đơn Hàng",

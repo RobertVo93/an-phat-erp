@@ -14,6 +14,7 @@ export const env = {
   NEXT_PUBLIC_AWS_REGION: process.env.NEXT_PUBLIC_AWS_REGION || 'ap-southeast-1',
   NEXT_PUBLIC_S3_BUCKET_NAME: process.env.NEXT_PUBLIC_S3_BUCKET_NAME || '',
   NEXT_PUBLIC_S3_ROOT_PATH: process.env.NEXT_PUBLIC_S3_ROOT_PATH || 'uploads',
+  NEXT_PUBLIC_TAX_RATE: Number(process.env.NEXT_PUBLIC_TAX_RATE || 0),
 } as const
 
 // Type for environment variables
