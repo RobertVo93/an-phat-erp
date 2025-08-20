@@ -106,7 +106,7 @@ export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange 
 
           {/* Date Range */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">{t("orders.filter.dateRange")}</Label>
+            <Label className="text-sm font-medium">{t("orders.expectedDelivery")}</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t("orders.filter.dateFrom")}</Label>
@@ -139,11 +139,11 @@ export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange 
                   type="number"
                   placeholder="0"
                   className="h-11"
-                  value={localFilters.amountMin || ""}
+                  value={localFilters.totalAmountFrom || ""}
                   onChange={(e) =>
                     setLocalFilters((prev) => ({
                       ...prev,
-                      amountMin: e.target.value ? Number(e.target.value) : undefined,
+                      totalAmountFrom: e.target.value ? Number(e.target.value) : undefined,
                     }))
                   }
                 />
@@ -154,11 +154,11 @@ export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange 
                   type="number"
                   placeholder="999999999"
                   className="h-11"
-                  value={localFilters.amountMax || ""}
+                  value={localFilters.totalAmountTo || ""}
                   onChange={(e) =>
                     setLocalFilters((prev) => ({
                       ...prev,
-                      amountMax: e.target.value ? Number(e.target.value) : undefined,
+                      totalAmountTo: e.target.value ? Number(e.target.value) : undefined,
                     }))
                   }
                 />
