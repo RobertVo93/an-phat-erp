@@ -19,7 +19,6 @@ export async function getAllOrders({ page = 1, limit = 20, sortBy = "date", sort
 
   // Filtering
   if (filters.status) qb.andWhere("order.status = :status", { status: filters.status });
-  if (filters.customer) qb.andWhere("order.customer ILIKE :customer", { customer: `%${filters.customer}%` });
   if (filters.dateFrom) qb.andWhere("order.deliveryDate >= :dateFrom", { dateFrom: filters.dateFrom });
   if (filters.dateTo) qb.andWhere("order.deliveryDate <= :dateTo", { dateTo: filters.dateTo });
   if (filters.paymentStatus) qb.andWhere("order.paymentStatus = :paymentStatus", { paymentStatus: filters.paymentStatus });

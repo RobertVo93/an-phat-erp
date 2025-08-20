@@ -7,7 +7,7 @@ import { OrdersSearchFilterBar } from "@/components/orders/OrdersSearchFilterBar
 import { OrdersCardList } from "@/components/orders/OrdersCardList"
 import { OrdersLoadingOverlay } from "@/components/orders/OrdersLoadingOverlay"
 import { OrdersEmptyState } from "@/components/orders/OrdersEmptyState"
-import { NewOrderModal } from "@/components/modals/new-order-modal"
+import { OrderNewModal } from "@/components/orders/modals/OrderNewModal"
 import { OrderFilterModal } from "@/components/orders/order-filter-modal"
 import { useLanguage } from "@/contexts/language-context"
 import { useOrdersPage } from "@/hooks/use-orders-page"
@@ -153,7 +153,7 @@ export default function OrdersPage() {
           )}
         </div>
       </div>
-      <NewOrderModal
+      <OrderNewModal
         open={showNewOrderModal}
         customers={allCustomers}
         allWarehouses={allWarehouses}

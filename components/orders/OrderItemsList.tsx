@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useLanguage } from "@/contexts/language-context"
+import { formatLargeCurrency } from "@/lib/utils"
 import { OrderItem } from "@/types"
 import { X, Plus, Minus } from "lucide-react"
 import React from "react"
@@ -74,7 +75,7 @@ export const OrderItemsList = ({
 					</div>
 					<div className="flex justify-between items-center pt-2 border-t">
 						<span className="text-sm font-medium">{t("orders.total")}:</span>
-						<span className="text-sm font-bold">{item.total}</span>
+						<span className="text-sm font-bold">{formatLargeCurrency(item.total || 0, 2)}</span>
 					</div>
 				</div>
 			))}
