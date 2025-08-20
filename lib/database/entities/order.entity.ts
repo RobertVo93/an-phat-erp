@@ -69,6 +69,6 @@ export class OrderEntity extends BaseEntity implements IOrder {
       ? parseInt(latest.orderNumber.replace("ORD-", ""), 10)
       : 0;
 
-    this.orderNumber = `ORD-${lastNumber + 1}`;
+    this.orderNumber = `ORD-${String(lastNumber + 1).padStart(5, "0")}`;
   }
 }
