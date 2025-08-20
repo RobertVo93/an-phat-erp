@@ -1,5 +1,5 @@
 import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
-import { IBase } from "./base.interface";
+import { IBase, IBaseFilters } from "./base.interface";
 import { Customer as ICustomer } from "./customer";
 import { Product as IProduct } from "./product";
 import { Warehouse as IWarehouse } from "./warehouse";
@@ -31,22 +31,16 @@ export interface OrderItem extends IBase {
   order?: Order
 }
 
-export interface OrderFilters {
+export interface OrderFilters extends IBaseFilters{
+  searchTerm?: string
   status?: string
   paymentStatus?: string
   paymentMethod?: string
   dateFrom?: string
   dateTo?: string
-  amountMin?: number
-  amountMax?: number
+  totalAmountFrom?: number
+  totalAmountTo?: number
   customer?: string
 }
 
-export interface OrderSearchParams {
-  search: string
-  filters: OrderFilters
-  page: number
-  limit: number
-  sortBy: "date" | "amount" | "customer" | "status"
-  sortOrder: "asc" | "desc"
-}
+export type OrderSortBy = "deliveryDate" | "totalAmount" | "customer" | "orderNumber"

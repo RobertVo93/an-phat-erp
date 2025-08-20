@@ -64,6 +64,10 @@ export const ordersTranslations = {
     en: "Payment Status",
     vi: "Trạng Thái Thanh Toán",
   },
+  "orders.payment": {
+    en: "Payment",
+    vi: "Thanh Toán",
+  },
   "orders.shippingAddress": {
     en: "Shipping Address",
     vi: "Địa Chỉ Giao Hàng",
