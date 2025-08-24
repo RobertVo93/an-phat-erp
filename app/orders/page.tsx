@@ -5,7 +5,7 @@ import { ERPLayout } from "@/components/erp-layout"
 import { OrdersHeader } from "@/components/orders/OrdersHeader"
 import { OrdersSearchFilterBar } from "@/components/orders/OrdersSearchFilterBar"
 import { OrdersCardList } from "@/components/orders/OrdersCardList"
-import { OrdersLoadingOverlay } from "@/components/orders/OrdersLoadingOverlay"
+import { LoadingOverlay } from "@/components/common/LoadingOverlay"
 import { OrdersEmptyState } from "@/components/orders/OrdersEmptyState"
 import { OrderNewModal } from "@/components/orders/modals/OrderNewModal"
 import { OrderFilterModal } from "@/components/orders/order-filter-modal"
@@ -111,7 +111,7 @@ export default function OrdersPage() {
 
   return (
     <ERPLayout>
-      <OrdersLoadingOverlay loading={loading} />
+      <LoadingOverlay loading={loading} />
       <div className="space-y-4 sm:space-y-6">
         <OrdersHeader onNewOrderClick={() => setShowNewOrderModal(true)} />
         <OrdersSearchFilterBar
