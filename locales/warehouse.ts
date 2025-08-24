@@ -119,6 +119,10 @@ export const warehouseTranslations = {
     en: "Description",
     vi: "Mô Tả",
   },
+  "warehouse.mainWarehouse": {
+    en: "Main Warehouse",
+    vi: "Kho Chính",
+  },
   "warehouse.status.active": {
     en: "Active",
     vi: "Hoạt Động",

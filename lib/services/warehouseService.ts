@@ -24,6 +24,13 @@ export async function updateWarehouse(
   id: string,
   data: Partial<WarehouseEntity> & { customer?: string; items?: string[] }
 ) {
+  if (data.main) {
+    const repo = AppDataSource.getRepository(WarehouseEntity);
+    const currentMainWH = await repo.findOne({ where: { main: true } });
+    if (currentMainWH?.id !== id) {
+      await repo.update({ id: currentMainWH?.id }, { main: false });
+    }
+  }
   const repo = AppDataSource.getRepository(WarehouseEntity);
   await repo.update(id, data);
   return repo.findOneBy({ id });
