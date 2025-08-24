@@ -1,5 +1,17 @@
-import { CustomerStatus, CustomerType, EmployeeStatus, EmployeeType, OrderStatus, PaymentStatus, Product, ProductStatus } from "@/types"
-import { IWarehouseSummary, WarehouseProduct } from "@/types/warehouseProduct"
+import { 
+  CustomerStatus, 
+  CustomerType, 
+  EmployeeStatus, 
+  EmployeeType, 
+  OrderStatus, 
+  PaymentStatus, 
+  Product, 
+  ProductStatus, 
+  WarehouseStatus, 
+  WarehouseType,
+  WarehouseProduct,
+  IWarehouseSummary,
+} from "@/types"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -28,6 +40,17 @@ export function formatDate(date: string | Date): string {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric'
+  }).replace(/\//g, '-')
+}
+
+export function formatDateTime(date: string | Date): string {
+  return new Date(date).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   }).replace(/\//g, '-')
 }
 
@@ -207,6 +230,19 @@ export const getPaymentStatusColor = (status: string) => {
     case PaymentStatus.pending:
       return "bg-yellow-100 text-yellow-800"
     case PaymentStatus.failed:
+      return "bg-red-100 text-red-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getWarehouseStatusColor = (status: string) => {
+  switch (status) {
+    case WarehouseStatus.active:
+      return "bg-green-100 text-green-800"
+    case WarehouseStatus.maintenance:
+      return "bg-yellow-100 text-yellow-800"
+    case WarehouseStatus.inactive:
       return "bg-red-100 text-red-800"
     default:
       return "bg-gray-100 text-gray-800"
