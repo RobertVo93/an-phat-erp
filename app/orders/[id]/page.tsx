@@ -13,7 +13,7 @@ import { OrderCustomerInfo } from "@/components/orders/OrderCustomerInfo"
 import { OrderSummaryCard } from "@/components/orders/OrderSummaryCard"
 import { OrderItemsListDetail } from "@/components/orders/OrderItemsListDetail"
 import { OrderStatus, PaymentStatus } from "@/types"
-import { OrdersLoadingOverlay } from "@/components/orders/OrdersLoadingOverlay"
+import { LoadingOverlay } from "@/components/common/LoadingOverlay"
 import { OrderTimeline } from "@/components/orders/OrderTimeline"
 
 export default function OrderDetailPage() {
@@ -67,7 +67,7 @@ export default function OrderDetailPage() {
 
   return (
     <ERPLayout>
-      <OrdersLoadingOverlay loading={loading} />
+      <LoadingOverlay loading={loading} />
       <div className="space-y-6">
         <OrderDetailHeader
           orderData={orderData}

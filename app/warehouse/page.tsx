@@ -7,7 +7,7 @@ import { WarehouseViewModal } from "@/components/warehouses/warehouse-view-modal
 import { WarehouseDeleteModal } from "@/components/warehouses/warehouse-delete-modal"
 import { WarehouseHeader } from "@/components/warehouses/WarehouseHeader"
 import { WarehouseList } from "@/components/warehouses/WarehouseList"
-import { OrdersLoadingOverlay } from "@/components/orders/OrdersLoadingOverlay"
+import { LoadingOverlay } from "@/components/common/LoadingOverlay"
 
 export default function WarehousePage() {
   const {
@@ -32,7 +32,7 @@ export default function WarehousePage() {
 
   return (
     <ERPLayout>
-      <OrdersLoadingOverlay loading={loading} />
+      <LoadingOverlay loading={loading} />
       <div className="space-y-6">
         <WarehouseHeader onCreateWarehouse={handleCreateWarehouse} />
         <WarehouseList
