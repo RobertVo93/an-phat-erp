@@ -56,8 +56,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (!parse.success) {
       return NextResponse.json({ error: "Invalid input", details: parse.error.errors }, { status: 400 });
     }
-
-    const updated = await updateWarehouse(params.id, parse.data);
+    const { id } = await params;
+    const updated = await updateWarehouse(id, parse.data);
     if (!updated) return NextResponse.json({ error: "Warehouse not found" }, { status: 404 });
 
     return NextResponse.json(updated);
