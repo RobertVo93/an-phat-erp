@@ -32,7 +32,7 @@ export function WarehouseDeleteModal({ isOpen, onClose, onConfirm, warehouse }: 
           <p className="text-sm text-muted-foreground">{t("warehouse.deleteConfirm")}</p>
           <div className="bg-gray-50 p-3 rounded-lg">
             <p className="font-medium">{warehouse.name}</p>
-            <p className="text-sm text-muted-foreground">{warehouse.location}</p>
+            <p className="text-sm text-muted-foreground">{warehouse.number}</p>
           </div>
 
           <div className="flex space-x-2">

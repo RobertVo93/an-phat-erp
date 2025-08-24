@@ -1,68 +1,52 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import type { Warehouse, WarehouseFilters, WarehouseSortOption } from "@/types/warehouse"
-import { getWarehouses as apiGetWarehouses, addWarehouse as apiAddWarehouse, updateWarehouse as apiUpdateWarehouse, deleteWarehouse as apiDeleteWarehouse } from "@/lib/httpclient/warehouse.client"
+import { useState, useEffect } from "react"
+import type { Warehouse } from "@/types/warehouse"
+import {
+  getWarehouses as apiGetWarehouses,
+  addWarehouse as apiAddWarehouse,
+  updateWarehouse as apiUpdateWarehouse,
+  deleteWarehouse as apiDeleteWarehouse,
+} from "@/lib/httpclient/warehouse.client"
 
 export function useWarehouses() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([])
   const [loading, setLoading] = useState<boolean>(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<WarehouseFilters>({})
-  const [sortOption, setSortOption] = useState<WarehouseSortOption>({
-    field: "name",
-    direction: "asc",
-  })
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedWarehouse, setSelectedWarehouse] = useState<Warehouse | null>(null)
+  const [formMode, setFormMode] = useState<"create" | "edit">("create")
 
-  const filteredAndSortedWarehouses = useMemo(() => {
-    const result = warehouses.filter((warehouse) => {
-      const matchesSearch =
-        warehouse.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        warehouse.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        warehouse.manager?.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleCreateWarehouse = () => {
+    setFormMode("create")
+    setSelectedWarehouse(null)
+    setIsFormModalOpen(true)
+  }
 
-      const matchesStatus = !filters.status || warehouse.status === filters.status
-      const matchesType = !filters.type || warehouse.type === filters.type
-      const matchesTemperature = !filters.temperature || warehouse.temperature === filters.temperature
-      const matchesLocation = !filters.location || warehouse.location?.includes(filters.location)
+  const handleEditWarehouse = (warehouse: any) => {
+    setFormMode("edit")
+    setSelectedWarehouse(warehouse)
+    setIsFormModalOpen(true)
+  }
 
-      let matchesUtilization = true
-      if (filters.utilizationRange) {
-        const utilization = (warehouse.occupied! / warehouse.capacity!) * 100
-        matchesUtilization = utilization >= filters.utilizationRange[0] && utilization <= filters.utilizationRange[1]
-      }
+  const handleViewWarehouse = (warehouse: any) => {
+    setSelectedWarehouse(warehouse)
+    setIsViewModalOpen(true)
+  }
 
-      return (
-        matchesSearch && matchesStatus && matchesType && matchesTemperature && matchesLocation && matchesUtilization
-      )
-    })
+  const handleDeleteWarehouse = (warehouse: any) => {
+    setSelectedWarehouse(warehouse)
+    setIsDeleteModalOpen(true)
+  }
 
-    result.sort((a, b) => {
-      const aValue = a[sortOption.field]
-      const bValue = b[sortOption.field]
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortOption.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
-      }
-
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return sortOption.direction === "asc" ? aValue - bValue : bValue - aValue
-      }
-
-      return 0
-    })
-
-    return result
-  }, [warehouses, searchTerm, filters, sortOption])
-
-  const paginatedWarehouses = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    return filteredAndSortedWarehouses.slice(startIndex, startIndex + itemsPerPage)
-  }, [filteredAndSortedWarehouses, currentPage, itemsPerPage])
-
-  const totalPages = Math.ceil(filteredAndSortedWarehouses.length / itemsPerPage)
+  const confirmDelete = () => {
+    if (selectedWarehouse && selectedWarehouse.id) {
+      deleteWarehouse(selectedWarehouse.id)
+      setIsDeleteModalOpen(false)
+      setSelectedWarehouse(null)
+    }
+  }
 
   const getWarehouses = async () => {
     try {
@@ -85,8 +69,8 @@ export function useWarehouses() {
         createdAt: new Date().toISOString().split("T")[0] as any,
         updatedAt: new Date().toISOString().split("T")[0] as any,
       }
-      const added = await apiAddWarehouse(newWarehouse)
-      setWarehouses([...warehouses, added])
+      await apiAddWarehouse(newWarehouse)
+      await getWarehouses();
     } catch (e) {
       console.error(e)
     } finally {
@@ -97,8 +81,8 @@ export function useWarehouses() {
   const updateWarehouse = async (id: string, updates: Partial<Warehouse>) => {
     try {
       setLoading(true)
-      const updated = await apiUpdateWarehouse(id, updates)
-      setWarehouses(warehouses.map((wh) => (wh.id === id ? { ...wh, ...updated } : wh)))
+      await apiUpdateWarehouse(id, updates)
+      await getWarehouses();
     } catch (e) {
       console.error(e)
     } finally {
@@ -123,23 +107,22 @@ export function useWarehouses() {
   }, [])
 
   return {
-    warehouses: paginatedWarehouses,
-    allWarehouses: warehouses,
-    searchTerm,
-    setSearchTerm,
-    filters,
-    setFilters,
-    sortOption,
-    setSortOption,
-    currentPage,
-    setCurrentPage,
-    itemsPerPage,
-    setItemsPerPage,
-    totalPages,
-    totalItems: filteredAndSortedWarehouses.length,
+    warehouses,
+    loading,
+    isFormModalOpen,
+    isViewModalOpen,
+    isDeleteModalOpen,
+    selectedWarehouse,
+    formMode,
     addWarehouse,
     updateWarehouse,
-    deleteWarehouse,
-    loading
+    handleCreateWarehouse,
+    handleViewWarehouse,
+    handleEditWarehouse,
+    handleDeleteWarehouse,
+    setIsFormModalOpen,
+    setIsViewModalOpen,
+    setIsDeleteModalOpen,
+    confirmDelete,
   }
 }
