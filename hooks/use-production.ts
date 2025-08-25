@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 import type { ProductionRecord } from "@/types/production"
-import { Employee, EmployeeStatus, Product, ProductStatus, Utility, UtilityStatus, Warehouse, WarehouseStatus } from "@/types"
+import { Employee, EmployeeStatus, Product, ProductStatus, Utility, Warehouse, WarehouseStatus } from "@/types"
 import { getProducts as apiGetProducts } from "@/lib/httpclient"
 import { createProduction, getAllProductions, updateProduction } from "@/lib/httpclient/production.client"
 import { isTodayLocalDatetime } from "@/lib/utils"
 import { getAllUtilities } from "@/lib/httpclient/utility.client"
 import { getEmployee } from '@/lib/httpclient/employee.client';
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
+import { toast } from "@/components/ui/use-toast"
 
 export function useProduction() {
   const [selectedRecord, setSelectedRecord] = useState<ProductionRecord | null>(null)
@@ -32,31 +33,36 @@ export function useProduction() {
   const onInit = async () => {
     try {
       setLoading(true)
-      const prResponse = await getAllProductions()
-      setHistoryProductionRecords(prResponse.data as ProductionRecord[])
-
-      // get active products
-      const pro = await apiGetProducts()
-      const activeProducts = (pro.data as Product[]).filter((pro) => pro.status === ProductStatus.active)
-      setAvailableProducts(activeProducts)
-      setAvailableMaterials(activeProducts)
-
-      // get active utilities
-      const ult = await getAllUtilities()
-      const activeUtilities = (ult.data as Utility[]).filter((ult) => ult.status === UtilityStatus.active)
-      setAvailableUtilities(activeUtilities)
-
-      // get active employee
-      const emp = await getEmployee()
-      const activeEmployees = (emp.data as Employee[]).filter((e) => e.status === EmployeeStatus.active)
-      setAvailableEmployees(activeEmployees)
-
-      // get active warehouses
-      const wh = await getWarehouses()
-      const activeWarehouses = (wh.data as Warehouse[]).filter((wh) => wh.status === WarehouseStatus.active)
-      setAvailableWarehouses(activeWarehouses)
+      const response = await Promise.all([
+        getAllProductions(),  //TODO: apply server side pagination, filter, sort later
+        apiGetProducts({
+          status: ProductStatus.active,
+          limit: 1000,
+          page: 1,
+        }),
+        getAllUtilities(),
+        getEmployee({
+          status: EmployeeStatus.active,
+          limit: 1000,
+          page: 1,
+        }),
+        getWarehouses({
+          status: WarehouseStatus.active,
+        })
+      ])
+      setHistoryProductionRecords(response[0].data as ProductionRecord[])
+      setAvailableProducts((response[1].data as Product[]))
+      setAvailableMaterials(response[1].data as Product[])
+      setAvailableUtilities(response[2].data as Utility[])
+      setAvailableEmployees(response[3].data as Employee[])
+      setAvailableWarehouses(response[4].data as Warehouse[])
     } catch (e) {
       console.error(e)
+      toast({
+        title: "Lỗi",
+        description: "Tải dữ liệu trang sản xuất thất bại",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -93,8 +99,14 @@ export function useProduction() {
       setLoading(true)
       const created = await createProduction(data)
       setHistoryProductionRecords(prev => [...prev, created])
+      closeNewProduction()
     } catch (e) {
       console.error(e)
+      toast({
+        title: "Lỗi",
+        description: "Tạo mới sản xuất thất bại",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -104,11 +116,16 @@ export function useProduction() {
     try {
       setLoading(true)
       const updated = await updateProduction(updatedRecord.id!, updatedRecord)
-      if (updated) onInit()
+      setHistoryProductionRecords(prev => prev.map(item => item.id === updated.id ? updated : item))
       setIsEditModalOpen(false)
       setEditingRecord(null)
     } catch (e) {
       console.error(e)
+      toast({
+        title: "Lỗi",
+        description: "Cập nhật sản xuất thất bại",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -116,21 +133,21 @@ export function useProduction() {
 
   const calculateTodaySummary = (todayRecords: ProductionRecord[]) => {
     const totalTodayMaterialCost = todayRecords.reduce((sum, record) => {
-      const materialCost = record.productionMaterials?.reduce((matSum, material) => {
+      const materialCost = record.materials?.reduce((matSum, material) => {
         return matSum + (material.totalCost || 0);
       }, 0) || 0;
       return sum + materialCost;
     }, 0);
 
     const totalTodayUtilityCost = todayRecords.reduce((sum, record) => {
-      const utilityCost = record.productionUtilities?.reduce((ultSum, utility) => {
+      const utilityCost = record.utilities?.reduce((ultSum, utility) => {
         return ultSum + (utility.totalCost || 0);
       }, 0) || 0;
       return sum + utilityCost;
     }, 0);
 
     const totalTodayEmployeeCost = todayRecords.reduce((sum, record) => {
-      const employeeCost = record.productionLabors?.reduce((empSum, employee) => {
+      const employeeCost = record.labors?.reduce((empSum, employee) => {
         return empSum + (employee.totalCost || 0);
       }, 0) || 0;
       return sum + employeeCost;
@@ -164,6 +181,9 @@ export function useProduction() {
     availableWarehouses,
     todayRecords: todayProductionRecords,
     historyRecords: historyProductionRecords,
+    materialCost: todayMaterialCost,
+    utilityCost: todayUtilityCost,
+    employeeCost: todayEmployeeCost,
 
     handleViewRecord,
     handleEditRecord,
@@ -173,8 +193,5 @@ export function useProduction() {
     openNewProduction,
     closeNewProduction,
     createNewProduction,
-    materialCost: todayMaterialCost,
-    utilityCost: todayUtilityCost,
-    employeeCost: todayEmployeeCost,
   }
 }

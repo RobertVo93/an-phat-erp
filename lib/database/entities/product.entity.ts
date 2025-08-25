@@ -12,8 +12,6 @@ import { StockProductEntity } from "./stock-product.entity";
 import type { StockProduct as IStockProduct} from "@/types/stock-product";
 import { ProductionRecordEntity } from "./production-record.entity";
 import type { ProductionRecord as IProductionRecord } from "@/types/production";
-import { ProductionMaterialEntity } from "./production-material.entity";
-import type { ProductionMaterial as IProductionMaterial } from "@/types/productionMaterial";
 import { AppDataSource } from "../typeorm";
 
 @Entity({ name: "products" })
@@ -69,9 +67,6 @@ export class ProductEntity extends BaseEntity implements IProduct {
 
   @OneToMany(() => ProductionRecordEntity, (pr) => pr.product , {nullable: true})
   productionRecords?: IProductionRecord[];
-
-  @OneToMany(() => ProductionMaterialEntity, (pm) => pm.material, {nullable: true})
-  productionMaterials?: IProductionMaterial[]
   
   //////Auto numbering//////
   @BeforeInsert()

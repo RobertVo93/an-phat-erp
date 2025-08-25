@@ -1,48 +1,34 @@
-import { ProductionStatus } from '@/types';
+import { ProductionElementType, ProductionStatus } from '@/types';
 import { z } from "zod";
-import { ExtendedProductSchema } from '../products/product.schema';
-import { UtilitySchema } from '../utility/utility.schema';
-import { EmployeeSchema } from '../employee/employee.schema';
-import { WarehouseSchema } from '../stock-change/stockChange.schema';
+import { ExtendedProductSchema } from '@/app/api/products/product.schema';
+import { EmployeeSchema } from '@/app/api/employee/employee.schema';
+import { WarehouseSchema } from '@/app/api/stock-change/stockChange.schema';
 
-export const ProductionMaterialSchema = z.object({
+export const ProductionElementSchema = z.object({
   id: z.string().optional(),
-  material: ExtendedProductSchema.optional(),
+  name: z.string().optional(),
   quantity: z.number().optional(),
   totalCost: z.number().optional(),
+  unitCost: z.number().optional(),
+  unit: z.string().optional(),
+  type: z.nativeEnum(ProductionElementType).optional(),
+  number: z.string().optional(),
 });
-export const ProductionMaterialArraySchema = z.array(ProductionMaterialSchema);
-
-export const ProductionUtilitySchema = z.object({
-  id: z.string().optional(),
-  utility: UtilitySchema.optional(),
-  quantity: z.number().optional(),
-  totalCost: z.number().optional(),
-});
-export const ProductionUtilityArraySchema = z.array(ProductionUtilitySchema);
-
-export const ProductionLaborSchema = z.object({
-  id: z.string().optional(),
-  employee: EmployeeSchema.optional(),
-  totalCost: z.number().optional(),
-});
-export const ProductionLaborArraySchema = z.array(ProductionLaborSchema);
 
 export const ProductionSchema = z.object({
   id: z.string().optional(),
-  date: z.string().optional(),
+  number: z.string().optional(),
+  date: z.coerce.date().optional(),
   quantity: z.number().optional(),
   status: z.nativeEnum(ProductionStatus).optional(),
-  shift: z.string().optional(),
-  operator: z.string().optional(),
+  totalCost: z.number().optional(),
+  totalExpense: z.number().optional(),
+  materials: z.array(ProductionElementSchema).optional(),
+  utilities: z.array(ProductionElementSchema).optional(),
+  labors: z.array(ProductionElementSchema).optional(),
 
   product: ExtendedProductSchema.optional(),
-  productionMaterials: z.array(ProductionMaterialSchema).optional(),
-  utilities: z.array(ProductionUtilitySchema).optional(),
-  labor: z.array(ProductionLaborSchema).optional(),
   warehouse: WarehouseSchema.optional(),
-
-  totalCost: z.number().optional(),
-  efficiency: z.number().optional()
+  pic: EmployeeSchema.optional(),
 });
 

@@ -1,388 +1,170 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { ProductionRecord } from "@/types/production";
+import { IProductionElement, ProductionRecord as IProductionRecord } from "@/types/production";
 import { ProductionRecordEntity } from "../database/entities/production-record.entity";
-import { ProductionMaterial } from "@/types/productionMaterial";
-import { ProductionMaterialEntity } from "../database/entities/production-material.entity";
-import { EmployeeEntity, ProductEntity, StockChangeEntity, UtilityEntity, WarehouseEntity } from "../database/entities";
-import { ProductionUtility } from "@/types/productionUtility";
-import { ProductionUtilityEntity } from "../database/entities/production-utility.entity";
-import { ProductionLabor } from "@/types/ProductionLabor";
-import { ProductionLaborEntity } from "../database/entities/production-labor.entity";
-import { ProductionStatus, StockChangeStatus, StockChangeType } from "@/types";
-import { Not } from "typeorm";
-import { WarehouseProductEntity } from "../database/entities/warehouse-product.entity";
-import { StockProductEntity } from "../database/entities/stock-product.entity";
+import { ProductEntity, StockChangeEntity, WarehouseEntity } from "../database/entities";
+import { generateStockChangeNumber } from "./stockChangeService";
+import { IStockProduct, StockChangeStatus, StockChangeType } from "@/types";
 
-export async function getAllProductionRecords() {
+export async function getAllProductionRecords({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(ProductionRecordEntity);
   const qb = repo
     .createQueryBuilder("productionRecord")
+    .leftJoinAndSelect("productionRecord.pic", "pic")
     .leftJoinAndSelect("productionRecord.product", "product")
-    .leftJoinAndSelect("productionRecord.productionMaterials", "productionMaterials")
-    .leftJoinAndSelect("productionMaterials.material", "material")
-    .leftJoinAndSelect("productionRecord.productionUtilities", "productionUtilities")
-    .leftJoinAndSelect("productionUtilities.utility", "utility")
-    .leftJoinAndSelect("productionRecord.productionLabors", "productionLabors")
-    .leftJoinAndSelect("productionLabors.employee", "employee")
     .leftJoinAndSelect("productionRecord.warehouse", "warehouse")
-    .leftJoinAndSelect("warehouse.warehouseProducts", "warehouseProducts")
-    .leftJoinAndSelect("warehouseProducts.product", "wpProduct");
 
-  const [data] = await qb.getManyAndCount();
-  return { data };
+  // Filtering
+  if (filters.status) qb.andWhere("productionRecord.status = :status", { status: filters.status });
+  if (filters.dateFrom) qb.andWhere("productionRecord.date >= :dateFrom", { dateFrom: filters.dateFrom });
+  if (filters.dateTo) qb.andWhere("productionRecord.date <= :dateTo", { dateTo: filters.dateTo });
+  if (filters.product) qb.andWhere("product.id = :product", { product: filters.product });
+  if (filters.searchTerm) qb.andWhere("productionRecord.number ILIKE :searchTerm OR productionRecord.notes ILIKE :searchTerm", { searchTerm: `%${filters.searchTerm}%` });
+
+  // Sorting
+  const allowedSortFields = ["date", "number", "status"];
+  const sortField = allowedSortFields.includes(sortBy) ? sortBy : "date";
+  qb.orderBy(`productionRecord.${sortField}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+
+  // Pagination
+  qb.skip((page - 1) * limit).take(limit);
+
+  const [data, total] = await qb.getManyAndCount();
+  return { data, total, page, limit };
 }
 
 export async function createProductionRecord(
-  data: Partial<ProductionRecord>,
-  productionMaterials: ProductionMaterial[],
-  productionUtilities: ProductionUtility[],
-  parseProductionLabors: ProductionLabor[]
-) {
+  data: Partial<IProductionRecord>,
+  productionMaterials: IProductionElement[],
+  productionUtilities: IProductionElement[],
+  parseProductionLabors: IProductionElement[]
+): Promise<IProductionRecord | null> {
   const productionRecordRepo = AppDataSource.getRepository(ProductionRecordEntity);
-  const productionMaterialRepo = AppDataSource.getRepository(ProductionMaterialEntity);
-  const productionUtilityRepo = AppDataSource.getRepository(ProductionUtilityEntity);
-  const productionLaborRepo = AppDataSource.getRepository(ProductionLaborEntity);
-  const productRepo = AppDataSource.getRepository(ProductEntity);
-  const utilityRepo = AppDataSource.getRepository(UtilityEntity);
-  const employeeRepo = AppDataSource.getRepository(EmployeeEntity);
-
-  const productionRecord = productionRecordRepo.create(data);
-  const savedProductionRecord = await productionRecordRepo.save(productionRecord);
-
-  // 1. Create materials
-  const productionMaterialList: ProductionMaterialEntity[] = [];
-  for (const item of productionMaterials) {
-    if (!item.material?.id) continue;
-
-    const material = await productRepo.findOneBy({ id: item.material.id });
-    if (!material) continue;
-
-    const productionMaterial = productionMaterialRepo.create({
-      quantity: item.quantity ?? 0,
-      totalCost: item.totalCost ?? 0,
-      material,
-      productionRecord: savedProductionRecord,
-    });
-
-    productionMaterialList.push(productionMaterial);
-  }
-  if (productionMaterialList.length > 0) {
-    await productionMaterialRepo.save(productionMaterialList);
-  }
-
-  // 2. Create utilities
-  const productionUtilityList: ProductionUtilityEntity[] = [];
-  for (const item of productionUtilities) {
-    const utilityId = item.id;
-    if (!utilityId) continue;
-
-    const utility = await utilityRepo.findOneBy({ id: utilityId });
-    if (!utility) continue;
-
-    const productionUtility = productionUtilityRepo.create({
-      utility: utility,
-      quantity: item.quantity ?? 0,
-      totalCost: item.totalCost ?? 0,
-      productionRecord: savedProductionRecord,
-    });
-
-    productionUtilityList.push(productionUtility);
-  }
-  if (productionUtilityList.length > 0) {
-    await productionUtilityRepo.save(productionUtilityList);
-  }
-
-  // 3. create employees (labors)
-  const productionLaborList: ProductionLaborEntity[] = [];
-  for (const item of parseProductionLabors) {
-    const employeeId = item.id;
-    if (!employeeId) continue;
-
-    const employee = await employeeRepo.findOneBy({ id: employeeId });
-    if (!employee) continue;
-
-    const productionLabor = productionLaborRepo.create({
-      employee: employee,
-      productionRecord: savedProductionRecord,
-      totalCost: item.totalCost
-    });
-
-    productionLaborList.push(productionLabor);
-  }
-  if (productionLaborList.length > 0) {
-    await productionLaborRepo.save(productionLaborList);
-  }
-
-  const fullRecord = await productionRecordRepo.findOne({
-    where: { id: savedProductionRecord.id },
-    relations: [
-      "product",
-      "warehouse",
-      "warehouse.warehouseProducts",
-      "warehouse.warehouseProducts.product",
-      "productionMaterials",
-      "productionMaterials.material",
-      "productionUtilities",
-      "productionUtilities.utility",
-      "productionLabors",
-      "productionLabors.employee",
-    ],
+  const productionRecord = productionRecordRepo.create({
+    ...data,
+    materials: productionMaterials,
+    utilities: productionUtilities,
+    labors: parseProductionLabors,
   });
-
-  return fullRecord;
+  const savedProductionRecord = await productionRecordRepo.save(productionRecord);
+  return savedProductionRecord;
 }
 
 export async function updateProduction(
   id: string,
-  data: Partial<ProductionRecord>,
-  productionMaterials: ProductionMaterial[],
-  productionUtilities: ProductionUtility[],
-  parseProductionLabors: ProductionLabor[]
+  data: Partial<IProductionRecord>,
+  productionMaterials: IProductionElement[],
+  productionUtilities: IProductionElement[],
+  parseProductionLabors: IProductionElement[]
 ) {
   const productionRecordRepo = AppDataSource.getRepository(ProductionRecordEntity);
-  const productionMaterialRepo = AppDataSource.getRepository(ProductionMaterialEntity);
-  const productionUtilityRepo = AppDataSource.getRepository(ProductionUtilityEntity);
-  const productionLaborRepo = AppDataSource.getRepository(ProductionLaborEntity);
-  const productRepo = AppDataSource.getRepository(ProductEntity);
-  const utilityRepo = AppDataSource.getRepository(UtilityEntity);
-  const employeeRepo = AppDataSource.getRepository(EmployeeEntity);
-  const warehouseProductRepo = AppDataSource.getRepository(WarehouseProductEntity);
-  const stockChangeRepo = AppDataSource.getRepository(StockChangeEntity);
-  const stockProductRepo = AppDataSource.getRepository(StockProductEntity);
-
-  const existingRecord = await productionRecordRepo.findOne({
-    where: { id },
-    relations: [
-      "productionMaterials",
-      "productionUtilities",
-      "productionLabors",
-      "warehouse",
-      "product"
-    ],
-  });
-
+  const existingRecord = await productionRecordRepo.findOne({ where: { id } });
   if (!existingRecord) throw new Error("ProductionRecord not found");
 
-  productionRecordRepo.merge(existingRecord, data);
-  const updatedProductionRecord = await productionRecordRepo.save(existingRecord);
-
-  await productionMaterialRepo.delete({ productionRecord: { id } });
-  await productionUtilityRepo.delete({ productionRecord: { id } });
-  await productionLaborRepo.delete({ productionRecord: { id } });
-
-  const newMaterials: ProductionMaterialEntity[] = [];
-  for (const item of productionMaterials) {
-    if (!item.material?.id) continue;
-    const material = await productRepo.findOneBy({ id: item.material.id });
-    if (!material) continue;
-
-    const totalCost = (material.cost || 0) * (item.quantity ?? 0);
-    newMaterials.push(
-      productionMaterialRepo.create({
-        quantity: item.quantity ?? 0,
-        totalCost,
-        material,
-        productionRecord: updatedProductionRecord,
-      })
-    );
-  }
-  if (newMaterials.length > 0) await productionMaterialRepo.save(newMaterials);
-
-  const newUtilities: ProductionUtilityEntity[] = [];
-  for (const item of productionUtilities) {
-    const utility = await utilityRepo.findOneBy({ id: item.utility?.id });
-    if (!utility) continue;
-
-    const totalCost = (utility.costPerUnit || 0) * (item.quantity ?? 0);
-    newUtilities.push(
-      productionUtilityRepo.create({
-        utility,
-        quantity: item.quantity ?? 0,
-        totalCost,
-        productionRecord: updatedProductionRecord,
-      })
-    );
-  }
-  if (newUtilities.length > 0) await productionUtilityRepo.save(newUtilities);
-
-  const newLabors: ProductionLaborEntity[] = [];
-  for (const item of parseProductionLabors) {
-    const employee = await employeeRepo.findOneBy({ id: item.employee?.id });
-    if (!employee) continue;
-
-    const totalCost = item.totalCost ?? 0;
-    newLabors.push(
-      productionLaborRepo.create({
-        employee,
-        productionRecord: updatedProductionRecord,
-        totalCost,
-      })
-    );
-  }
-  if (newLabors.length > 0) await productionLaborRepo.save(newLabors);
-
-  if (
-    updatedProductionRecord.status === ProductionStatus.completed &&
-    updatedProductionRecord.warehouse &&
-    updatedProductionRecord.product &&
-    typeof updatedProductionRecord.quantity === "number"
-  ) {
-    const warehouse = updatedProductionRecord.warehouse;
-    const product = updatedProductionRecord.product;
-
-    // create stock in sheet
-    const productCost = product.cost || 0;
-    const stockIn = stockChangeRepo.create({
-      type: StockChangeType.stockIn,
-      status: StockChangeStatus.completed,
-      date: new Date(),
-      warehouse,
-      notes: `Stock in for updating production ${updatedProductionRecord.productionNumber}`,
-      subtotal: 0,
-      tax: 0,
-      discount: 0,
-      totalAmount: 0,
-      supplier: data.warehouse?.name
-    });
-    await stockChangeRepo.save(stockIn);
-
-    const stockInProduct = stockProductRepo.create({
-      product,
-      quantity: updatedProductionRecord.quantity,
-      unitCost: productCost,
-      totalCost: productCost * updatedProductionRecord.quantity,
-      stockChange: stockIn,
-    });
-    await stockProductRepo.save(stockInProduct);
-
-    stockIn.subtotal = stockInProduct.totalCost;
-    stockIn.totalAmount = stockInProduct.totalCost;
-    await stockChangeRepo.save(stockIn);
-
-    let productStock = await warehouseProductRepo.findOne({
-      where: { warehouse: { id: warehouse.id }, product: { id: product.id } },
-      relations: ["warehouse", "product"],
-    });
-    if (productStock) {
-      productStock.quantity += updatedProductionRecord.quantity;
-    } else {
-      productStock = warehouseProductRepo.create({
-        warehouse,
-        product,
-        quantity: updatedProductionRecord.quantity,
-      });
-    }
-    await warehouseProductRepo.save(productStock);
-
-    const productEntity = await productRepo.findOneBy({ id: product.id });
-    if (productEntity) {
-      productEntity.stock = (productEntity.stock ?? 0) + updatedProductionRecord.quantity;
-      await productRepo.save(productEntity);
-    }
-
-    // create stock out sheet
-    const stockOut = stockChangeRepo.create({
-      type: StockChangeType.stockOut,
-      status: StockChangeStatus.completed,
-      date: new Date(),
-      warehouse,
-      notes: `Stock out materials for updating production ${updatedProductionRecord.productionNumber}`,
-      subtotal: 0,
-      tax: 0,
-      discount: 0,
-      totalAmount: 0,
-      supplier: data.warehouse?.name
-    });
-    await stockChangeRepo.save(stockOut);
-
-    let totalStockOut = 0;
-    for (const item of newMaterials) {
-      const material = item.material;
-      if (!material) continue;
-
-      const unitCost = material.cost || 0;
-      const totalCost = unitCost * item.quantity;
-
-      const stockProduct = stockProductRepo.create({
-        product: material,
-        quantity: item.quantity,
-        unitCost,
-        totalCost,
-        stockChange: stockOut,
-      });
-      await stockProductRepo.save(stockProduct);
-
-      totalStockOut += totalCost;
-
-      const materialStock = await warehouseProductRepo.findOne({
-        where: { warehouse: { id: warehouse.id }, product: { id: material.id } },
-        relations: ["warehouse", "product"],
-      });
-      if (materialStock) {
-        materialStock.quantity -= item.quantity;
-        if (materialStock.quantity < 0) materialStock.quantity = 0;
-        await warehouseProductRepo.save(materialStock);
-      }
-
-      const materialEntity = await productRepo.findOneBy({ id: material.id });
-      if (materialEntity) {
-        materialEntity.stock = (materialEntity.stock ?? 0) - item.quantity;
-        if (materialEntity.stock < 0) materialEntity.stock = 0;
-        await productRepo.save(materialEntity);
-      }
-    }
-
-    stockOut.subtotal = totalStockOut;
-    stockOut.totalAmount = totalStockOut;
-    await stockChangeRepo.save(stockOut);
-  }
-
-  const incompleteRecords = await productionRecordRepo.find({
-    where: { status: Not(ProductionStatus.completed) },
-    relations: ["productionMaterials", "productionMaterials.material"],
+  productionRecordRepo.merge(existingRecord, {
+    ...data,
+    materials: productionMaterials,
+    utilities: productionUtilities,
+    labors: parseProductionLabors,
   });
-
-  for (const record of incompleteRecords) {
-    let hasLack = false;
-    for (const pm of record.productionMaterials ?? []) {
-      const material = await productRepo.findOneBy({ id: pm.material?.id });
-      if (!material) continue;
-      if ((material.stock ?? 0) < (pm.quantity ?? 0)) {
-        hasLack = true;
-        break;
-      }
-    }
-
-    if (hasLack && record.status !== ProductionStatus.lackMaterial) {
-      record.status = ProductionStatus.lackMaterial;
-      await productionRecordRepo.save(record);
-    }
-  }
-
-  const fullUpdatedRecord = await productionRecordRepo.findOne({
-    where: { id: updatedProductionRecord.id },
-    relations: [
-      "product",
-      "warehouse",
-      "warehouse.warehouseProducts",
-      "warehouse.warehouseProducts.product",
-      "productionMaterials",
-      "productionMaterials.material",
-      "productionUtilities",
-      "productionUtilities.utility",
-      "productionLabors",
-      "productionLabors.employee",
-    ],
-  });
-
-  return fullUpdatedRecord;
+  await productionRecordRepo.save(existingRecord);
+  return {
+    ...existingRecord,
+    ...data,
+    materials: productionMaterials,
+    utilities: productionUtilities,
+    labors: parseProductionLabors,
+  };
 }
 
-export async function deleteProduction(id: string) {
+export async function deleteProduction(id: string): Promise<boolean> {
   const productionRecordRepo = AppDataSource.getRepository(ProductionRecordEntity);
-  const productionMaterialRepo = AppDataSource.getRepository(ProductionMaterialEntity);
+  const record = await productionRecordRepo.findOne({ where: { id } });
+  if (!record) throw new Error("Production record not found.");
+  await productionRecordRepo.remove(record);
+  return true;
+}
 
-  await productionMaterialRepo.delete({ productionRecord: { id } });
+export async function handleStatusCompleted(record: ProductionRecordEntity) {
+  await AppDataSource.transaction(async (manager) => {
+    const stockChangeRepo = manager.getRepository(StockChangeEntity);
+    const productRepo = manager.getRepository(ProductEntity);
+    const warehouseRepo = manager.getRepository(WarehouseEntity);
+    const warehouse = await warehouseRepo.findOne({ where: { id: record.warehouse?.id } });
+    const stockChangeNumber = await generateStockChangeNumber();
 
-  return productionRecordRepo.delete(id);
-} 
+    // 1. StockIn for finished product
+    if (record.product && record.warehouse) {
+      // Find the product and warehouse entities
+      const product = await productRepo.findOne({ where: { id: record.product.id } });
+
+      if (product && warehouse) {
+        // Create stock change for finished product (StockIn)
+        const stockIn = stockChangeRepo.create({
+          number: stockChangeNumber,
+          type: StockChangeType.stockIn,
+          date: new Date(),
+          supplier: `${record.number}`,
+          subtotal: record.totalCost ?? 0,
+          tax: 0,
+          discount: 0,
+          totalAmount: record.totalCost ?? 0,
+          status: StockChangeStatus.completed,
+          notes: `${record.number}`,
+          stockProducts: [
+            {
+              id: product.id,
+              sku: product.sku,
+              name: product.name,
+              quantity: record.quantity ?? 1,
+              unit: product.unit,
+              unitCost: product.price,
+              totalCost: record.totalCost ?? 0,
+            }
+          ],
+          receivedBy: "System",
+          warehouse: warehouse,
+        });
+        await stockChangeRepo.save(stockIn);
+      }
+    }
+
+    // 2. StockOut for materials
+    if (record.materials && record.materials.length > 0 && record.warehouse) {
+      const stockProducts: IStockProduct[] = [];
+      for (const material of record.materials) {
+        if (material.id) {
+          const prod = await productRepo.findOne({ where: { id: material.id } });
+          if (prod) {
+            stockProducts.push({
+              id: prod.id,
+              sku: prod.sku,
+              name: prod.name,
+              quantity: material.quantity ?? 1,
+              unit: prod.unit,
+              unitCost: prod.cost,
+              totalCost: material.totalCost ?? 0,
+            });
+          }
+        }
+      }
+      if (stockProducts.length > 0 && warehouse) {
+        const stockOut = stockChangeRepo.create({
+          number: await generateStockChangeNumber(stockChangeNumber),
+          type: StockChangeType.stockOut,
+          date: new Date(),
+          supplier: `${record.number}`,
+          subtotal: stockProducts?.reduce((acc, curr) => acc + (curr.totalCost ?? 0), 0) ?? 0,
+          tax: 0,
+          discount: 0,
+          totalAmount: stockProducts?.reduce((acc, curr) => acc + (curr.totalCost ?? 0), 0) ?? 0,
+          status: StockChangeStatus.completed,
+          notes: `${record.number}`,
+          stockProducts: stockProducts,
+          receivedBy: "System",
+          warehouse: warehouse,
+        });
+        await stockChangeRepo.save(stockOut);
+      }
+    }
+  });
+}

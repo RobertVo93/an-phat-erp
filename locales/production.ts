@@ -342,9 +342,9 @@ export const productionTranslations = {
     en: "Quantity",
     vi: "Số lượng"
   },
-  "production.form.unitPrice": {
-    en: "Unit Price",
-    vi: "Giá 1 đơn vị"
+  "production.form.unitCost": {
+    en: "Unit Cost",
+    vi: "Đơn Giá",
   },
   "production.form.totalCost": {
     en: "Total Cost",
@@ -449,6 +449,10 @@ export const productionTranslations = {
   "production.form.selectedWarehouseRequired": {
     en: "Warehouse is required",
     vi: "Kho là bắt buộc"
+  },
+  "production.form.quantityOverStock": {
+    en: "Quantity over stock",
+    vi: "Số lượng vượt quá tồn kho"
   },
   "production.form.quantityMustGreaterThanZero": {
     en: "Quantity must greater than 0",
@@ -634,7 +638,7 @@ export const productionTranslations = {
   },
   "production.detail.inStock": {
     en: "In stock",
-    vi: "Trong kho",
+    vi: "Tồn kho",
   },
 
   // EditProductionModal
@@ -705,10 +709,6 @@ export const productionTranslations = {
   "production.edit.select": {
     en: "Select",
     vi: "Chọn"
-  },
-  "production.edit.unitPrice": {
-    en: "Unit Price",
-    vi: "Giá 1 đơn vị"
   },
   "production.edit.totalCost": {
     en: "Total Cost",
