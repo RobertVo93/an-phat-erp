@@ -124,7 +124,6 @@ export function StockChangeFormModal({
     if (field === "quantity" || field === "unitCost") {
       updatedItems[index].totalCost = updatedItems[index].quantity! * updatedItems[index].unitCost!
     }
-    console.log("updatedItems", updatedItems)
 
     setFormData((prev) => ({
       ...prev,

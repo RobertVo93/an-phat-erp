@@ -7,8 +7,8 @@ import {
   PaymentStatus, 
   Product, 
   ProductStatus, 
-  WarehouseStatus, 
-  WarehouseType,
+  WarehouseStatus,
+  ProductionStatus,
   WarehouseProduct,
   IWarehouseSummary,
 } from "@/types"
@@ -82,7 +82,7 @@ export function extractHourMinute(date: Date | string | null) {
   return `${hours}:${minutes}`;
 }
 
-export function isTodayLocalDatetime(dateStr: string): boolean {
+export function isTodayLocalDatetime(dateStr: Date | string): boolean {
   const inputDate = new Date(dateStr);
 
   const now = new Date();
@@ -107,8 +107,9 @@ export function base64ToFile(base64: string, filename: string): File {
 
 // Update formatLargeCurrency to use the new utility and VND symbol
 export const formatLargeCurrency = (amount: number, fixed: number = 2): string => {
-  if (amount >= 1_000_000) {
-    return `${(amount / 1_000_000).toFixed(fixed)}M ₫`
+  if (!amount) return "0 ₫"
+  if (amount >= 1_000_000_000) {
+    return `${(amount / 1_000_000_000).toFixed(fixed)}B ₫`
   }
   return `${amount.toLocaleString()} ₫`
 }
@@ -116,7 +117,7 @@ export const formatLargeCurrency = (amount: number, fixed: number = 2): string =
 export function groupWarehouseProductsByProduct(whProducts: WarehouseProduct[]): IWarehouseSummary[] {
   const result: Record<string, { product: Product; totalQuantity: number }> = {}
 
-  for (const item of whProducts) {
+  for (const item of (whProducts || [])) {
     const productId = item.product?.id
     if (!productId) continue
 
@@ -266,6 +267,23 @@ export const getStockChangeStatusColor = (status: string): string => {
   }
 };
 
+export const getProductionStatusColor = (status: ProductionStatus) => {
+  switch (status) {
+    case ProductionStatus.completed:
+      return "bg-green-100 text-green-800"
+    case ProductionStatus.inProgress:
+      return "bg-blue-100 text-blue-800"
+    case ProductionStatus.cancelled:
+      return "bg-red-100 text-red-800"
+    case ProductionStatus.lackMaterial:
+      return "bg-red-100 text-red-800"
+    case ProductionStatus.paused:
+      return "bg-yellow-100 text-yellow-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
 export const getCustomerInitialCharacter = (name: string) => {
   return name
     .split(" ")
@@ -285,4 +303,10 @@ export const formatNumberWithCommas = (value: string | number): string => {
 
 export const parseNumberInput = (value: string): number => {
   return parseFloat(value.replace(/,/g, ""));
+}
+
+export const hasValidArray = (arr: any) => {
+    return Array.isArray(arr) &&
+        arr.length > 0 &&
+        arr.every(item => item && typeof item.id === "string" && item.id.trim() !== "");
 }

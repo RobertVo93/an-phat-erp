@@ -3,7 +3,7 @@ import { StockChangeEntity } from "../database/entities";
 import { StockChange } from "@/types";
 import { IStockProduct } from "@/types/stock-change";
 
-export async function getAllStockChanges() : Promise<{ data: StockChange[] }> {
+export async function getAllStockChanges(): Promise<{ data: StockChange[] }> {
   const repo = AppDataSource.getRepository(StockChangeEntity);
   const qb = repo
     .createQueryBuilder("stockChange")
@@ -37,4 +37,26 @@ export async function deleteStockChange(id: string): Promise<boolean> {
   if (!deletedRecord) throw new Error("Stock change not found");
   await repo.remove(deletedRecord);
   return true;
-} 
+}
+
+export async function generateStockChangeNumber(latestNumber?: string) {
+  let lastNumber = 0;
+  if (latestNumber) {
+    lastNumber = latestNumber
+      ? parseInt(latestNumber.replace("STC-", ""), 10)
+      : 0;
+  }
+  else {
+    const repo = AppDataSource.getRepository(StockChangeEntity);
+    const latest = await repo
+      .createQueryBuilder("record")
+      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
+      .getOne();
+
+    lastNumber = latest?.number
+      ? parseInt(latest.number.replace("STC-", ""), 10)
+      : 0;
+  }
+
+  return `STC-${String(lastNumber + 1).padStart(5, "0")}`;
+}

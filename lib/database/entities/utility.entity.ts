@@ -2,8 +2,6 @@ import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { UtilityStatus, UtilityType, UtilityUnit } from "../../../types/enums";
 import { Utility as IUtility } from "@/types/utility";
-import { ProductionUtilityEntity } from "./production-utility.entity";
-import { ProductionUtility as IProductionUtility } from "@/types/productionUtility";
 
 @Entity({ name: "utilities" })
 export class UtilityEntity extends BaseEntity implements IUtility {
@@ -30,7 +28,4 @@ export class UtilityEntity extends BaseEntity implements IUtility {
 
   @Column({ nullable: true })
   description?: string;
-
-  @OneToMany(() => ProductionUtilityEntity, (pu) => pu.utility)
-  productionUtilities?: IProductionUtility[];
 }

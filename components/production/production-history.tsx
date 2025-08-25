@@ -9,12 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CalendarIcon, Search, Eye, Edit, Download, RefreshCw } from "lucide-react"
 import { format } from "date-fns"
 import type { ProductionRecord } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductionStatus } from "@/types"
+import { ServersideTable, ServersideTableColumn } from "@/components/common/table/ServersideTable"
+import { formatDate, formatLargeCurrency, getProductionStatusColor } from "@/lib/utils"
 
 interface ProductionHistoryProps {
   historyRecords: ProductionRecord[]
@@ -31,7 +32,6 @@ export function ProductionHistory({
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [productFilter, setProductFilter] = useState<string>("all")
-  const [shiftFilter, setShiftFilter] = useState("all")
   const [dateFrom, setDateFrom] = useState<Date>()
   const [dateTo, setDateTo] = useState<Date>()
   const [currentPage, setCurrentPage] = useState(1)
@@ -40,19 +40,17 @@ export function ProductionHistory({
   // Lọc dữ liệu
   const filteredData = historyRecords.filter((record) => {
     const matchesSearch =
-      record.productionNumber!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.product?.name!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.operator!.toLowerCase().includes(searchTerm.toLowerCase())
+      record.number!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.product?.name!.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || record.status === statusFilter
     const matchesProduct = !productFilter || productFilter === "all" || record.product?.id === productFilter
-    const matchesShift = shiftFilter === "all" || record.shift === shiftFilter
 
     const recordDate = new Date(record.date!)
     const matchesDateFrom = !dateFrom || recordDate >= dateFrom
     const matchesDateTo = !dateTo || recordDate <= dateTo
 
-    return matchesSearch && matchesStatus && matchesProduct && matchesShift && matchesDateFrom && matchesDateTo
+    return matchesSearch && matchesStatus && matchesProduct && matchesDateFrom && matchesDateTo
   })
 
   // Phân trang
@@ -73,32 +71,10 @@ export function ProductionHistory({
     setProductFilter(productId)
   }
 
-  const getStatusColor = (status: ProductionStatus) => {
-    switch (status) {
-      case ProductionStatus.completed:
-        return "bg-green-100 text-green-800"
-      case ProductionStatus.inProgress:
-        return "bg-blue-100 text-blue-800"
-      case ProductionStatus.cancelled:
-        return "bg-red-100 text-red-800"
-      case ProductionStatus.lackMaterial:
-        return "bg-red-100 text-red-800"
-      case ProductionStatus.paused:
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getStatusBadge = (status: ProductionStatus) => {
-    return <Badge className={getStatusColor(status)}>{t(`production.history.${status}`)}</Badge>
-  }
-
   const resetFilters = () => {
     setSearchTerm("")
     setStatusFilter("all")
     setProductFilter("all")
-    setShiftFilter("all")
     setDateFrom(undefined)
     setDateTo(undefined)
     setCurrentPage(1)
@@ -106,14 +82,12 @@ export function ProductionHistory({
 
   const exportData = () => {
     // Xuất dữ liệu CSV
-    const headers = ["Mã đơn", "Ngày", "Sản phẩm", "Số lượng", "Trạng thái", "Ca", "Người vận hành", "Chi phí"]
+    const headers = ["Mã đơn", "Ngày", "Sản phẩm", "Số lượng", "Trạng thái", "Chi phí"]
     const csvData = filteredData.map((record) => [
       record.id,
       record.date,
       record.product,
       `${record.quantity}`,
-      record.shift,
-      record.operator,
       record.totalCost!.toLocaleString(),
     ])
 
@@ -126,6 +100,80 @@ export function ProductionHistory({
     a.click()
     window.URL.revokeObjectURL(url)
   }
+
+  // Define columns for ServersideTable
+  const columns: ServersideTableColumn<ProductionRecord>[] = [
+    {
+      key: "number",
+      title: t("production.history.sheetCode"),
+      sortable: true,
+      render: (row) => (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">{row.number}</p>
+        </div>
+      ),
+    },
+    {
+      key: "date",
+      title: t("production.history.date"),
+      sortable: true,
+      render: (row) => (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">{row.date ? formatDate(row.date) : "-"}</p>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      title: t("production.history.status"),
+      render: (row) => <Badge className={getProductionStatusColor(row.status!)}>{t(`production.history.${row.status!}`)}</Badge>,
+    },
+    {
+      key: "product",
+      title: t("production.history.product"),
+      render: (row) => (
+        <Badge variant="outline">{row.product!.name}</Badge>
+      ),
+    },
+    {
+      key: "quantity",
+      title: t("production.history.quantity"),
+      sortable: true,
+      render: (row) => <span className="font-medium">{row.quantity}</span>,
+    },
+    {
+      key: "totalCost",
+      title: t("production.history.expense"),
+      sortable: true,
+      render: (row) => <span className="font-medium">{formatLargeCurrency(row.totalCost!)}</span>,
+    },
+    {
+      key: "actions",
+      title: t("common.actions"),
+      render: (row) => (
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewRecord(row)}
+            className="h-7 w-7 p-0"
+          >
+            <Eye className="h-3 w-3" />
+          </Button>
+          {row.status !== ProductionStatus.completed && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEditRecord(row)}
+              className="h-7 w-7 p-0"
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ]
 
   return (
     <Card>
@@ -171,11 +219,9 @@ export function ProductionHistory({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("production.history.all")}</SelectItem>
-                <SelectItem value={ProductionStatus.completed}>{t("production.history.completed")}</SelectItem>
-                <SelectItem value={ProductionStatus.lackMaterial}>{t("production.history.lack-material")}</SelectItem>
-                <SelectItem value={ProductionStatus.inProgress}>{t("production.history.in-progress")}</SelectItem>
-                <SelectItem value={ProductionStatus.cancelled}>{t("production.history.cancelled")}</SelectItem>
-                <SelectItem value={ProductionStatus.paused}>{t("production.history.paused")}</SelectItem>
+                {Object.values(ProductionStatus).map((status) => (
+                  <SelectItem key={status} value={status}>{t(`production.history.${status}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -260,90 +306,19 @@ export function ProductionHistory({
         </div>
 
         {/* Bảng dữ liệu */}
-        <div className="border rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{t("production.history.sheetCode")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.date")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.product")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.quantity")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.status")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.expense")}</TableHead>
-                  <TableHead className="text-xs">{t("production.history.action")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell className="font-medium text-xs">{record.productionNumber}</TableCell>
-                    <TableCell className="text-xs">{format(new Date(record.date!), "dd/MM/yyyy")}</TableCell>
-                    <TableCell className="text-xs">{record.product?.name!}</TableCell>
-                    <TableCell className="text-xs">{record.quantity}</TableCell>
-                    <TableCell className="text-xs">{getStatusBadge(record.status!)}</TableCell>
-                    <TableCell className="text-xs">{record.totalCost!.toLocaleString()} đ</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onViewRecord(record)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                        {record.status !== ProductionStatus.completed && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onEditRecord(record)}
-                            className="h-7 w-7 p-0"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-
-        {/* Phân trang */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-600">
-              {t("production.history.display")} {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredData.length)} {t("production.history.of")}{" "}
-              {filteredData.length} {t("production.history.result")}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="text-xs"
-              >
-                {t("production.history.previous")}
-              </Button>
-              <span className="text-xs">
-                {t("production.history.page")} {currentPage} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="text-xs"
-              >
-                {t("production.history.next")}
-              </Button>
-            </div>
-          </div>
-        )}
+        <ServersideTable
+          columns={columns as ServersideTableColumn<{ id: string | number }>[]}
+          data={paginatedData as { id: string | number }[]}
+          total={filteredData.length}
+          currentPage={currentPage}
+          pageSize={itemsPerPage}
+          sortBy={""}
+          sortOrder={"asc"}
+          onPageChange={setCurrentPage}
+          onSort={() => { }}
+          loading={false}
+          totalPages={totalPages}
+        />
       </CardContent>
     </Card>
   )
