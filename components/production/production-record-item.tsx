@@ -7,6 +7,7 @@ import { CheckCircle, Clock, Edit, Eye } from "lucide-react"
 import type { ProductionRecord } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductionStatus } from "@/types"
+import { formatDate, formatLargeCurrency, getProductionStatusColor } from "@/lib/utils"
 
 interface ProductionRecordItemProps {
   record: ProductionRecord
@@ -18,24 +19,7 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
   const { t } = useLanguage()
 
   const calculateLabor = () => {
-    return record.productionLabors?.reduce((sum, l) => sum + l.employee?.salary!, 0)
-  }
-
-  const getStatusColor = (status: ProductionStatus) => {
-    switch (status) {
-      case ProductionStatus.completed:
-        return "bg-green-100 text-green-800"
-      case ProductionStatus.inProgress:
-        return "bg-blue-100 text-blue-800"
-      case ProductionStatus.cancelled:
-        return "bg-red-100 text-red-800"
-      case ProductionStatus.lackMaterial:
-        return "bg-red-100 text-red-800"
-      case ProductionStatus.paused:
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
+    return record.labors?.reduce((sum, l) => sum + l.totalCost!, 0)
   }
 
   return (
@@ -48,10 +32,10 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
               {record.quantity?.toLocaleString()} {t(`production.recordItem.${record.product?.unit}`)}
             </h3>
             <h3 className="text-xs text-gray-600">
-              {new Date(record.date!).toISOString().slice(0, 10)}
+              {formatDate(record.date!)}
             </h3>
           </div>
-          <Badge className={getStatusColor(record.status!)}>
+          <Badge className={getProductionStatusColor(record.status!)}>
             {record.status === ProductionStatus.completed ? (
               <CheckCircle className="w-3 h-3 mr-1" />
             ) : (
@@ -91,28 +75,28 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
         </TabsList>
 
         <TabsContent value="materials" className="space-y-2 mt-3">
-          {record.productionMaterials?.map((material, index) => (
+          {record.materials?.map((material, index) => (
             <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded text-xs sm:text-sm">
-              <span className="font-medium">{material.material?.name}</span>
+              <span className="font-medium">{material?.name}</span>
               <div className="text-right">
                 <div>
-                  {material.quantity?.toLocaleString()} {t(`production.recordItem.${material.material?.unit}`)}
+                  {material.quantity?.toLocaleString()} {t(`production.recordItem.${material?.unit}`)} x {formatLargeCurrency(material.unitCost!)} 
                 </div>
-                <div className="text-xs text-gray-600">{material.material?.cost!.toLocaleString()} đ</div>
+                <div className="text-xs text-gray-600">{formatLargeCurrency(material.totalCost!)}</div>
               </div>
             </div>
           ))}
         </TabsContent>
 
         <TabsContent value="utilities" className="space-y-2 mt-3">
-          {record?.productionUtilities?.map((utility, index) => (
+          {record?.utilities?.map((utility, index) => (
             <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded text-xs sm:text-sm">
-              <span className="font-medium">{utility.utility?.name!}</span>
+              <span className="font-medium">{utility?.name!}</span>
               <div className="text-right">
                 <div>
-                  {utility.quantity} {t(`production.form.${utility.utility?.unit}`)}
+                  {utility.quantity} {t(`production.form.${utility?.unit}`)} x {formatLargeCurrency(utility.unitCost!)} 
                 </div>
-                <div className="text-xs text-gray-600">{utility.totalCost?.toLocaleString()} đ</div>
+                <div className="text-xs text-gray-600">{formatLargeCurrency(utility.totalCost!)}</div>
               </div>
             </div>
           ))}
@@ -121,11 +105,11 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
         <TabsContent value="labor" className="space-y-2 mt-3">
           <div className="grid grid-cols-2 gap-2 sm:gap-4 p-2 bg-gray-50 rounded">
             <div className="text-center">
-              <div className="font-medium text-sm sm:text-base">{record.productionLabors?.length!} {t("production.recordItem.person")}</div>
+              <div className="font-medium text-sm sm:text-base">{record.labors?.length!} {t("production.recordItem.person")}</div>
               <div className="text-xs text-gray-600">{t("production.recordItem.labors")}</div>
             </div>
             <div className="text-center">
-              <div className="font-medium text-sm sm:text-base">{calculateLabor()?.toLocaleString()} đ</div>
+              <div className="font-medium text-sm sm:text-base">{formatLargeCurrency(calculateLabor()!)}</div>
               <div className="text-xs text-gray-600">{t("production.recordItem.laborExpenses")}</div>
             </div>
           </div>
@@ -134,7 +118,7 @@ export function ProductionRecordItem({ record, onView, onEdit }: ProductionRecor
         <TabsContent value="summary" className="space-y-2 mt-3">
           <div className="grid grid-cols-1 gap-2 sm:gap-4 p-2 bg-gray-50 rounded">
             <div className="text-center">
-              <div className="font-medium text-sm sm:text-base">{record.totalCost!.toLocaleString()} đ</div>
+              <div className="font-medium text-sm sm:text-base">{formatLargeCurrency(record.totalCost!)}</div>
               <div className="text-xs text-gray-600">{t("production.recordItem.totalExpense")}</div>
             </div>
           </div>

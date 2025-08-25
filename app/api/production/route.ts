@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { getUserFromRequest } from "@/lib/auth/jwt";
-import { ProductionSchema, ProductionMaterialArraySchema, ProductionUtilityArraySchema, ProductionLaborArraySchema } from "./production.schema";
+import { ProductionSchema } from "@/app/api/production/production.schema";
 import { createProductionRecord, getAllProductionRecords } from "@/lib/services/productionService";
 
 export async function GET(req: NextRequest) {
@@ -9,7 +9,17 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
-    const result = await getAllProductionRecords()
+    const { searchParams } = new URL(req.url);
+    const page = Number(searchParams.get("page")) || 1;
+    const limit = Number(searchParams.get("limit")) || 20;
+    const sortBy = searchParams.get("sortBy") || "date";
+    const sortOrder = searchParams.get("sortOrder") || "desc";
+    const status = searchParams.get("status") || undefined;
+    const dateFrom = searchParams.get("dateFrom") || undefined;
+    const dateTo = searchParams.get("dateTo") || undefined;
+    const product = searchParams.get("product") || undefined;
+    const searchTerm = searchParams.get("searchTerm") || undefined;
+    const result = await getAllProductionRecords({ page, limit, sortBy, sortOrder, filters: { status, dateFrom, dateTo, searchTerm, product } })
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });
@@ -28,27 +38,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid input", details: parseData.error.errors }, { status: 400 });
     }
 
-    const parseProductionMaterials = ProductionMaterialArraySchema.safeParse(data.productionMaterials);
-    if (!parseProductionMaterials.success) {
-      return NextResponse.json({ error: "Invalid input", details: parseProductionMaterials.error.errors }, { status: 400 });
-    }
-
-    const parseProductionUtilities = ProductionUtilityArraySchema.safeParse(data.productionUtilities);
-    if (!parseProductionUtilities.success) {
-      return NextResponse.json({ error: "Invalid input", details: parseProductionUtilities.error.errors }, { status: 400 });
-    }
-
-    const parseProductionLabors = ProductionLaborArraySchema.safeParse(data.productionLabors);
-    if (!parseProductionLabors.success) {
-      return NextResponse.json({ error: "Invalid input", details: parseProductionLabors.error.errors }, { status: 400 });
-    }
-
     try {
       const created = await createProductionRecord(
         parseData.data,
-        parseProductionMaterials.data,
-        parseProductionUtilities.data,
-        parseProductionLabors.data
+        parseData.data.materials || [],
+        parseData.data.utilities || [],
+        parseData.data.labors || []
       );
       return NextResponse.json(created, { status: 201 });
     } catch (err) {

@@ -1,47 +1,34 @@
-import { ProductionStatus } from "@/types/enums";
+import { ProductionElementType, ProductionStatus } from "@/types/enums";
 import { Product } from "./product";
 import { IBase } from "./base.interface";
-import { ProductionMaterial } from "./productionMaterial";
-import { ProductionUtility } from "./productionUtility";
-import { ProductionLabor } from "./ProductionLabor";
 import { Warehouse } from "./warehouse";
+import { Employee } from "./employee";
+
 export interface ProductionRecord extends IBase{
-  id?: string
-  productionNumber?: string
-  date?: string
+  number?: string
+  date?: Date
   quantity?: number
   status?: ProductionStatus
-  shift?: string
-  operator?: string
-
-  product?: Product
-  productionMaterials?: ProductionMaterial[]
-  productionUtilities?: ProductionUtility[]
-  productionLabors?: ProductionLabor[]
-  warehouse?: Warehouse
-
   totalCost?: number
+  totalExpense?: number
+  warehouse?: Warehouse
+  product?: Product
+  pic?: Employee
+
+  materials?: IProductionElement[]
+  utilities?: IProductionElement[]
+  labors?: IProductionElement[]
 }
 
-export interface Utility {
+export interface IProductionElement {
   id?: string
+  quantity?: number
+  unitCost?: number
+  totalCost?: number
   name?: string
   unit?: string
-  cost?: number
-}
-
-export interface SelectedUtility extends Utility{
-  quantity?: number
-  totalCost?: number
-}
-
-export interface SelectedEmployee {
-  id: string
-  name: string
-  position: string
-  hours: number
-  hourlyRate: number
-  totalCost: number
+  type?: ProductionElementType
+  number?: string
 }
 
 export interface DailyProductionData {

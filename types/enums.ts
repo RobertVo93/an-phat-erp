@@ -30,19 +30,6 @@ export enum WarehouseStatus {
   inactive = "inactive"
 }
 
-export enum WarehouseType {
-  distributionCenter = "distributionCenter",
-  regionalHub = "regionalHub",
-  coldStorage = "coldStorage",
-  backupStorage = "backupStorage"
-}
-
-export enum WarehouseTemperature {
-  ambient = "ambient",
-  refrigerated = "refrigerated",
-  frozen = "frozen"
-}
-
 export enum OrderStatus {
   pending = "pending",
   processing = "processing",
@@ -154,6 +141,12 @@ export enum ProductionStatus {
   lackMaterial = "lack-material",
   paused = "paused",
   cancelled = "cancelled"
+}
+
+export enum ProductionElementType {
+  material = "material",
+  utility = "utility",
+  labor = "labor"
 }
 
 export enum EmployeeType {

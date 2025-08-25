@@ -1,19 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, History, BarChart3, Loader2 } from "lucide-react"
+import { History, BarChart3 } from "lucide-react"
 import { ERPLayout } from "@/components/erp-layout"
-import { EditProductionModal } from "@/components/modals/edit-production-modal"
 import { ProductionSummaryCards } from "@/components/production/production-summary-cards"
 import { ProductionRecords } from "@/components/production/production-records"
 import { ProductionDetailModal } from "@/components/production/production-detail-modal"
 import { ProductionHistory } from "@/components/production/production-history"
-import { NewProductionForm } from "@/components/production/new-production-form"
 import { useProduction } from "@/hooks/use-production"
 import { useLanguage } from "@/contexts/language-context"
+import { LoadingOverlay } from "@/components/common/LoadingOverlay"
+import { ProductionListHeader } from "@/components/production/ProductionListHeader"
+import { ProductionNewModal } from "@/components/production/ProductionNewModal"
+import { ProductionEditModal } from "@/components/production/ProductionEditModal"
 
 export default function ProducePage() {
   const [activeTab, setActiveTab] = useState("today")
@@ -41,33 +41,16 @@ export default function ProducePage() {
     closeEditModal,
     openNewProduction,
     closeNewProduction,
-    createNewProduction
+    createNewProduction,
   } = useProduction()
   const { t } = useLanguage()
 
   return (
     <ERPLayout>
-      {loading && (
-        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-50 flex justify-center items-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      )}
+      <LoadingOverlay loading={loading} />
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("production.management")}</h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">
-
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-            <Button className="w-full sm:w-auto" onClick={openNewProduction}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("production.newProduction")}
-            </Button>
-          </div>
-        </div>
+        <ProductionListHeader openNewProduction={openNewProduction} />
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -84,7 +67,7 @@ export default function ProducePage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Tab Content - Hôm Nay */}
+          {/* Tab Content - Today */}
           <TabsContent value="today" className="space-y-4 sm:space-y-6">
             {/* Summary Cards */}
             <ProductionSummaryCards
@@ -101,7 +84,7 @@ export default function ProducePage() {
             />
           </TabsContent>
 
-          {/* Tab Content - Lịch Sử */}
+          {/* Tab Content - History */}
           <TabsContent value="history" className="space-y-4 sm:space-y-6">
             <ProductionHistory
               historyRecords={historyRecords}
@@ -112,43 +95,34 @@ export default function ProducePage() {
         </Tabs>
 
         {/* New Production Modal */}
-        <Dialog open={isNewProductionOpen} onOpenChange={closeNewProduction}>
-          <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{t("production.createNewProduction")}</DialogTitle>
-              <DialogDescription>
-                {t("production.createNewProductionDescription")}
-              </DialogDescription>
-            </DialogHeader>
-            <NewProductionForm
-              availableMaterials={availableMaterials}
-              availableProducts={availableProducts}
-              availableUtilities={availableUtilities}
-              availableEmployees={availableEmployees}
-              availableWarehouses={availableWarehouses}
-              onClose={closeNewProduction}
-              createNewProduction={createNewProduction}
-            />
-          </DialogContent>
-        </Dialog>
+        <ProductionNewModal
+          isNewProductionOpen={isNewProductionOpen}
+          closeNewProduction={closeNewProduction}
+          createNewProduction={createNewProduction}
+          availableMaterials={availableMaterials}
+          availableProducts={availableProducts}
+          availableUtilities={availableUtilities}
+          availableEmployees={availableEmployees}
+          availableWarehouses={availableWarehouses}
+          isLoading={loading}
+        />
 
         {/* Production Detail Modal */}
         <ProductionDetailModal record={selectedRecord} isOpen={!!selectedRecord} onClose={closeDetailModal} />
 
         {/* Edit Production Modal */}
-        {editingRecord && (
-          <EditProductionModal
-            availableMaterials={availableMaterials}
-            availableProducts={availableProducts}
-            availableUtilities={availableUtilities}
-            availableEmployees={availableEmployees}
-            availableWarehouses={availableWarehouses}
-            isOpen={isEditModalOpen}
-            onClose={closeEditModal}
-            record={editingRecord}
-            onSave={handleSaveEdit}
-          />
-        )}
+        <ProductionEditModal
+          availableMaterials={availableMaterials}
+          availableProducts={availableProducts}
+          availableUtilities={availableUtilities}
+          availableEmployees={availableEmployees}
+          availableWarehouses={availableWarehouses}
+          isOpen={isEditModalOpen}
+          onClose={closeEditModal}
+          record={editingRecord}
+          onSave={handleSaveEdit}
+          isLoading={loading}
+        />
       </div>
     </ERPLayout>
   )

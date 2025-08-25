@@ -7,6 +7,7 @@ import type { Warehouse as IWarehouse } from "@/types/warehouse";
 import { StockChange as IStockChange, IStockProduct } from "@/types/stock-change";
 import { WarehouseProductEntity } from "./warehouse-product.entity";
 import { ProductEntity } from "./product.entity";
+import { generateStockChangeNumber } from "@/lib/services/stockChangeService";
 
 @Entity({ name: "stock_change" })
 export class StockChangeEntity extends BaseEntity implements IStockChange {
@@ -58,17 +59,9 @@ export class StockChangeEntity extends BaseEntity implements IStockChange {
   //////Auto numbering//////
   @BeforeInsert()
   async generateNumber() {
-    const repo = AppDataSource.getRepository(StockChangeEntity);
-    const latest = await repo
-      .createQueryBuilder("record")
-      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
-      .getOne();
-
-    const lastNumber = latest?.number
-      ? parseInt(latest.number.replace("STC-", ""), 10)
-      : 0;
-
-    this.number = `STC-${String(lastNumber + 1).padStart(5, "0")}`;
+    if (!this.number) {
+      this.number = await generateStockChangeNumber();
+    }
 
     if (this.status === StockChangeStatus.completed) {
       await this.handleCompletedStockChange();
