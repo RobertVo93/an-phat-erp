@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLanguage } from "@/contexts/language-context"
 import type { Utility, UtilityFilters } from "@/types/utility"
 import { UtilityStatus, UtilityType, UtilityUnit } from "@/types"
-import { formatYYYYMMDD } from "@/lib/utils"
 
 interface UtilityFormModalProps {
   isOpen: boolean

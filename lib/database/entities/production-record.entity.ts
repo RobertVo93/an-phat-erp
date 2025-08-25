@@ -1,26 +1,22 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany, BeforeInsert } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
 import { ProductionStatus } from "@/types/enums";
-import { ProductionRecord as IProductionRecord } from "@/types/production";
-import { ProductEntity } from "./product.entity";
-import type { Product as IProduct } from "@/types";
-import { ProductionMaterialEntity } from "./production-material.entity";
-import { ProductionMaterial } from "@/types/productionMaterial";
-import { AppDataSource } from "../typeorm";
-import { ProductionUtilityEntity } from "./production-utility.entity";
-import type { ProductionUtility as IProductionUtility } from "@/types/productionUtility";
-import { ProductionLaborEntity } from "./production-labor.entity";
-import { ProductionLabor as IProductionLabor } from "@/types/ProductionLabor";
-import { WarehouseEntity } from "./warehouse.entity";
+import { IProductionElement, ProductionRecord as IProductionRecord } from "@/types/production";
+import type { Employee as IEmployee, Product as IProduct } from "@/types";
+import { AppDataSource } from "@/lib/database/typeorm";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { ProductEntity } from "@/lib/database/entities/product.entity";
+import { WarehouseEntity } from "@/lib/database/entities/warehouse.entity";
+import { EmployeeEntity } from "@/lib/database/entities/employee.entity";
 import type { Warehouse as IWarehouse } from "@/types";
+import { handleStatusCompleted } from "@/lib/services/productionService";
 
 @Entity({ name: "production_records" })
 export class ProductionRecordEntity extends BaseEntity implements IProductionRecord {
-  @Column({ nullable: false })
-  productionNumber?: string;
+  @Column({ unique: true })
+  number?: string;
 
   @Column({ nullable: true })
-  date?: string;
+  date?: Date;
 
   @Column({ type: "int", nullable: true })
   quantity?: number;
@@ -28,46 +24,55 @@ export class ProductionRecordEntity extends BaseEntity implements IProductionRec
   @Column({ type: "enum", enum: ProductionStatus, nullable: true })
   status?: ProductionStatus;
 
-  @Column({ nullable: true })
-  shift?: string;
-
-  @Column({ nullable: true })
-  operator?: string;
-
   @Column({ type: "float", nullable: true })
   totalCost?: number;
 
+  @Column({ type: "float", nullable: true })
+  totalExpense?: number;
+
+  @Column({ type: "jsonb", nullable: true })
+  materials?: IProductionElement[]
+
+  @Column({ type: "jsonb", nullable: true })
+  utilities?: IProductionElement[]
+
+  @Column({ type: "jsonb", nullable: true })
+  labors?: IProductionElement[]
+
   //// Relations ////
+  @ManyToOne(() => EmployeeEntity, (employee: EmployeeEntity) => employee.productionRecords, { nullable: true })
+  @JoinColumn({ name: "pic_id" })
+  pic?: IEmployee;
+
   @ManyToOne(() => ProductEntity, (product: ProductEntity) => product.productionRecords, { nullable: true })
   @JoinColumn({ name: "product_id" })
   product?: IProduct;
-
-  @OneToMany(() => ProductionMaterialEntity, (pm: ProductionMaterialEntity) => pm.productionRecord, { nullable: true })
-  productionMaterials?: ProductionMaterial[];
-
-  @OneToMany(() => ProductionUtilityEntity, (pu) => pu.productionRecord, { cascade: true })
-  productionUtilities?: IProductionUtility[];
-
-  @OneToMany(() => ProductionLaborEntity, (pl) => pl.productionRecord, { cascade: true })
-  productionLabors?: IProductionLabor[];
 
   @ManyToOne(() => WarehouseEntity, (warehouse) => warehouse.productionRecords, { nullable: true })
   @JoinColumn({ name: "warehouse_id" })
   warehouse?: IWarehouse;
 
-  // Auto numbering
+  //////Auto numbering//////
   @BeforeInsert()
-  async generateOrderNumber() {
+  async generateNumber() {
     const repo = AppDataSource.getRepository(ProductionRecordEntity);
     const latest = await repo
-      .createQueryBuilder("productionRecord")
-      .orderBy("CAST(SUBSTRING(productionRecord.productionNumber FROM 3) AS INTEGER)", "DESC")
+      .createQueryBuilder("record")
+      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
       .getOne();
 
-    const lastNumber = latest?.productionNumber
-      ? parseInt(latest.productionNumber.replace("PR", ""), 10)
+    const lastNumber = latest?.number
+      ? parseInt(latest.number.replace("PRN-", ""), 10)
       : 0;
 
-    this.productionNumber = `PR${lastNumber + 1}`;
+    this.number = `PRN-${String(lastNumber + 1).padStart(5, "0")}`;
+  }
+
+  @BeforeUpdate()
+  async handleStatusCompleted() {
+    if (this.status === ProductionStatus.completed) {
+      // Create 2 stock-change records after production is completed, using a transaction
+      handleStatusCompleted(this);
+    }
   }
 }

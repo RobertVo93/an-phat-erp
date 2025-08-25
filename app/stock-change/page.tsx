@@ -15,7 +15,6 @@ import { StockChangePagination } from "@/components/stock-change/StockChangePagi
 import { StockChangeHeader } from "@/components/stock-change/StockChangeHeader";
 import { StockChangeFilterBar } from "@/components/stock-change/StockChangeFilterBar";
 import { LoadingOverlay } from "@/components/common/LoadingOverlay"
-import { Toaster } from "@/components/ui/toaster"
 
 export default function StockChangePage() {
   const { t } = useLanguage();
@@ -128,7 +127,6 @@ export default function StockChangePage() {
         onConfirm={handleDeleteConfirm}
         stockChange={selectedStockChange}
       />
-      <Toaster />
     </ERPLayout>
   );
 }
