@@ -23,11 +23,8 @@ export interface Warehouse extends IBase{
 }
 
 export interface WarehouseFilters {
-  status?: string
-  type?: string
-  temperature?: string
+  status?: WarehouseStatus
   location?: string
-  utilizationRange?: [number, number]
 }
 
 export interface WarehouseSortOption {
