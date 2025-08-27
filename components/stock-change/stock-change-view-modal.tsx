@@ -4,10 +4,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Package, Calendar, User, MapPin, FileText, Hash } from "lucide-react"
+import { Package, Calendar, User, MapPin, Warehouse, Hash } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { StockChange } from "@/types/stock-change"
-import { StockChangeStatus } from "@/types"
+import { formatDateTime, formatLargeCurrency, getStockChangeStatusColor } from "@/lib/utils"
+import { env } from "@/constants/env"
 
 interface StockChangeViewModalProps {
   isOpen: boolean
@@ -20,34 +21,6 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
 
   if (!stockChange) return null
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case StockChangeStatus.completed:
-        return "bg-green-100 text-green-800"
-      case StockChangeStatus.pending:
-        return "bg-yellow-100 text-yellow-800"
-      case StockChangeStatus.inTransit:
-        return "bg-blue-100 text-blue-800"
-      case StockChangeStatus.cancelled:
-        return "bg-red-100 text-red-800"
-      case StockChangeStatus.draft:
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN")
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -55,9 +28,9 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              {t("stockIn.view")} - {stockChange.receiptNumber}
+              {t("stockIn.view")} - {stockChange.number}
             </DialogTitle>
-            <Badge className={getStatusColor(stockChange.status!)}>{t(`stockIn.status.${stockChange.status}`)}</Badge>
+            <Badge className={getStockChangeStatusColor(stockChange.status!)}>{t(`stockIn.status.${stockChange.status}`)}</Badge>
           </div>
         </DialogHeader>
 
@@ -74,7 +47,7 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
                     <Hash className="h-4 w-4 text-gray-500" />
                     <div>
                       <p className="text-sm text-gray-500">{t("stockIn.receiptNumber")}</p>
-                      <p className="font-semibold">{stockChange.receiptNumber}</p>
+                      <p className="font-semibold">{stockChange.number}</p>
                     </div>
                   </div>
 
@@ -82,15 +55,7 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <div>
                       <p className="text-sm text-gray-500">{t("stockIn.date")}</p>
-                      <p className="font-semibold">{formatDate(`${stockChange.date}`)}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-500">{t("stockIn.supplier")}</p>
-                      <p className="font-semibold">{stockChange.supplier}</p>
+                      <p className="font-semibold">{formatDateTime(`${stockChange.date}`)}</p>
                     </div>
                   </div>
                 </div>
@@ -104,15 +69,13 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
                     </div>
                   </div>
 
-                  {stockChange.referenceNumber && (
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-gray-500" />
-                      <div>
-                        <p className="text-sm text-gray-500">{t("stockIn.reference")}</p>
-                        <p className="font-semibold">{stockChange.referenceNumber}</p>
-                      </div>
+                  <div className="flex items-center gap-2">
+                    <Warehouse className="h-4 w-4 text-gray-500" />
+                    <div>
+                      <p className="text-sm text-gray-500">{t("stockIn.supplier")}</p>
+                      <p className="font-semibold">{stockChange.supplier}</p>
                     </div>
-                  )}
+                  </div>
 
                   {stockChange.receivedBy && (
                     <div className="flex items-center gap-2">
@@ -141,8 +104,8 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
                 {stockChange.stockProducts && stockChange.stockProducts.map((item, index) => (
                   <div key={index} className="p-4 border rounded-lg grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-1">
-                      <h4 className="font-semibold">{item.product?.name}</h4>
-                      <p className="text-sm text-gray-500">{item.product?.sku}</p>
+                      <h4 className="font-semibold">{item.name}</h4>
+                      <p className="text-sm text-gray-500">{item.sku}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-500">{t("stockIn.form.quantity")}</p>
@@ -150,11 +113,11 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-500">{t("stockIn.form.unitCost")}</p>
-                      <p className="font-semibold">{formatCurrency(item.unitCost!)}</p>
+                      <p className="font-semibold">{formatLargeCurrency(item.unitCost!)}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-500">{t("stockIn.form.totalCost")}</p>
-                      <p className="font-semibold">{formatCurrency(item.unitCost! * item.quantity!)}</p>
+                      <p className="font-semibold">{formatLargeCurrency(item.unitCost! * item.quantity!)}</p>
                     </div>
                   </div>
                 ))}
@@ -171,22 +134,26 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span>{t("stockIn.form.subtotal")}:</span>
-                  <span className="font-semibold">{formatCurrency(stockChange.subtotal!)}</span>
+                  <span className="font-semibold">{formatLargeCurrency(stockChange.subtotal!)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>{t("stockIn.form.tax")}:</span>
-                  <span className="font-semibold">{formatCurrency(stockChange.tax!)}</span>
-                </div>
+                {
+                  env.NEXT_PUBLIC_TAX_RATE > 0 && (
+                    <div className="flex justify-between">
+                      <span>{t("stockIn.form.tax")} ({env.NEXT_PUBLIC_TAX_RATE}%) :</span>
+                      <span className="font-semibold">{formatLargeCurrency(stockChange.tax!)}</span>
+                    </div>
+                  )
+                }
                 {stockChange.discount! > 0 && (
                   <div className="flex justify-between">
                     <span>{t("stockIn.form.discount")}:</span>
-                    <span className="font-semibold text-red-600">-{formatCurrency(stockChange.discount!)}</span>
+                    <span className="font-semibold text-red-600">-{formatLargeCurrency(stockChange.discount!)}</span>
                   </div>
                 )}
                 <Separator />
                 <div className="flex justify-between text-xl font-bold">
                   <span>{t("stockIn.totalAmount")}:</span>
-                  <span>{formatCurrency(stockChange.totalAmount!)}</span>
+                  <span>{formatLargeCurrency(stockChange.totalAmount!)}</span>
                 </div>
               </div>
             </CardContent>

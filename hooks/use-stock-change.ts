@@ -1,34 +1,41 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import type { StockChange, StockChangeFilters } from "@/types/stock-change"
+import type { StockChange, StockChangeFilters, StockChangeSortBy } from "@/types/stock-change"
 import { getAllStockChanges as apiGetAllStockChanges, addStockChange as apiAddStockChange, updateStockChange as apiUpdateStockChange, deleteStockChange as apiDeleteStockChange } from "@/lib/httpclient/stock-change.client"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { getProducts } from "@/lib/httpclient"
-import { Product, Warehouse } from "@/types"
+import { Product, ProductStatus, Warehouse, WarehouseStatus } from "@/types"
+import { toast } from "@/hooks/use-toast"
 
 export function useStockChange() {
   const [stockChangeRecords, setStockChangeRecords] = useState<StockChange[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<StockChangeFilters>({})
-  const [sortBy, setSortBy] = useState<"date" | "supplier" | "amount" | "status">("date")
+  const [sortBy, setSortBy] = useState<StockChangeSortBy>("date")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [loading, setLoading] = useState<boolean>(false)
   const [warehouses, setWarehouses] = useState<Warehouse[]>([])
   const [products, setProdducts] = useState<Product[]>([])
+  const [showFormModal, setShowFormModal] = useState<boolean>(false);
+  const [showViewModal, setShowViewModal] = useState<boolean>(false);
+  const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [selectedStockChange, setSelectedStockChange] = useState<StockChange | null>(null);
+  const [editingStockChange, setEditingStockChange] = useState<StockChange | null>(null);
 
   const filteredAndSortedRecords = useMemo(() => {
     const filtered = stockChangeRecords.filter((record) => {
       const matchesSearch =
-        record.receiptNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         record.supplier?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         record.warehouse?.name?.toLowerCase().includes(searchTerm.toLowerCase())
       record.stockProducts?.some(
         (item) =>
-          item.product?.name!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.product?.sku!.toLowerCase().includes(searchTerm.toLowerCase()),
+          item.name!.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.sku!.toLowerCase().includes(searchTerm.toLowerCase()),
       )
 
       const matchesStatus = !filters.status || record.status === filters.status
@@ -120,24 +127,16 @@ export function useStockChange() {
       setStockChangeRecords((prev) => [added, ...prev])
     } catch (e) {
       console.error(e)
+      toast({
+        title: "Error",
+        description: "Failed to add stock change",
+        variant: "destructive",
+      })
+      return false;
     } finally {
       setLoading(false)
     }
   }
-
-  const updateStockChange = async (id: string, updates: Partial<StockChange>) => {
-    try {
-      setLoading(true);
-      const updated = await apiUpdateStockChange(id, updates);
-      setStockChangeRecords((prev) =>
-        prev.map((record) => (record.id === id ? { ...record, ...updated } : record)),
-      );
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const deleteStockChange = async (id: string) => {
     try {
@@ -146,30 +145,39 @@ export function useStockChange() {
       setStockChangeRecords((prev) => prev.filter((record) => record.id !== id))
     } catch (e) {
       console.error(e)
+      toast({
+        title: "Error",
+        description: "Failed to delete stock change",
+        variant: "destructive",
+      })
+      return false;
     } finally {
       setLoading(false)
     }
   }
 
-  const getStockChangeById = (id: string) => {
-    return stockChangeRecords.find((record) => record.id === id)
-  }
-
-  const resetFilters = () => {
-    setFilters({})
-    setSearchTerm("")
-    setCurrentPage(1)
-  }
-
   const getWarehousesAndProducts = async () => {
     try {
       setLoading(true)
-      const whResponse = await getWarehouses()
-      setWarehouses(whResponse.data)
-      const prResponse = await getProducts()
-      setProdducts(prResponse.data)
+      const response = await Promise.all([
+        getWarehouses({
+          status: WarehouseStatus.active
+        }),
+        getProducts({
+          status: ProductStatus.active,
+          limit: 1000,
+          page: 1,
+        })
+      ])
+      setWarehouses(response[0].data)
+      setProdducts(response[1].data)
     } catch (e) {
       console.error(e)
+      toast({
+        title: "Error",
+        description: "Failed to get warehouses and products",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -180,30 +188,95 @@ export function useStockChange() {
     getWarehousesAndProducts()
   }, [])
 
+  const handleSort = (field: StockChangeSortBy): void => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("desc");
+    }
+  };
+
+  const handleView = (stockChange: StockChange): void => {
+    setSelectedStockChange(stockChange);
+    setShowViewModal(true);
+  };
+
+  const handleEdit = (stockChange: StockChange): void => {
+    setEditingStockChange(stockChange);
+    setShowFormModal(true);
+  };
+
+  const handleDelete = (stockChange: StockChange): void => {
+    setSelectedStockChange(stockChange);
+    setShowDeleteModal(true);
+  };
+
+  const handleSave = async (stockChangeData: Omit<StockChange, "id" | "createdAt" | "updatedAt">): Promise<boolean> => {
+    try {
+      setLoading(true);
+      if (editingStockChange) {
+        const updated = await apiUpdateStockChange(editingStockChange.id!, stockChangeData);
+        setStockChangeRecords((prev) =>
+          prev.map((record) => (record.id === editingStockChange.id ? { ...record, ...updated } : record)),
+        );
+      } else {
+        await addStockChange(stockChangeData);
+      }
+      return true;
+    }
+    catch(error) {
+      toast({
+        title: "Error",
+        description: "Failed to save stock change",
+        variant: "destructive",
+      })
+      return false;
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteConfirm = (): void => {
+    if (selectedStockChange) {
+      deleteStockChange(selectedStockChange.id!);
+      setSelectedStockChange(null);
+    }
+  };
+
   return {
     stockChangeRecords: paginatedRecords,
-    allStockChangeRecords: stockChangeRecords,
     searchTerm,
-    setSearchTerm,
     filters,
-    setFilters,
     sortBy,
-    setSortBy,
     sortOrder,
-    setSortOrder,
     currentPage,
-    setCurrentPage,
     itemsPerPage,
-    setItemsPerPage,
     totalPages,
-    totalRecords: filteredAndSortedRecords.length,
-    addStockChange,
-    updateStockChange,
-    deleteStockChange,
-    getStockChangeById,
-    resetFilters,
     loading,
     products,
-    warehouses
-  }
+    warehouses,
+    showFormModal,
+    showViewModal,
+    showFilterModal,
+    showDeleteModal,
+    selectedStockChange,
+    editingStockChange,
+    setSearchTerm,
+    setFilters,
+    setCurrentPage,
+    setItemsPerPage,
+    setShowFormModal,
+    setShowViewModal,
+    setShowFilterModal,
+    setShowDeleteModal,
+    setEditingStockChange,
+    handleSort,
+    handleView,
+    handleEdit,
+    handleDelete,
+    handleSave,
+    handleDeleteConfirm,
+  };
 }

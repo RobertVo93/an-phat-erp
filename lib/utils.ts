@@ -249,10 +249,40 @@ export const getWarehouseStatusColor = (status: string) => {
   }
 }
 
+export const getStockChangeStatusColor = (status: string): string => {
+  switch (status) {
+    case "completed":
+      return "bg-green-100 text-green-800";
+    case "pending":
+      return "bg-yellow-100 text-yellow-800";
+    case "in_transit":
+      return "bg-blue-100 text-blue-800";
+    case "cancelled":
+      return "bg-red-100 text-red-800";
+    case "draft":
+      return "bg-gray-100 text-gray-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
 export const getCustomerInitialCharacter = (name: string) => {
   return name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase()
+}
+
+export const formatNumberWithCommas = (value: string | number): string => {
+  if (value === null || value === undefined) return "";
+  const [int, dec] = value.toString().split(".");
+  return (
+    int.replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+    (dec ? "." + dec : "")
+  );
+}
+
+export const parseNumberInput = (value: string): number => {
+  return parseFloat(value.replace(/,/g, ""));
 }

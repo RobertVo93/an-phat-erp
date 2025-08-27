@@ -331,6 +331,10 @@ export const stockInTranslations = {
     en: "At least one product is required",
     vi: "Cần ít nhất một sản phẩm",
   },
+  "stockIn.validation.receivedByRequired": {
+    en: "Need to fill the receiver to complete the stock change",
+    vi: "Cần điền người nhận để hoàn thành phiếu",
+  },
   "stockIn.validation.quantityRequired": {
     en: "Quantity is required",
     vi: "Số lượng là bắt buộc",
