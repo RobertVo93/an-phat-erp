@@ -1,17 +1,26 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { In } from "typeorm";
 import { WarehouseEntity } from "../database/entities";
 import { Warehouse } from "@/types";
 
-export async function getAllWarehouses() {
+export async function getAllWarehouses({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(WarehouseEntity);
   const qb = repo.createQueryBuilder("warehouse")
     .leftJoinAndSelect("warehouse.warehouseProducts", "wp")
-    .leftJoinAndSelect("wp.product", "product")
-    .orderBy("warehouse.name", "ASC");
+    .leftJoinAndSelect("wp.product", "product")  
 
-  const [data] = await qb.getManyAndCount();
-  return { data };
+  // Filtering
+  if (filters.status) qb.andWhere("warehouse.status = :status", { status: filters.status });
+
+  // Sorting
+  const allowedSortFields = ["createdAt"];
+  const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+  qb.orderBy(`warehouse.${sortField}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+
+  // Pagination
+  qb.skip((page - 1) * limit).take(limit);
+
+  const [data, total] = await qb.getManyAndCount();
+  return { data, total, page, limit };
 }
 
 export async function addWarehouse(data: Warehouse) {
