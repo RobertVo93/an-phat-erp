@@ -21,8 +21,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (!parseStockProducts.success) {
       return NextResponse.json({ error: "Invalid input", details: parseStockProducts.error.errors }, { status: 400 });
     }
-
-    const updated = await updateStockChange(params.id, parseData.data, parseStockProducts.data);
+    const { id } = await params;
+    const updated = await updateStockChange(id, parseData.data, parseStockProducts.data);
     if (!updated!) return NextResponse.json({ error: "Stock-change not found" }, { status: 404 });
 
     return NextResponse.json(updated);
@@ -36,8 +36,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
-    const result = await deleteStockChange(params.id);
-    if (!result.affected) return NextResponse.json({ error: "Stock-change not found" }, { status: 404 });
+    const { id } = await params;
+    const result = await deleteStockChange(id);
+    if (!result) return NextResponse.json({ error: "Cannot delete the record" }, { status: 400 });
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });

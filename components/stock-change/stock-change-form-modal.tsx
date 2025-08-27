@@ -8,18 +8,35 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Trash2, Package } from "lucide-react"
+import { Plus, Trash2, Package, Loader2 } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
-import { Product, StockChange, StockChangeStatus, StockChangeType, Warehouse } from "@/types"
-import { StockProduct } from "@/types/stock-product"
+import { IStockProduct, Product, StockChange, StockChangeStatus, StockChangeType, Warehouse } from "@/types"
+import { formatLargeCurrency, formatNumberWithCommas, parseNumberInput } from "@/lib/utils"
+import { env } from "@/constants/env"
 
 interface StockChangeFormModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (stockChange: Omit<StockChange, "id" | "createdAt" | "updatedAt">) => void
+  onSave: (stockChange: Omit<StockChange, "id" | "createdAt" | "updatedAt">) => Promise<boolean>
   stockChange?: StockChange
   products: Product[]
   warehouses: Warehouse[]
+  loading: boolean
+}
+
+const defaultStockChange: StockChange = {
+  number: "",
+  type: StockChangeType.stockIn,
+  date: new Date(),
+  supplier: "",
+  subtotal: 0,
+  tax: 0,
+  discount: 0,
+  totalAmount: 0,
+  status: StockChangeStatus.draft,
+  notes: "",
+  stockProducts: [],
+  receivedBy: "",
 }
 
 export function StockChangeFormModal({
@@ -28,30 +45,20 @@ export function StockChangeFormModal({
   onSave,
   stockChange,
   products,
-  warehouses
+  warehouses,
+  loading
 }: StockChangeFormModalProps) {
   const { t } = useLanguage()
   const [formData, setFormData] = useState<StockChange>({
-    receiptNumber: "",
-    type: StockChangeType.stockIn,
-    date: new Date(),
-    supplier: "",
-    subtotal: 0,
-    tax: 0,
-    discount: 0,
-    totalAmount: 0,
-    status: StockChangeStatus.draft,
-    notes: "",
-    referenceNumber: "",
-    stockProducts: []
+    ...defaultStockChange,
+    warehouse: warehouses.find((w) => w.main) || warehouses[0]
   })
-
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (stockChange) {
       setFormData({
-        receiptNumber: stockChange.receiptNumber!,
+        number: stockChange.number!,
         type: stockChange.type,
         date: stockChange.date!,
         supplier: stockChange.supplier,
@@ -62,37 +69,34 @@ export function StockChangeFormModal({
         totalAmount: stockChange.totalAmount,
         status: stockChange.status,
         notes: stockChange.notes || "",
-        referenceNumber: stockChange.referenceNumber || "",
         stockProducts: stockChange.stockProducts,
+        receivedBy: stockChange.receivedBy,
       })
     } else {
       setFormData({
-        receiptNumber: "",
-        type: StockChangeType.stockIn,
-        date: new Date(),
-        supplier: "",
-        subtotal: 0,
-        tax: 0,
-        discount: 0,
-        totalAmount: 0,
-        status: StockChangeStatus.draft,
-        notes: "",
-        referenceNumber: "",
-        stockProducts: []
+        ...defaultStockChange,
+        warehouse: warehouses.find((w) => w.main) || warehouses[0]
       })
     }
   }, [stockChange, isOpen])
 
-  const calculateTotals = (items: StockProduct[], tax: number, discount: number) => {
-    const subtotal = items.reduce((sum, item) => sum + item.totalCost!, 0)
-    const taxAmount = (subtotal * tax) / 100
-    const totalAmount = subtotal + taxAmount - discount
-    return { subtotal, taxAmount, totalAmount }
-  }
+  useEffect(() => {
+    if (formData.stockProducts && formData.stockProducts.length > 0) {
+      const subtotal = formData.stockProducts.reduce((sum, item) => sum + (item.totalCost || 0), 0)
+      const taxAmount = (subtotal * env.NEXT_PUBLIC_TAX_RATE) / 100
+      const totalAmount = subtotal + taxAmount - (formData.discount || 0)
+      setFormData((prev) => ({
+        ...prev,
+        subtotal: subtotal,
+        tax: taxAmount,
+        totalAmount: totalAmount,
+      }))
+    }
+  }, [formData.stockProducts, formData.discount])
 
   const addProduct = () => {
     if (formData.stockProducts?.length! < products.length) {
-      const newStockProduct: StockProduct = {
+      const newStockProduct: IStockProduct = {
         quantity: 1,
         unitCost: 0,
         totalCost: 0,
@@ -101,42 +105,38 @@ export function StockChangeFormModal({
     }
   }
 
-  const updateItem = (index: number, field: keyof StockProduct, value: any) => {
+  const updateItem = (index: number, field: keyof IStockProduct, value: any) => {
     const updatedItems = [...formData.stockProducts!]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
 
     if (field === "id") {
       const product = products.find((p) => p.id === value)
       if (product) {
-        updatedItems[index].product = product
         updatedItems[index].unitCost = product.price!
         updatedItems[index].totalCost = updatedItems[index].quantity! * updatedItems[index].unitCost
+        updatedItems[index].name = product.name
+        updatedItems[index].sku = product.sku
+        updatedItems[index].unit = product.unit
+        updatedItems[index].id = product.id
       }
     }
 
     if (field === "quantity" || field === "unitCost") {
       updatedItems[index].totalCost = updatedItems[index].quantity! * updatedItems[index].unitCost!
     }
+    console.log("updatedItems", updatedItems)
 
-    const { subtotal, taxAmount, totalAmount } = calculateTotals(updatedItems, formData.tax!, formData.discount!)
     setFormData((prev) => ({
       ...prev,
       stockProducts: updatedItems,
-      subtotal,
-      tax: taxAmount,
-      totalAmount,
     }))
   }
 
   const removeItem = (index: number) => {
     const updatedItems = formData.stockProducts!.filter((_, i) => i !== index)
-    const { subtotal, taxAmount, totalAmount } = calculateTotals(updatedItems, formData.tax!, formData.discount!)
     setFormData((prev) => ({
       ...prev,
-      items: updatedItems,
-      subtotal,
-      tax: taxAmount,
-      totalAmount,
+      stockProducts: updatedItems,
     }))
   }
 
@@ -155,14 +155,11 @@ export function StockChangeFormModal({
     }))
   }
 
-  const validateForm = () => {
+  const validateForm = (isComplete: boolean) => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.type!) {
       newErrors.supplier = t("stockIn.validation.typeRequired")
-    }
-    if (!formData.supplier!) {
-      newErrors.supplier = t("stockIn.validation.supplierRequired")
     }
     if (!formData.warehouse!) {
       newErrors.warehouse = t("stockIn.validation.warehouseRequired")
@@ -183,25 +180,27 @@ export function StockChangeFormModal({
       }
     })
 
+    if (isComplete) {
+      if (!formData.receivedBy) {
+        newErrors.receivedBy = t("stockIn.validation.receivedByRequired")
+      }
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSave = (completeData?: StockChange) => {
-    if (!validateForm()) return
-    if (completeData) {
-      onSave(completeData)
-    } else {
-      onSave(formData)
-    }
-    onClose()
-  }
+  const handleSave = async (isComplete: boolean) => {
+    if (!validateForm(isComplete || formData.status === StockChangeStatus.completed)) return
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount)
+    let submitData = { ...formData }
+    if (isComplete) {
+      submitData.status = StockChangeStatus.completed
+    }
+    const success = await onSave(submitData)
+    if (success) {
+      onClose()
+    }
   }
 
   return (
@@ -247,13 +246,24 @@ export function StockChangeFormModal({
             </div>
 
             <div>
-              <Label htmlFor="supplier">{t("stockIn.supplier")}</Label>
-              <Input
-                id="supplier"
-                value={formData.supplier}
-                onChange={(e) => setFormData((prev) => ({ ...prev, supplier: e.target.value }))}
-              />
-              {errors.supplier && <p className="text-sm text-red-500 mt-1">{errors.supplier}</p>}
+              <Label htmlFor="status">{t("stockIn.status")}</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: any) => setFormData((prev) => ({ ...prev, status: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {
+                    Object.values(StockChangeStatus).map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {t(`stockIn.status.${status}`)}
+                      </SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -273,31 +283,14 @@ export function StockChangeFormModal({
               {errors.warehouse && <p className="text-sm text-red-500 mt-1">{errors.warehouse}</p>}
             </div>
 
-            <div>
-              <Label htmlFor="referenceNumber">{t("stockIn.form.referenceNumber")}</Label>
+            <div className="col-span-2">
+              <Label htmlFor="supplier">{t("stockIn.supplier")}</Label>
               <Input
-                id="referenceNumber"
-                value={formData.referenceNumber}
-                onChange={(e) => setFormData((prev) => ({ ...prev, referenceNumber: e.target.value }))}
+                id="supplier"
+                value={formData.supplier}
+                onChange={(e) => setFormData((prev) => ({ ...prev, supplier: e.target.value }))}
               />
-            </div>
-
-            <div>
-              <Label htmlFor="status">{t("stockIn.status")}</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: any) => setFormData((prev) => ({ ...prev, status: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">{t("stockIn.status.draft")}</SelectItem>
-                  <SelectItem value="pending">{t("stockIn.status.pending")}</SelectItem>
-                  <SelectItem value="in_transit">{t("stockIn.status.in_transit")}</SelectItem>
-                  <SelectItem value="completed">{t("stockIn.status.completed")}</SelectItem>
-                </SelectContent>
-              </Select>
+              {errors.supplier && <p className="text-sm text-red-500 mt-1">{errors.supplier}</p>}
             </div>
           </div>
 
@@ -324,7 +317,7 @@ export function StockChangeFormModal({
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                       <div className="md:col-span-2">
                         <Label>{t("stockIn.form.selectProduct")}</Label>
-                        <Select value={item.product?.id!} onValueChange={(value) => updateItem(index, "id", value)}>
+                        <Select value={item.id!} onValueChange={(value) => updateItem(index, "id", value)}>
                           <SelectTrigger className={errors[`item_${index}_product`] ? "border-red-500" : ""}>
                             <SelectValue placeholder={t("stockIn.form.selectProduct")} />
                           </SelectTrigger>
@@ -334,7 +327,7 @@ export function StockChangeFormModal({
                                 <SelectItem
                                   key={product.id}
                                   value={product.id!}
-                                  className={`font-medium ${formData.stockProducts?.some(stockProduct => stockProduct.product?.id === product.id) ? "hidden" : ""}`}
+                                  className={`font-medium ${formData.stockProducts?.some(stockProduct => stockProduct.id === product.id) ? "hidden" : ""}`}
                                 >
                                   <div className="font-medium">
                                     {product.name}
@@ -351,11 +344,12 @@ export function StockChangeFormModal({
                       <div>
                         <Label>{t("stockIn.form.quantity")}</Label>
                         <Input
-                          type="number"
-                          value={item.quantity}
+                          type="text"
+                          value={formatNumberWithCommas(item.quantity ?? 0)}
                           onChange={(e) => {
-                            if (Number.parseInt(e.target.value) > 0) {
-                              updateItem(index, "quantity", Number.parseInt(e.target.value) || 0)
+                            const quantity = parseNumberInput(e.target.value);
+                            if (quantity > 0) {
+                              updateItem(index, "quantity", quantity);
                             }
                           }}
                           className={errors[`item_${index}_quantity`] ? "border-red-500" : ""}
@@ -368,11 +362,12 @@ export function StockChangeFormModal({
                       <div>
                         <Label>{t("stockIn.form.unitCost")}</Label>
                         <Input
-                          type="number"
-                          value={item.unitCost}
+                          type="text"
+                          value={formatNumberWithCommas(item.unitCost ?? 0)}
                           onChange={(e) => {
-                            if (Number.parseInt(e.target.value) > 0) {
-                              updateItem(index, "unitCost", Number.parseInt(e.target.value) || 0)
+                            const unitCost = parseNumberInput(e.target.value);
+                            if (unitCost > 0) {
+                              updateItem(index, "unitCost", unitCost);
                             }
                           }}
                           className={errors[`item_${index}_unitCost`] ? "border-red-500" : ""}
@@ -385,7 +380,7 @@ export function StockChangeFormModal({
                       <div className="flex items-end justify-between">
                         <div>
                           <Label>{t("stockIn.form.totalCost")}</Label>
-                          <div className="text-lg font-semibold">{formatCurrency(item.quantity! * item.unitCost!)}</div>
+                          <div className="text-lg font-semibold">{formatLargeCurrency(item.quantity! * item.unitCost!)}</div>
                         </div>
                         <Button
                           variant="outline"
@@ -409,30 +404,31 @@ export function StockChangeFormModal({
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span>{t("stockIn.form.subtotal")}:</span>
-                  <span className="font-semibold">{formatCurrency(formData.subtotal!)}</span>
+                  <span className="font-semibold">{formatLargeCurrency(formData.subtotal!)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>{t("stockIn.form.tax")} (10%):</span>
-                  <span className="font-semibold">{formatCurrency(formData.subtotal! * 0.1)}</span>
-                </div>
+                {
+                  env.NEXT_PUBLIC_TAX_RATE > 0 && (
+                    <div className="flex justify-between">
+                      <span>{t("stockIn.form.tax")} (${env.NEXT_PUBLIC_TAX_RATE}%):</span>
+                      <span className="font-semibold">{formatLargeCurrency(formData.subtotal! * env.NEXT_PUBLIC_TAX_RATE)}</span>
+                    </div>
+                  )
+                }
                 <div className="flex justify-between">
                   <span>{t("stockIn.form.discount")}:</span>
                   <Input
-                    type="number"
-                    value={formData.discount}
+                    type="text"
+                    value={formatNumberWithCommas(formData.discount ?? 0)}
                     onChange={(e) => {
-                      if (Number.parseInt(e.target.value) > -1) {
-                        const discount = Number.parseInt(e.target.value) || 0
-                        const { subtotal, taxAmount, totalAmount } = calculateTotals(formData.stockProducts!, 10, discount)
-                        setFormData((prev) => ({ ...prev, discount, tax: taxAmount, totalAmount }))
-                      }
+                      const discount = parseNumberInput(e.target.value);
+                      setFormData((prev) => ({ ...prev, discount }));
                     }}
                     className="w-32 text-right"
                   />
                 </div>
                 <div className="flex justify-between text-lg font-bold border-t pt-4">
                   <span>{t("stockIn.totalAmount")}:</span>
-                  <span>{formatCurrency(formData.totalAmount!)}</span>
+                  <span>{formatLargeCurrency(formData.totalAmount!)}</span>
                 </div>
               </div>
             </CardContent>
@@ -449,19 +445,27 @@ export function StockChangeFormModal({
             />
           </div>
 
+          {/* Received By */}
+          <div>
+            <Label htmlFor="receivedBy">{t("stockIn.receivedBy")}</Label>
+            <Input 
+              id="receivedBy" 
+              className={errors.receivedBy ? "border-red-500" : ""} 
+              value={formData.receivedBy} 
+              onChange={(e) => setFormData((prev) => ({ ...prev, receivedBy: e.target.value }))} 
+            />
+            {errors.receivedBy && <p className="text-sm text-red-500 mt-1">{errors.receivedBy}</p>}
+          </div>
+
           {/* Actions */}
           <div className="flex justify-end space-x-4">
             <Button variant="outline" onClick={onClose}>
               {t("stockIn.form.cancel")}
             </Button>
             {formData.status !== StockChangeStatus.completed &&
-              <Button onClick={() => {
-                setFormData((prev) => ({ ...prev, status: StockChangeStatus.completed }))
-                const updateData = { ...formData, status: StockChangeStatus.completed } as StockChange
-                handleSave(updateData)
-              }}>{t("stockIn.form.autoComplete")}</Button>
+              <Button onClick={() => handleSave(true)} disabled={loading}>{t("stockIn.form.autoComplete")} {loading && <Loader2 className="h-4 w-4 ml-2 animate-spin" />}</Button>
             }
-            <Button onClick={() => handleSave()}>{t("stockIn.form.save")}</Button>
+            <Button onClick={() => handleSave(false)} disabled={loading}>{t("stockIn.form.save")} {loading && <Loader2 className="h-4 w-4 ml-2 animate-spin" />}</Button>
           </div>
         </div>
       </DialogContent>

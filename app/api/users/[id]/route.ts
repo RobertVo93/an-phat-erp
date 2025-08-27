@@ -97,7 +97,8 @@ export async function PUT(
     const validatedData = UserSchema.parse(body);
 
     const userService = new UserService();
-    const updatedUser = await userService.updateUser(params.id, validatedData);
+    const { id } = await params;
+    const updatedUser = await userService.updateUser(id, validatedData);
 
     if (!updatedUser) {
       return NextResponse.json(
@@ -131,7 +132,8 @@ export async function GET(
   try {
     await ensureDataSource();
     const userService = new UserService();
-    const user = await userService.getUserById(params.id, ["permissions"]);
+    const { id } = await params;
+    const user = await userService.getUserById(id, ["permissions"]);
 
     if (!user) {
       return NextResponse.json(

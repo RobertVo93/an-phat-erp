@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { AlertTriangle } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { StockChange } from "@/types/stock-change"
+import { formatLargeCurrency } from "@/lib/utils"
 
 interface StockChangeDeleteModalProps {
   isOpen: boolean
@@ -35,13 +36,10 @@ export function StockChangeDeleteModal({ isOpen, onClose, onConfirm, stockChange
         </DialogHeader>
 
         <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="font-semibold">{stockChange.receiptNumber}</p>
+          <p className="font-semibold">{stockChange.number}</p>
           <p className="text-sm text-gray-600">{stockChange.supplier}</p>
           <p className="text-sm text-gray-600">
-            {new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            }).format(stockChange.totalAmount!)}
+            {formatLargeCurrency(stockChange.totalAmount!)}
           </p>
         </div>
 
