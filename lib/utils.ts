@@ -11,8 +11,12 @@ import {
   ProductionStatus,
   WarehouseProduct,
   IWarehouseSummary,
+  AttendanceStatus,
+  AttendanceShift,
+  AttendanceSubStatus,
 } from "@/types"
 import { clsx, type ClassValue } from "clsx"
+import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -284,6 +288,36 @@ export const getProductionStatusColor = (status: ProductionStatus) => {
   }
 }
 
+export const getAttendanceStatusColor = (status: string) => {
+  switch (status) {
+    case AttendanceStatus.completed: return "bg-green-100 text-green-800"
+    case AttendanceStatus.draft: return "bg-gray-100 text-gray-800"
+    case AttendanceStatus.waitingApproval: return "bg-yellow-100 text-yellow-800"
+    default: return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getAttendanceSubStatusColor = (subStatus: string) => { 
+  switch (subStatus) {
+    case AttendanceSubStatus.present: return "bg-green-100 text-green-800"
+    case AttendanceSubStatus.late: return "bg-yellow-100 text-yellow-800"
+    case AttendanceSubStatus.absent: return "bg-red-100 text-red-800"
+    case AttendanceSubStatus.leave: return "bg-blue-100 text-blue-800"
+    case AttendanceSubStatus.overtime: return "bg-purple-100 text-purple-800"
+    default: return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getAttendanceShiftColor = (shift: string) => {
+  switch (shift) {
+    case AttendanceShift.morning: return "bg-orange-100 text-orange-800"
+    case AttendanceShift.afternoon: return "bg-blue-100 text-blue-800"
+    case AttendanceShift.evening: return "bg-indigo-100 text-indigo-800"
+    case AttendanceShift.all: return "bg-gray-100 text-green-800"
+    default: return "bg-gray-100 text-gray-800"
+  }
+}
+
 export const getCustomerInitialCharacter = (name: string) => {
   return name
     .split(" ")
@@ -309,4 +343,34 @@ export const hasValidArray = (arr: any) => {
     return Array.isArray(arr) &&
         arr.length > 0 &&
         arr.every(item => item && typeof item.id === "string" && item.id.trim() !== "");
+}
+
+export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+/**
+ * Calculate the difference in work hours between two times (fromTime to toTime)
+ * @param fromTime - The start time
+ * @param toTime - The end time
+ * @returns The difference in work hours
+ */
+export const calculateDiffWorkHours = (fromTime: Date | string, toTime: Date | string): number => {
+  const fromTimeDate = new Date(fromTime)
+  const toTimeDate = new Date(toTime)
+  if (!fromTimeDate || !toTimeDate) return 0;
+
+  if (isNaN(fromTimeDate.getTime()) || isNaN(toTimeDate.getTime()) || toTimeDate <= fromTimeDate) {
+    return 0;
+  }
+  const diffMinutes = (toTimeDate.getTime() - fromTimeDate.getTime()) / (1000 * 60);
+  const roundedMinutes = Math.round(diffMinutes / 15) * 15;
+  return Math.round((roundedMinutes / 60) * 100) / 100;
+}
+
+export function useDebounceSearchTerm<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(handler)
+  }, [value, delay])
+  return debounced
 }

@@ -5,15 +5,8 @@ import { Customer, Order, Warehouse } from "@/types"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { getCustomers } from "@/lib/httpclient/customer.client"
 import { getOrders as apiGetOrders, createOrder as apiCreateOrder } from "@/lib/httpclient/order.client"
+import { useDebounceSearchTerm } from "@/lib/utils"
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const handler = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(handler)
-  }, [value, delay])
-  return debounced
-}
 
 export function useOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -33,7 +26,7 @@ export function useOrdersPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
   // Debounce searchTerm
-  const debouncedSearchTerm = useDebounce(searchTerm, 500)
+  const debouncedSearchTerm = useDebounceSearchTerm(searchTerm, 500)
 
   // Build params for API
   const apiParams = useMemo(() => {

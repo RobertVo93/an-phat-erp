@@ -1,7 +1,10 @@
-import { AttendanceRecord } from "@/types";
+import { AttendanceRecord, AttendanceFilters } from "@/types";
 
-export async function getAllAttendanceRecords() {
+export async function getAllAttendanceRecords(params: AttendanceFilters = {}) {
   const url = new URL("/api/attendance", window.location.origin);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
+  });
   const res = await fetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch attendance records");
   return res.json();
