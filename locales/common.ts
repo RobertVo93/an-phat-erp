@@ -176,4 +176,24 @@ export const commonTranslations = {
     en: "Access Denied",
     vi: "Không Có Quyền Truy Cập",
   },
+  "common.error.title": {
+    en: "Error",
+    vi: "Lỗi",
+  },
+  "common.error.cannotUpdate": {
+    en: "Cannot update data",
+    vi: "Không thể cập nhật dữ liệu",
+  },
+  "common.error.cannotDelete": {
+    en: "Cannot delete data",
+    vi: "Không thể xóa dữ liệu",
+  },
+  "common.error.cannotAdd": {
+    en: "Cannot add data",
+    vi: "Không thể thêm dữ liệu",
+  },
+  "common.error.cannotLoad": {
+    en: "Cannot load data",
+    vi: "Không thể tải dữ liệu",
+  },
 }

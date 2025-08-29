@@ -1,127 +1,48 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import type { AttendanceRecord, AttendanceFilters, AttendanceStats, TimesheetData } from "@/types/attendance"
+import { useState, useMemo, useEffect, useCallback } from "react"
+import type { AttendanceRecord, AttendanceFilters, TimesheetData, AttendanceViewMode } from "@/types/attendance"
 import { getEmployee } from "@/lib/httpclient/employee.client"
 import { AttendanceShift, AttendanceStatus, Employee, EmployeeStatus } from "@/types"
-import { getAllAttendanceRecords, addAttendanceRecord as apiAddAttendanceRecord, updateAttendanceRecord as apiUpdateAttendanceRecord, deleteAttendanceRecord as apiDeleteAttendanceRecord } from "@/lib/httpclient/attendance.client"
+import { 
+  getAllAttendanceRecords,
+  addAttendanceRecord as apiAddAttendanceRecord,
+  updateAttendanceRecord as apiUpdateAttendanceRecord,
+  deleteAttendanceRecord as apiDeleteAttendanceRecord
+} from "@/lib/httpclient/attendance.client"
+import { MutationMode } from "@/types/base.interface"
+import { useDebounceSearchTerm } from "@/lib/utils"
+import { toast } from "@/components/ui/use-toast"
+import { useLanguage } from "@/contexts/language-context"
 
 export function useAttendance() {
+  const { t } = useLanguage()
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<AttendanceFilters>({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [sortBy, setSortBy] = useState<keyof AttendanceRecord>("date")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const [viewMode, setViewMode] = useState<"list" | "timesheet">("list")
+  const [filters, setFilters] = useState<AttendanceFilters>({
+    limit: 10,
+    page: 1,
+    sortBy: "date",
+    sortOrder: "desc",
+  })
+  const [viewMode, setViewMode] = useState<AttendanceViewMode>("list")
   const [activeEmployees, setActiveEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState<boolean>(false)
-
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1)
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
-
-  // Filter and search attendance records
-  const filteredRecords = useMemo(() => {
-    const filtered = attendanceRecords.filter((record) => {
-      const matchesSearch =
-        searchTerm === "" ||
-        record.employee?.name!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.employee?.id!.toLowerCase().includes(searchTerm.toLowerCase())
-
-      const matchesEmployeeName =
-        !filters.employeeName || record.employee?.name!.toLowerCase().includes(filters.employeeName.toLowerCase())
-
-      const matchesDate = !filters.date || new Date(record.date!).toDateString() === filters.date.toDateString();
-      const matchesStatus = !filters.status || record.status === filters.status
-      const matchesShift = !filters.shift || record.shift === filters.shift
-      const matchesEmployeeId = !filters.employeeId || record.employee?.id! === filters.employeeId
-
-      return (
-        matchesSearch &&
-        matchesEmployeeName &&
-        matchesDate &&
-        matchesStatus &&
-        matchesShift &&
-        matchesEmployeeId
-      )
-    })
-
-    // Sort records
-    filtered.sort((a, b) => {
-      const aValue = a[sortBy]
-      const bValue = b[sortBy]
-
-      if (
-        typeof aValue === "object" &&
-        typeof bValue === "object" &&
-        aValue !== null &&
-        bValue !== null &&
-        "name" in aValue &&
-        "name" in bValue
-      ) {
-        const aName = (aValue as any).name
-        const bName = (bValue as any).name
-
-        if (typeof aName === "string" && typeof bName === "string") {
-          const comparison = aName.localeCompare(bName)
-          return sortOrder === "asc" ? comparison : -comparison
-        }
-      }
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        const comparison = aValue.localeCompare(bValue)
-        return sortOrder === "asc" ? comparison : -comparison
-      }
-
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return sortOrder === "asc" ? aValue - bValue : bValue - aValue
-      }
-
-      if (aValue! < bValue!) return sortOrder === "asc" ? -1 : 1
-      if (aValue! > bValue!) return sortOrder === "asc" ? 1 : -1
-      return 0
-    })
-
-    return filtered
-  }, [attendanceRecords, searchTerm, filters, sortBy, sortOrder])
-
-  // Pagination
-  const totalRecords = filteredRecords.length
-  const totalPages = Math.ceil(totalRecords / itemsPerPage)
-  const paginatedRecords = filteredRecords.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  // Statistics
-  const stats: AttendanceStats = useMemo(() => {
-    const monthlyRecords = filteredRecords.filter((record) => {
-      if (!record.date) return false;
-      const date = new Date(record.date);
-      return (
-        date.getMonth() + 1 === currentMonth &&
-        date.getFullYear() === currentYear
-      );
-    });
-
-    const totalPresent = monthlyRecords.filter((record) => record.status === AttendanceStatus.present).length;
-    const totalAbsent = monthlyRecords.filter((record) => record.status === AttendanceStatus.absent).length;
-    const totalLate = monthlyRecords.filter((record) => record.status === AttendanceStatus.late).length;
-
-    const totalWages = monthlyRecords.reduce(
-      (sum, record) => sum + (record.status === AttendanceStatus.present ? (record.employee?.salary ?? 0) : 0),
-      0
-    );
-
-    return {
-      totalPresent,
-      totalAbsent,
-      totalLate,
-      totalWages,
-    };
-  }, [filteredRecords, currentMonth, currentYear]);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null)
+  const [formMode, setFormMode] = useState<MutationMode>("create")
+  const [totalRecords, setTotalRecords] = useState(0)
+  const totalPages = useMemo(() => Math.ceil(totalRecords / (filters.limit || 1)), [totalRecords, filters.limit])
+  const debouncedSearchTerm = useDebounceSearchTerm(searchTerm, 500)
 
   // Timesheet data
   const timesheetData = useMemo(() => {
-    const filteredByMonth = filteredRecords.filter((record) => {
+    const filteredByMonth = attendanceRecords.filter((record) => {
       if (!record.date) return false;
       const date = new Date(record.date);
       return (
@@ -141,6 +62,7 @@ export function useAttendance() {
           morning: {},
           afternoon: {},
           evening: {},
+          all: {},
         },
         totalDays: 0,
       });
@@ -160,12 +82,12 @@ export function useAttendance() {
         Object.values(shift)
       );
       employee.totalDays = allShifts.filter(
-        (record) => record && record.status === AttendanceStatus.present
+        (record) => record && record.status === AttendanceStatus.completed
       ).length;
     });
 
     return Array.from(employees.values());
-  }, [filteredRecords, currentMonth, currentYear]);
+  }, [attendanceRecords, currentMonth, currentYear]);
 
   // CRUD operations
   const addAttendanceRecord = async (recordData: Omit<AttendanceRecord, "id" | "createdAt" | "updatedAt">) => {
@@ -180,6 +102,11 @@ export function useAttendance() {
       setAttendanceRecords((prev) => [...prev, added])
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotAdd"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -192,6 +119,11 @@ export function useAttendance() {
       setAttendanceRecords((prev) => prev.map(record => record.id === id ? updated : record))
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotUpdate"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -204,116 +136,174 @@ export function useAttendance() {
       setAttendanceRecords((prev) => prev.filter((record) => record.id !== id))
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotDelete"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  const getAttendanceRecord = (id: string) => {
-    return attendanceRecords.find((record) => record.id === id)
-  }
-
-  const onInit = async () => {
-    try {
-      setLoading(true)
-      const employeeData = await getEmployee()
-      const employeeList = employeeData.data as Employee[]
-      const activeList = employeeList.filter((emp) => emp.status === EmployeeStatus.active);
-      setActiveEmployees(activeList)
-      const attendanceData = await getAllAttendanceRecords()
-      setAttendanceRecords(attendanceData.data)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
+  const handleSort = (field: string) => {
+    if (filters.sortBy === field) {
+      setFilters({ ...filters, page: 1, sortOrder: filters.sortOrder === "asc" ? "desc" : "asc" })
+    } else {
+      setFilters({ ...filters, page: 1, sortBy: field as keyof AttendanceRecord, sortOrder: "desc" })
     }
   }
 
-  const onQuickSelectInTimesheet = async (
-    day: number,
-    month: number,
-    year: number,
-    shift: AttendanceShift,
-    employeeId: string,
-  ) => {
-    try {
-      setLoading(true)
-      const date: string = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      const selectedEmployee = activeEmployees.find((emp) => emp.id === employeeId)
-      if (!selectedEmployee) return;
-
-      const baseDate = new Date(date);
-      let checkIn = new Date(baseDate);
-      let checkOut = new Date(baseDate);
-
-      // set checkin-out time for shifts
-      switch (shift) {
-        case "morning":
-          checkIn.setHours(7, 0, 0, 0);   // 7:00 AM
-          checkOut.setHours(11, 0, 0, 0); // 11:00 AM
-          break;
-        case "afternoon":
-          checkIn.setHours(13, 0, 0, 0);  // 1:00 PM
-          checkOut.setHours(17, 0, 0, 0); // 5:00 PM
-          break;
-        case "evening":
-          checkIn.setHours(18, 0, 0, 0);  // 6:00 PM
-          checkOut.setHours(20, 0, 0, 0); // 8:00 PM
-          break;
-      }
-      const newRecord: AttendanceRecord = {
-        date: date,
-        employee: selectedEmployee,
-        checkIn: checkIn,
-        checkOut: checkOut,
+  // Modal handlers
+  const handleAddRecord = () => {
+    setFormMode("create")
+    setSelectedRecord(null)
+    setIsFormModalOpen(true)
+  }
+  const handleEditRecord = (record: AttendanceRecord) => {
+    setFormMode("update")
+    setSelectedRecord(record)
+    setIsFormModalOpen(true)
+  }
+  const handleViewRecord = (record: AttendanceRecord) => {
+    setSelectedRecord(record)
+    setIsViewModalOpen(true)
+  }
+  const handleDeleteRecord = (record: AttendanceRecord) => {
+    setSelectedRecord(record)
+    setIsDeleteModalOpen(true)
+  }
+  const handleCellClick = (record: AttendanceRecord | null, employeeData: TimesheetData, shift: AttendanceShift, day: number) => {
+    if (record) {
+      setFormMode("update")
+      setSelectedRecord(record)
+      setIsFormModalOpen(true)
+    }
+    else {
+      setFormMode("create")
+      setSelectedRecord({
+        employee: { id: employeeData.employeeId, name: employeeData.employeeName },
+        date: new Date(currentYear, currentMonth - 1, day),
         shift: shift,
-        status: AttendanceStatus.present,
+        status: AttendanceStatus.draft,
+        checkIn: new Date(currentYear, currentMonth - 1, day),
+        checkOut: new Date(currentYear, currentMonth - 1, day),
         notes: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      const added = await apiAddAttendanceRecord(newRecord)
-      setAttendanceRecords((prev) => [...prev, added])
+        workHours: 0,
+      })
+      setIsFormModalOpen(true)
+    }
+  }
+  const handleResetFilters = () => setFilters({})
+  const handleExport = () => { /* TODO: implement export */ }
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await getAllAttendanceRecords({
+        dateFrom: new Date(currentYear, currentMonth - 1, 1).toISOString(),
+        dateTo: new Date(currentYear, currentMonth, 0).toISOString(),
+        searchTerm: debouncedSearchTerm,
+        employeeId: filters.employeeId,
+        status: filters.status,
+        shift: filters.shift,
+        page: filters.page,
+        limit: filters.limit,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+      });
+      setAttendanceRecords(response.data)
+      setTotalRecords(response.total)
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotLoad"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentMonth, currentYear, debouncedSearchTerm, filters])
 
   useEffect(() => {
+    loadData()
+  }, [currentMonth, currentYear, debouncedSearchTerm, filters, loadData])
+
+  useEffect(() => {
+    const onInit = async () => {
+      try {
+        setLoading(true)
+        const response = await Promise.all([
+          getEmployee({ status: EmployeeStatus.active, page: 1, limit: 1000 }),
+          loadData()
+        ])
+        setActiveEmployees(response[0].data as Employee[])
+      } catch (e) {
+        console.error(e)
+        toast({
+          title: t("common.error.title"),
+          description: t("common.error.cannotLoad"),
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
     onInit()
   }, [])
 
+  useEffect(() => {
+    if (viewMode === "timesheet") {
+      setFilters({
+        limit: 1000,
+        page: 1,
+        sortBy: "date",
+        sortOrder: "desc",
+        dateFrom: new Date(currentYear, currentMonth - 1, 1).toISOString(),
+        dateTo: new Date(currentYear, currentMonth, 0).toISOString(),
+      })
+    }
+  }, [viewMode])
+
   return {
-    attendanceRecords: paginatedRecords,
-    allRecords: attendanceRecords,
-    filteredRecords,
+    attendanceRecords,
     searchTerm,
-    setSearchTerm,
     filters,
-    setFilters,
-    currentPage,
-    setCurrentPage,
-    itemsPerPage,
-    setItemsPerPage,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
     viewMode,
-    setViewMode,
     totalPages,
     totalRecords,
-    addAttendanceRecord,
-    updateAttendanceRecord,
-    deleteAttendanceRecord,
-    getAttendanceRecord,
-    stats,
     timesheetData,
     activeEmployees,
     loading,
-    currentMonth, setCurrentMonth, currentYear, setCurrentYear,
-    onQuickSelectInTimesheet
+    currentMonth,
+    currentYear,
+    isFormModalOpen,
+    isViewModalOpen,
+    isFilterModalOpen,
+    isDeleteModalOpen,
+    selectedRecord,
+    formMode,
+
+    handleSort,
+    setSearchTerm,
+    setFilters,
+    setViewMode,
+    addAttendanceRecord,
+    updateAttendanceRecord,
+    deleteAttendanceRecord,
+    setCurrentMonth,
+    setCurrentYear,
+    handleAddRecord,
+    handleEditRecord,
+    handleViewRecord,
+    handleDeleteRecord,
+    handleResetFilters,
+    handleExport,
+    setIsFilterModalOpen,
+    setIsFormModalOpen,
+    setIsViewModalOpen,
+    setIsDeleteModalOpen,
+    handleCellClick,
   }
 }

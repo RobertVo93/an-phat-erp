@@ -11,3 +11,5 @@ export interface IBaseFilters {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
 }
+
+export type MutationMode = "create" | "update" | "delete" | "view"

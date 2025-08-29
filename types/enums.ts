@@ -1,15 +1,22 @@
 export enum AttendanceShift {
   morning = "morning",
   afternoon = "afternoon",
-  evening = "evening"
+  evening = "evening",
+  all = "all",
 }
 
 export enum AttendanceStatus {
+  draft = "draft",
+  completed = "completed",
+  waitingApproval = "waitingApproval",
+}
+
+export enum AttendanceSubStatus {
   present = "present",
   absent = "absent",
   late = "late",
-  halfDay = "halfDay",
-  overtime = "overtime"
+  overtime = "overtime",
+  leave = "leave",
 }
 
 export enum PayrollStatus {
