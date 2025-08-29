@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { AttendanceShift, AttendanceStatus } from "@/types/enums";
+import { AttendanceShift, AttendanceStatus, AttendanceSubStatus } from "@/types/enums";
 import { EmployeeSchema } from "../employee/employee.schema";
 
 export const AttendanceSchema = z.object({
-  date: z.string().optional(),
+  date: z.coerce.date().optional(),
   checkIn: z.preprocess(
     (val) => (typeof val === "string" || val instanceof Date) ? new Date(val) : undefined,
     z.date().optional()
@@ -14,9 +14,9 @@ export const AttendanceSchema = z.object({
   ),
   shift: z.nativeEnum(AttendanceShift).optional(),
   status: z.nativeEnum(AttendanceStatus).optional(),
+  subStatus: z.nativeEnum(AttendanceSubStatus).optional(),
   workHours: z.number().optional(),
-  overtimeHours: z.number().optional(),
-  dailyWage: z.number().optional(),
+  paidAmount: z.number().optional(),
   notes: z.string().optional(),
 
   employee: EmployeeSchema.optional(),

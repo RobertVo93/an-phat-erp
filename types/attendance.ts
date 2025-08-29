@@ -1,33 +1,30 @@
-import { AttendanceShift, AttendanceStatus } from "@/types/enums";
-import { IBase } from "./base.interface";
+import { AttendanceShift, AttendanceStatus, AttendanceSubStatus } from "@/types/enums";
+import { IBase, IBaseFilters } from "./base.interface";
 import { Employee as IEmployee } from "./employee";
 
 export interface AttendanceRecord extends IBase{
-  date?: string;
+  number?: string;
+  date?: Date;
   checkIn?: Date;
   checkOut?: Date;
   shift?: AttendanceShift;
   status?: AttendanceStatus;
+  subStatus?: AttendanceSubStatus;
   notes?: string;
+  workHours?: number;
+  paidAmount?: number;
 
   employee?: IEmployee;
 }
 
-export interface AttendanceFilters {
-  date?: Date
-  employeeName?: string
+export interface AttendanceFilters extends IBaseFilters{
+  date?: string
   dateFrom?: string
   dateTo?: string
-  status?: string
-  shift?: string
+  status?: AttendanceStatus
+  shift?: AttendanceShift
   employeeId?: string
-}
-
-export interface AttendanceStats {
-  totalPresent: number
-  totalAbsent: number
-  totalLate: number
-  totalWages: number
+  searchTerm?: string
 }
 
 export interface TimesheetData {
@@ -37,6 +34,9 @@ export interface TimesheetData {
     morning: { [day: string]: AttendanceRecord | null }
     afternoon: { [day: string]: AttendanceRecord | null }
     evening: { [day: string]: AttendanceRecord | null }
+    all: { [day: string]: AttendanceRecord | null }
   }
   totalDays: number
 }
+
+export type AttendanceViewMode = "list" | "timesheet"

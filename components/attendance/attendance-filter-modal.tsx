@@ -10,20 +10,11 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { addDays, format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Employee } from "@/types"
 import { useLanguage } from "@/contexts/language-context"
-
-interface AttendanceFilters {
-  date?: Date
-  employeeId?: string
-}
+import { AttendanceFilters } from "@/types/attendance"
 
 interface AttendanceFilterModalProps {
   isOpen: boolean
@@ -69,36 +60,6 @@ export function AttendanceFilterModal({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="date">{t("attendance.filter.date")}</Label>
-            <br />
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[280px] justify-start text-left font-normal",
-                    !filters.date && "text-muted-foreground",
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {filters.date ? format(filters.date, "PPP") : <span>{t("attendance.filter.pickDate")}</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={filters.date}
-                  onSelect={(date) => handleFilterChange("date", date)}
-                  disabled={(date) => date > addDays(new Date(), 0)}
-                  modifiersClassNames={{
-                    selected: "bg-blue-500 text-white",
-                    disabled: "text-gray-400 opacity-50 cursor-not-allowed",
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="employee">{t("attendance.filter.employee")}</Label>
             <Select value={filters.employeeId || ""} onValueChange={(value) => handleFilterChange("employeeId", value)}>
               <SelectTrigger>
@@ -111,7 +72,7 @@ export function AttendanceFilterModal({
                     <div className="flex flex-col">
                       <span className="font-medium">{employee.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {employee.id} - {employee.department}
+                        {employee.number} - {employee.department}
                       </span>
                     </div>
                   </SelectItem>

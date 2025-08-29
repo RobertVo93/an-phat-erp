@@ -1,71 +1,28 @@
 "use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
-import { Save, Calendar } from "lucide-react"
+import { Calendar } from "lucide-react"
 import type { TimesheetData } from "@/types/attendance"
-import { AttendanceShift, AttendanceStatus } from "@/types"
+import { AttendanceShift } from "@/types"
+import { TimesheetShift } from "./TimesheetShift"
+import { AttendanceRecord } from "@/types/attendance"
 
 interface TimesheetViewProps {
   timesheetData: TimesheetData[]
   currentMonth: number
   currentYear: number
-  onMonthChange: (month: number) => void
-  onYearChange: (year: number) => void
-  onSave: () => void
-  onSelect: (day: number, month: number, year: number, shift: AttendanceShift, employeeId: string) => void
-  onDelete: (id: string) => void
+  onCellClick: (record: AttendanceRecord | null, employeeData: TimesheetData, shift: AttendanceShift, day: number) => void
 }
 
 export function TimesheetView({
   timesheetData,
   currentMonth,
   currentYear,
-  onMonthChange,
-  onYearChange,
-  onSave,
-  onSelect,
-  onDelete
+  onCellClick,
 }: TimesheetViewProps) {
   const { t } = useLanguage()
-
-  // Get days in month
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate()
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
-
-  const months = [
-    { value: 1, label: "January" },
-    { value: 2, label: "February" },
-    { value: 3, label: "March" },
-    { value: 4, label: "April" },
-    { value: 5, label: "May" },
-    { value: 6, label: "June" },
-    { value: 7, label: "July" },
-    { value: 8, label: "August" },
-    { value: 9, label: "September" },
-    { value: 10, label: "October" },
-    { value: 11, label: "November" },
-    { value: 12, label: "December" },
-  ]
-
-  const years = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i)
-
-  const getCellContent = (employeeData: TimesheetData, shift: string, day: number) => {
-    const record = employeeData.shifts[shift as keyof typeof employeeData.shifts][day.toString()]
-    if (record && record.status === AttendanceStatus.present) {
-      return "x"
-    }
-    return "-"
-  }
-
-  const getCellClass = (employeeData: TimesheetData, shift: string, day: number) => {
-    const record = employeeData?.shifts?.[shift as keyof typeof employeeData.shifts]?.[day.toString()]
-    if (record && record.status === AttendanceStatus.present) {
-      return "bg-orange-400 text-white font-bold"
-    }
-    return "bg-gray-100 text-gray-400"
-  }
 
   return (
     <Card>
@@ -75,32 +32,6 @@ export function TimesheetView({
             <Calendar className="h-5 w-5" />
             {t("attendance.timesheet.title")}
           </CardTitle>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select value={currentMonth.toString()} onValueChange={(value) => onMonthChange(Number.parseInt(value))}>
-              <SelectTrigger className="w-full sm:w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((month) => (
-                  <SelectItem key={month.value} value={month.value.toString()}>
-                    {t(`attendance.timesheet.${month.label}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={currentYear.toString()} onValueChange={(value) => onYearChange(Number.parseInt(value))}>
-              <SelectTrigger className="w-full sm:w-24">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -131,101 +62,29 @@ export function TimesheetView({
             {timesheetData.map((employeeData) => (
               <div key={employeeData.employeeId} className="mb-4">
                 {/* Morning shift */}
-                <div
-                  className="grid gap-1 mb-1"
-                  style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
-                >
-                  <div className="bg-white border p-2 text-xs font-medium text-center">{employeeData.employeeName}</div>
-                  <div className="bg-orange-100 text-orange-800 p-2 text-xs font-medium text-center">
-                    {t("attendance.shift.morning")}
-                  </div>
-                  {days.map((day) => (
-                    <div
-                      key={`morning-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "morning", day)} hover:cursor-pointer hover:bg-green-300`}
-                      onClick={() => {
-                        const attendanceId = employeeData.shifts.morning[day]?.id
-                        attendanceId ?
-                          onDelete(attendanceId) :
-                          onSelect(day, currentMonth, currentYear, AttendanceShift.morning, employeeData.employeeId)
-                      }}
-                    >
-                      {getCellContent(employeeData, "morning", day)}
-                    </div>
-                  ))}
-                  <div className="bg-white border p-2 text-xs font-bold text-center">
-                    {Object.values(employeeData.shifts.morning).filter((record) => record?.status === AttendanceStatus.present).length}
-                  </div>
-                </div>
-
+                <TimesheetShift
+                  employeeData={employeeData}
+                  days={days}
+                  shift={AttendanceShift.morning}
+                  onCellClick={(record, emp, shift, day) => onCellClick(record, emp, shift, day)}
+                />
                 {/* Afternoon shift */}
-                <div
-                  className="grid gap-1 mb-1"
-                  style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
-                >
-                  <div className="bg-white border p-2 text-xs"></div>
-                  <div className="bg-blue-100 text-blue-800 p-2 text-xs font-medium text-center">
-                    {t("attendance.shift.afternoon")}
-                  </div>
-                  {days.map((day) => (
-                    <div
-                      key={`afternoon-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "afternoon", day)} hover:cursor-pointer hover:bg-green-300`}
-                      onClick={() => {
-                        const attendanceId = employeeData.shifts.afternoon[day]?.id
-                        attendanceId ?
-                          onDelete(attendanceId) :
-                          onSelect(day, currentMonth, currentYear, AttendanceShift.afternoon, employeeData.employeeId)
-                      }}
-                    >
-                      {getCellContent(employeeData, "afternoon", day)}
-                    </div>
-                  ))}
-                  <div className="bg-white border p-2 text-xs font-bold text-center">
-                    {
-                      Object.values(employeeData.shifts.afternoon).filter((record) => record?.status === AttendanceStatus.present)
-                        .length
-                    }
-                  </div>
-                </div>
-
+                <TimesheetShift
+                  employeeData={employeeData}
+                  days={days}
+                  shift={AttendanceShift.afternoon}
+                  onCellClick={(record, emp, shift, day) => onCellClick(record, emp, shift, day)}
+                />
                 {/* Evening shift */}
-                <div
-                  className="grid gap-1 mb-1"
-                  style={{ gridTemplateColumns: `120px 80px repeat(${days.length}, 30px) 60px` }}
-                >
-                  <div className="bg-white border p-2 text-xs"></div>
-                  <div className="bg-indigo-100 text-indigo-800 p-2 text-xs font-medium text-center">
-                    {t("attendance.shift.evening")}
-                  </div>
-                  {days.map((day) => (
-                    <div
-                      key={`evening-${day}`}
-                      className={`p-2 text-xs text-center border ${getCellClass(employeeData, "evening", day)} hover:cursor-pointer hover:bg-green-300`}
-                      onClick={() => {
-                        const attendanceId = employeeData.shifts.evening[day]?.id
-                        attendanceId ?
-                          onDelete(attendanceId) :
-                          onSelect(day, currentMonth, currentYear, AttendanceShift.evening, employeeData.employeeId)
-                      }}
-                    >
-                      {getCellContent(employeeData, "evening", day)}
-                    </div>
-                  ))}
-                  <div className="bg-white border p-2 text-xs font-bold text-center">
-                    {Object.values(employeeData.shifts.evening).filter((record) => record?.status === AttendanceStatus.present).length}
-                  </div>
-                </div>
+                <TimesheetShift
+                  employeeData={employeeData}
+                  days={days}
+                  shift={AttendanceShift.evening}
+                  onCellClick={(record, emp, shift, day) => onCellClick(record, emp, shift, day)}
+                />
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="flex justify-end mt-4">
-          <Button onClick={onSave} className="bg-green-500 hover:bg-green-600">
-            <Save className="h-4 w-4 mr-2" />
-            {t("attendance.timesheet.save")}
-          </Button>
         </div>
       </CardContent>
     </Card>

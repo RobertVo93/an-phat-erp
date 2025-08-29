@@ -132,29 +132,37 @@ export const attendanceTranslations = {
   },
 
   // Status values
-  "attendance.status.present": {
-    en: "Present",
-    vi: "Có Mặt",
+  "attendance.status.draft": {
+    en: "Draft",
+    vi: "Nháp",
   },
-  "attendance.status.absent": {
+  "attendance.status.completed": {
+    en: "Completed",
+    vi: "Hoàn Thành",
+  },
+  "attendance.status.waitingApproval": {
+    en: "Waiting Approval",
+    vi: "Chờ Duyệt",
+  },
+  "attendance.subStatus.absent": {
     en: "Absent",
     vi: "Vắng Mặt",
   },
-  "attendance.status.late": {
+  "attendance.subStatus.late": {
     en: "Late",
     vi: "Đi Muộn",
   },
-  "attendance.status.halfDay": {
-    en: "Half Day",
-    vi: "Nửa Ngày",
+  "attendance.subStatus.leave": {
+    en: "Leave",
+    vi: "Nghỉ Phép",
   },
-  "attendance.status.halfday": {
-    en: "Half Day",
-    vi: "Nửa Ngày",
-  },
-  "attendance.status.overtime": {
+  "attendance.subStatus.overtime": {
     en: "Overtime",
     vi: "Làm Thêm",
+  },
+  "attendance.subStatus.present": {
+    en: "Present",
+    vi: "Có Mặt",
   },
 
   // Shift values
@@ -169,6 +177,10 @@ export const attendanceTranslations = {
   "attendance.shift.evening": {
     en: "Evening",
     vi: "Ca Tối",
+  },
+  "attendance.shift.all": {
+    en: "Whole day",
+    vi: "Cả ngày",
   },
 
   // Form fields
@@ -208,6 +220,10 @@ export const attendanceTranslations = {
     en: "Work Hours",
     vi: "Số Giờ Làm",
   },
+  "attendance.form.paidAmount": {
+    en: "Paid Amount",
+    vi: "Tiền Công",
+  },
   "attendance.form.overtimeHours": {
     en: "Overtime Hours",
     vi: "Giờ Làm Thêm",
@@ -219,6 +235,10 @@ export const attendanceTranslations = {
   "attendance.form.status": {
     en: "Status",
     vi: "Trạng Thái",
+  },
+  "attendance.form.subStatus": {
+    en: "Sub Status",
+    vi: "Trạng Thái Con",
   },
   "attendance.form.notes": {
     en: "Notes",
@@ -249,6 +269,14 @@ export const attendanceTranslations = {
   "attendance.form.statusRequired": {
     en: "Status is required",
     vi: "Trạng thái là bắt buộc",
+  },
+  "attendance.form.workHoursInvalid": {
+    en: "Work hours must be greater than 0",
+    vi: "Số giờ làm phải lớn hơn 0",
+  },
+  "attendance.form.subStatusRequired": {
+    en: "Sub status is required",
+    vi: "Trạng thái con là bắt buộc",
   },
   "attendance.form.workHoursRequired": {
     en: "Work hours is required",
@@ -489,5 +517,13 @@ export const attendanceTranslations = {
   "attendance.departments.operations": {
     en: "Operations",
     vi: "Vận Hành",
+  },
+  "attendance.error.update": {
+    en: "An error occurred while updating. Please try again later.",
+    vi: "Đã xảy ra lỗi khi cập nhật. Vui lòng thử lại sau.",
+  },
+  "attendance.error.create": {
+    en: "An error occurred while creating. Please try again later.",
+    vi: "Đã xảy ra lỗi khi tạo. Vui lòng thử lại sau.",
   },
 }
