@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/language-context"
 import { AlertTriangle } from "lucide-react"
 import type { AttendanceRecord } from "@/types/attendance"
+import { formatDate } from "@/lib/utils"
 
 interface AttendanceDeleteModalProps {
   isOpen: boolean
@@ -38,10 +39,10 @@ export function AttendanceDeleteModal({ isOpen, onClose, onConfirm, record }: At
 
           <div className="bg-gray-50 p-3 rounded-lg">
             <p className="text-sm">
-              <strong>{t("attendance.employee")}:</strong> {record.employee?.name}
+              <strong>{t("attendance.employee")}:</strong> {record.employee?.name} ({record.employee?.number})
             </p>
             <p className="text-sm">
-              <strong>{t("attendance.date")}:</strong> {new Date(record.date!).toLocaleDateString("vi-VN")}
+              <strong>{t("attendance.date")}:</strong> {formatDate(record.date!)}
             </p>
             <p className="text-sm">
               <strong>{t("attendance.shift")}:</strong> {t(`attendance.shift.${record.shift?.toLowerCase()}`)}

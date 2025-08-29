@@ -5,10 +5,18 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useLanguage } from "@/contexts/language-context"
-import { Calendar, Clock, DollarSign, User, FileText } from "lucide-react"
+import { Calendar, Clock, User, FileText, DollarSign } from "lucide-react"
 import type { AttendanceRecord } from "@/types/attendance"
-import { AttendanceShift, AttendanceStatus } from "@/types"
-import { extractHourMinute, formatLocalDatetime } from "@/lib/utils"
+import { 
+  extractHourMinute, 
+  formatDate, 
+  formatLargeCurrency, 
+  getAttendanceShiftColor, 
+  getAttendanceStatusColor, 
+  getAttendanceSubStatusColor,
+} from "@/lib/utils"
+import { AttendanceStatus } from "@/types"
+import { useAuth } from "@/contexts/auth-context"
 
 interface AttendanceViewModalProps {
   isOpen: boolean
@@ -18,47 +26,8 @@ interface AttendanceViewModalProps {
 
 export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewModalProps) {
   const { t } = useLanguage()
-
+  const { isAdmin } = useAuth()
   if (!record) return null
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case AttendanceStatus.present:
-        return "bg-green-100 text-green-800"
-      case AttendanceStatus.late:
-        return "bg-yellow-100 text-yellow-800"
-      case AttendanceStatus.absent:
-        return "bg-red-100 text-red-800"
-      case AttendanceStatus.halfDay:
-        return "bg-blue-100 text-blue-800"
-      case AttendanceStatus.overtime:
-        return "bg-purple-100 text-purple-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getShiftColor = (shift: string) => {
-    switch (shift) {
-      case AttendanceShift.morning:
-        return "bg-orange-100 text-orange-800"
-      case AttendanceShift.afternoon:
-        return "bg-blue-100 text-blue-800"
-      case AttendanceShift.evening:
-        return "bg-indigo-100 text-indigo-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -76,16 +45,23 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">{record.employee?.name!}</h3>
               <div className="flex gap-2">
-                <Badge className={getStatusColor(record.status!)}>
-                  {t(`attendance.status.${record.status?.toLowerCase().replace(" ", "")}`)}
+                <Badge className={getAttendanceStatusColor(record.status!)}>
+                  {t(`attendance.status.${record.status}`)}
                 </Badge>
-                <Badge className={getShiftColor(record.shift!)}>
+                {
+                  record.status === AttendanceStatus.completed && (
+                    <Badge className={getAttendanceSubStatusColor(record.subStatus!)}>
+                      {t(`attendance.subStatus.${record.subStatus}`)}
+                    </Badge>
+                  )
+                }
+                <Badge className={getAttendanceShiftColor(record.shift!)}>
                   {t(`attendance.shift.${record.shift?.toLowerCase()}`)}
                 </Badge>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              {t("attendance.form.employeeId")}: {record.employee?.id!}
+              {t("attendance.form.employeeId")}: {record.employee?.number!}
             </p>
           </div>
 
@@ -109,41 +85,44 @@ export function AttendanceViewModal({ isOpen, onClose, record }: AttendanceViewM
               <p className="text-sm">{t(`attendance.shift.${record.shift?.toLowerCase()}`)}</p>
             </div>
 
-            {record.checkIn && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium">{t("attendance.checkIn")}</span>
-                </div>
-                <p className="text-sm">{extractHourMinute(record.checkIn)}</p>
+            <div className="space-y-3" hidden={!record.checkIn}>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium">{t("attendance.checkIn")}</span>
               </div>
-            )}
+              <p className="text-sm">{extractHourMinute(record?.checkIn!)}</p>
+            </div>
 
-            {record.checkOut && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-red-600" />
-                  <span className="text-sm font-medium">{t("attendance.checkOut")}</span>
-                </div>
-                <p className="text-sm">{extractHourMinute(record.checkOut)}</p>
+            <div className="space-y-3" hidden={!record.checkOut}>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-red-600" />
+                <span className="text-sm font-medium">{t("attendance.checkOut")}</span>
               </div>
-            )}
+              <p className="text-sm">{extractHourMinute(record?.checkOut!)}</p>
+            </div>
+
+            {
+              isAdmin && (
+                <div className="space-y-3" hidden={!record.paidAmount}>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">{t("attendance.form.paidAmount")}</span>
+                  </div>
+                  <p className="text-sm">{formatLargeCurrency(record?.paidAmount!)}</p>
+                </div>
+              )
+            }
           </div>
 
           <Separator />
 
-          {record.notes && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{t("attendance.form.notes")}</span>
-                </div>
-                <p className="text-sm text-muted-foreground">{record.notes}</p>
-              </div>
-            </>
-          )}
+          <div className="space-y-3" hidden={!record.notes}>
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">{t("attendance.form.notes")}</span>
+            </div>
+            <p className="text-sm text-muted-foreground">{record.notes}</p>
+          </div>
         </div>
 
         <div className="flex justify-end pt-4">

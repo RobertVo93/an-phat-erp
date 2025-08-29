@@ -18,7 +18,8 @@ export async function PUT(
     if (!parse.success) {
       return NextResponse.json({ error: "Invalid input", details: parse.error.errors }, { status: 400 });
     }
-    const updated = await updateAttendanceRecord(params.id, parse.data);
+    const { id } = await params;
+    const updated = await updateAttendanceRecord(id, parse.data);
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -36,9 +37,10 @@ export async function DELETE(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
-    const result = await deleteAttendanceRecord(params.id);
-    if (result.affected === 0) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const { id } = await params;
+    const result = await deleteAttendanceRecord(id);
+    if (!result) {
+      return NextResponse.json({ error: "Cannot delete attendance record" }, { status: 400 });
     }
     return new NextResponse(null, { status: 204 });
   } catch (error) {
