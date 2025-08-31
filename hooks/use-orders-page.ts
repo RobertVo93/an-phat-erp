@@ -5,7 +5,7 @@ import { Customer, Order, Warehouse } from "@/types"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { getCustomers } from "@/lib/httpclient/customer.client"
 import { getOrders as apiGetOrders, createOrder as apiCreateOrder } from "@/lib/httpclient/order.client"
-import { useDebounceSearchTerm } from "@/lib/utils"
+import { useDebounceSearchTerm } from "@/lib/utils.client"
 
 
 export function useOrdersPage() {

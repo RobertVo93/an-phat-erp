@@ -1,5 +1,9 @@
 export const commonTranslations = {
   // Common translations
+  "common.number": {
+    en: "Number",
+    vi: "Mã",
+  },
   "common.id": {
     en: "ID",
     vi: "ID",
@@ -195,5 +199,13 @@ export const commonTranslations = {
   "common.error.cannotLoad": {
     en: "Cannot load data",
     vi: "Không thể tải dữ liệu",
+  },
+  "common.error.cannotSync": {
+    en: "Cannot sync the records",
+    vi: "Không thể đồng bộ dữ liệu",
+  },
+  "common.error.cannotApprove": {
+    en: "Cannot approve the record",
+    vi: "Không thể duyệt dữ liệu",
   },
 }

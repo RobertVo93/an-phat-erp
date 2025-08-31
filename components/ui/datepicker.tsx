@@ -1,6 +1,7 @@
 import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Calendar } from "lucide-react";
 
 // Simple Date Picker
 export function UIDatePicker({
@@ -9,6 +10,7 @@ export function UIDatePicker({
   minDate,
   maxDate,
   placeholder,
+  showIcon,
   ...props
 }: {
   selected: Date | null;
@@ -16,6 +18,7 @@ export function UIDatePicker({
   minDate?: Date;
   maxDate?: Date;
   placeholder?: string;
+  showIcon?: boolean;
   [key: string]: any;
 }) {
   return (
@@ -26,7 +29,9 @@ export function UIDatePicker({
       maxDate={maxDate}
       placeholderText={placeholder}
       dateFormat="yyyy-MM-dd"
-      className="h-10 px-3 py-2 border rounded-md w-full md:text-sm text-base"
+      className="h-10 px-3 py-2 !pl-8 border rounded-md w-full md:text-sm text-base"
+      icon={<Calendar className="m-1" />}
+      showIcon={showIcon}
       {...props}
     />
   );

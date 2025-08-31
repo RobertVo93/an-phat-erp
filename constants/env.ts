@@ -15,6 +15,7 @@ export const env = {
   NEXT_PUBLIC_S3_BUCKET_NAME: process.env.NEXT_PUBLIC_S3_BUCKET_NAME || '',
   NEXT_PUBLIC_S3_ROOT_PATH: process.env.NEXT_PUBLIC_S3_ROOT_PATH || 'uploads',
   NEXT_PUBLIC_TAX_RATE: Number(process.env.NEXT_PUBLIC_TAX_RATE || 0),
+  NEXT_PUBLIC_SYSTEM_PAY_PERIOD_START: process.env.NEXT_PUBLIC_SYSTEM_PAY_PERIOD_START || '2025-01-01',
 } as const
 
 // Type for environment variables

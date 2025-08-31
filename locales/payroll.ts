@@ -16,13 +16,13 @@ export const payrollTranslations = {
     en: "Edit Payroll",
     vi: "Sửa Bảng Lương",
   },
-  "payroll.processPayroll": {
-    en: "Process Payroll",
-    vi: "Xử Lý Bảng Lương",
-  },
   "payroll.viewPayroll": {
-    en: "View Payroll",
-    vi: "Xem Bảng Lương",
+    en: "View",
+    vi: "Xem",
+  },
+  "payroll.approvePayroll": {
+    en: "Approve",
+    vi: "Duyệt",
   },
   "payroll.searchPlaceholder": {
     en: "Search employees...",
@@ -43,6 +43,10 @@ export const payrollTranslations = {
   "payroll.processAll": {
     en: "Process All",
     vi: "Xử Lý Tất Cả",
+  },
+  "payroll.syncPayroll": {
+    en: "Sync Monthly Payrolls",
+    vi: "Đồng Bộ Bảng Lương Tháng",
   },
 
   // Statistics
@@ -80,6 +84,10 @@ export const payrollTranslations = {
   },
 
   // Table headers
+  "payroll.attendanceRecords": {
+    en: "Attendance Records",
+    vi: "Lịch Làm Việc",
+  },
   "payroll.payrollDetails": {
     en: "Payroll Details",
     vi: "Chi Tiết Bảng Lương",
@@ -124,6 +132,10 @@ export const payrollTranslations = {
     en: "Working Shifts",
     vi: "Số Ca Làm Việc",
   },
+  "payroll.workingHours": {
+    en: "Working Hours",
+    vi: "Số Giờ Làm",
+  },
   "payroll.shifts": {
     en: "Shifts",
     vi: "Ca",
@@ -158,6 +170,14 @@ export const payrollTranslations = {
   },
 
   // Status translations
+  "payroll.status.draft": {
+    en: "Draft",
+    vi: "Nháp",
+  },
+  "payroll.status.processing": {
+    en: "Processing",
+    vi: "Đang Xử Lý",
+  },
   "payroll.status.processed": {
     en: "Processed",
     vi: "Đã Xử Lý",
@@ -305,40 +325,28 @@ export const payrollTranslations = {
     vi: "Hủy",
   },
 
+  // Period selection translations
+  "payroll.periodSelection.title": {
+    en: "Select Pay Period",
+    vi: "Chọn Kỳ Lương",
+  },
+
   // process-one modal
   "payroll.processOne.title": {
-    en: "Process This Payroll Record",
-    vi: "Xử Lý Bảng Lương Này",
+    en: "Approve This Payroll Record",
+    vi: "Duyệt Bảng Lương Này",
   },
   "payroll.processOne.message": {
-    en: "Are you sure you want to process this payroll record? This action cannot be undone.",
-    vi: "Bạn có chắc chắn muốn xử lý bản ghi lương này? Hành động này không thể hoàn tác.",
+    en: "Are you sure you want to approve this payroll record? This action cannot be undone.",
+    vi: "Bạn có chắc chắn muốn duyệt bản ghi lương này? Hành động này không thể hoàn tác.",
   },
   "payroll.processOne.cancel": {
     en: "Cancel",
     vi: "Hủy",
   },
   "payroll.processOne.confirm": {
-    en: "Process",
-    vi: "Xử lý",
-  },
-
-  // process-all modal
-  "payroll.processAll.title": {
-    en: "Process This Payroll Record",
-    vi: "Xử Lý Bảng Lương Này",
-  },
-  "payroll.processAll.message": {
-    en: "Are you sure you want to process all payroll records? This action cannot be undone.",
-    vi: "Bạn có chắc chắn muốn xử lý toàn bộ các bản ghi lương? Hành động này không thể hoàn tác.",
-  },
-  "payroll.processAll.cancel": {
-    en: "Cancel",
-    vi: "Hủy",
-  },
-  "payroll.processAll.confirm": {
-    en: "Process",
-    vi: "Xử lý",
+    en: "Approve",
+    vi: "Duyệt",
   },
 
   // Pagination translations
