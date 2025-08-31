@@ -20,9 +20,11 @@ export enum AttendanceSubStatus {
 }
 
 export enum PayrollStatus {
-  processed = "processed",
+  draft = "draft",
   pending = "pending",
-  failed = "failed"
+  processing = "processing",
+  processed = "processed",
+  failed = "failed",
 }
 
 export enum CollectionStatus {

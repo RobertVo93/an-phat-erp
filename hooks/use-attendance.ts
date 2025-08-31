@@ -11,7 +11,7 @@ import {
   deleteAttendanceRecord as apiDeleteAttendanceRecord
 } from "@/lib/httpclient/attendance.client"
 import { MutationMode } from "@/types/base.interface"
-import { useDebounceSearchTerm } from "@/lib/utils"
+import { useDebounceSearchTerm } from "@/lib/utils.client"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
 
