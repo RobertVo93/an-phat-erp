@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button"
 import type { PayrollRecord } from "@/types/payroll"
 import { useLanguage } from "@/contexts/language-context"
 
-interface PayrollProcessOneProps {
+interface PayrollApproveProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
   payrollRecord: PayrollRecord | null
 }
 
-export function PayrollProcessOneModal({ isOpen, onClose, onConfirm, payrollRecord }: PayrollProcessOneProps) {
+export function PayrollApproveModal({ isOpen, onClose, onConfirm, payrollRecord }: PayrollApproveProps) {
   const { t } = useLanguage()
 
   if (!payrollRecord) return null
@@ -32,9 +32,9 @@ export function PayrollProcessOneModal({ isOpen, onClose, onConfirm, payrollReco
         <div className="py-4">
           <p className="text-sm text-muted-foreground mb-4">{t("payroll.processOne.message")}</p>
           <div className="bg-gray-50 p-3 rounded-lg">
-            <p className="font-medium">{payrollRecord?.employee?.name!}</p>
+            <p className="font-medium">{payrollRecord?.employee?.number} - {payrollRecord?.employee?.name!}</p>
             <p className="text-sm text-muted-foreground">
-              {payrollRecord?.employee?.position!} - {payrollRecord?.employee?.department!}
+              {payrollRecord?.employee?.position || "N/A"} - {payrollRecord?.employee?.department || "N/A"}
             </p>
             <p className="text-sm text-muted-foreground">{payrollRecord.payPeriod}</p>
           </div>

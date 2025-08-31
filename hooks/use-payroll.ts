@@ -1,195 +1,181 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import type { PayrollRecord, PayrollFilters, PayrollStats, PayrollCalculation, SortableKey } from "@/types/payroll"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import type { PayrollRecord, PayrollFilters, PayrollStats, PayrollSortableKey } from "@/types/payroll"
 import { PayrollStatus } from "@/types"
-import { getallPayrolls as apiGetAllPayrolls, processOnePayroll as apiProcessOnePayroll, processPayrolls as apiProcessPayrolls } from "@/lib/httpclient/payroll.client"
+import { 
+  getAllPayrollsClient, 
+  approvePayrollClient,
+  syncPayrollClient, 
+  deletePayrollClient 
+} from "@/lib/httpclient/payroll.client"
+import { useLanguage } from "@/contexts/language-context"
+import { useDebounceSearchTerm } from "@/lib/utils.client"
+import { toast } from "@/components/ui/use-toast"
+import { formatMonthYear } from "@/lib/utils"
 
 export function usePayroll() {
+  const { t } = useLanguage()
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([])
+  const [selectedPayPeriod, setSelectedPayPeriod] = useState<Date>(new Date())
+  const [filters, setFilters] = useState<PayrollFilters>({
+    page: 1,
+    limit: 10,
+    sortBy: "workingShifts",
+    sortOrder: "desc",
+  })
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<PayrollFilters>({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [sortBy, setSortBy] = useState<SortableKey>("employee.name")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [totalRecords, setTotalRecords] = useState(0)
   const [loading, setLoading] = useState<boolean>(false)
-  const [filterPeriods, setFilterPeriods] = useState<string[]>([])
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedRecord, setSelectedRecord] = useState<PayrollRecord | null>(null)
 
-  // Filter and search payroll records
-  const filteredRecords = useMemo(() => {
-    const filtered = payrollRecords.filter((record) => {
-      const matchesSearch =
-        searchTerm === "" ||
-        record.employee?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.id?.toLowerCase().includes(searchTerm.toLowerCase())
-
-      const matchesStatus = !filters.status || record.status === filters.status
-      const matchesDepartment = !filters.department || record.employee?.department === filters.department
-      const matchesPosition =
-        !filters.position || record.employee?.position?.toLowerCase().includes(filters.position.toLowerCase())
-      const matchesPayPeriod = !filters.payPeriod || record.payPeriod === filters.payPeriod
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesDepartment &&
-        matchesPosition &&
-        matchesPayPeriod
-      )
-    })
-
-    // Sort records
-    filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      switch (sortBy) {
-        case "employee.name":
-          aValue = a.employee?.name || "";
-          bValue = b.employee?.name || "";
-          break;
-
-        case "employee.department":
-          aValue = a.employee?.department || "";
-          bValue = b.employee?.department || "";
-          break;
-
-        case "totalSalary":
-          aValue = a.totalSalary ?? 0;
-          bValue = b.totalSalary ?? 0;
-          break;
-
-        case "status":
-          aValue = a.status || "";
-          bValue = b.status || "";
-          break;
-
-        default:
-          return 0;
-      }
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        const comparison = aValue.localeCompare(bValue);
-        return sortOrder === "asc" ? comparison : -comparison;
-      }
-
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-      }
-
-      return 0;
-    });
-
-    return filtered
-  }, [payrollRecords, searchTerm, filters, sortBy, sortOrder])
-
-  // Pagination
-  const totalRecords = filteredRecords.length
-  const totalPages = Math.ceil(totalRecords / itemsPerPage)
-  const paginatedRecords = filteredRecords.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  // Statistics
+  const debouncedSearchTerm = useDebounceSearchTerm(searchTerm || "", 500)
+  const totalPages = useMemo(() => Math.ceil(totalRecords / (filters.limit || 1)), [totalRecords, filters.limit])
   const stats: PayrollStats = useMemo(() => {
-    const totalPayroll = payrollRecords.reduce((sum, record) => sum + record.totalSalary!, 0)
-    const processedCount = payrollRecords.filter((record) => record.status === PayrollStatus.processed).length
-    const pendingCount = payrollRecords.filter((record) => record.status === PayrollStatus.pending).length
-    const averageSalary = totalPayroll / payrollRecords.length
-
     return {
-      totalPayroll,
-      processedCount,
-      pendingCount,
-      averageSalary,
+      totalPayroll: payrollRecords.reduce((sum, record) => sum + (record.totalSalary || 0), 0),
+      processedCount: payrollRecords.filter((record) => record.status === PayrollStatus.processed).length,
+      pendingCount: payrollRecords.filter((record) => record.status !== PayrollStatus.processed).length,
+      averageSalary: payrollRecords.length > 0 ? payrollRecords.reduce((sum, record) => sum + (record.totalSalary || 0), 0) / payrollRecords.length : 0,
     }
   }, [payrollRecords])
 
-  // Calculate payroll for an employee
-  const calculatePayroll = (calculation: PayrollCalculation): number => {
-    const dailySalary = calculation.baseSalary / 30
-    const workingSalary = dailySalary * calculation.workingDays
-    const overtimePay = calculation.overtimeHours * calculation.overtimeRate
-    const grossSalary = workingSalary + overtimePay + calculation.bonus
-    const taxDeduction = grossSalary * calculation.taxRate
-    const insuranceDeduction = grossSalary * calculation.insuranceRate
-    const netSalary = grossSalary - taxDeduction - insuranceDeduction
-
-    return Math.round(netSalary)
-  }
-
-  // Process all pending payrolls
-  const processAllPayrolls = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
-      const updated = await apiProcessPayrolls()
-      setPayrollRecords(updated)
+      const response = await getAllPayrollsClient({
+        ...filters,
+        searchTerm: debouncedSearchTerm,
+        payPeriod: formatMonthYear(selectedPayPeriod),
+      })
+      setPayrollRecords(response.data)
+      setTotalRecords(response.total)
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error"),
+        description: t("common.error.cannotLoad"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
-  }
-
-  // CRUD operations
-  // change status for 1 item
-  const processOnePayroll = async (id: string) => {
-    try {
-      setLoading(true)
-      const updated = await apiProcessOnePayroll(id)
-      setPayrollRecords((prev) => prev.map(payroll => payroll.id === id ? updated : payroll))
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const getAllPayrolls = async () => {
-    try {
-      setLoading(true)
-      const res = await apiGetAllPayrolls()
-      setPayrollRecords(res.data)
-      const allRecords = res.data as PayrollRecord[]
-      const uniquePeriods = Array.from(
-        new Set(
-          allRecords
-            .map(r => r.payPeriod)
-            .filter((p): p is string => typeof p === "string")
-        )
-      );
-      setFilterPeriods(uniquePeriods);
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [filters, debouncedSearchTerm, selectedPayPeriod])
 
   useEffect(() => {
-    getAllPayrolls()
-  }, [])
+    loadData()
+  }, [filters, debouncedSearchTerm, selectedPayPeriod])
+
+  const handleSort = (field: PayrollSortableKey): void => {
+    if (filters.sortBy === field) {
+      setFilters({ ...filters, sortOrder: filters.sortOrder === "asc" ? "desc" : "asc", page: 1 });
+    } else {
+      setFilters({ ...filters, sortBy: field, sortOrder: "desc", page: 1 });
+    }
+  };
+
+  // Open the modals
+  const handleView = (record: PayrollRecord) => {
+    setSelectedRecord(record)
+    setIsViewModalOpen(true)
+  }
+  const onApprovePayroll = (record: PayrollRecord) => {
+    setSelectedRecord(record)
+    setIsApproveModalOpen(true)
+  }
+  const onDeleteClickHandler = (record: PayrollRecord) => {
+    setSelectedRecord(record)
+    setIsDeleteModalOpen(true)
+  }
+
+  // Handle the actions to interact with the server
+  const handleExport = () => {
+    // TODO: implement export
+    alert(t("payroll.messages.exportSuccess"))
+  }
+  const onApprovePayrollConfirm = async () => {
+    try {
+      setLoading(true)
+      if (selectedRecord) {
+        await approvePayrollClient(selectedRecord.id!)
+        await loadData()
+      }
+    } catch (e) {
+      console.error(e)
+      toast({
+        title: t("common.error"),
+        description: t("common.error.cannotApprove"),
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+  const handleConfirmDelete = async () => {
+    try {
+      setLoading(true)
+      if (selectedRecord) {
+        await deletePayrollClient(selectedRecord.id!)
+        await loadData()
+      }
+    } catch (e) {
+      console.error(e)
+      toast({
+        title: t("common.error"),
+        description: t("common.error.cannotDelete"),
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+  const handleSyncPayroll = async (selectedPeriod: Date) => {
+    try {
+      setLoading(true)
+      await syncPayrollClient(selectedPeriod)
+      await loadData()
+    } catch (e) {
+      console.error(e)
+      toast({
+        title: t("common.error"),
+        description: t("common.error.cannotSync"),
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return {
-    payrollRecords: paginatedRecords,
     searchTerm,
-    setSearchTerm,
+    payrollRecords,
     filters,
-    setFilters,
-    currentPage,
-    setCurrentPage,
-    itemsPerPage,
-    setItemsPerPage,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
-    totalPages,
     totalRecords,
     stats,
-    calculatePayroll,
-    processAllPayrolls,
+    totalPages,
     loading,
-    filterPeriods,
-    processOnePayroll
+    isViewModalOpen,
+    isApproveModalOpen,
+    selectedRecord,
+    isDeleteModalOpen,
+    selectedPayPeriod,
+
+    setSelectedPayPeriod,
+    setSearchTerm,
+    setFilters,
+    setIsViewModalOpen,
+    setIsApproveModalOpen,
+    setIsDeleteModalOpen,
+    onApprovePayrollConfirm,
+    handleView,
+    onApprovePayroll,
+    handleExport,
+    handleSort,
+    handleSyncPayroll,
+    handleConfirmDelete,
+    onDeleteClickHandler,
   }
 }

@@ -9,16 +9,16 @@ import { Input } from "@/components/ui/input"
 import type { PayrollFilters } from "@/types/payroll"
 import { useLanguage } from "@/contexts/language-context"
 import { PayrollStatus } from "@/types"
+import { formatNumberWithCommas, parseNumberInput } from "@/lib/utils"
 
 interface PayrollFilterModalProps {
   isOpen: boolean
+  currentFilters: PayrollFilters
   onClose: () => void
   onApply: (filters: PayrollFilters) => void
-  currentFilters: PayrollFilters
-  filterPeriods: string[]
 }
 
-export function PayrollFilterModal({ filterPeriods, isOpen, onClose, onApply, currentFilters }: PayrollFilterModalProps) {
+export function PayrollFilterModal({ isOpen, currentFilters, onClose, onApply }: PayrollFilterModalProps) {
   const { t } = useLanguage()
   const [filters, setFilters] = useState<PayrollFilters>(currentFilters)
 
@@ -64,57 +64,11 @@ export function PayrollFilterModal({ filterPeriods, isOpen, onClose, onApply, cu
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("payroll.filter.all")}</SelectItem>
-                <SelectItem value={PayrollStatus.processed}>{t("payroll.status.processed")}</SelectItem>
-                <SelectItem value={PayrollStatus.pending}>{t("payroll.status.pending")}</SelectItem>
-                <SelectItem value={PayrollStatus.failed}>{t("payroll.status.failed")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("payroll.filter.department")}</Label>
-            <Select
-              value={filters.department || "all"}
-              onValueChange={(value) => updateFilter("department", value === "all" ? undefined : value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("payroll.filter.all")}</SelectItem>
-                <SelectItem value="IT">{t("payroll.departments.it")}</SelectItem>
-                <SelectItem value="Marketing">{t("payroll.departments.marketing")}</SelectItem>
-                <SelectItem value="Finance">{t("payroll.departments.finance")}</SelectItem>
-                <SelectItem value="Sales">{t("payroll.departments.sales")}</SelectItem>
-                <SelectItem value="HR">{t("payroll.departments.hr")}</SelectItem>
-                <SelectItem value="Operations">{t("payroll.departments.operations")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("payroll.filter.position")}</Label>
-            <Input
-              placeholder={t("payroll.filter.enterPosition")}
-              value={filters.position || ""}
-              onChange={(e) => updateFilter("position", e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("payroll.filter.payPeriod")}</Label>
-            <Select
-              value={filters.payPeriod || "all"}
-              onValueChange={(value) => updateFilter("payPeriod", value === "all" ? undefined : value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("payroll.filter.all")}</SelectItem>
-                {filterPeriods.map((item, index) => (
-                  <SelectItem key={index} value={item}>{item}</SelectItem>
-                ))}
+                {
+                  Object.values(PayrollStatus).map((status) => (
+                    <SelectItem key={status} value={status}>{t(`payroll.status.${status}`)}</SelectItem>
+                  ))
+                }
               </SelectContent>
             </Select>
           </div>
@@ -122,21 +76,25 @@ export function PayrollFilterModal({ filterPeriods, isOpen, onClose, onApply, cu
           <div className="space-y-2">
             <Label>{t("payroll.filter.salaryRange")}</Label>
             <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="number"
+              <Input 
+                id="salaryMin"
+                type="text"
                 placeholder={t("payroll.filter.minSalary")}
-                value={filters.salaryMin || ""}
-                onChange={(e) =>
-                  updateFilter("salaryMin", e.target.value ? Number.parseInt(e.target.value) : undefined)
-                }
+                value={formatNumberWithCommas(filters.salaryMin ?? 0)}
+                onChange={(e) => {
+                  const salaryMin = parseNumberInput(e.target.value) || undefined;
+                  setFilters((prev) => ({ ...prev, salaryMin }));
+                }}
               />
-              <Input
-                type="number"
+              <Input 
+                id="salaryMax"
+                type="text"
                 placeholder={t("payroll.filter.maxSalary")}
-                value={filters.salaryMax || ""}
-                onChange={(e) =>
-                  updateFilter("salaryMax", e.target.value ? Number.parseInt(e.target.value) : undefined)
-                }
+                value={formatNumberWithCommas(filters.salaryMax ?? 0)}
+                onChange={(e) => {
+                  const salaryMax = parseNumberInput(e.target.value) || undefined;
+                  setFilters((prev) => ({ ...prev, salaryMax }));
+                }}
               />
             </div>
           </div>
