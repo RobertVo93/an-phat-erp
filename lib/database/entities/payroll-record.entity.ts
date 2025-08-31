@@ -1,29 +1,39 @@
-import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { BaseEntity } from "./base.entity";
-import { PayrollStatus } from "../../../types/enums";
-import { PayrollRecord as IPayrollRecord } from "@/types/payroll";
-import { EmployeeEntity } from "./employee.entity";
+import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert } from "typeorm";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { EmployeeEntity } from "@/lib/database/entities/employee.entity";
+import { PayrollStatus } from "@/types/enums";
+import { PayrollRecord as IPayrollRecord, AttendanceRecord as IAttendanceRecord } from "@/types";
 import type { Employee as IEmployee } from "@/types";
+import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "payroll_records" })
 export class PayrollRecordEntity extends BaseEntity implements IPayrollRecord {
-  @Column({ type: "float" })
-  bonus!: number;
+  @Column({ unique: true })
+  number?: string;
 
-  @Column({ type: "float" })
-  deductions!: number;
+  @Column({ type: "float", nullable: true })
+  baseSalary?: number;
 
-  @Column({ type: "int" })
-  workingShifts!: number;
+  @Column({ type: "float", nullable: true })
+  bonus?: number;
+
+  @Column({ type: "float", nullable: true })
+  deductions?: number;
+
+  @Column({ type: "float", nullable: true })
+  totalSalary?: number;
+
+  @Column({ type: "int", nullable: true })
+  workingShifts?: number;
+
+  @Column({ type: "float", nullable: true })
+  workingHours?: number;
 
   @Column({ nullable: false })
-  payPeriod!: string;
+  payPeriod?: string;
 
-  @Column({ type: "float" })
-  totalSalary!: number;
-
-  @Column({ type: "enum", enum: PayrollStatus })
-  status!: PayrollStatus;
+  @Column({ type: "enum", enum: PayrollStatus, default: PayrollStatus.draft })
+  status?: PayrollStatus;
 
   @Column({ nullable: true })
   paidAt?: Date;
@@ -31,8 +41,20 @@ export class PayrollRecordEntity extends BaseEntity implements IPayrollRecord {
   @Column({ nullable: true })
   notes?: string;
 
+  @Column({ type: "jsonb", nullable: true })
+  attendanceRecords?: IAttendanceRecord[];
+
   // relations //
   @ManyToOne(() => EmployeeEntity, { nullable: false })
   @JoinColumn({ name: "employeeId" })
   employee?: IEmployee;
+  
+  //////Auto numbering//////
+  @BeforeInsert()
+  async generateNumber() {
+    if (!this.number) {
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber("PayrollRecordEntity", "PAY");
+    }
+  }
 }

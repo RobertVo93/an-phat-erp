@@ -7,7 +7,7 @@ import type { Warehouse as IWarehouse } from "@/types/warehouse";
 import { StockChange as IStockChange, IStockProduct } from "@/types/stock-change";
 import { WarehouseProductEntity } from "./warehouse-product.entity";
 import { ProductEntity } from "./product.entity";
-import { generateStockChangeNumber } from "@/lib/services/stockChangeService";
+import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "stock_change" })
 export class StockChangeEntity extends BaseEntity implements IStockChange {
@@ -60,7 +60,8 @@ export class StockChangeEntity extends BaseEntity implements IStockChange {
   @BeforeInsert()
   async generateNumber() {
     if (!this.number) {
-      this.number = await generateStockChangeNumber();
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber("StockChangeEntity", "STC");
     }
 
     if (this.status === StockChangeStatus.completed) {

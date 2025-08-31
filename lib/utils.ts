@@ -14,9 +14,10 @@ import {
   AttendanceStatus,
   AttendanceShift,
   AttendanceSubStatus,
+  PayrollStatus,
 } from "@/types"
 import { clsx, type ClassValue } from "clsx"
-import { useEffect, useState } from "react"
+import { env } from "@/constants/env"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -37,6 +38,11 @@ export function formatCurrencyVND(amount: number): string {
 // Optionally, update the default formatCurrency to use VND for now
 export function formatCurrency(amount: number): string {
   return formatCurrencyVND(amount)
+}
+
+export function formatMonthYear(date?: Date | null): string {
+  if (!date) return ""
+  return date.getMonth() + 1 + "-" + date.getFullYear()
 }
 
 export function formatDate(date: string | Date): string {
@@ -318,6 +324,23 @@ export const getAttendanceShiftColor = (shift: string) => {
   }
 }
 
+export const getPayrollStatusColor = (status: string) => {
+  switch (status) {
+    case PayrollStatus.draft:
+      return "bg-orange-100 text-orange-800"
+    case PayrollStatus.processing:
+      return "bg-blue-100 text-blue-800"
+    case PayrollStatus.processed:
+      return "bg-green-100 text-green-800"
+    case PayrollStatus.pending:
+      return "bg-yellow-100 text-yellow-800"
+    case PayrollStatus.failed:
+      return "bg-red-100 text-red-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
 export const getCustomerInitialCharacter = (name: string) => {
   return name
     .split(" ")
@@ -336,7 +359,7 @@ export const formatNumberWithCommas = (value: string | number): string => {
 }
 
 export const parseNumberInput = (value: string): number => {
-  return parseFloat(value.replace(/,/g, ""));
+  return parseFloat((value || "0").replace(/,/g, ""));
 }
 
 export const hasValidArray = (arr: any) => {
@@ -366,11 +389,17 @@ export const calculateDiffWorkHours = (fromTime: Date | string, toTime: Date | s
   return Math.round((roundedMinutes / 60) * 100) / 100;
 }
 
-export function useDebounceSearchTerm<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const handler = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(handler)
-  }, [value, delay])
-  return debounced
+/**
+ * Get list of pay periods from system start period to today
+ * @returns List of pay periods like [..., "03-2025", "02-2025", "01-2025"]
+ */
+export const getSystemPayPeriod = (): string[] => {
+  const startPeriod = new Date(env.NEXT_PUBLIC_SYSTEM_PAY_PERIOD_START)
+  const today = new Date();
+  today.setDate(1);
+  const periods = [];
+  for (let i = today; i > startPeriod; i.setMonth(i.getMonth() - 1)) {
+    periods.push(formatMonthYear(i));
+  }
+  return periods;
 }

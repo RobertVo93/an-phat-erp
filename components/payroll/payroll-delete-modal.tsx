@@ -32,9 +32,9 @@ export function PayrollDeleteModal({ isOpen, onClose, onConfirm, payrollRecord }
         <div className="py-4">
           <p className="text-sm text-muted-foreground mb-4">{t("payroll.delete.message")}</p>
           <div className="bg-gray-50 p-3 rounded-lg">
-            <p className="font-medium">{payrollRecord.name}</p>
+            <p className="font-medium">{payrollRecord.employee?.number} - {payrollRecord.employee?.name}</p>
             <p className="text-sm text-muted-foreground">
-              {payrollRecord.position} - {payrollRecord.department}
+              {payrollRecord.employee?.position || "N/A"} - {payrollRecord.employee?.department || "N/A"}
             </p>
             <p className="text-sm text-muted-foreground">{payrollRecord.payPeriod}</p>
           </div>

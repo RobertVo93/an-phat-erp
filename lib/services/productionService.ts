@@ -1,8 +1,8 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { IProductionElement, ProductionRecord as IProductionRecord } from "@/types/production";
-import { ProductionRecordEntity } from "../database/entities/production-record.entity";
-import { ProductEntity, StockChangeEntity, WarehouseEntity } from "../database/entities";
-import { generateStockChangeNumber } from "./stockChangeService";
+import { ProductionRecordEntity } from "@/lib/database/entities/production-record.entity";
+import { ProductEntity, StockChangeEntity, WarehouseEntity } from "@/lib/database/entities";
+import { CommonService } from "@/lib/services/commonService";
 import { IStockProduct, StockChangeStatus, StockChangeType } from "@/types";
 
 export async function getAllProductionRecords({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
@@ -90,7 +90,8 @@ export async function handleStatusCompleted(record: ProductionRecordEntity) {
     const productRepo = manager.getRepository(ProductEntity);
     const warehouseRepo = manager.getRepository(WarehouseEntity);
     const warehouse = await warehouseRepo.findOne({ where: { id: record.warehouse?.id } });
-    const stockChangeNumber = await generateStockChangeNumber();
+    const commonService = new CommonService();
+    const stockChangeNumber = await commonService.getEntityNumber("StockChangeEntity", "STC");
 
     // 1. StockIn for finished product
     if (record.product && record.warehouse) {
@@ -149,7 +150,7 @@ export async function handleStatusCompleted(record: ProductionRecordEntity) {
       }
       if (stockProducts.length > 0 && warehouse) {
         const stockOut = stockChangeRepo.create({
-          number: await generateStockChangeNumber(stockChangeNumber),
+          number: await commonService.getEntityNumber("StockChangeEntity", "STC", stockChangeNumber),
           type: StockChangeType.stockOut,
           date: new Date(),
           supplier: `${record.number}`,

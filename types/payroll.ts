@@ -1,30 +1,32 @@
 import { PayrollStatus } from "@/types/enums";
-import { IBase } from "./base.interface";
-import { Employee } from "./employee";
+import { IBase, IBaseFilters } from "@/types/base.interface";
+import { AttendanceRecord, Employee } from "@/types";
 
 export interface PayrollRecord extends IBase{
-  id?: string,
+  number?: string,
+  baseSalary?: number,
   bonus?: number,
   deductions?: number,
-  workingShifts?: number,
-  payPeriod?: string,
-  totalSalary?: number,
+  totalSalary?: number, // baseSalary + bonus - deductions
+  workingShifts?: number, // = attendance records
+  workingHours?: number, // = attendance records * workingHours
+  payPeriod?: string, // YYYY-MM
   status?: PayrollStatus,
   paidAt?: Date,
   notes?: string,
 
   employee?: Employee,
+  attendanceRecords?: AttendanceRecord[], // omit this one from query, only for history check
 }
 
-export type SortableKey = "employee.name" | "employee.department" | "totalSalary" | "status";
+export type PayrollSortableKey = "employee.name" | "payPeriod" | "workingShifts" | "workingHours" | "totalSalary" | "status";
 
-export interface PayrollFilters {
+export interface PayrollFilters extends IBaseFilters{
   status?: string
-  department?: string
-  position?: string
   payPeriod?: string
   salaryMin?: number
   salaryMax?: number
+  searchTerm?: string
 }
 
 export interface PayrollStats {
@@ -32,14 +34,4 @@ export interface PayrollStats {
   processedCount: number
   pendingCount: number
   averageSalary: number
-}
-
-export interface PayrollCalculation {
-  baseSalary: number
-  overtimeRate: number
-  workingDays: number
-  overtimeHours: number
-  bonus: number
-  taxRate: number
-  insuranceRate: number
 }
