@@ -25,8 +25,8 @@ export const utilitiesTranslations = {
     vi: "Xóa Tiện ích",
   },
   "utilities.searchPlaceholder": {
-    en: "Search utilities by provider, location or account number",
-    vi: "Tìm kiếm tiện ích theo người cung cấp, địa chỉ hoặc số tài khoản"
+    en: "Search utilities by number, name, provider, location or account number",
+    vi: "Tìm kiếm tiện ích theo mã, tên, nhà cung cấp, địa chỉ"
   },
   "utilities.filter": {
     en: "Filter",
@@ -188,6 +188,10 @@ export const utilitiesTranslations = {
     en: "Active",
     vi: "Hoạt động",
   },
+  "utilities.draft": {
+    en: "Draft",
+    vi: "Nháp",
+  },
   "utilities.inactive": {
     en: "Inactive",
     vi: "Không hoạt động",
@@ -221,6 +225,22 @@ export const utilitiesTranslations = {
   "utilities.hours": {
     en: "hours",
     vi: "giờ",
+  },
+  "utilities.day": {
+    en: "day",
+    vi: "ngày",
+  },
+  "utilities.month": {
+    en: "month",
+    vi: "tháng",
+  },
+  "utilities.year": {
+    en: "year",
+    vi: "năm",
+  },
+  "utilities.piece": {
+    en: "piece",
+    vi: "cái",
   },
 
   // Actions

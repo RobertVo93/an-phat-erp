@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
-import { UtilitySchema } from "../utility.schema";
+import { UtilitySchema } from "@/app/api/utility/utility.schema";
 import { getUserFromRequest } from "@/lib/auth/jwt";
-import { deleteUtility, updateUtility } from "@/lib/services/utilityService";
+import { deleteUtilityService, updateUtilityService } from "@/lib/services/utilityService";
 
 export async function PUT(
   req: NextRequest,
@@ -17,10 +17,8 @@ export async function PUT(
     if (!parse.success) {
       return NextResponse.json({ error: "Invalid input", details: parse.error.errors }, { status: 400 });
     }
-    const updated = await updateUtility(params.id, parse.data);
-    if (!updated) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
+    const { id } = await params;
+    const updated = await updateUtilityService(id, parse.data);
     return NextResponse.json(updated);
   } catch (error) {
     return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });
@@ -35,9 +33,10 @@ export async function DELETE(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
-    const result = await deleteUtility(params.id);
-    if (result.affected === 0) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const { id } = await params;
+    const result = await deleteUtilityService(id);
+    if (!result) {
+      return NextResponse.json({ error: "Cannot delete utility" }, { status: 400 });
     }
     return new NextResponse(null, { status: 204 });
   } catch (error) {

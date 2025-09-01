@@ -10,55 +10,39 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
-import type { Utility, UtilityFilters } from "@/types/utility"
-import { UtilityStatus, UtilityType, UtilityUnit } from "@/types"
+import type { Utility } from "@/types/utility"
+import { UtilityStatus, UtilityUnit } from "@/types"
+import { MutationMode } from "@/types/base.interface"
+import { MoneyInput } from "@/components/common/input"
 
+const defaultUtility: Utility = {
+  name: "",
+  provider: "",
+  location: "",
+  unit: UtilityUnit.other,
+  costPerUnit: 0,
+  status: UtilityStatus.active,
+  description: "",
+}
 interface UtilityFormModalProps {
   isOpen: boolean
+  utility?: Utility
+  mode: MutationMode
   onClose: () => void
   onSave: (utility: Omit<Utility, "id" | "createdAt" | "updatedAt">) => void
   onUpdate?: (id: string, updates: Partial<Utility>) => void
-  utility?: Utility
-  mode: "create" | "edit"
 }
 
-export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, mode }: UtilityFormModalProps) {
+export function UtilityFormModal({ isOpen, utility, mode, onClose, onSave, onUpdate }: UtilityFormModalProps) {
   const { t } = useLanguage()
-  const [formData, setFormData] = useState<Utility>({
-    type: UtilityType.cable,
-    name: "",
-    provider: "",
-    location: "",
-    unit: UtilityUnit.gb,
-    costPerUnit: 0,
-    status: UtilityStatus.active,
-    description: "",
-  })
+  const [formData, setFormData] = useState<Utility>(defaultUtility)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    if (mode === "edit" && utility) {
-      setFormData({
-        type: utility.type,
-        name: utility.name,
-        provider: utility.provider,
-        location: utility.location,
-        unit: utility.unit,
-        costPerUnit: utility.costPerUnit,
-        status: utility.status,
-        description: utility.description || "",
-      })
+    if (mode === "update" && utility) {
+      setFormData(utility)
     } else {
-      setFormData({
-        type: UtilityType.cable,
-        name: "",
-        provider: "",
-        location: "",
-        unit: UtilityUnit.gb,
-        costPerUnit: 0,
-        status: UtilityStatus.active,
-        description: "",
-      })
+      setFormData(defaultUtility)
     }
     setErrors({})
   }, [mode, utility, isOpen])
@@ -66,17 +50,8 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.type!.trim()) {
-      newErrors.type = t("utilities.typeRequired")
-    }
     if (!formData.name!.trim()) {
-      newErrors.type = t("utilities.nameRequired")
-    }
-    if (!formData.provider!.trim()) {
-      newErrors.provider = t("utilities.providerRequired")
-    }
-    if (!formData.location!.trim()) {
-      newErrors.location = t("utilities.locationRequired")
+      newErrors.name = t("utilities.nameRequired")
     }
     if (!formData.unit!) {
       newErrors.unit = t("utilities.unitRequired")
@@ -100,7 +75,6 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
     }
 
     const utilityData = {
-      type: formData.type,
       name: formData.name,
       provider: formData.provider,
       location: formData.location,
@@ -110,42 +84,22 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
       description: formData.description,
     }
 
-    if (mode === "edit" && utility && onUpdate) {
+    if (mode === "update" && utility && onUpdate) {
       onUpdate(utility.id!, utilityData)
     } else {
       onSave(utilityData)
     }
-
-    onClose()
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{mode === "edit" ? t("utilities.editUtility") : t("utilities.addUtility")}</DialogTitle>
+          <DialogTitle>{mode === "update" ? t("utilities.editUtility") : t("utilities.addUtility")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="type">{t("utilities.type")} *</Label>
-              <Select value={formData.type} onValueChange={(value: UtilityType) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder={`${t("common.select")} ${t("utilities.type").toLowerCase()}`} />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(UtilityType)
-                    .map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {t(`utilities.${type}`)}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              {errors.type && <p className="text-sm text-red-500">{errors.type}</p>}
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="utilityName">{t("utilities.utilityName")} *</Label>
               <Input
@@ -154,11 +108,32 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder={t("utilities.utilityName")}
               />
-              {errors.provider && <p className="text-sm text-red-500">{errors.provider}</p>}
+              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="provider">{t("utilities.provider")} *</Label>
+              <Label htmlFor="status">{t("utilities.status")} *</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(UtilityStatus)
+                    .map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {t(`utilities.${status}`)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {errors.status && <p className="text-sm text-red-500">{errors.status}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="provider">{t("utilities.provider")}</Label>
               <Input
                 id="provider"
                 value={formData.provider}
@@ -169,7 +144,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">{t("utilities.location")} *</Label>
+              <Label htmlFor="location">{t("utilities.location")}</Label>
               <Input
                 id="location"
                 value={formData.location}
@@ -199,36 +174,13 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
 
             <div className="space-y-2">
               <Label htmlFor="costPerUnit">{t("utilities.costPerUnit")} *</Label>
-              <Input
+              <MoneyInput
                 id="costPerUnit"
-                type="number"
-                step="0.01"
                 value={formData.costPerUnit}
-                onChange={(e) => setFormData({ ...formData, costPerUnit: Number(e.target.value) })}
+                onChange={(value) => setFormData({ ...formData, costPerUnit: value })}
                 placeholder="0.00"
               />
               {errors.costPerUnit && <p className="text-sm text-red-500">{errors.costPerUnit}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">{t("utilities.status")} *</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: any) => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.keys(UtilityStatus)
-                    .map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {t(`utilities.${status}`)}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              {errors.status && <p className="text-sm text-red-500">{errors.status}</p>}
             </div>
           </div>
 
@@ -243,7 +195,7 @@ export function UtilityFormModal({ isOpen, onClose, onSave, onUpdate, utility, m
             />
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row gap-2 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-2 pt-4 justify-end">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
               {t("utilities.cancel")}
             </Button>
