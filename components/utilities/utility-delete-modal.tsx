@@ -18,11 +18,6 @@ export function UtilityDeleteModal({ isOpen, onClose, onConfirm, utility }: Util
 
   if (!utility) return null
 
-  const handleConfirm = () => {
-    onConfirm()
-    onClose()
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
@@ -37,16 +32,17 @@ export function UtilityDeleteModal({ isOpen, onClose, onConfirm, utility }: Util
           <p className="text-sm text-muted-foreground">{t("utilities.deleteConfirmMessage")}</p>
 
           <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="font-medium">{t(`utilities.${utility.type!.toLowerCase()}`)}</p>
+            <p className="font-medium">{utility.number}</p>
+            <p className="text-sm text-muted-foreground">{utility.name}</p>
             <p className="text-sm text-muted-foreground">{utility.provider}</p>
           </div>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row gap-2 pt-4">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 pt-4 justify-end">
           <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
             {t("utilities.cancel")}
           </Button>
-          <Button variant="destructive" onClick={handleConfirm} className="flex-1 sm:flex-none">
+          <Button variant="destructive" onClick={onConfirm} className="flex-1 sm:flex-none">
             {t("utilities.confirm")}
           </Button>
         </div>

@@ -6,7 +6,7 @@ import { Employee, EmployeeStatus, Product, ProductStatus, Utility, Warehouse, W
 import { getProducts as apiGetProducts } from "@/lib/httpclient"
 import { createProduction, getAllProductions, updateProduction } from "@/lib/httpclient/production.client"
 import { isTodayLocalDatetime } from "@/lib/utils"
-import { getAllUtilities } from "@/lib/httpclient/utility.client"
+import { getUtilitiesByFilterClient } from "@/lib/httpclient/utility.client"
 import { getEmployee } from '@/lib/httpclient/employee.client';
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { toast } from "@/components/ui/use-toast"
@@ -40,7 +40,7 @@ export function useProduction() {
           limit: 1000,
           page: 1,
         }),
-        getAllUtilities(),
+        getUtilitiesByFilterClient(),
         getEmployee({
           status: EmployeeStatus.active,
           limit: 1000,

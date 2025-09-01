@@ -25,7 +25,7 @@ export async function getAllOrders({ page = 1, limit = 20, sortBy = "date", sort
   if (filters.paymentMethod) qb.andWhere("order.paymentMethod = :paymentMethod", { paymentMethod: filters.paymentMethod });
   if (filters.totalAmountFrom) qb.andWhere("order.totalAmount >= :totalAmountFrom", { totalAmountFrom: filters.totalAmountFrom });
   if (filters.totalAmountTo) qb.andWhere("order.totalAmount <= :totalAmountTo", { totalAmountTo: filters.totalAmountTo });
-  if (filters.searchTerm) qb.andWhere("order.orderNumber ILIKE :searchTerm OR order.notes ILIKE :searchTerm or order.shippingAddress ILIKE :searchTerm", { searchTerm: `%${filters.searchTerm}%` });
+  if (filters.searchTerm) qb.andWhere("(order.orderNumber ILIKE :searchTerm OR order.notes ILIKE :searchTerm or order.shippingAddress ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
 
   // Sorting
   const allowedSortFields = ["deliveryDate", "totalAmount", "customer", "orderNumber"];
