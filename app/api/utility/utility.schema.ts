@@ -1,9 +1,7 @@
 import { z } from "zod";
-import { UtilityStatus, UtilityType, UtilityUnit } from "@/types/enums";
+import { UtilityStatus, UtilityUnit } from "@/types/enums";
 
 export const UtilitySchema = z.object({
-  id: z.string().optional(),
-  type: z.nativeEnum(UtilityType).optional(),
   name: z.string().optional(),
   provider: z.string().optional(),
   location: z.string().optional(),
@@ -12,3 +10,5 @@ export const UtilitySchema = z.object({
   status: z.nativeEnum(UtilityStatus).optional(),
   description: z.string().optional(),
 });
+
+export const UpdateUtilitySchema = UtilitySchema.partial();

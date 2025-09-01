@@ -18,7 +18,7 @@ export async function getAllProductionRecords({ page = 1, limit = 20, sortBy = "
   if (filters.dateFrom) qb.andWhere("productionRecord.date >= :dateFrom", { dateFrom: filters.dateFrom });
   if (filters.dateTo) qb.andWhere("productionRecord.date <= :dateTo", { dateTo: filters.dateTo });
   if (filters.product) qb.andWhere("product.id = :product", { product: filters.product });
-  if (filters.searchTerm) qb.andWhere("productionRecord.number ILIKE :searchTerm OR productionRecord.notes ILIKE :searchTerm", { searchTerm: `%${filters.searchTerm}%` });
+  if (filters.searchTerm) qb.andWhere("(productionRecord.number ILIKE :searchTerm OR productionRecord.notes ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
 
   // Sorting
   const allowedSortFields = ["date", "number", "status"];

@@ -66,6 +66,7 @@ export enum PaymentMethod {
 }
 
 export enum UtilityStatus {
+  draft = "draft",
   active = "active",
   inactive = "inactive",
   overdue = "overdue",
@@ -90,6 +91,10 @@ export enum UtilityUnit {
   gb = "gb",
   minutes = "minutes",
   hours = "hours",
+  day = "day",
+  month = "month",
+  year = "year",
+  piece = "piece",
   other = "other"
 }
 

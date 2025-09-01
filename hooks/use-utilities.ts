@@ -1,178 +1,207 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import type { Utility, UtilityFilters, UtilitySortField, SortDirection } from "@/types/utility"
-import { UtilityStatus } from "@/types"
-import { addUtility as apiAddUtility, getAllUtilities as apiGetAllUtilities, updateUtility as apiUpdateUtility, deleteUtility as apiDeleteUtility } from "@/lib/httpclient/utility.client"
-import { debounce } from "lodash"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import type { Utility, UtilityFilters, UtilitySortField } from "@/types/utility"
+import { 
+  addUtilityClient as apiAddUtility, 
+  getUtilitiesByFilterClient as apiGetAllUtilities, 
+  updateUtilityClient as apiUpdateUtility, 
+  deleteUtilityClient as apiDeleteUtility 
+} from "@/lib/httpclient/utility.client"
+import { MutationMode } from "@/types/base.interface"
+import { toast } from "@/components/ui/use-toast"
+import { useLanguage } from "@/contexts/language-context"
+import { useDebounceSearchTerm } from "@/lib/utils.client"
 
 export function useUtilities() {
+  const { t } = useLanguage()
   const [utilities, setUtilities] = useState<Utility[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<UtilityFilters>({})
-  const [sortField, setSortField] = useState<UtilitySortField>("type")
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(5)
-  const [totalUtilities, setTotalUtilities] = useState(0)
+  const [filters, setFilters] = useState<UtilityFilters>({
+    page: 1,
+    limit: 10,
+    sortBy: "number",
+    sortOrder: "desc"
+  })
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState<boolean>(false)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedUtility, setSelectedUtility] = useState<Utility | null>(null)
+  const [formMode, setFormMode] = useState<MutationMode>("create")
 
-  const filteredAndSortedUtilities = useMemo(() => {
-    const filtered = utilities.filter((utility) => {
-      const matchesSearch =
-        utility.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        utility.provider?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        utility.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        utility.id?.toLowerCase().includes(searchTerm.toLowerCase())
+  const debounceSearchTerm = useDebounceSearchTerm(searchTerm, 500);
+  const hasActiveFilters = useMemo(() => Object.keys(filters).some((key) => {
+    if (key === 'page' || key === 'limit' || key === 'sortBy' || key === 'sortOrder') return false
+    return filters[key as keyof typeof filters] !== undefined && filters[key as keyof typeof filters] !== ""
+  }), [filters])
 
-      const matchesType = !filters.type || utility.type === filters.type
-      const matchesStatus = !filters.status || utility.status === filters.status
-      const matchesLocation = !filters.location || utility.location === filters.location
-      const matchesProvider = !filters.provider || utility.provider === filters.provider
-      const matchesCostFrom = filters.costFrom === undefined || utility.costPerUnit! >= filters.costFrom
-      const matchesCostTo = filters.costTo === undefined || utility.costPerUnit! <= filters.costTo
 
-      return (
-        matchesSearch &&
-        matchesType &&
-        matchesStatus &&
-        matchesLocation &&
-        matchesProvider &&
-        matchesCostFrom &&
-        matchesCostTo
-      )
+  const handleSort = (field: UtilitySortField) => {
+    setFilters(prev => {
+      if (prev.sortBy === field) {
+        return { ...prev, sortBy: field, sortOrder: prev.sortOrder === "asc" ? "desc" : "asc", page: 1 }
+      } else {
+        return { ...prev, sortBy: field, sortOrder: "asc", page: 1 }
+      }
     })
+  }
 
-    // Sort
-    filtered.sort((a, b) => {
-      let aValue: any = a[sortField]
-      let bValue: any = b[sortField]
-
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1
-      return 0
+  const resetFilters = () => {
+    setFilters({
+      page: 1,
+      limit: 10,
+      sortBy: "number",
+      sortOrder: "desc"
     })
+    setSearchTerm("")
+  }
 
-    return filtered
-  }, [utilities, searchTerm, filters, sortField, sortDirection])
+  // Show modals
+  const handleCreateUtility = () => {
+    setFormMode("create")
+    setSelectedUtility(null)
+    setIsFormModalOpen(true)
+  }
+  const handleCloseCreateUtility = () => {
+    setIsFormModalOpen(false)
+  }
+  const handleEditUtility = (utility: Utility) => {
+    setFormMode("update")
+    setSelectedUtility(utility)
+    setIsFormModalOpen(true)
+  }
+  const handleCloseEditUtility = () => {
+    setSelectedUtility(null)
+    setIsFormModalOpen(false)
+  }
+  const handleViewUtility = (utility: Utility) => {
+    setSelectedUtility(utility)
+    setIsViewModalOpen(true)
+  }
+  const handleDeleteUtility = (utility: Utility) => {
+    setSelectedUtility(utility)
+    setIsDeleteModalOpen(true)
+  }
+  const handleCloseDeleteUtility = () => {
+    setSelectedUtility(null)
+    setIsDeleteModalOpen(false)
+  }
 
-  const paginatedUtilities = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    return filteredAndSortedUtilities.slice(startIndex, startIndex + itemsPerPage)
-  }, [filteredAndSortedUtilities, currentPage, itemsPerPage])
-
+  // Handle actions integrate with backend
+  const confirmDelete = () => {
+    if (selectedUtility) deleteUtility(selectedUtility.id!)
+  }
   const addUtility = async (utility: Omit<Utility, "id" | "createdAt" | "updatedAt">) => {
     try {
       setLoading(true)
-      const newUtility: Utility = {
-        ...utility,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      const added = await apiAddUtility(newUtility)
-      setUtilities([...utilities, added])
+      await apiAddUtility(utility)
+      await getUtilities()
+      handleCloseCreateUtility()
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotAdd"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }
-
   const updateUtility = async (id: string, updates: Partial<Utility>) => {
     try {
       setLoading(true)
-      updates.updatedAt = new Date()
-      const updated = await apiUpdateUtility(id, updates)
-      setUtilities(utilities.map((ut) => (ut.id === id ? { ...ut, ...updated } : ut)))
+      await apiUpdateUtility(id, updates)
+      await getUtilities()
+      handleCloseEditUtility()
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotAdd"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }
-
   const deleteUtility = async (id: string) => {
     try {
       setLoading(true)
       await apiDeleteUtility(id)
-      setUtilities(utilities.filter((utility) => utility.id !== id))
+      await getUtilities()
+      handleCloseDeleteUtility()
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotDelete"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }
-
-  const getUtilityById = (id: string) => {
-    return utilities.find((utility) => utility.id === id)
-  }
-
-  const handleSort = (field: UtilitySortField) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      setSortField(field)
-      setSortDirection("asc")
-    }
-  }
-
-  const resetFilters = () => {
-    setFilters({})
-    setSearchTerm("")
-    setCurrentPage(1)
-  }
-
-  const stats = useMemo(() => {
-    const totalUtilities = utilities.length
-    const activeUtilities = utilities.filter((u) => u.status === UtilityStatus.active).length
-    const overdueUtilities = utilities.filter((u) => u.status === UtilityStatus.overdue).length
-
-    return {
-      totalUtilities,
-      activeUtilities,
-      overdueUtilities,
-    }
-  }, [utilities])
-
-  const getAllUtilities = async () => {
+  const getUtilities = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await apiGetAllUtilities()
-      setUtilities(res.data)
-      setTotalUtilities(res.total)
+      const apiParams = {
+        ...filters,
+        searchTerm: debounceSearchTerm
+      }
+      const res = await apiGetAllUtilities(apiParams)
+      setUtilities(res.data || [])
+      setTotalRecords(res.total || 0)
+      setTotalPages(Math.ceil((res.total || 0) / (filters.limit || 10)))
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotLoad"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters, debounceSearchTerm])
 
   useEffect(() => {
-    getAllUtilities()
-  }, [])
+    getUtilities()
+  }, [filters, debounceSearchTerm])
 
   return {
-    utilities: paginatedUtilities,
-    allUtilities: utilities,
+    utilities,
     searchTerm,
-    setSearchTerm,
     filters,
+    totalRecords,
+    totalPages,
+    loading,
+    isFormModalOpen,
+    isViewModalOpen,
+    isFilterModalOpen,
+    isDeleteModalOpen,
+    selectedUtility,
+    formMode,
+    hasActiveFilters,
+
+    setSearchTerm,
     setFilters,
-    sortField,
-    sortDirection,
-    handleSort,
-    currentPage,
-    setCurrentPage,
-    itemsPerPage,
-    setItemsPerPage,
-    totalPages: Math.ceil(filteredAndSortedUtilities?.length / itemsPerPage),
-    totalItems: filteredAndSortedUtilities?.length,
     addUtility,
     updateUtility,
-    deleteUtility,
-    getUtilityById,
     resetFilters,
-    stats,
-    loading
+    setIsViewModalOpen,
+    setIsFilterModalOpen,
+    handleCreateUtility,
+    handleViewUtility,
+    handleEditUtility,
+    handleDeleteUtility,
+    confirmDelete,
+    handleSort,
+    handleCloseDeleteUtility,
+    handleCloseEditUtility,
   }
 }

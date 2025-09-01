@@ -16,7 +16,7 @@ export async function getAllPayrollsService({ page = 1, limit = 20, sortBy = "pa
   if (filters.payPeriod) qb.andWhere("payroll.payPeriod = :payPeriod", { payPeriod: filters.payPeriod });
   if (filters.salaryMin) qb.andWhere("payroll.totalSalary >= :salaryMin", { salaryMin: filters.salaryMin });
   if (filters.salaryMax) qb.andWhere("payroll.totalSalary <= :salaryMax", { salaryMax: filters.salaryMax });
-  if (filters.searchTerm) qb.andWhere("payroll.notes ILIKE :searchTerm OR employee.name ILIKE :searchTerm OR employee.number ILIKE :searchTerm", { searchTerm: `%${filters.searchTerm}%` });
+  if (filters.searchTerm) qb.andWhere("(payroll.notes ILIKE :searchTerm OR employee.name ILIKE :searchTerm OR employee.number ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
 
   qb.orderBy(`payroll.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
   qb.skip((page - 1) * limit).take(limit);

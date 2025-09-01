@@ -11,7 +11,7 @@ export async function getAllAttendanceRecords({ page = 1, limit = 20, sortBy = "
   if (filters.status) qb.andWhere("attendance.status = :status", { status: filters.status });
   if (filters.dateFrom) qb.andWhere("attendance.date >= :dateFrom", { dateFrom: filters.dateFrom });
   if (filters.dateTo) qb.andWhere("attendance.date <= :dateTo", { dateTo: filters.dateTo });
-  if (filters.searchTerm) qb.andWhere("attendance.notes ILIKE :searchTerm OR attendance.number ILIKE :searchTerm OR employee.name ILIKE :searchTerm OR employee.number ILIKE :searchTerm", { searchTerm: `%${filters.searchTerm}%` });
+  if (filters.searchTerm) qb.andWhere("(attendance.notes ILIKE :searchTerm OR attendance.number ILIKE :searchTerm OR employee.name ILIKE :searchTerm OR employee.number ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
   if (filters.shift) qb.andWhere("attendance.shift = :shift", { shift: filters.shift });
   if (filters.employeeId) qb.andWhere("employee.id = :employeeId", { employeeId: filters.employeeId });
 

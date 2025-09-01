@@ -1,12 +1,13 @@
-import { Entity, Column, OneToMany } from "typeorm";
-import { BaseEntity } from "./base.entity";
-import { UtilityStatus, UtilityType, UtilityUnit } from "../../../types/enums";
+import { Entity, Column, BeforeInsert } from "typeorm";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { UtilityStatus, UtilityUnit } from "@/types/enums";
 import { Utility as IUtility } from "@/types/utility";
+import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "utilities" })
 export class UtilityEntity extends BaseEntity implements IUtility {
-  @Column({ type: "enum", enum: UtilityType, nullable: true })
-  type?: UtilityType;
+  @Column({ unique: true })
+  number?: string;
 
   @Column({ nullable: false })
   name?: string
@@ -28,4 +29,13 @@ export class UtilityEntity extends BaseEntity implements IUtility {
 
   @Column({ nullable: true })
   description?: string;
+
+  //////Auto numbering//////
+  @BeforeInsert()
+  async generateNumber() {
+    if (!this.number) {
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber("UtilityEntity", "UTL");
+    }
+  }
 }
