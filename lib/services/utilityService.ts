@@ -1,30 +1,44 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { Utility } from "@/types";
-import { UtilityEntity } from "../database/entities";
+import { Utility, UtilityFilters } from "@/types";
+import { UtilityEntity } from "@/lib/database/entities";
 
-export async function getUtilities() {
+export async function getUtilitiesService({ page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc", filters = {} as UtilityFilters }) {
   const repo = AppDataSource.getRepository(UtilityEntity);
   const qb = repo.createQueryBuilder("utility");
-  const [data] = await qb.getManyAndCount();
-  return { data: data };
+
+  if (filters.status) qb.andWhere("utility.status = :status", { status: filters.status });
+  if (filters.costFrom) qb.andWhere("utility.costPerUnit >= :costFrom", { costFrom: filters.costFrom });
+  if (filters.costTo) qb.andWhere("utility.costPerUnit <= :costTo", { costTo: filters.costTo });
+  if (filters.searchTerm) qb.andWhere("(utility.number ILIKE :searchTerm OR utility.name ILIKE :searchTerm OR utility.provider ILIKE :searchTerm OR utility.location ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
+
+  qb.orderBy(`utility.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+  qb.skip((page - 1) * limit).take(limit);
+
+  const [data, total] = await qb.getManyAndCount();
+  return { data, total, page, limit };
 }
 
-export async function addUtility(data: Utility) {
+export async function addUtilityService(data: Utility) {
   const repo = AppDataSource.getRepository(UtilityEntity);
   const added = repo.create(data);
   return repo.save(added);
 }
 
-export async function updateUtility(
+export async function updateUtilityService(
   id: string,
   data: Partial<Utility>
 ) {
   const repo = AppDataSource.getRepository(UtilityEntity);
-  await repo.update(id, data);
-  return repo.findOneBy({ id });
+  const record = await repo.findOneBy({ id });
+  if (!record) throw new Error("Utility not found");
+  repo.merge(record, data);
+  return await repo.save(record);
 }
 
-export async function deleteUtility(id: string) {
+export async function deleteUtilityService(id: string) {
   const repo = AppDataSource.getRepository(UtilityEntity);
-  return repo.delete(id);
+  const record = await repo.findOneBy({ id });
+  if (!record) throw new Error("Utility not found");
+  await repo.remove(record);
+  return true;
 } 

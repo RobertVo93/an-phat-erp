@@ -1,13 +1,16 @@
 import { Utility, UtilityFilters } from "@/types";
 
-export async function getAllUtilities() {
+export async function getUtilitiesByFilterClient(filters: UtilityFilters = {}) {
   const url = new URL("/api/utility", window.location.origin);
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") url.searchParams.append(key, String(value))
+  })
   const res = await fetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch Utilities");
   return res.json();
 }
 
-export async function addUtility(data: Partial<Utility>) {
+export async function addUtilityClient(data: Partial<Utility>) {
   const res = await fetch("/api/utility", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -18,7 +21,7 @@ export async function addUtility(data: Partial<Utility>) {
   return res.json();
 }
 
-export async function updateUtility(id: string, data: Partial<Utility>) {
+export async function updateUtilityClient(id: string, data: Partial<Utility>) {
   const res = await fetch(`/api/utility/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -29,7 +32,7 @@ export async function updateUtility(id: string, data: Partial<Utility>) {
   return res.json();
 }
 
-export async function deleteUtility(id: string) {
+export async function deleteUtilityClient(id: string) {
   const res = await fetch(`/api/utility/${id}`, {
     method: "DELETE",
     credentials: "include",

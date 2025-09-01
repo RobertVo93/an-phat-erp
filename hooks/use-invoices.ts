@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import type { Invoice, InvoiceFilters, InvoiceSortConfig } from "@/types/invoice"
 import { InvoiceStatus, Utility } from "@/types"
-import { getAllUtilities as apiGetAllUtilities } from "@/lib/httpclient/utility.client"
+import { getUtilitiesByFilterClient } from "@/lib/httpclient/utility.client"
 import { addInvoice as apiAddInvoice, getAllInvoices as apiGetAllInvoices, updateInvoice as apiUpdateInvoice, deleteInvoice as apiDeleteInvoice } from "@/lib/httpclient/invoice.client"
 
 export function useInvoices() {
@@ -22,7 +22,7 @@ export function useInvoices() {
   const getAllUtilities = async () => {
     try {
       setLoading(true)
-      const res = await apiGetAllUtilities()
+      const res = await getUtilitiesByFilterClient()
       setAllUtilities(res.data)
     } catch (e) {
       console.error(e)
