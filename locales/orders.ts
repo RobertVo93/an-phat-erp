@@ -28,7 +28,7 @@ export const ordersTranslations = {
     en: "A list of all orders in your system",
     vi: "Danh sách tất cả đơn hàng trong hệ thống",
   },
-  "orders.orderNumber": {
+  "orders.number": {
     en: "Order Number",
     vi: "Số Đơn Hàng",
   },

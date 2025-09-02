@@ -13,3 +13,7 @@ export const CreateWarehouseSchema = z.object({
 });
 
 export const UpdateWarehouseSchema = CreateWarehouseSchema.partial(); 
+
+export const WarehouseSchema = CreateWarehouseSchema.extend({
+  id: z.string()
+});

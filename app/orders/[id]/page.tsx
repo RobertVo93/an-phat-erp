@@ -3,7 +3,6 @@
 import { ERPLayout } from "@/components/erp-layout"
 import { useLanguage } from "@/contexts/language-context"
 import { useParams } from "next/navigation"
-import { formatCurrency, formatDate } from "@/lib/utils"
 import { OrderEditModal } from "@/components/orders/modals/OrderEditModal"
 import { InvoicePrint } from "@/components/invoice-print"
 import { useOrder } from "@/hooks/use-order"
@@ -81,7 +80,6 @@ export default function OrderDetailPage() {
             orderData={orderData}
             getStatusText={getStatusText}
             getPaymentStatusText={getPaymentStatusText}
-            formatDate={formatDate}
           />
           <OrderCustomerInfo
             orderData={orderData}
@@ -89,12 +87,10 @@ export default function OrderDetailPage() {
           <OrderSummaryCard
             subtotal={subtotal}
             orderData={orderData}
-            formatCurrency={formatCurrency}
           />
         </div>
         <OrderItemsListDetail
           orderData={orderData}
-          formatCurrency={formatCurrency}
         />
         <OrderTimeline />
 

@@ -2,7 +2,7 @@ import { Customer } from "./customer";
 import { OrderStatus, PaymentMethod } from "./enums";
 
 export interface IReportOrder {
-  orderNumber?: string
+  number?: string
   customer?: Customer
   deliveryAddress?: string
   status?: OrderStatus

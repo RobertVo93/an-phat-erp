@@ -1,11 +1,10 @@
-import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
+import { OrderStatus, PaymentStatus, PaymentMethod, ProductUnit } from "@/types/enums";
 import { IBase, IBaseFilters } from "./base.interface";
 import { Customer as ICustomer } from "./customer";
-import { Product as IProduct } from "./product";
 import { Warehouse as IWarehouse } from "./warehouse";
 
 export interface Order extends IBase {
-  orderNumber?: string
+  number?: string
   deliveryDate?: Date
   totalAmount?: number
   status?: OrderStatus
@@ -17,18 +16,19 @@ export interface Order extends IBase {
   tax?: number
   shippingFee?: number
 
-  items?: OrderItem[]
+  items?: IOrderItem[]
   customer?: ICustomer
   warehouse?: IWarehouse
 }
 
-export interface OrderItem extends IBase {
+export interface IOrderItem {
+  id?: string
+  name?: string
   quantity?: number
-  unitPrice?: number
-  total?: number
-
-  product?: IProduct
-  order?: Order
+  totalCost?: number
+  unitCost?: number
+  unit?: ProductUnit
+  number?: string
 }
 
 export interface OrderFilters extends IBaseFilters{
@@ -43,4 +43,4 @@ export interface OrderFilters extends IBaseFilters{
   customer?: string
 }
 
-export type OrderSortBy = "deliveryDate" | "totalAmount" | "customer" | "orderNumber"
+export type OrderSortBy = "deliveryDate" | "totalAmount" | "customer" | "number"

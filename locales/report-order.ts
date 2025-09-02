@@ -50,7 +50,7 @@ export const reportOrderTranslations = {
   },
 
   // table
-  "ro.table.orderNumber": {
+  "ro.table.number": {
     en: "Order Number",
     vi: "Mã Đơn"
   },

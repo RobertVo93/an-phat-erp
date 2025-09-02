@@ -39,6 +39,33 @@ export function UIDatePicker({
   );
 }
 
+export function UIDateTimePicker({
+  selected,
+  onChange,
+  placeholder,
+  timeIntervals,
+  ...props
+}: {
+  selected: Date | null;
+  onChange: (date: Date | null) => void;
+  placeholder?: string;
+  timeIntervals?: number;
+  [key: string]: any;
+}) {
+  return (
+    <DatePicker
+      selected={selected}
+      onChange={onChange}
+      showTimeSelect
+      timeIntervals={timeIntervals}
+      dateFormat="yyyy-MM-dd HH:mm"
+      placeholderText={placeholder}
+      className="h-10 px-3 py-2 border rounded-md w-full md:text-sm text-base"
+      {...props}
+    />
+  );
+}
+
 // Time Picker (only time selection)
 export function UITimePicker({
   selected,

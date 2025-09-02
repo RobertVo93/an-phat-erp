@@ -42,8 +42,8 @@ export default function ReportOrderTable({ data }: Props) {
   const columns = useMemo<ColumnDef<IReportOrder>[]>(
     () => [
       {
-        accessorKey: "orderNumber",
-        header: t("ro.table.orderNumber"),
+        accessorKey: "number",
+        header: t("ro.table.number"),
       },
       {
         accessorKey: "customer",

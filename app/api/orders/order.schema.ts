@@ -1,8 +1,20 @@
 import { z } from "zod";
-import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
+import { OrderStatus, PaymentStatus, PaymentMethod, ProductUnit } from "@/types/enums";
+import { CustomerSchema } from "@/app/api/customers/customer.schema";
+import { WarehouseSchema } from "@/app/api/warehouse/warehouse.schema";
+
+export const OrderItemSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().optional(),
+  quantity: z.number().optional(),
+  totalCost: z.number().optional(),
+  unitCost: z.number().optional(),
+  unit: z.nativeEnum(ProductUnit).optional(),
+  number: z.string().optional(),
+});
 
 export const CreateOrderSchema = z.object({
-  deliveryDate: z.string().optional(), // ISO string
+  deliveryDate: z.coerce.date().optional(),
   totalAmount: z.number().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
   paymentStatus: z.nativeEnum(PaymentStatus).optional(),
@@ -10,10 +22,12 @@ export const CreateOrderSchema = z.object({
   shippingAddress: z.string().optional(),
   notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  customer: z.string().optional(), // required customer ID
-  items: z.array(z.string()).optional(), // required array of OrderItem IDs
   tax: z.number().optional(),
   shippingFee: z.number().optional(),
+
+  items: z.array(OrderItemSchema).optional(),
+  customer: CustomerSchema.optional(),
+  warehouse: WarehouseSchema.optional(),
 });
 
 export const UpdateOrderSchema = CreateOrderSchema.partial(); 

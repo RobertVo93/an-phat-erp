@@ -2,9 +2,7 @@ import { Entity, Column, ManyToMany, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { ProductStatus, ProductUnit } from "../../../types/enums";
 import { CollectionEntity } from "./collection.entity";
-import { OrderItemEntity } from "./order-item.entity";
 import { Collection as ICollection } from "@/types/collection";
-import { OrderItem as IOrderItem } from "@/types/order";
 import { Product as IProduct } from "@/types/product";
 import { WarehouseProductEntity } from "./warehouse-product.entity";
 import { WarehouseProduct as IWarehouseProduct } from "@/types/warehouseProduct";
@@ -55,9 +53,6 @@ export class ProductEntity extends BaseEntity implements IProduct {
   //////Related fields//////
   @ManyToMany(() => CollectionEntity, (collection) => collection.products, { nullable: true })
   collections?: ICollection[];
-
-  @OneToMany(() => OrderItemEntity, (item: OrderItemEntity) => item.product, { nullable: true })
-  orderItems?: IOrderItem[];
 
   @OneToMany(() => StockProductEntity, (sp) => sp.product, { nullable: true })
   stockProducts?: IStockProduct[];
