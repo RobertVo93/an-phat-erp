@@ -1,14 +1,17 @@
 import { useState, useMemo, useEffect } from "react"
 import type { OrderFilters, OrderSortBy } from "@/types/order"
-import { CustomerStatus, OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
+import { CustomerStatus, OrderStatus, PaymentMethod, PaymentStatus, WarehouseStatus } from "@/types/enums"
 import { Customer, Order, Warehouse } from "@/types"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { getCustomers } from "@/lib/httpclient/customer.client"
 import { getOrders as apiGetOrders, createOrder as apiCreateOrder } from "@/lib/httpclient/order.client"
 import { useDebounceSearchTerm } from "@/lib/utils.client"
+import { toast } from "@/components/ui/use-toast"
+import { useLanguage } from "@/contexts/language-context"
 
 
 export function useOrdersPage() {
+  const { t } = useLanguage()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(false)
   const [allCustomers, setAllCustomers] = useState<Customer[]>([])
@@ -78,10 +81,12 @@ export function useOrdersPage() {
       setTotal(res.total)
       setTotalPages(Math.ceil(res.total / (params.limit || 10)))
     } catch (e) {
-      setOrders([])
-      setTotal(0)
-      setTotalPages(1)
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotLoad"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -91,58 +96,29 @@ export function useOrdersPage() {
     setLoading(true)
     try {
       const newOrder: Order = {
-        id: `ORD-${String(orders.length + 1).padStart(3, "0")}`,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         deliveryDate: orderData.deliveryDate,
         totalAmount: orderData.totalAmount || 0,
         status: orderData.status || OrderStatus.pending,
         paymentStatus: orderData.paymentStatus || PaymentStatus.pending,
         paymentMethod: orderData.paymentMethod || PaymentMethod.cash,
-        items: orderData.items || [],
-        customer: orderData.customer,
         shippingAddress: orderData.shippingAddress,
         notes: orderData.notes,
         tags: orderData.tags,
         shippingFee: orderData.shippingFee,
         tax: orderData.tax,
-        warehouse: orderData.warehouse ? {
-          ...orderData.warehouse,
-          warehouseProducts: orderData.warehouse.warehouseProducts
-            ? [...orderData.warehouse.warehouseProducts.map(wp => ({ ...wp }))]
-            : []
-        } : undefined
+        items: orderData.items || [],
+        customer: orderData.customer,
+        warehouse: orderData.warehouse,
       }
-
-      const { createdOrder, updatedOrders } = await apiCreateOrder(newOrder)
-
-      // change warehouse stock
-      for (const item of newOrder.items!) {
-        const productId = item.product?.id
-        const quantityToDeduct = item.quantity ?? 0
-        if (!productId || quantityToDeduct <= 0) continue
-
-        const targetWP = newOrder.warehouse?.warehouseProducts?.find(
-          wp => wp.product?.id === productId && (wp.quantity ?? 0) >= quantityToDeduct
-        )
-
-        if (targetWP) {
-          targetWP.quantity! -= quantityToDeduct
-        }
-      }
-
-      // update orders
-      const affectedOrderIds = new Set<string>([
-        createdOrder.id,
-        ...(updatedOrders || []).map((o: Order) => o.id),
-      ])
-
-      setOrders(prev => {
-        const filtered = prev.filter(order => !affectedOrderIds.has(order.id!))
-        return [createdOrder, ...(updatedOrders || []), ...filtered]
-      })
+      await apiCreateOrder(newOrder)
+      await fetchOrders(apiParams)
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotAdd"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -156,7 +132,7 @@ export function useOrdersPage() {
   useEffect(() => {
     const onInit = async () => {
       try {
-        const [cus, wh] = await Promise.all([getCustomers({ status: CustomerStatus.active }), getWarehouses()])
+        const [cus, wh] = await Promise.all([getCustomers({ status: CustomerStatus.active }), getWarehouses({status: WarehouseStatus.active })])
         setAllCustomers(cus.data)
         setAllWarehouses(wh.data)
       } catch (e) {

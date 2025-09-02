@@ -1,10 +1,6 @@
 import { StockChangeStatus, StockChangeType } from '@/types';
 import { z } from "zod";
-import { CreateWarehouseSchema } from '../warehouse/warehouse.schema';
-
-export const WarehouseSchema = CreateWarehouseSchema.extend({
-  id: z.string()
-});
+import { WarehouseSchema } from '@/app/api/warehouse/warehouse.schema';
 
 export const StockProductSchema = z.object({
   id: z.string().optional(),

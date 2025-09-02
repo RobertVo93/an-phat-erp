@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from "react"
 import { Order } from "@/types/order"
 import { Customer, Warehouse } from "@/types"
-import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
+import { CustomerStatus, OrderStatus, PaymentMethod, PaymentStatus, WarehouseStatus } from "@/types/enums"
 import { getOrderById, updateOrder as apiUpdateOrder } from "@/lib/httpclient/order.client"
 import { getCustomers } from "@/lib/httpclient/customer.client"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
+import { toast } from "@/components/ui/use-toast"
+import { useLanguage } from "@/contexts/language-context"
 
 export function useOrder(orderId: string) {
+  const { t } = useLanguage()
   const [allCustomers, setAllCustomers] = useState<Customer[]>([])
   const [allWarehouses, setAllWarehouses] = useState<Warehouse[]>([])
   const [showEditModal, setShowEditModal] = useState(false)
@@ -18,23 +21,20 @@ export function useOrder(orderId: string) {
   const fetchOrder = async (orderId: string) => {
     try {
       setLoading(true)
-      const res = await Promise.all([getOrderById(orderId), getCustomers(), getWarehouses()])
-      setOrderData(res[0])
-      setSubtotal((res[0] as Order)?.items!.reduce((sum, item) => sum + item.total!, 0)!)
-      setAllCustomers(res[1].data)
-      setAllWarehouses(res[2].data)
+      const res = await getOrderById(orderId)
+      setOrderData(res)
+      setSubtotal((res as Order)?.items!.reduce((sum, item) => sum + item.totalCost!, 0)!)
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotLoad"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    if (orderId) {
-      fetchOrder(orderId)
-    }
-  }, [orderId])
 
   const handlePrint = () => {
     const printContent = printRef.current
@@ -93,11 +93,15 @@ export function useOrder(orderId: string) {
         tax: updateOrder.tax,
         warehouse: updateOrder.warehouse,
       }
-      const { updatedOrder } = await apiUpdateOrder(orderData?.id!, updateOrderData)
-      setSubtotal(updateOrderData?.items!.reduce((sum, item) => sum + item.total!, 0)!)
-      setOrderData(updatedOrder)
+      await apiUpdateOrder(orderData?.id!, updateOrderData)
+      await fetchOrder(orderId)
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotUpdate"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -106,17 +110,52 @@ export function useOrder(orderId: string) {
   const handleCompleteOrder = async () => {
     try {
       setLoading(true)
-      const { updatedOrder } = await apiUpdateOrder(orderId, {
+      await apiUpdateOrder(orderId, {
         id: orderId,
         status: OrderStatus.completed,
       })
-      setOrderData(updatedOrder)
+      await fetchOrder(orderId)
     } catch (e) {
       console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotUpdate"),
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (orderId) {
+      fetchOrder(orderId)
+    }
+  }, [orderId])
+
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        setLoading(true)
+        const res = await Promise.all([
+          getCustomers({status: CustomerStatus.active}), 
+          getWarehouses({status: WarehouseStatus.active})
+        ])
+        setAllCustomers(res[0].data)
+        setAllWarehouses(res[1].data)
+      } catch (e) {
+        console.error(e)
+        toast({
+          title: t("common.error.title"),
+          description: t("common.error.cannotLoad"),
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+    initialize()
+  }, [])
 
   return {
     allCustomers,

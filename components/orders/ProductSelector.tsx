@@ -5,10 +5,10 @@ import { Search, Plus } from "lucide-react"
 import React, { useMemo, useState } from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { groupWarehouseProductsByProduct } from "@/lib/utils"
-import { OrderItem, Product, WarehouseProduct } from "@/types"
+import { IOrderItem, Product, WarehouseProduct } from "@/types"
 
 interface ProductSelectorProps {
-	orderItems: OrderItem[]
+	orderItems: IOrderItem[]
 	products: WarehouseProduct[]
 	addProduct: (product: any) => void
 }
@@ -25,7 +25,7 @@ export const ProductSelector: React.FC<ProductSelectorProps> = ({
 	const filteredProducts = useMemo(() => products
 		? groupWarehouseProductsByProduct(products)
 			.filter(product =>
-				!orderItems.some(item => item.product?.id === product.product.id)
+				!orderItems.some(item => item.id === product.product.id)
 				&& product.product.name?.toLowerCase().includes(productSearch.toLowerCase())
 				&& product.totalQuantity > 0
 			)

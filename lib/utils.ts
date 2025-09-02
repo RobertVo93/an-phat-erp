@@ -48,6 +48,7 @@ export function groupWarehouseProductsByProduct(whProducts: WarehouseProduct[]):
 }
 
 export const getCustomerInitialCharacter = (name: string) => {
+  if (!name) return ""
   return name
     .split(" ")
     .map((n) => n[0])

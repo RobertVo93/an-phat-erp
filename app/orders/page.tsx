@@ -12,7 +12,7 @@ import { OrderFilterModal } from "@/components/orders/order-filter-modal"
 import { useLanguage } from "@/contexts/language-context"
 import { useOrdersPage } from "@/hooks/use-orders-page"
 import { ServersideTable, ServersideTableColumn } from "@/components/common/table/ServersideTable"
-import { formatCurrency, formatDate, getOrderStatusColor } from "@/lib/utils"
+import { formatCurrency, formatDate, formatDateTime, getOrderStatusColor } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
@@ -49,12 +49,12 @@ export default function OrdersPage() {
   // Define columns for ServersideTable
   const columns: ServersideTableColumn<any>[] = [
     {
-      key: "orderNumber",
-      title: t("orders.orderNumber"),
+      key: "number",
+      title: t("orders.number"),
       sortable: true,
       render: (row) => (
         <div className="space-y-1">
-          <p className="text-sm font-medium">{row.orderNumber}</p>
+          <p className="text-sm font-medium">{row.number}</p>
           <p className="text-xs text-muted-foreground">{formatDate(row.createdAt)}</p>
         </div>
       ),
@@ -94,7 +94,7 @@ export default function OrdersPage() {
       key: "deliveryDate",
       title: t("orders.expectedDelivery"),
       sortable: true,
-      render: (row) => row.deliveryDate ? formatDate(row.deliveryDate) : "-",
+      render: (row) => row.deliveryDate ? formatDateTime(row.deliveryDate) : "-",
     },
     {
       key: "actions",

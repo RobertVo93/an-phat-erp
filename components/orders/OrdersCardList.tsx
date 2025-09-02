@@ -26,7 +26,7 @@ export const OrdersCardList: React.FC<OrdersCardListProps> = ({
           <CardContent className="p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="space-y-1">
-                <p className="font-medium text-sm">{order.orderNumber}</p>
+                <p className="font-medium text-sm">{order.number}</p>
                 <p className="text-xs text-muted-foreground flex items-center">
                   <Calendar className="mr-1 h-3 w-3" />
                   {formatDate(order.createdAt!)}
