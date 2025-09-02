@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { getUserFromRequest } from "@/lib/auth/jwt";
-import { InvoiceSchema, UtilityReadingArraySchema } from "../invoice.schema";
-import { deleteInvoice, updateInvoice } from "@/lib/services/invoiceService";
-import { Invoice, UtilityReading } from "@/types";
+import { InvoiceSchema } from "@/app/api/invoice/invoice.schema";
+import { deleteInvoiceService, updateInvoiceService } from "@/lib/services/invoiceService";
 
 export async function PUT(
   req: NextRequest,
@@ -14,19 +13,13 @@ export async function PUT(
   try {
     await ensureDataSource();
     const data = await req.json();
-    const readings = data.readings
 
     const parseInvoice = InvoiceSchema.safeParse(data);
     if (!parseInvoice.success) {
       return NextResponse.json({ error: "Invalid input", details: parseInvoice.error.errors }, { status: 400 });
     }
-
-    const parseReadings = UtilityReadingArraySchema.safeParse(readings);
-    if (!parseReadings.success) {
-      return NextResponse.json({ error: "Invalid input", details: parseReadings.error.errors }, { status: 400 });
-    }
-
-    const updated = await updateInvoice(params.id, parseInvoice.data as Invoice, parseReadings.data as UtilityReading[]);
+    const { id } = await params;
+    const updated = await updateInvoiceService(id, parseInvoice.data);
     return NextResponse.json(updated);
   } catch (error) {
     return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });
@@ -41,9 +34,10 @@ export async function DELETE(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
-    const result = await deleteInvoice(params.id);
+    const { id } = await params;
+    const result = await deleteInvoiceService(id);
     if (!result) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      return NextResponse.json({ error: "Cannot delete invoice" }, { status: 400 });
     }
     return new NextResponse(null, { status: 204 });
   } catch (error) {

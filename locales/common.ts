@@ -208,4 +208,16 @@ export const commonTranslations = {
     en: "Cannot approve the record",
     vi: "Không thể duyệt dữ liệu",
   },
+  "common.success.create": {
+    en: "Data created successfully",
+    vi: "Dữ liệu đã được tạo thành công",
+  },
+  "common.success.update": {
+    en: "Data updated successfully",
+    vi: "Dữ liệu đã được cập nhật thành công",
+  },
+  "common.success.delete": {
+    en: "Data deleted successfully",
+    vi: "Dữ liệu đã được xóa thành công",
+  },
 }

@@ -1,22 +1,18 @@
-import { InvoiceStatus } from "@/types";
+import { InvoiceStatus, UtilityUnit } from "@/types";
 import { z } from "zod";
-import { UtilitySchema } from "../utility/utility.schema";
 
-export const UtilityReadingSchema = z.object({
-  utilityType: z.string().optional(),
-  utilityName: z.string(),
-  consumption: z.number(),
-  unitPrice: z.number(),
-  total: z.number(),
-
-  utility: UtilitySchema.optional(),
+export const InvoiceUtilitySchema = z.object({
+  id: z.string().optional(),
+  name: z.string().optional(),
+  quantity: z.number().optional(),
+  totalCost: z.number().optional(),
+  unitCost: z.number().optional(),
+  unit: z.nativeEnum(UtilityUnit).optional(),
+  number: z.string().optional(),
 });
 
-export const UtilityReadingArraySchema = z.array(UtilityReadingSchema)
-
 export const InvoiceSchema = z.object({
-  invoiceNumber: z.string().optional(),
-  billingPeriod: z.coerce.date().optional(),
+  billingPeriod: z.string().optional(),
   issueDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   subtotal: z.number().optional(),
@@ -27,5 +23,7 @@ export const InvoiceSchema = z.object({
   total: z.number().optional(),
   status: z.nativeEnum(InvoiceStatus).optional(),
   notes: z.string().optional(),
-  readings: z.array(UtilityReadingSchema).optional(),
+  utilities: z.array(InvoiceUtilitySchema).optional(),
 });
+
+export const UpdateInvoiceSchema = InvoiceSchema.partial();
