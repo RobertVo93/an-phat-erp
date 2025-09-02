@@ -1,7 +1,6 @@
 import { ProductStatus, ProductUnit } from "@/types/enums";
 import { IBase, IBaseFilters } from "./base.interface";
 import { Collection as ICollection } from "./collection";
-import { OrderItem as IOrderItem } from "./order";
 import { StockProduct } from "./stock-product";
 
 export interface Product extends IBase {
@@ -19,7 +18,6 @@ export interface Product extends IBase {
   image?: string
 
   collections?: ICollection[]
-  orderItems?: IOrderItem[]
   stockProducts?: StockProduct[]
 }
 

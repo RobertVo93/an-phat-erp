@@ -4,20 +4,18 @@ import React from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { PaymentMethod } from "@/types/enums"
 import { Order } from "@/types"
-import { getOrderStatusColor, getPaymentStatusColor } from "@/lib/utils"
+import { formatDateTime, getOrderStatusColor, getPaymentStatusColor } from "@/lib/utils"
 
 interface OrderStatusSummaryProps {
     orderData: Order
     getStatusText: (status: string) => string
     getPaymentStatusText: (status: string) => string
-    formatDate: (date: string) => string
 }
 
 export const OrderStatusSummary = ({
     orderData,
     getStatusText,
     getPaymentStatusText,
-    formatDate
 }: OrderStatusSummaryProps) => {
     const { t } = useLanguage()
 
@@ -61,7 +59,7 @@ export const OrderStatusSummary = ({
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">{t("orders.expectedDelivery")}:</span>
-                        <span className="text-sm font-medium">{formatDate(orderData?.deliveryDate?.toString()!)}</span>
+                        <span className="text-sm font-medium">{formatDateTime(orderData?.deliveryDate!)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">{t("orders.warehouse")}:</span>

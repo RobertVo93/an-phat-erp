@@ -3,7 +3,6 @@ export * from "./customer.entity";
 export * from "./employee.entity";
 export * from "./invoice.entity";
 export * from "./order.entity";
-export * from "./order-item.entity";
 export * from "./payroll-record.entity";
 export * from "./product.entity";
 export * from "./stock-change.entity";

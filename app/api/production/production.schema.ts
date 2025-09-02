@@ -2,7 +2,7 @@ import { ProductionElementType, ProductionStatus } from '@/types';
 import { z } from "zod";
 import { ExtendedProductSchema } from '@/app/api/products/product.schema';
 import { EmployeeSchema } from '@/app/api/employee/employee.schema';
-import { WarehouseSchema } from '@/app/api/stock-change/stockChange.schema';
+import { WarehouseSchema } from '@/app/api/warehouse/warehouse.schema';
 
 export const ProductionElementSchema = z.object({
   id: z.string().optional(),

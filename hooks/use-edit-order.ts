@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react"
 import { Customer } from "@/types/customer"
 import { Product } from "@/types/product"
-import { Order, OrderItem } from "@/types/order"
+import { Order, IOrderItem } from "@/types/order"
 import { groupWarehouseProductsByProduct } from "@/lib/utils"
 import { env } from "@/constants/env"
 
 export function useEditOrder(order: Order, onUpdate: (orderData: Partial<Order>) => void) {
     const [orderData, setOrderData] = useState<Order>(order)
-    const [orderItems, setOrderItems] = useState<OrderItem[]>(order.items || [])
-    const subtotal = useMemo(() => orderItems.reduce((sum, item) => sum + item.total!, 0), [orderItems])
+    const [orderItems, setOrderItems] = useState<IOrderItem[]>(order.items || [])
+    const subtotal = useMemo(() => orderItems.reduce((sum, item) => sum + item.totalCost!, 0), [orderItems])
     const tax = useMemo(() => subtotal * env.NEXT_PUBLIC_TAX_RATE, [subtotal])
     const shipping = useMemo(() => subtotal > 100 ? 0 : 15, [subtotal])
     const total = useMemo(() => subtotal + tax + shipping, [subtotal, tax, shipping])
@@ -22,11 +22,14 @@ export function useEditOrder(order: Order, onUpdate: (orderData: Partial<Order>)
     }
 
     const addProduct = (product: Product) => {
-        const newItem: OrderItem = {
-            product,
+        const newItem: IOrderItem = {
+            id: product.id,
+            name: product.name,
+            number: product.sku,
             quantity: 1,
-            unitPrice: product.price,
-            total: product.price,
+            unitCost: product.price,
+            totalCost: product.price,
+            unit: product.unit,
         }
         setOrderItems([...orderItems, newItem])
     }
@@ -35,15 +38,15 @@ export function useEditOrder(order: Order, onUpdate: (orderData: Partial<Order>)
         if (quantity <= 0 || quantity > stock) return
         const updatedItems = [...orderItems]
         updatedItems[index].quantity = quantity
-        updatedItems[index].total = quantity * updatedItems[index].unitPrice!
+        updatedItems[index].totalCost = quantity * updatedItems[index].unitCost!
         setOrderItems(updatedItems)
     }
 
     const updatePrice = (index: number, price: number) => {
         if (price < 0) return
         const updatedItems = [...orderItems]
-        updatedItems[index].unitPrice = price
-        updatedItems[index].total = updatedItems[index].quantity! * price
+        updatedItems[index].unitCost = price
+        updatedItems[index].totalCost = updatedItems[index].quantity! * price
         setOrderItems(updatedItems)
     }
 

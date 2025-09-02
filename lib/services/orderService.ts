@@ -1,14 +1,7 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { OrderEntity } from "@/lib/database/entities/order.entity";
-import { OrderItemEntity } from "@/lib/database/entities/order-item.entity";
-import { CustomerEntity } from "@/lib/database/entities/customer.entity";
-import { Not } from "typeorm";
-import { ProductEntity, StockChangeEntity } from "../database/entities";
-import { OrderStatus, StockChangeStatus, StockChangeType } from "@/types";
-import { StockProductEntity } from "../database/entities/stock-product.entity";
-import { WarehouseProductEntity } from "../database/entities/warehouse-product.entity";
-
-export type CreateOrderInput = Omit<Partial<OrderEntity>, 'customer' | 'items'> & { customer?: string; items?: string[] };
+import { ProductEntity, StockChangeEntity } from "@/lib/database/entities";
+import { StockChangeStatus, StockChangeType, Order as IOrder, IOrderItem } from "@/types";
 
 export async function getAllOrders({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(OrderEntity);
@@ -25,10 +18,10 @@ export async function getAllOrders({ page = 1, limit = 20, sortBy = "date", sort
   if (filters.paymentMethod) qb.andWhere("order.paymentMethod = :paymentMethod", { paymentMethod: filters.paymentMethod });
   if (filters.totalAmountFrom) qb.andWhere("order.totalAmount >= :totalAmountFrom", { totalAmountFrom: filters.totalAmountFrom });
   if (filters.totalAmountTo) qb.andWhere("order.totalAmount <= :totalAmountTo", { totalAmountTo: filters.totalAmountTo });
-  if (filters.searchTerm) qb.andWhere("(order.orderNumber ILIKE :searchTerm OR order.notes ILIKE :searchTerm or order.shippingAddress ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
+  if (filters.searchTerm) qb.andWhere("(order.number ILIKE :searchTerm OR order.notes ILIKE :searchTerm or order.shippingAddress ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
 
   // Sorting
-  const allowedSortFields = ["deliveryDate", "totalAmount", "customer", "orderNumber"];
+  const allowedSortFields = ["deliveryDate", "totalAmount", "customer", "number"];
   const sortField = allowedSortFields.includes(sortBy) ? sortBy : "deliveryDate";
   qb.orderBy(`order.${sortField}`, sortOrder.toUpperCase() as "ASC" | "DESC");
 
@@ -45,8 +38,6 @@ export async function getOrderById(id: string) {
     where: { id },
     relations: [
       'customer',
-      'items',
-      'items.product',
       'warehouse',
       'warehouse.warehouseProducts',
       'warehouse.warehouseProducts.product'
@@ -55,343 +46,74 @@ export async function getOrderById(id: string) {
   return order;
 }
 
-export async function createOrder(data: OrderEntity) {
-  const orderRepo = AppDataSource.getRepository(OrderEntity)
-  const orderItemRepo = AppDataSource.getRepository(OrderItemEntity)
-  const customerRepo = AppDataSource.getRepository(CustomerEntity)
-  const productRepo = AppDataSource.getRepository(ProductEntity)
-  const stockChangeRepo = AppDataSource.getRepository(StockChangeEntity)
-  const stockProductRepo = AppDataSource.getRepository(StockProductEntity)
-  const warehouseProductRepo = AppDataSource.getRepository(WarehouseProductEntity)
-
-  let updatedOrders: OrderEntity[] = []
-
-  // 1. find customer
-  let customer: CustomerEntity | null = null
-  if (data.customer?.id) {
-    customer = await customerRepo.findOne({ where: { id: data.customer.id } })
-  }
-
-  // 2. create order
-  const order = orderRepo.create({
-    deliveryDate: data.deliveryDate,
-    totalAmount: data.totalAmount,
-    status: data.status,
-    paymentStatus: data.paymentStatus,
-    paymentMethod: data.paymentMethod,
-    shippingAddress: data.shippingAddress,
-    notes: data.notes,
-    tags: data.tags,
-    tax: data.tax,
-    shippingFee: data.shippingFee,
-    customer: customer || undefined,
-    warehouse: data.warehouse
-  })
-  await orderRepo.save(order)
-
-  // 3. create order items
-  if (data.items && data.items.length > 0) {
-    const orderItems: OrderItemEntity[] = []
-
-    for (const item of data.items) {
-      if (!item.product?.id) continue
-
-      const product = await productRepo.findOne({ where: { id: item.product.id } })
-      if (!product) continue
-
-      const orderItem = orderItemRepo.create({
-        product,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: item.total,
-        order,
-      })
-
-      orderItems.push(orderItem)
-    }
-
-    await orderItemRepo.save(orderItems)
-  }
-
-  // 4. if order status is completed -> create stock out sheet
-  if (data.status === OrderStatus.completed) {
-    const stockChange = stockChangeRepo.create({
-      type: StockChangeType.stockOut,
-      status: StockChangeStatus.completed,
-      date: new Date(),
-      warehouse: order.warehouse,
-      notes: `Stock out for order ${order.orderNumber}`,
-      subtotal: order.totalAmount,
-      tax: order.tax,
-      totalAmount: order.totalAmount!,
-      supplier: order.warehouse?.name
-    })
-
-    await stockChangeRepo.save(stockChange)
-
-    for (const item of data.items) {
-      const product = await productRepo.findOne({ where: { id: item.product?.id } })
-      if (!product) continue
-
-      // decrease total product stock
-      if (typeof product.stock === 'number') {
-        product.stock -= item.quantity!
-        await productRepo.save(product)
-      }
-
-      // create warehouse products -> to decrease stock in a warehouse
-      let warehouseProduct = await warehouseProductRepo.findOne({
-        where: {
-          warehouse: { id: data.warehouse?.id },
-          product: { id: item.product?.id }
-        },
-        relations: ["warehouse", "product"]
-      })
-
-      if (warehouseProduct) {
-        warehouseProduct.quantity -= item.quantity!
-        await warehouseProductRepo.save(warehouseProduct)
-      } else {
-        warehouseProduct = warehouseProductRepo.create({
-          warehouse: data.warehouse,
-          product,
-          quantity: item.quantity,
-        });
-      }
-
-      const stockProduct = stockProductRepo.create({
-        stockChange,
-        product,
-        unitCost: item.unitPrice,
-        quantity: item.quantity,
-        totalCost: item.total,
-      })
-      await stockProductRepo.save(stockProduct)
-    }
-
-    // 5. check if other orders lack of product -> update status
-    const otherOrders = await orderRepo.find({
-      where: {
-        status: Not(OrderStatus.completed),
-        warehouse: { id: data.warehouse?.id }
-      },
-      relations: [
-        "items",
-        "items.product",
-        "warehouse",
-        "customer"
-      ]
-    })
-
-    for (const otherOrder of otherOrders) {
-      let isLacking = false
-
-      for (const item of otherOrder.items) {
-        const wp = await warehouseProductRepo.findOne({
-          where: {
-            warehouse: { id: otherOrder.warehouse?.id },
-            product: { id: item.product?.id }
-          },
-          relations: ["warehouse", "product"]
-        })
-
-        const availableQty = wp?.quantity ?? 0
-        const requiredQty = item.quantity ?? 0
-
-        if (requiredQty > availableQty) {
-          isLacking = true
-          break
-        }
-      }
-
-      if (isLacking && otherOrder.status !== OrderStatus.lackProduct) {
-        otherOrder.status = OrderStatus.lackProduct
-        await orderRepo.save(otherOrder)
-        updatedOrders.push(otherOrder)
-      }
-    }
-  }
-
-  return {
-    createdOrder: order,
-    updatedOrders,
-  }
-}
-
-export async function updateOrder(id: string, data: Partial<OrderEntity>) {
-  const orderRepo = AppDataSource.getRepository(OrderEntity)
-  const orderItemRepo = AppDataSource.getRepository(OrderItemEntity)
-  const customerRepo = AppDataSource.getRepository(CustomerEntity)
-  const productRepo = AppDataSource.getRepository(ProductEntity)
-  const stockChangeRepo = AppDataSource.getRepository(StockChangeEntity)
-  const stockProductRepo = AppDataSource.getRepository(StockProductEntity)
-  const warehouseProductRepo = AppDataSource.getRepository(WarehouseProductEntity)
-
-  // 1. get existing order
-  const existingOrder = await orderRepo.findOne({
-    where: { id },
-    relations: ['customer', 'items', 'warehouse'],
-  })
-  if (!existingOrder) throw new Error('Order not found')
-
-  // 2. update customer if change
-  if (data.customer?.id && data.customer.id !== existingOrder.customer?.id) {
-    const newCustomer = await customerRepo.findOne({ where: { id: data.customer.id } })
-    if (!newCustomer) throw new Error('Customer not found')
-    existingOrder.customer = newCustomer
-  }
-
-  // 3. update order
-  orderRepo.merge(existingOrder, {
-    deliveryDate: data.deliveryDate,
-    totalAmount: data.totalAmount,
-    status: data.status,
-    paymentStatus: data.paymentStatus,
-    paymentMethod: data.paymentMethod,
-    shippingAddress: data.shippingAddress,
-    notes: data.notes,
-    tags: data.tags,
-    tax: data.tax,
-    shippingFee: data.shippingFee,
-    warehouse: data.warehouse,
-  })
-  await orderRepo.save(existingOrder)
-
-  // 4. remove old order items
-  if (existingOrder.items?.length) {
-    await orderItemRepo.remove(existingOrder.items as OrderItemEntity[])
-  }
-
-  // 5. recreate order items
-  const orderItems: OrderItemEntity[] = []
-  if (data.items?.length) {
-    for (const item of data.items) {
-      if (!item.product?.id) continue
-
-      const product = await productRepo.findOne({ where: { id: item.product.id } })
-      if (!product) continue
-
-      const orderItem = orderItemRepo.create({
-        product,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: item.total,
-        order: existingOrder,
-      })
-      orderItems.push(orderItem)
-    }
-    await orderItemRepo.save(orderItems)
-  }
-
-  const updatedOrders: OrderEntity[] = []
-
-  // 6. if order status is completed -> create stock out sheet
-  if (data.status === OrderStatus.completed) {
-    const stockChange = stockChangeRepo.create({
-      type: StockChangeType.stockOut,
-      status: StockChangeStatus.completed,
-      date: new Date(),
-      warehouse: existingOrder.warehouse,
-      notes: `Stockout for order ${existingOrder.orderNumber}`,
-      subtotal: existingOrder.totalAmount,
-      tax: existingOrder.tax,
-      totalAmount: existingOrder.totalAmount,
-      supplier: existingOrder.warehouse?.name
-    })
-    await stockChangeRepo.save(stockChange)
-
-    for (const item of data.items ?? []) {
-      const product = await productRepo.findOne({ where: { id: item.product?.id } })
-      if (!product) continue
-
-      // decrease total product
-      if (typeof product.stock === 'number') {
-        product.stock -= item.quantity ?? 0
-        await productRepo.save(product)
-      }
-
-      // create warehouse products -> to decrease stock in a warehouse
-      const warehouseProduct = await warehouseProductRepo.findOne({
-        where: {
-          warehouse: { id: existingOrder.warehouse?.id },
-          product: { id: item.product?.id },
-        },
-        relations: ['warehouse', 'product'],
-      })
-      if (warehouseProduct) {
-        warehouseProduct.quantity -= item.quantity ?? 0
-        await warehouseProductRepo.save(warehouseProduct)
-      }
-
-      const stockProduct = stockProductRepo.create({
-        stockChange,
-        product,
-        unitCost: item.unitPrice,
-        quantity: item.quantity,
-        totalCost: item.total,
-      })
-      await stockProductRepo.save(stockProduct)
-    }
-
-    // 7. check if other orders lack products -> update status
-    const otherOrders = await orderRepo.find({
-      where: {
-        status: Not(OrderStatus.completed),
-        warehouse: { id: data.warehouse?.id },
-      },
-      relations: ['items', 'items.product', 'warehouse', 'customer'],
-    })
-
-    for (const otherOrder of otherOrders) {
-      let isLacking = false
-
-      for (const item of otherOrder.items) {
-        const wp = await warehouseProductRepo.findOne({
-          where: {
-            warehouse: { id: otherOrder.warehouse?.id },
-            product: { id: item.product?.id },
-          },
-          relations: ['warehouse', 'product'],
-        })
-
-        const availableQty = wp?.quantity ?? 0
-        const requiredQty = item.quantity ?? 0
-
-        if (requiredQty > availableQty) {
-          isLacking = true
-          break
-        }
-      }
-
-      if (isLacking && otherOrder.status !== OrderStatus.lackProduct) {
-        otherOrder.status = OrderStatus.lackProduct
-        await orderRepo.save(otherOrder)
-        updatedOrders.push(otherOrder)
-      }
-    }
-  }
-
-  // 8. return updated order
-  const finalUpdatedOrder = await orderRepo.findOne({
-    where: { id },
-    relations: [
-      'customer',
-      'items',
-      'items.product',
-      'warehouse',
-      'warehouse.warehouseProducts',
-      'warehouse.warehouseProducts.product',
-    ],
-  })
-
-  return {
-    updatedOrder: finalUpdatedOrder,
-    affectedOrders: updatedOrders,
-  }
-}
-
-
-export async function deleteOrder(id: string) {
+export async function createOrderService(data: Partial<IOrder>) {
   const repo = AppDataSource.getRepository(OrderEntity);
-  return repo.delete(id);
-} 
+  const record = repo.create(data);
+  return await repo.save(record);
+}
+
+export async function updateOrderService(id: string, data: Partial<IOrder>) {
+  const repo = AppDataSource.getRepository(OrderEntity);
+  const existingRecord = await repo.findOne({ where: { id } });
+  if (!existingRecord) throw new Error("Order not found");
+
+  repo.merge(existingRecord, data);
+  await repo.save(existingRecord);
+  return existingRecord;
+}
+
+export async function deleteOrderService(id: string): Promise<boolean> {
+  const repo = AppDataSource.getRepository(OrderEntity);
+  const record = await repo.findOne({ where: { id } });
+  if (!record) throw new Error("Order not found.");
+  await repo.remove(record);
+  return true;
+}
+
+export async function handleCompleteOrder(record: OrderEntity) {
+  await AppDataSource.transaction(async (manager) => {
+    const orderRepo = manager.getRepository(OrderEntity);
+    const order = await orderRepo.findOne({ where: { id: record.id }, relations: ['warehouse'] });
+    const stockChangeRepo = manager.getRepository(StockChangeEntity);
+    const productRepo = manager.getRepository(ProductEntity);
+    const warehouse = order?.warehouse;
+
+    // 1. StockOut for order items
+    if (record.items && record.items.length > 0 && warehouse) {
+      const orderItems: IOrderItem[] = [];
+      for (const orderItem of record.items) {
+        if (orderItem.id) {
+          const prod = await productRepo.findOne({ where: { id: orderItem.id } });
+          if (prod) {
+            orderItems.push({
+              id: prod.id,
+              number: prod.sku,
+              name: prod.name,
+              quantity: orderItem.quantity ?? 1,
+              unit: prod.unit,
+              unitCost: prod.cost,
+              totalCost: orderItem.totalCost ?? 0,
+            });
+          }
+        }
+      }
+      if (orderItems.length > 0 && warehouse) {
+        const stockOut = stockChangeRepo.create({
+          type: StockChangeType.stockOut,
+          date: new Date(),
+          supplier: `${record.number}`,
+          subtotal: orderItems?.reduce((acc, curr) => acc + (curr.totalCost ?? 0), 0) ?? 0,
+          tax: 0,
+          discount: 0,
+          totalAmount: orderItems?.reduce((acc, curr) => acc + (curr.totalCost ?? 0), 0) ?? 0,
+          status: StockChangeStatus.completed,
+          notes: `${record.number}`,
+          stockProducts: orderItems,
+          receivedBy: "System",
+          warehouse: warehouse,
+        });
+        await stockChangeRepo.save(stockOut);
+      }
+    }
+  });
+}
