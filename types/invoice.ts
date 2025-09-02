@@ -1,6 +1,6 @@
-import { InvoiceStatus, ReadingType } from "@/types/enums";
-import { IBase } from "./base.interface";
-import { Utility as IUtility } from "./utility";
+import { InvoiceStatus, ReadingType, UtilityUnit } from "@/types/enums";
+import { IBase, IBaseFilters } from "@/types/base.interface";
+import { Utility as IUtility } from "@/types/utility";
 export interface UtilityReading {
   id: string
   utilityType: ReadingType
@@ -13,8 +13,8 @@ export interface UtilityReading {
 }
 
 export interface Invoice extends IBase{
-  invoiceNumber?: string
-  billingPeriod?: Date
+  number?: string
+  billingPeriod?: string
   issueDate?: Date
   dueDate?: Date
   subtotal?: number
@@ -26,19 +26,27 @@ export interface Invoice extends IBase{
   status?: InvoiceStatus
   notes?: string
 
-  readings?: UtilityReading[]
+  utilities?: IInvoiceUtility[]
 }
 
-export interface InvoiceFilters {
+export interface IInvoiceUtility {
+  id?: string
+  quantity?: number
+  unitCost?: number
+  totalCost?: number
+  name?: string
+  unit?: UtilityUnit
+  number?: string
+}
+
+export interface InvoiceFilters extends IBaseFilters{
   status?: string
-  propertyId?: string
-  billingPeriodFrom?: Date
-  billingPeriodTo?: Date
+  billingPeriod?: string
+  dueDateFrom?: Date
+  dueDateTo?: Date
   amountFrom?: number
   amountTo?: number
+  searchTerm?: string
 }
 
-export interface InvoiceSortConfig {
-  field: keyof Invoice
-  direction: "asc" | "desc"
-}
+export type InvoiceSortableKey = "number" | "billingPeriod" | "issueDate" | "dueDate" | "total" | "status"

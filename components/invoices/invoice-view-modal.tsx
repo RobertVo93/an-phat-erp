@@ -7,61 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, Send, Printer } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { Invoice } from "@/types/invoice"
-import { InvoiceStatus, ReadingType, UtilityType } from "@/types"
+import { formatDate, formatLargeCurrency, getInvoiceStatusColor } from "@/lib/utils"
 
 interface InvoiceViewModalProps {
   isOpen: boolean
-  onClose: () => void
   invoice: Invoice | null
+  onClose: () => void
   onDownload: (invoice: Invoice) => void
   onSend: (invoice: Invoice) => void
   onPrint: (invoice: Invoice) => void
 }
 
-export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend, onPrint }: InvoiceViewModalProps) {
+export function InvoiceViewModal({ isOpen, invoice, onClose, onDownload, onSend, onPrint }: InvoiceViewModalProps) {
   const { t } = useLanguage()
 
   if (!invoice) return null
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case InvoiceStatus.paid:
-        return "bg-green-100 text-green-800"
-      case InvoiceStatus.sent:
-        return "bg-blue-100 text-blue-800"
-      case InvoiceStatus.overdue:
-        return "bg-red-100 text-red-800"
-      case InvoiceStatus.draft:
-        return "bg-gray-100 text-gray-800"
-      case InvoiceStatus.cancelled:
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getUtilityIcon = (type: string) => {
-    switch (type) {
-      case UtilityType.electricity:
-        return "⚡"
-      case UtilityType.water:
-        return "💧"
-      case UtilityType.gas:
-        return "🔥"
-      case UtilityType.internet:
-        return "🌐"
-      default:
-        return "📋"
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN")
-  }
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("vi-VN") + " ₫"
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -88,37 +48,12 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
           {/* Header */}
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold">{invoice.invoiceNumber}</h2>
+              <h2 className="text-2xl font-bold">{invoice.number}</h2>
               <p className="text-muted-foreground">
-                {t("invoices.billingPeriod")}: {
-                  invoice.billingPeriod ?
-                    new Date(invoice.billingPeriod).toLocaleDateString("sv-SE", { year: "numeric", month: "2-digit", }) :
-                    ""
-                }
+                {t("invoices.billingPeriod")}: {invoice.billingPeriod}
               </p>
             </div>
-            <Badge className={getStatusColor(invoice.status!)}>{t(`invoices.status.${invoice.status}`)}</Badge>
           </div>
-
-          {/* Property & Tenant Info */}
-          {/* <Card>
-            <CardHeader>
-              <CardTitle>Thông tin căn hộ & người thuê</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-medium">{invoice.propertyName}</h3>
-                  <p className="text-sm text-muted-foreground">{invoice.propertyAddress}</p>
-                </div>
-                <div>
-                  <p className="font-medium">{invoice.tenantName}</p>
-                  <p className="text-sm text-muted-foreground">{invoice.tenantEmail}</p>
-                  <p className="text-sm text-muted-foreground">{invoice.tenantPhone}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card> */}
 
           {/* Invoice Details */}
           <Card>
@@ -129,15 +64,15 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div>
                   <p className="text-sm text-muted-foreground">{t("invoices.issueDate")}</p>
-                  <p className="font-medium">{formatDate(invoice.issueDate?.toString()!)}</p>
+                  <p className="font-medium">{formatDate(invoice.issueDate!)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t("invoices.dueDate")}</p>
-                  <p className="font-medium">{formatDate(invoice.dueDate?.toString()!)}</p>
+                  <p className="font-medium">{formatDate(invoice.dueDate!)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t("invoices.status")}</p>
-                  <Badge className={getStatusColor(invoice.status?.toString()!)}>{t(`invoices.status.${invoice.status}`)}</Badge>
+                  <Badge className={getInvoiceStatusColor(invoice.status!)}>{t(`invoices.status.${invoice.status}`)}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -150,33 +85,29 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {invoice.readings?.map((reading, index) => (
+                {invoice.utilities?.map((utility, index) => (
                   <div key={index} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium flex items-center">
-                        <span className="mr-2">{getUtilityIcon(reading.utilityType)}</span>
-                        {reading.utilityName}
+                        {utility.name}
                       </h4>
-                      <span className="font-medium">{formatCurrency(reading.total)}</span>
+                      <span className="font-medium">{formatLargeCurrency(utility.totalCost!)}</span>
                     </div>
 
-                    {reading.utilityType === ReadingType.predefined_utility ? (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground mt-4">
-                        <div>
-                          <span className="block">{t("invoices.detail.consumption")}:</span>
-                          <span className="font-medium">{reading.consumption}</span>
-                        </div>
-                        <div>
-                          <span className="block">{t("invoices.unitPrice")}:</span>
-                          <span className="font-medium">{formatCurrency(reading.unitPrice)}</span>
-                        </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground mt-4">
+                      <div>
+                        <span className="block">{t("invoices.detail.consumption")}:</span>
+                        <span className="font-medium">{utility.quantity}</span>
                       </div>
-                    ) : (
-                      <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                        <span>{t("invoices.detail.fixedFee")}</span>
-                        <span>{formatCurrency(reading.unitPrice)}</span>
+                      <div>
+                        <span className="block">{t("utilities.unit")}:</span>
+                        <span className="font-medium">{utility.unit}</span>
                       </div>
-                    )}
+                      <div>
+                        <span className="block">{t("invoices.unitPrice")}:</span>
+                        <span className="font-medium">{formatLargeCurrency(utility.unitCost!)}</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -192,13 +123,13 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>{t("invoices.subtotal")}:</span>
-                  <span>{formatCurrency(invoice.subtotal!)}</span>
+                  <span>{formatLargeCurrency(invoice.subtotal!)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>
                     {t("invoices.tax")} ({invoice.taxRate}%):
                   </span>
-                  <span>{formatCurrency(invoice.taxAmount!)}</span>
+                  <span>{formatLargeCurrency(invoice.taxAmount!)}</span>
                 </div>
                 {invoice.otherFees! > 0 && (
                   <div className="flex justify-between">
@@ -206,12 +137,12 @@ export function InvoiceViewModal({ isOpen, onClose, invoice, onDownload, onSend,
                       {t("invoices.otherFees")}
                       {invoice.otherFeesDescription && ` (${invoice.otherFeesDescription})`}:
                     </span>
-                    <span>{formatCurrency(invoice.otherFees!)}</span>
+                    <span>{formatLargeCurrency(invoice.otherFees!)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-lg font-bold border-t pt-2">
                   <span>{t("invoices.total")}:</span>
-                  <span>{formatCurrency(invoice.total!)}</span>
+                  <span>{formatLargeCurrency(invoice.total!)}</span>
                 </div>
               </div>
             </CardContent>

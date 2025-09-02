@@ -120,7 +120,7 @@ export const invoicesTranslations = {
     en: "Print",
     vi: "In",
   },
-  "invoices.invoiceNumber": {
+  "invoices.number": {
     en: "Invoice Number",
     vi: "Số Hóa đơn",
   },

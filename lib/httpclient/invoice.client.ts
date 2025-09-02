@@ -1,7 +1,10 @@
-import { Invoice } from "@/types";
+import { Invoice, InvoiceFilters } from "@/types";
 
-export async function getAllInvoices() {
+export async function getAllInvoices(filters: InvoiceFilters) {
   const url = new URL("/api/invoice", window.location.origin);
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") url.searchParams.append(key, String(value))
+  })
   const res = await fetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch Invoices");
   return res.json();
