@@ -77,7 +77,7 @@ export const OrderDetailHeader = ({ orderData, setShowEditModal, handlePrint, ha
             <div className="space-y-2">
                 <div className="flex items-center gap-3">
                     <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                        {t("orders.title")} {orderData?.orderNumber}
+                        {t("orders.title")} {orderData?.number}
                     </h2>
                     <Badge className={getOrderStatusColor(orderData?.status!)}>{getStatusText(orderData?.status!)}</Badge>
                 </div>

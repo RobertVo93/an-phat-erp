@@ -70,7 +70,7 @@ export const OrdersSearchFilterBar: React.FC<OrdersSearchFilterBarProps> = ({
                         <DropdownMenuItem onClick={() => onSort("deliveryDate")}> <Calendar className="mr-2 h-4 w-4" /> {t("orders.expectedDelivery")} </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onSort("customer")}> <User className="mr-2 h-4 w-4" /> {t("orders.customer")} </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onSort("totalAmount")}> <CreditCard className="mr-2 h-4 w-4" /> {t("orders.amount")} </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onSort("orderNumber")}> <Hash className="mr-2 h-4 w-4" /> {t("orders.orderNumber")} </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onSort("number")}> <Hash className="mr-2 h-4 w-4" /> {t("orders.number")} </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

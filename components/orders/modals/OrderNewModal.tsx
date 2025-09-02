@@ -12,12 +12,14 @@ import { Customer } from "@/types/customer"
 import { Order } from "@/types/order"
 import { OrderStatus, PaymentMethod } from "@/types/enums"
 import { Warehouse } from "@/types"
-import { formatLargeCurrency, formatLocalDatetime } from "@/lib/utils"
+import { formatLargeCurrency } from "@/lib/utils"
 import { CustomerSelector } from "@/components/orders/CustomerSelector"
 import { ProductSelector } from "@/components/orders/ProductSelector"
 import { OrderItemsList } from "@/components/orders/OrderItemsList"
 import { OrderSummary } from "@/components/orders/OrderSummary"
 import { useNewOrder } from "@/hooks/use-new-order"
+import { useEffect } from "react"
+import { UIDateTimePicker } from "@/components/ui/datepicker"
 
 interface OrderNewModalProps {
   open: boolean
@@ -46,6 +48,12 @@ export function OrderNewModal({ open, customers, allWarehouses, onOpenChange, cr
     handleSubmit,
     getWarehouseProductTotal,
   } = useNewOrder(createOrder)
+  
+  useEffect(() => {
+    if (allWarehouses.length > 0 && !orderData.warehouse) {
+      setOrderData({ ...orderData, warehouse: allWarehouses.find((wh) => wh.main) })
+    }
+  }, [allWarehouses])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,13 +108,14 @@ export function OrderNewModal({ open, customers, allWarehouses, onOpenChange, cr
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3 flex flex-col">
                 <Label htmlFor="deliveryDateTime">{t("orders.deliveryDateTime")}</Label>
-                <Input
+                <UIDateTimePicker
                   id="deliveryDateTime"
-                  type="datetime-local"
-                  value={orderData.deliveryDate ? formatLocalDatetime(orderData.deliveryDate) : ""}
-                  onChange={e => setOrderData({ ...orderData, deliveryDate: new Date(e.target.value) })}
+                  placeholder={t("orders.deliveryDateTime")}
+                  selected={orderData.deliveryDate || null}
+                  onChange={e => setOrderData({ ...orderData, deliveryDate: e || undefined })}
+                  timeIntervals={15}
                 />
               </div>
               <div className="space-y-2">

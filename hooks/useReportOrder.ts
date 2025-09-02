@@ -98,7 +98,7 @@ export function useReportOrder() {
   function formatOrdersToReportRows(orders: IOrder[]): IReportOrder[] {
     return orders.map((order) => {
       return {
-        orderNumber: order.orderNumber,
+        number: order.number,
         customer: order.customer,
         deliveryAddress: order.shippingAddress,
         status: order.status,

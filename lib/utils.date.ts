@@ -66,3 +66,30 @@ export function getEndOfMonth(date: Date | string): Date {
   if (isNaN(d.getTime())) return new Date(NaN);
   return new Date(d.getFullYear(), d.getMonth() + 1, 0);
 }
+
+export function getNextBlockTime(date: Date | string): Date {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return new Date(NaN);
+
+  const minutes = d.getMinutes();
+  const nextBlock = Math.ceil(minutes / 15) * 15;
+  let nextHour = d.getHours();
+  let nextDay = d.getDate();
+  let nextMonth = d.getMonth();
+  let nextYear = d.getFullYear();
+
+  if (nextBlock === 60) {
+    nextHour += 1;
+    if (nextHour === 24) {
+      nextHour = 0;
+      // Move to next day
+      d.setDate(d.getDate() + 1);
+      nextDay = d.getDate();
+      nextMonth = d.getMonth();
+      nextYear = d.getFullYear();
+    }
+    return new Date(nextYear, nextMonth, nextDay, nextHour, 0, 0);
+  } else {
+    return new Date(nextYear, nextMonth, nextDay, nextHour, nextBlock, 0);
+  }
+}

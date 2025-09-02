@@ -1,19 +1,17 @@
-import { Entity, Column, OneToMany, ManyToOne, JoinColumn, BeforeInsert } from "typeorm";
-import { OrderItemEntity } from "./order-item.entity";
-import { BaseEntity } from "./base.entity";
-import { OrderStatus, PaymentStatus, PaymentMethod } from "../../../types/enums";
-import { CustomerEntity } from "./customer.entity";
-import type { Customer as ICustomer } from "@/types/customer";
-import { OrderItem as IOrderItem } from "@/types/order";
-import { Order as IOrder } from "@/types/order";
-import { AppDataSource } from "../typeorm";
-import { WarehouseEntity } from "./warehouse.entity";
-import type { Warehouse as IWarehouse } from "@/types/warehouse";
+import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { CustomerEntity } from "@/lib/database/entities/customer.entity";
+import { WarehouseEntity } from "@/lib/database/entities/warehouse.entity";
+import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
+import { IOrderItem, Order as IOrder } from "@/types/order";
+import type { Warehouse as IWarehouse, Customer as ICustomer } from "@/types";
+import { CommonService } from "@/lib/services/commonService";
+import { handleCompleteOrder } from "@/lib/services/orderService";
 
 @Entity({ name: "orders" })
 export class OrderEntity extends BaseEntity implements IOrder {
   @Column({ unique: true })
-  orderNumber?: string;
+  number?: string;
 
   @Column({ type: "timestamp", nullable: true })
   deliveryDate?: Date;
@@ -45,30 +43,34 @@ export class OrderEntity extends BaseEntity implements IOrder {
   @Column({ type: "float", nullable: true })
   tax?: number;
 
+  @Column({type: "jsonb", nullable: true})
+  items!: IOrderItem[];
+
   //////Related fields//////
   @ManyToOne(() => CustomerEntity, (customer: CustomerEntity) => customer.orders, { nullable: true })
   @JoinColumn({ name: "customer_id" })
   customer?: ICustomer;
 
-  @OneToMany(() => OrderItemEntity, (item: OrderItemEntity) => item.order, { cascade: true, nullable: true })
-  items!: IOrderItem[];
-
   @ManyToOne(() => WarehouseEntity, (warehouse) => warehouse.orders, { nullable: true })
   @JoinColumn({ name: "warehouse_id" })
   warehouse?: IWarehouse;
+
   //////Auto order numbering//////
   @BeforeInsert()
   async generateOrderNumber() {
-    const repo = AppDataSource.getRepository(OrderEntity);
-    const latest = await repo
-      .createQueryBuilder("order")
-      .orderBy("CAST(SUBSTRING(order.orderNumber FROM 5) AS INTEGER)", "DESC")
-      .getOne();
+    if (!this.number) {
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber("OrderEntity", "ORD");
+    }
+    if (this.status === OrderStatus.completed) {
+      handleCompleteOrder(this);
+    }
+  }
 
-    const lastNumber = latest?.orderNumber
-      ? parseInt(latest.orderNumber.replace("ORD-", ""), 10)
-      : 0;
-
-    this.orderNumber = `ORD-${String(lastNumber + 1).padStart(5, "0")}`;
+  @BeforeUpdate()
+  async updateOrder() {
+    if (this.status === OrderStatus.completed) {
+      handleCompleteOrder(this);
+    }
   }
 }
