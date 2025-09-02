@@ -11,6 +11,7 @@ export function UIDatePicker({
   maxDate,
   placeholder,
   showIcon,
+  className,
   ...props
 }: {
   selected: Date | null;
@@ -19,6 +20,7 @@ export function UIDatePicker({
   maxDate?: Date;
   placeholder?: string;
   showIcon?: boolean;
+  className?: string;
   [key: string]: any;
 }) {
   return (
@@ -29,7 +31,7 @@ export function UIDatePicker({
       maxDate={maxDate}
       placeholderText={placeholder}
       dateFormat="yyyy-MM-dd"
-      className="h-10 px-3 py-2 !pl-8 border rounded-md w-full md:text-sm text-base"
+      className={`h-10 px-3 py-2 border rounded-md w-full md:text-sm text-base ${className} ${showIcon ? "!pl-8" : ""}`}
       icon={<Calendar className="m-1" />}
       showIcon={showIcon}
       {...props}

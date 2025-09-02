@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
 import type { InvoiceFilters } from "@/types/invoice"
 import { InvoiceStatus } from "@/types"
+import { UIDatePicker } from "@/components/ui/datepicker"
+import { MoneyInput } from "@/components/common/input"
+import { getEndOfMonth } from "@/lib/utils"
 
 interface InvoiceFilterModalProps {
   isOpen: boolean
@@ -55,11 +57,9 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("invoices.status.allStatuses")}</SelectItem>
-                <SelectItem value={InvoiceStatus.draft}>{t("invoices.status.draft")}</SelectItem>
-                <SelectItem value={InvoiceStatus.sent}>{t("invoices.status.sent")}</SelectItem>
-                <SelectItem value={InvoiceStatus.paid}>{t("invoices.status.paid")}</SelectItem>
-                <SelectItem value={InvoiceStatus.overdue}>{t("invoices.status.overdue")}</SelectItem>
-                <SelectItem value={InvoiceStatus.cancelled}>{t("invoices.status.cancelled")}</SelectItem>
+                {Object.keys(InvoiceStatus).map((status) => (
+                  <SelectItem key={status} value={status}>{t(`invoices.status.${status}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -67,22 +67,22 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="billingPeriodFrom">{t("invoices.status.periodFrom")}</Label>
-              <Input
-                id="billingPeriodFrom"
-                placeholder="MM/YYYY"
-                type="month"
-                value={new Date(filters.billingPeriodFrom!).toLocaleDateString("sv-SE", { year: "numeric", month: "2-digit" })}
-                onChange={(e) => setFilters((prev) => ({ ...prev, billingPeriodFrom: new Date(e.target.value) }))}
+              <UIDatePicker
+                selected={filters.dueDateFrom!}
+                onChange={(date) => setFilters((prev) => ({ ...prev, dueDateFrom: date! }))}
+                dateFormat="MM/yyyy"
+                showMonthYearPicker
+                showIcon
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="billingPeriodTo">{t("invoices.status.periodTo")}</Label>
-              <Input
-                id="billingPeriodTo"
-                placeholder="MM/YYYY"
-                type="month"
-                value={new Date(filters.billingPeriodTo!).toLocaleDateString("sv-SE", { year: "numeric", month: "2-digit" })}
-                onChange={(e) => setFilters((prev) => ({ ...prev, billingPeriodTo: new Date(e.target.value) }))}
+              <UIDatePicker
+                selected={filters.dueDateTo!}
+                onChange={(date) => setFilters((prev) => ({ ...prev, dueDateTo: getEndOfMonth(date!) }))}
+                dateFormat="MM/yyyy"
+                showMonthYearPicker
+                showIcon
               />
             </div>
           </div>
@@ -90,26 +90,20 @@ export function InvoiceFilterModal({ isOpen, onClose, onApply, currentFilters }:
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="amountFrom">{t("invoices.status.moneyFrom")}</Label>
-              <Input
+              <MoneyInput
                 id="amountFrom"
-                type="number"
                 placeholder="0"
-                value={filters.amountFrom || ""}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, amountFrom: e.target.value ? Number(e.target.value) : undefined }))
-                }
+                value={filters.amountFrom!}
+                onChange={(value) => setFilters((prev) => ({ ...prev, amountFrom: value }))}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="amountTo">{t("invoices.status.moneyTo")}</Label>
-              <Input
+              <MoneyInput
                 id="amountTo"
-                type="number"
                 placeholder="0"
-                value={filters.amountTo || ""}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, amountTo: e.target.value ? Number(e.target.value) : undefined }))
-                }
+                value={filters.amountTo!}
+                onChange={(value) => setFilters((prev) => ({ ...prev, amountTo: value }))}
               />
             </div>
           </div>
