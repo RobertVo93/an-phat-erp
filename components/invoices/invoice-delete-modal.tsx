@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { AlertTriangle } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { Invoice } from "@/types/invoice"
+import { formatLargeCurrency } from "@/lib/utils"
 
 interface InvoiceDeleteModalProps {
   isOpen: boolean
@@ -37,9 +38,9 @@ export function InvoiceDeleteModal({ isOpen, onClose, onConfirm, invoice }: Invo
           <p className="text-sm text-muted-foreground">{t("invoices.delete.message")}</p>
 
           <div className="bg-gray-50 p-3 rounded-lg">
-            <p className="font-medium">{invoice.invoiceNumber}</p>
-            {/* <p className="text-sm text-muted-foreground">{invoice.customerName}</p> */}
-            <p className="text-sm text-muted-foreground">{invoice.total?.toLocaleString("vi-VN")} ₫</p>
+            <p className="font-medium">{invoice.number}</p>
+            <p className="font-medium">{invoice.billingPeriod}</p>
+            <p className="text-sm text-muted-foreground">{formatLargeCurrency(invoice.total!)}</p>
           </div>
 
           <div className="flex justify-end space-x-2">

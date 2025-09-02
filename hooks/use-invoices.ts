@@ -1,199 +1,241 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import type { Invoice, InvoiceFilters, InvoiceSortConfig } from "@/types/invoice"
-import { InvoiceStatus, Utility } from "@/types"
+import { useState, useEffect, useCallback } from "react"
+import type { Invoice, InvoiceFilters, InvoiceSortableKey } from "@/types/invoice"
+import { Utility, UtilityStatus } from "@/types"
 import { getUtilitiesByFilterClient } from "@/lib/httpclient/utility.client"
 import { addInvoice as apiAddInvoice, getAllInvoices as apiGetAllInvoices, updateInvoice as apiUpdateInvoice, deleteInvoice as apiDeleteInvoice } from "@/lib/httpclient/invoice.client"
+import { useDebounceSearchTerm } from "@/lib/utils.client"
+import { toast } from "@/components/ui/use-toast"
+import { useLanguage } from "@/contexts/language-context"
 
 export function useInvoices() {
+  const { t } = useLanguage()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<InvoiceFilters>({})
-  const [sortConfig, setSortConfig] = useState<InvoiceSortConfig>({
-    field: "createdAt",
-    direction: "desc",
+  const [filters, setFilters] = useState<InvoiceFilters>({
+    page: 1,
+    limit: 10,
+    sortBy: "createdAt",
+    sortOrder: "desc"
   })
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [allUtilities, setAllUtilities] = useState<Utility[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
 
-  const getAllUtilities = async () => {
-    try {
-      setLoading(true)
-      const res = await getUtilitiesByFilterClient()
-      setAllUtilities(res.data)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const debounceSearchTerm = useDebounceSearchTerm(searchTerm, 500)
 
   useEffect(() => {
+    const getAllUtilities = async () => {
+      try {
+        setLoading(true)
+        const res = await getUtilitiesByFilterClient({
+          status: UtilityStatus.active,
+          page: 1,
+          limit: 1000,
+        })
+        setAllUtilities(res.data)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
     getAllUtilities()
   }, [])
 
-  const filteredAndSortedInvoices = useMemo(() => {
-    const filtered = invoices?.filter((invoice) => {
-      const matchesSearch =
-        searchTerm === "" ||
-        invoice.invoiceNumber!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        invoice.billingPeriod!.toString().toLowerCase().includes(searchTerm.toLowerCase())
-
-      const matchesStatus = !filters.status || invoice.status === filters.status
-
-      // For billing period, we compare by month/year
-      const matchesBillingPeriodFrom =
-        !filters.billingPeriodFrom ||
-        new Date(invoice.billingPeriod!) >=
-        new Date(filters.billingPeriodFrom)
-
-      const matchesBillingPeriodTo =
-        !filters.billingPeriodTo ||
-        new Date(invoice.billingPeriod!) <=
-        new Date(filters.billingPeriodTo)
-
-      const matchesAmountFrom = !filters.amountFrom || invoice.total! >= filters.amountFrom
-      const matchesAmountTo = !filters.amountTo || invoice.total! <= filters.amountTo
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesBillingPeriodFrom &&
-        matchesBillingPeriodTo &&
-        matchesAmountFrom &&
-        matchesAmountTo
-      )
+  const handleSort = (field: InvoiceSortableKey) => {
+    setFilters(prev => {
+      if (prev.sortBy === field) {
+        return { ...prev, sortBy: field, sortOrder: prev.sortOrder === "asc" ? "desc" : "asc", page: 1 }
+      } else {
+        return { ...prev, sortBy: field, sortOrder: "asc", page: 1 }
+      }
     })
-
-    // Sort
-    filtered?.sort((a, b) => {
-      const aValue = a[sortConfig.field]
-      const bValue = b[sortConfig.field]
-
-      if (aValue! < bValue!) return sortConfig.direction === "asc" ? -1 : 1
-      if (aValue! > bValue!) return sortConfig.direction === "asc" ? 1 : -1
-      return 0
-    })
-
-    return filtered
-  }, [invoices, searchTerm, filters, sortConfig])
-
-  const paginatedInvoices = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    return filteredAndSortedInvoices?.slice(startIndex, startIndex + itemsPerPage)
-  }, [filteredAndSortedInvoices, currentPage, itemsPerPage])
-
-  const totalPages = Math.ceil(filteredAndSortedInvoices?.length / itemsPerPage)
-
-  const getAllInvoices = async () => {
-    try {
-      setLoading(true)
-      const res = await apiGetAllInvoices()
-      setInvoices(res.data)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
   }
-
-  const addInvoice = async (invoice: Omit<Invoice, "id" | "createdAt" | "updatedAt">) => {
-    try {
-      setLoading(true)
-      const added = await apiAddInvoice(invoice)
-      setInvoices((prev) => [added, ...prev])
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateInvoice = async (id: string, updates: Partial<Invoice>) => {
-    try {
-      setLoading(true)
-      const updated = await apiUpdateInvoice(id, updates)
-      setInvoices((prev) => prev.map((invoice) => invoice.id === id ? updated : invoice))
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const deleteInvoice = async (id: string) => {
-    try {
-      setLoading(true)
-      await apiDeleteInvoice(id)
-      setInvoices((prev) => prev.filter((invoice) => invoice.id !== id))
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const getInvoiceById = (id: string) => {
-    return invoices.find((invoice) => invoice.id === id)
-  }
-
-  const handleSort = (field: keyof Invoice) => {
-    setSortConfig((prev) => ({
-      field,
-      direction: prev.field === field && prev.direction === "asc" ? "desc" : "asc",
-    }))
-  }
-
   const resetFilters = () => {
-    setFilters({})
+    setFilters({
+      page: 1,
+      limit: 10,
+      sortBy: "createdAt",
+      sortOrder: "desc"
+    })
     setSearchTerm("")
-    setCurrentPage(1)
   }
 
-  // Statistics
-  const stats = useMemo(() => {
-    const totalInvoices = invoices?.length
-    const totalAmount = invoices?.reduce((sum, invoice) => sum + invoice.total!, 0)
-    const overdueCount = invoices?.filter((invoice) => invoice.status === InvoiceStatus.overdue).length
-    const pendingCount = invoices?.filter((invoice) => invoice.status === InvoiceStatus.paid).length
+  // Show modals
+  const onCreateInvoiceClick = () => {
+    setShowCreateModal(true)
+    setSelectedInvoice(null)
+  }
+  const onCloseCreateInvoice = () => {
+    setShowCreateModal(false)
+    setSelectedInvoice(null)
+  }
+  const onEditInvoiceClick = (invoice: Invoice) => {
+    setShowEditModal(true)
+    setSelectedInvoice(invoice)
+  }
+  const onCloseEditInvoice = () => {
+    setShowEditModal(false)
+    setSelectedInvoice(null)
+  }
+  const onViewInvoiceClick = (invoice: Invoice) => {
+    setShowViewModal(true)
+    setSelectedInvoice(invoice)
+  }
+  const onCloseViewInvoice = () => {
+    setShowViewModal(false)
+    setSelectedInvoice(null)
+  }
+  const onDeleteInvoiceClick = (invoice: Invoice) => {
+    setShowDeleteModal(true)
+    setSelectedInvoice(invoice)
+  }
+  const onCloseDeleteInvoice = () => {
+    setShowDeleteModal(false)
+    setSelectedInvoice(null)
+  }
 
-    return {
-      totalInvoices,
-      totalAmount,
-      overdueCount,
-      pendingCount,
+  // Handle actions integrate with backend
+  const handleCreateInvoice = async (invoiceData: Omit<Invoice, "id" | "createdAt" | "updatedAt">) => {
+    const addInvoice = async (invoice: Omit<Invoice, "id" | "createdAt" | "updatedAt">) => {
+      try {
+        setLoading(true)
+        await apiAddInvoice(invoice)
+        await getInvoices()
+        onCloseCreateInvoice()
+        toast({
+          title: t("common.success"),
+          description: t("invoices.success.created"),
+        })
+      } catch (e) {
+        console.error(e)
+        toast({
+          title: t("common.error.title"),
+          description: t("common.error.cannotAdd"),
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [invoices])
+    await addInvoice(invoiceData)
+  }
+  const handleEditInvoice = async (invoiceData: Omit<Invoice, "id" | "createdAt" | "updatedAt">) => {
+    const updateInvoice = async (id: string, updates: Partial<Invoice>) => {
+      try {
+        setLoading(true)
+        await apiUpdateInvoice(id, updates)
+        await getInvoices()
+        onCloseEditInvoice()
+        toast({
+          title: t("common.success"),
+          description: t("invoices.success.updated"),
+        })
+      } catch (e) {
+        console.error(e)
+        toast({
+          title: t("common.error.title"),
+          description: t("common.error.cannotUpdate"),
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+    if (selectedInvoice) {
+      await updateInvoice(selectedInvoice.id!, invoiceData)
+    }
+  }
+  const handleDeleteInvoice = async () => {
+    const deleteInvoice = async (id: string) => {
+      try {
+        setLoading(true)
+        await apiDeleteInvoice(id)
+        await getInvoices()
+        onCloseDeleteInvoice()
+        toast({
+          title: t("common.success"),
+          description: t("invoices.success.deleted"),
+        })
+      } catch (e) {
+        console.error(e)
+        toast({
+          title: t("common.error.title"),
+          description: t("common.error.cannotDelete"),
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+    if (selectedInvoice) {
+      await deleteInvoice(selectedInvoice.id!)
+    }
+  }
+
+  const getInvoices = useCallback(async () => {
+    try {
+      setLoading(true)
+      const apiParams = {
+        ...filters,
+        searchTerm: debounceSearchTerm || undefined
+      }
+      const res = await apiGetAllInvoices(apiParams)
+      setInvoices(res.data || [])
+      setTotalRecords(res.total || 0)
+      setTotalPages(Math.ceil((res.total || 0) / (filters.limit || 10)))
+    } catch (e) {
+      console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotLoad"),
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [filters, debounceSearchTerm])
 
   useEffect(() => {
-    getAllInvoices()
-  }, [])
+    getInvoices()
+  }, [filters, debounceSearchTerm])
 
   return {
-    invoices: paginatedInvoices,
-    allInvoices: invoices,
+    invoices,
     searchTerm,
-    setSearchTerm,
     filters,
-    setFilters,
-    sortConfig,
-    handleSort,
-    currentPage,
-    setCurrentPage,
-    itemsPerPage,
-    setItemsPerPage,
+    totalRecords,
     totalPages,
-    totalItems: filteredAndSortedInvoices?.length,
-    addInvoice,
-    updateInvoice,
-    deleteInvoice,
-    getInvoiceById,
-    resetFilters,
-    stats,
     loading,
-    allUtilities
+    allUtilities,
+    showCreateModal,
+    showEditModal,
+    showViewModal,
+    showDeleteModal,
+    selectedInvoice,
+
+    setSearchTerm,
+    setFilters,
+    resetFilters,
+    handleSort,
+    handleCreateInvoice,
+    handleEditInvoice,
+    handleDeleteInvoice,
+    onCreateInvoiceClick,
+    onEditInvoiceClick,
+    onViewInvoiceClick,
+    onDeleteInvoiceClick,
+    onCloseCreateInvoice,
+    onCloseEditInvoice,
+    onCloseViewInvoice,
+    onCloseDeleteInvoice,
   }
 }

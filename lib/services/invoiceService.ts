@@ -1,83 +1,47 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { InvoiceEntity, UtilityReading } from "../database/entities";
-import type { UtilityReading as IUtilityReading, Invoice as IInvoice } from "@/types"
+import { InvoiceEntity } from "@/lib/database/entities";
+import type { Invoice as IInvoice, InvoiceFilters } from "@/types"
 
-export async function getAllInvoices() {
+export async function getAllInvoicesService({ page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc", filters = {} as InvoiceFilters }) {
   const repo = AppDataSource.getRepository(InvoiceEntity);
+  const qb = repo.createQueryBuilder("invoice");
 
-  const invoices = await repo.find({
-    relations: ["readings"],
-    order: { createdAt: "DESC" },
-  });
+  if (filters.status) qb.andWhere("invoice.status = :status", { status: filters.status });
+  if (filters.billingPeriod) qb.andWhere("invoice.billingPeriod = :billingPeriod", { billingPeriod: filters.billingPeriod });
+  if (filters.dueDateFrom) qb.andWhere("invoice.dueDate >= :dueDateFrom", { dueDateFrom: filters.dueDateFrom });
+  if (filters.dueDateTo) qb.andWhere("invoice.dueDate <= :dueDateTo", { dueDateTo: filters.dueDateTo });
+  if (filters.amountFrom) qb.andWhere("invoice.total >= :amountFrom", { amountFrom: filters.amountFrom });
+  if (filters.amountTo) qb.andWhere("invoice.total <= :amountTo", { amountTo: filters.amountTo });
+  if (filters.searchTerm) qb.andWhere("(invoice.number ILIKE :searchTerm OR invoice.billingPeriod ILIKE :searchTerm OR invoice.notes ILIKE :searchTerm OR invoice.otherFeesDescription ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
 
-  return { data: invoices as IInvoice[] };
+  qb.orderBy(`invoice.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+  qb.skip((page - 1) * limit).take(limit);
+
+  const [data, total] = await qb.getManyAndCount();
+  return { data, total, page, limit };
 }
 
-export async function addInvoice(invoiceData: IInvoice, readings: IUtilityReading[]) {
-  const invoiceRepo = AppDataSource.getRepository(InvoiceEntity);
-  const readingRepo = AppDataSource.getRepository(UtilityReading);
-
-  // STEP1: create invoice
-  const invoice = invoiceRepo.create(invoiceData);
-  await invoiceRepo.save(invoice);
-
-  // STEP2: create utility readings
-  const readingEntities = readings.map((r) => {
-    return readingRepo.create({
-      ...r,
-      invoice: invoice,
-    });
-  });
-  await readingRepo.save(readingEntities);
-
-  return invoice
+export async function addInvoiceService(data: IInvoice) {
+  const repo = AppDataSource.getRepository(InvoiceEntity);
+  const added = repo.create(data);
+  return repo.save(added);
 }
 
-export async function updateInvoice(id: string, invoiceData: IInvoice, readings: IUtilityReading[]) {
-  const invoiceRepo = AppDataSource.getRepository(InvoiceEntity);
-  const readingRepo = AppDataSource.getRepository(UtilityReading);
-
-  const existingInvoice = await invoiceRepo.findOne({ where: { id } });
-  if (!existingInvoice) {
-    throw new Error("Invoice not found.");
-  }
-
-  // STEP 1: remove old utility readings
-  await readingRepo.delete({ invoice: { id } });
-
-  // STEP 2: update invoice
-  const { readings: _, ...safeInvoiceData } = invoiceData;
-  await invoiceRepo.update(id, safeInvoiceData);
-
-  // STEP 5: create new utility readings
-  const readingEntities = readings.map((r) =>
-    readingRepo.create({
-      ...r,
-      invoice: existingInvoice,
-    })
-  );
-  await readingRepo.save(readingEntities);
-
-  const updatedInvoice = await invoiceRepo.findOne({
-    where: { id },
-    relations: ["readings"],
-  });
-
-  return updatedInvoice!;
+export async function updateInvoiceService(
+  id: string,
+  data: Partial<IInvoice>
+) {
+  const repo = AppDataSource.getRepository(InvoiceEntity);
+  const record = await repo.findOneBy({ id });
+  if (!record) throw new Error("Invoice not found");
+  repo.merge(record, data);
+  return await repo.save(record);
 }
 
-export async function deleteInvoice(id: string) {
-  const invoiceRepo = AppDataSource.getRepository(InvoiceEntity);
-  const readingRepo = AppDataSource.getRepository(UtilityReading);
-
-  const invoice = await invoiceRepo.findOne({ where: { id } });
-  if (!invoice) {
-    throw new Error("Invoice not found.");
-  }
-
-  await readingRepo.delete({ invoice: { id } });
-
-  await invoiceRepo.delete(id);
-
-  return { message: "Invoice deleted successfully." };
-}
+export async function deleteInvoiceService(id: string) {
+  const repo = AppDataSource.getRepository(InvoiceEntity);
+  const record = await repo.findOneBy({ id });
+  if (!record) throw new Error("Invoice not found");
+  await repo.remove(record);
+  return true;
+} 
