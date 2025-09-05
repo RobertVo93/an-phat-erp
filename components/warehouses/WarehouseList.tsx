@@ -7,6 +7,7 @@ import React from "react"
 import { Warehouse } from "@/types"
 import { useLanguage } from "@/contexts/language-context"
 import { getWarehouseStatusColor } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 interface WarehouseListProps {
     warehouses: Warehouse[]
@@ -22,6 +23,7 @@ export const WarehouseList = ({
     onDelete,
 }: WarehouseListProps) => {
     const { t } = useLanguage()
+    const router = useRouter()
     return (
         <Card>
             <CardHeader>
@@ -34,8 +36,9 @@ export const WarehouseList = ({
                         return (
                             <div
                                 key={warehouse.id}
-                                className={`flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg space-y-4 lg:space-y-0
+                                className={`flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg space-y-4 lg:space-y-0 cursor-pointer hover:border-slate-400 hover:shadow-lg transition-all duration-300
                                     ${warehouse.main ? "border-red-500" : ""}`}
+                                onClick={() => router.push(`/warehouse/${warehouse.id}`)}
                             >
                                 <div className="flex-1 space-y-2">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -79,15 +82,29 @@ export const WarehouseList = ({
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => onView(warehouse)}>
+                                            <DropdownMenuItem onClick={(e) => {
+                                                e.stopPropagation()
+                                                onView(warehouse)
+                                            }}>
                                                 <Eye className="mr-2 h-4 w-4" />
                                                 {t("warehouse.viewDetails")}
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => onEdit(warehouse)}>
+                                            <DropdownMenuItem
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    onEdit(warehouse)
+                                                }}
+                                            >
                                                 <Edit className="mr-2 h-4 w-4" />
                                                 {t("warehouse.edit")}
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => onDelete(warehouse)} className="text-red-600">
+                                            <DropdownMenuItem
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    onDelete(warehouse)
+                                                }}
+                                                className="text-red-600"
+                                            >
                                                 <Trash2 className="mr-2 h-4 w-4" />
                                                 {t("warehouse.delete")}
                                             </DropdownMenuItem>

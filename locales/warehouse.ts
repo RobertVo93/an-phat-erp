@@ -271,6 +271,10 @@ export const warehouseTranslations = {
     en: "Edit Warehouse",
     vi: "Chỉnh Sửa Kho Hàng",
   },
+  "warehouse.backToWarehouses": {
+    en: "Back to Warehouses",
+    vi: "Quay Lại Kho Hàng",
+  },
   "warehouse.warehouseDetails": {
     en: "Warehouse Details",
     vi: "Chi Tiết Kho Hàng",
@@ -342,5 +346,69 @@ export const warehouseTranslations = {
   "warehouse.zonesPositive": {
     en: "Number of zones must be positive",
     vi: "Số khu vực phải là số dương",
+  },
+  "warehouse.table.productName": {
+    en: "Product",
+    vi: "Sản Phẩm",
+  },
+  "warehouse.table.quantity": {
+    en: "Quantity",
+    vi: "Số Lượng",
+  },
+  "warehouse.table.actions": {
+    en: "Actions",
+    vi: "Hành Động",
+  },
+  "warehouse.table.transferProduct": {
+    en: "Transfer Warehouse",
+    vi: "Chuyển Kho",
+  },
+  "warehouse.table.kg": {
+    en: "kg",
+    vi: "kg",
+  },
+  "warehouse.table.piece": {
+    en: "piece",
+    vi: "cái",
+  },
+  "warehouse.table.other": {
+    en: "other",
+    vi: "khác",
+  },
+  "warehouse.transferProduct": {
+    en: "Transfer Warehouse",
+    vi: "Chuyển Kho",
+  },
+  "warehouse.from": {
+    en: "From",
+    vi: "Từ",
+  },
+  "warehouse.to": {
+    en: "To",
+    vi: "Tới",
+  },
+  "warehouse.selectWarehouse": {
+    en: "Select Warehouse",
+    vi: "Chọn Kho Hàng",
+  },
+  "warehouse.quantity": {
+    en: "Quantity",
+    vi: "Số Lượng",
+  },
+  "warehouse.inputQuantity": {
+    en: "Input Quantity",
+    vi: "Nhập Số Lượng",
+  },
+  "warehouse.availableQuantity": {
+    en: "Available Quantity",
+    vi: "Số Lượng Còn",
+  },
+  "warehouse.transfer": {
+    en: "Transfer",
+    vi: "Chuyển",
+  },
+  "warehouse.modal.destinationRequired": {
+    en: "Destination Warehouse Required",
+    vi: "Phải Có Kho Nhận",
   },
 }

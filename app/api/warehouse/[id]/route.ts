@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { UpdateWarehouseSchema } from "../warehouse.schema";
 import { getUserFromRequest } from "@/lib/auth/jwt";
-import { deleteWarehouse, updateWarehouse } from "@/lib/services/warehouseService";
+import { deleteWarehouse, getWarehouseById, updateWarehouse } from "@/lib/services/warehouseService";
 
 /**
  * @swagger
@@ -45,6 +45,20 @@ import { deleteWarehouse, updateWarehouse } from "@/lib/services/warehouseServic
  *       404:
  *         description: Warehouse not found
  */
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await ensureDataSource();
+    const { id } = await params;
+    const warehouse = await getWarehouseById(id);
+    if (!warehouse) return NextResponse.json({ error: "Warehouse not found" }, { status: 404 });
+    return NextResponse.json(warehouse);
+  } catch (error) {
+    return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });
+  }
+}
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const user = getUserFromRequest(req);
