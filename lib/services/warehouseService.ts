@@ -6,7 +6,7 @@ export async function getAllWarehouses({ page = 1, limit = 20, sortBy = "date", 
   const repo = AppDataSource.getRepository(WarehouseEntity);
   const qb = repo.createQueryBuilder("warehouse")
     .leftJoinAndSelect("warehouse.warehouseProducts", "wp")
-    .leftJoinAndSelect("wp.product", "product")  
+    .leftJoinAndSelect("wp.product", "product")
 
   // Filtering
   if (filters.status) qb.andWhere("warehouse.status = :status", { status: filters.status });
@@ -21,6 +21,12 @@ export async function getAllWarehouses({ page = 1, limit = 20, sortBy = "date", 
 
   const [data, total] = await qb.getManyAndCount();
   return { data, total, page, limit };
+}
+
+export async function getWarehouseById(id: string) {
+  const repo = AppDataSource.getRepository(WarehouseEntity);
+  const warehouse = await repo.findOne({ where: { id }, relations: ["warehouseProducts", "warehouseProducts.product"] });
+  return warehouse;
 }
 
 export async function addWarehouse(data: Warehouse) {

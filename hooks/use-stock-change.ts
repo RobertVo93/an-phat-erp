@@ -34,8 +34,8 @@ export function useStockChange() {
         record.warehouse?.name?.toLowerCase().includes(searchTerm.toLowerCase())
       record.stockProducts?.some(
         (item) =>
-          item.name!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.sku!.toLowerCase().includes(searchTerm.toLowerCase()),
+          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.sku?.toLowerCase().includes(searchTerm.toLowerCase()),
       )
 
       const matchesStatus = !filters.status || record.status === filters.status
