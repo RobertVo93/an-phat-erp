@@ -1,7 +1,8 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { StockChangeEntity } from "@/lib/database/entities";
-import { StockChange } from "@/types";
+import { ProductEntity, StockChangeEntity, UserEntity } from "@/lib/database/entities";
+import { StockChange, StockChangeStatus, StockChangeType } from "@/types";
 import { IStockProduct } from "@/types/stock-change";
+import { CommonService } from "@/lib/services/commonService";
 
 export async function getAllStockChanges(): Promise<{ data: StockChange[] }> {
   const repo = AppDataSource.getRepository(StockChangeEntity);
@@ -37,4 +38,87 @@ export async function deleteStockChange(id: string): Promise<boolean> {
   if (!deletedRecord) throw new Error("Stock change not found");
   await repo.remove(deletedRecord);
   return true;
+}
+
+export async function transferWarehouse(
+  sourceWarehouseId: string,
+  destinationWarehouseId: string,
+  productId: string,
+  quantity: number,
+  userId: string,
+) {
+  return await AppDataSource.transaction(async (manager) => {
+    const repo = manager.getRepository(StockChangeEntity);
+    const userRepo = manager.getRepository(UserEntity);
+    const productRepo = manager.getRepository(ProductEntity);
+    const commonService = new CommonService();
+    const stockChangeNumber = await commonService.getEntityNumber("StockChangeEntity", "STC");
+
+    const user = await userRepo.findOneOrFail({
+      where: { id: userId },
+      select: ["id", "username"],
+    });
+
+    const product = await productRepo.findOneOrFail({
+      where: { id: productId },
+    });
+
+    const unitCost = product.cost || 0;
+    const totalCost = unitCost * quantity;
+
+    const stockProducts: IStockProduct[] = [
+      {
+        id: product.id,
+        sku: product.sku,
+        name: product.name,
+        unit: product.unit,
+        unitCost,
+        quantity,
+        totalCost,
+      },
+    ];
+
+    const subtotal = totalCost;
+    const tax = 0;
+    const discount = 0;
+    const totalAmount = subtotal + tax - discount;
+
+    // 1. Stock Out (source)
+    const stockOut = repo.create({
+      number: stockChangeNumber,
+      type: StockChangeType.stockOut,
+      status: StockChangeStatus.completed,
+      warehouse: { id: sourceWarehouseId },
+      stockProducts,
+      date: new Date(),
+      subtotal,
+      tax,
+      discount,
+      totalAmount,
+      receivedBy: user.username,
+      notes: `Stock out from ${sourceWarehouseId} to ${destinationWarehouseId}`,
+      receivedDate: new Date(),
+    });
+    await repo.save(stockOut);
+
+    // 2. Stock In (destination)
+    const stockIn = repo.create({
+      number: await commonService.getEntityNumber("StockChangeEntity", "STC", stockChangeNumber),
+      type: StockChangeType.stockIn,
+      status: StockChangeStatus.completed,
+      warehouse: { id: destinationWarehouseId },
+      stockProducts,
+      date: new Date(),
+      subtotal,
+      tax,
+      discount,
+      totalAmount,
+      receivedBy: user.username,
+      notes: `Stock in from ${sourceWarehouseId} to ${destinationWarehouseId}`,
+      receivedDate: new Date(),
+    });
+    await repo.save(stockIn);
+
+    return { stockOut, stockIn };
+  });
 }
