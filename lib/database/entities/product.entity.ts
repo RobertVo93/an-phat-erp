@@ -6,8 +6,6 @@ import { Collection as ICollection } from "@/types/collection";
 import { Product as IProduct } from "@/types/product";
 import { WarehouseProductEntity } from "./warehouse-product.entity";
 import { WarehouseProduct as IWarehouseProduct } from "@/types/warehouseProduct";
-import { StockProductEntity } from "./stock-product.entity";
-import type { StockProduct as IStockProduct} from "@/types/stock-product";
 import { ProductionRecordEntity } from "./production-record.entity";
 import type { ProductionRecord as IProductionRecord } from "@/types/production";
 import { AppDataSource } from "../typeorm";
@@ -53,9 +51,6 @@ export class ProductEntity extends BaseEntity implements IProduct {
   //////Related fields//////
   @ManyToMany(() => CollectionEntity, (collection) => collection.products, { nullable: true })
   collections?: ICollection[];
-
-  @OneToMany(() => StockProductEntity, (sp) => sp.product, { nullable: true })
-  stockProducts?: IStockProduct[];
 
   @OneToMany(() => WarehouseProductEntity, (wp) => wp.product, { nullable: true })
   warehouseProducts?: IWarehouseProduct[];

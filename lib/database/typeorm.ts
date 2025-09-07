@@ -13,11 +13,9 @@ import { StockChangeEntity } from "./entities/stock-change.entity";
 import { UtilityEntity } from "./entities/utility.entity";
 import { WarehouseEntity } from "./entities/warehouse.entity";
 import { AttendanceRecordEntity } from "./entities/attendance-record.entity";
-import { UtilityReading } from "./entities/utility-reading.entity";
 import { UserEntity } from "./entities/user.entity";
 import { UserPagePermissionEntity } from "./entities/user-page-permission.entity";
 import { WarehouseProductEntity } from "./entities/warehouse-product.entity";
-import { StockProductEntity } from "./entities/stock-product.entity";
 import { ProductionRecordEntity } from "./entities/production-record.entity";
 import { env } from "@/constants/env";
 
@@ -38,11 +36,9 @@ export const AppDataSource = new DataSource({
     UtilityEntity,
     WarehouseEntity,
     AttendanceRecordEntity,
-    UtilityReading,
     UserEntity,
     UserPagePermissionEntity,
     WarehouseProductEntity,
-    StockProductEntity,
     ProductionRecordEntity,
   ],
   ssl: { rejectUnauthorized: false }, // required for Neon
