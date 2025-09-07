@@ -1,7 +1,6 @@
 import { ProductStatus, ProductUnit } from "@/types/enums";
 import { IBase, IBaseFilters } from "./base.interface";
 import { Collection as ICollection } from "./collection";
-import { StockProduct } from "./stock-product";
 
 export interface Product extends IBase {
   name?: string
@@ -18,7 +17,6 @@ export interface Product extends IBase {
   image?: string
 
   collections?: ICollection[]
-  stockProducts?: StockProduct[]
 }
 
 export interface ProductFormData {

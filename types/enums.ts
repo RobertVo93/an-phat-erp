@@ -192,11 +192,6 @@ export enum UserRole {
   customer = "customer",
 }
 
-export enum ReadingType {
-  predefined_utility = "predefined_utility",
-  other = "other"
-}
-
 export enum ReportPeriod {
   day = "day",
   month = "month",
