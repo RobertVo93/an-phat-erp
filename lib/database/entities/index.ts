@@ -9,5 +9,4 @@ export * from "./stock-change.entity";
 export * from "./utility.entity";
 export * from "./warehouse.entity";
 export * from "./attendance-record.entity";
-export * from "./utility-reading.entity";
 export * from "./user.entity"
