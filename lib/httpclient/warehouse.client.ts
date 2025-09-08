@@ -1,4 +1,4 @@
-import { Warehouse, WarehouseFilters } from "@/types";
+import { ProductInWarehouseFilters, Warehouse, WarehouseFilters } from "@/types";
 
 export async function getWarehouses(params: WarehouseFilters = {}) {
   const url = new URL("/api/warehouse", window.location.origin);
@@ -60,5 +60,16 @@ export async function transferWarehouse(data: {
 
   if (!res.ok) throw new Error("Failed to transfer product");
 
+  return res.json();
+}
+
+////Warehouse Product////
+export async function getProductInWarehouseByFiltersClient(params: ProductInWarehouseFilters = {}) {
+  const url = new URL("/api/warehouse-product", window.location.origin);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
+  });
+  const res = await fetch(url.toString(), { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch product in warehouse");
   return res.json();
 }

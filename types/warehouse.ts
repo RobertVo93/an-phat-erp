@@ -1,5 +1,5 @@
-import { WarehouseStatus } from "@/types/enums";
-import { IBase } from "./base.interface";
+import { ProductStatus, WarehouseStatus } from "@/types/enums";
+import { IBase, IBaseFilters } from "./base.interface";
 import { StockChange as IStockChange } from "./stock-change";
 import { WarehouseProduct } from "./warehouseProduct";
 import type { Order as IOrder } from "@/types/order";
@@ -25,6 +25,13 @@ export interface Warehouse extends IBase{
 export interface WarehouseFilters {
   status?: WarehouseStatus
   location?: string
+}
+
+export interface ProductInWarehouseFilters extends IBaseFilters{
+  status?: ProductStatus
+  warehouseId?: string
+  productId?: string
+  searchTerm?: string
 }
 
 export interface WarehouseSortOption {

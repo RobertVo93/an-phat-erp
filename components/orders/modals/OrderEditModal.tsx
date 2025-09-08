@@ -13,8 +13,7 @@ import { Order } from "@/types/order"
 import { OrderStatus, PaymentMethod } from "@/types/enums"
 import { Warehouse } from "@/types"
 import { formatLargeCurrency, formatLocalDatetime } from "@/lib/utils"
-import { CustomerSelector } from "@/components/orders/CustomerSelector"
-import { ProductSelector } from "@/components/orders/ProductSelector"
+import { OrderItemSelector, CustomerSelector } from "@/components/common/selector"
 import { OrderItemsList } from "@/components/orders/OrderItemsList"
 import { OrderSummary } from "@/components/orders/OrderSummary"
 import { useEditOrder } from "@/hooks/use-edit-order"
@@ -63,7 +62,6 @@ export function OrderEditModal({ order, open, customers, allWarehouses, onOpenCh
             </CardHeader>
             <CardContent className="space-y-4">
               <CustomerSelector
-                customers={customers}
                 onCustomerSelect={onCustomerselect}
                 selectedCustomer={orderData.customer}
               />
@@ -173,10 +171,10 @@ export function OrderEditModal({ order, open, customers, allWarehouses, onOpenCh
             <CardTitle className="text-lg">{t("orders.orderItems")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ProductSelector
-              orderItems={orderItems}
-              products={orderData.warehouse?.warehouseProducts || []}
-              addProduct={addProduct}
+            <OrderItemSelector
+              selectedRecords={orderItems}
+              warehouseId={orderData.warehouse?.id || ""}
+              onRecordSelect={addProduct}
             />
             {orderItems.length > 0 ? (
               <OrderItemsList
