@@ -13,8 +13,7 @@ import { Order } from "@/types/order"
 import { OrderStatus, PaymentMethod } from "@/types/enums"
 import { Warehouse } from "@/types"
 import { formatLargeCurrency } from "@/lib/utils"
-import { CustomerSelector } from "@/components/orders/CustomerSelector"
-import { ProductSelector } from "@/components/orders/ProductSelector"
+import { CustomerSelector, OrderItemSelector } from "@/components/common/selector"
 import { OrderItemsList } from "@/components/orders/OrderItemsList"
 import { OrderSummary } from "@/components/orders/OrderSummary"
 import { useNewOrder } from "@/hooks/use-new-order"
@@ -70,7 +69,6 @@ export function OrderNewModal({ open, customers, allWarehouses, onOpenChange, cr
             </CardHeader>
             <CardContent className="space-y-4">
               <CustomerSelector
-                customers={customers}
                 onCustomerSelect={onCustomerselect}
                 selectedCustomer={orderData.customer}
               />
@@ -181,10 +179,10 @@ export function OrderNewModal({ open, customers, allWarehouses, onOpenChange, cr
             <CardTitle className="text-lg">{t("orders.orderItems")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ProductSelector
-              orderItems={orderItems}
-              products={orderData.warehouse?.warehouseProducts || []}
-              addProduct={addProduct}
+            <OrderItemSelector
+              selectedRecords={orderItems}
+              warehouseId={orderData.warehouse?.id || ""}
+              onRecordSelect={addProduct}
             />
             {orderItems.length > 0 ? (
               <OrderItemsList
