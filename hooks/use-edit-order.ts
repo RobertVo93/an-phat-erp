@@ -21,16 +21,7 @@ export function useEditOrder(order: Order, onUpdate: (orderData: Partial<Order>)
         })
     }
 
-    const addProduct = (product: Product) => {
-        const newItem: IOrderItem = {
-            id: product.id,
-            name: product.name,
-            number: product.sku,
-            quantity: 1,
-            unitCost: product.price,
-            totalCost: product.price,
-            unit: product.unit,
-        }
+    const addProduct = (newItem: IOrderItem) => {
         setOrderItems([...orderItems, newItem])
     }
 

@@ -20,6 +20,6 @@ export interface Customer extends IBase {
 
 export interface CustomerFilters extends IBaseFilters {
   status?: string
-  name?: string
+  searchTerm?: string
   customerType?: string
 }

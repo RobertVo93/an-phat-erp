@@ -10,8 +10,8 @@ export async function getAllCustomers({ page = 1, limit = 20, sortBy = "name", s
 
   // Filtering
   if (filters.status) qb.andWhere("customer.status = :status", { status: filters.status });
-  if (filters.name) qb.andWhere("customer.name ILIKE :name", { name: `%${filters.name}%` });
   if (filters.customerType) qb.andWhere("customer.customerType = :customerType", { customerType: filters.customerType });
+  if (filters.searchTerm) qb.andWhere("(customer.number ILIKE :searchTerm OR customer.name ILIKE :searchTerm OR customer.company ILIKE :searchTerm OR customer.email ILIKE :searchTerm OR customer.phone ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
 
   // Sorting
   qb.orderBy(`customer.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
