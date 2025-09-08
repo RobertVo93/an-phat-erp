@@ -140,6 +140,30 @@ export const commonTranslations = {
     en: "Optional",
     vi: "Tùy Chọn",
   },
+  "common.loadingMore": {
+    en: "Loading More...",
+    vi: "Đang Tải Thêm...",
+  },
+  "common.loadMore": {
+    en: "Load More",
+    vi: "Tải Thêm",
+  },
+  "common.remaining": {
+    en: "remaining",
+    vi: "còn lại",
+  },
+  "common.showingAll": {
+    en: "Showing All",
+    vi: "Hiển Thị Tất Cả",
+  },
+  "common.records": {
+    en: "Records",
+    vi: "Dữ liệu",
+  },
+  "common.searching": {
+    en: "Searching...",
+    vi: "Đang Tìm Kiếm...",
+  },
   "common.success": {
     en: "Success",
     vi: "Thành Công",

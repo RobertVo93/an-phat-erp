@@ -28,7 +28,7 @@ export function useCustomers() {
       const res = await getCustomers({
         status: filters.status as CustomerStatus,
         customerType: filters.customerType as CustomerType,
-        name: searchTerm,
+        searchTerm: searchTerm,
         page: currentPage,
         limit: itemsPerPage,
         sortBy: "createdAt",

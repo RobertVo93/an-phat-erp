@@ -1,6 +1,7 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { WarehouseEntity } from "../database/entities";
+import { WarehouseEntity } from "@/lib/database/entities";
 import { Warehouse } from "@/types";
+import { WarehouseProductEntity } from "@/lib/database/entities/warehouse-product.entity";
 
 export async function getAllWarehouses({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(WarehouseEntity);
@@ -54,4 +55,24 @@ export async function updateWarehouse(
 export async function deleteWarehouse(id: string) {
   const repo = AppDataSource.getRepository(WarehouseEntity);
   return repo.delete(id);
-} 
+}
+
+export async function getProductInWarehouseByFilters({page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc", filters = {} as Record<string, any> }) {
+  const repo = AppDataSource.getRepository(WarehouseProductEntity);
+  const qb = repo.createQueryBuilder("warehouseProduct")
+    .leftJoinAndSelect("warehouseProduct.product", "product")
+  
+  if (filters.warehouseId) qb.andWhere("warehouseProduct.warehouse_id = :warehouseId", { warehouseId: filters.warehouseId });
+  if (filters.productId) qb.andWhere("warehouseProduct.product_id = :productId", { productId: filters.productId });
+  if (filters.status) qb.andWhere("product.status = :status", { status: filters.status });
+  if (filters.searchTerm) qb.andWhere("(product.name ILIKE :searchTerm OR product.description ILIKE :searchTerm OR product.sku ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
+  
+  // Sorting
+  qb.orderBy(`product.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+
+  // Pagination
+  qb.skip((page - 1) * limit).take(limit);
+
+  const [data, total] = await qb.getManyAndCount();
+  return { data, total, page, limit };
+}

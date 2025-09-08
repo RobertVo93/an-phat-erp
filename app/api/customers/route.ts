@@ -151,15 +151,15 @@ export async function GET(req: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrder = searchParams.get("sortOrder") || "asc";
     const status = searchParams.get("status") || undefined;
-    const name = searchParams.get("name") || undefined;
     const customerType = searchParams.get("customerType") || undefined;
+    const searchTerm = searchParams.get("searchTerm") || undefined;
 
     const result = await getAllCustomers({
       page,
       limit,
       sortBy,
       sortOrder,
-      filters: { status, name, customerType },
+      filters: { status, customerType, searchTerm },
     });
     return NextResponse.json(result);
   } catch (error) {
