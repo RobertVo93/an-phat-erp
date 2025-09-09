@@ -81,7 +81,15 @@ export async function getAllProducts({
 
 export async function getProductById(id: string) {
   const repo = AppDataSource.getRepository(ProductEntity);
-  return repo.findOneBy({ id });
+  return repo.findOne({
+    where: { id },
+    relations: [
+      "collections",
+      "warehouseProducts",
+      "warehouseProducts.warehouse",
+      "warehouseProducts.product"
+    ]
+  });
 }
 
 export async function createProduct(data: Partial<Product>) {

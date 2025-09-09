@@ -16,6 +16,11 @@ export async function getProducts(params: ProductFilters = {}) {
   return res.json();
 }
 
+export async function getProductById(id: string) {
+  const res = await fetch(`/api/products/${id}`);
+  return res.json();
+}
+
 export async function createProduct(data: Partial<Product>) {
   const res = await fetch("/api/products", {
     method: "POST",
