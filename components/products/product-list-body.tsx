@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { formatCurrency } from "@/lib/utils"
 import { getProductStatusColor } from "@/lib/utils"
 import { Product } from "@/types/product"
+import { useRouter } from "next/navigation"
 
 interface ProductListBodyProps {
     t: (key: string) => string
@@ -41,6 +42,8 @@ export function ProductListBody({
     handleEdit,
     handleDelete
 }: ProductListBodyProps) {
+    const router = useRouter()
+
     return (
         <Card>
             <CardHeader className="pb-4">
@@ -92,7 +95,11 @@ export function ProductListBody({
                 ) : (
                     <div className="space-y-4">
                         {products.map((product) => (
-                            <div key={product.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                            <div
+                                key={product.id}
+                                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                                onClick={() => router.push(`/products/${product.id}`)}
+                            >
                                 <div className="flex gap-4">
                                     {/* Product Image */}
                                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -127,15 +134,31 @@ export function ProductListBody({
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => handleView(product)}>
+                                                        <DropdownMenuItem
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleView(product)
+                                                            }}
+                                                        >
                                                             <Eye className="mr-2 h-4 w-4" />
                                                             {t("common.view")}
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleEdit(product)}>
+                                                        <DropdownMenuItem
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleEdit(product)
+                                                            }}
+                                                        >
                                                             <Edit className="mr-2 h-4 w-4" />
                                                             {t("common.edit")}
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDelete(product)} className="text-red-600">
+                                                        <DropdownMenuItem
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleDelete(product)
+                                                            }}
+                                                            className="text-red-600"
+                                                        >
                                                             <Trash2 className="mr-2 h-4 w-4" />
                                                             {t("common.delete")}
                                                         </DropdownMenuItem>
