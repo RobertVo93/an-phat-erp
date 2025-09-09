@@ -315,4 +315,58 @@ export const productsTranslations = {
     en: "Operation failed",
     vi: "Thao tác thất bại",
   },
+
+  // product deatail
+  "products.detail.productDetail": {
+    en: "Product Detail",
+    vi: "Chi Tiết Sản Phẩm"
+  },
+  "products.detail.backToProducts": {
+    en: "Back To Products Page",
+    vi: "Trở Lại Trang Sản Phẩm"
+  },
+  "products.detail.listWarehouse": {
+    en: "Products Currently in Warehouses",
+    vi: "Sản Phẩm Đang Trong Các Kho"
+  },
+
+  // table
+  "products.table.warehouseName": {
+    en: "Warehouse",
+    vi: "Kho",
+  },
+  "products.table.quantity": {
+    en: "Quantity",
+    vi: "Số Lượng",
+  },
+  "products.table.actions": {
+    en: "Actions",
+    vi: "Hành Động",
+  },
+  "products.table.transferProduct": {
+    en: "Transfer Warehouse",
+    vi: "Chuyển Kho",
+  },
+  "products.table.kg": {
+    en: "kg",
+    vi: "kg",
+  },
+  "products.table.piece": {
+    en: "piece",
+    vi: "cái",
+  },
+  "products.table.other": {
+    en: "other",
+    vi: "khác",
+  },
+
+  "products.modal.destinationRequired": {
+    en: "Destination Warehouse Required",
+    vi: "Phải Có Kho Nhận",
+  },
+  "products.modal.transferProduct": {
+    en: "Transfer",
+    vi: "Chuyển",
+  },
+
 }
