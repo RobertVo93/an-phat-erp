@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
-import { Customer } from "@/types/customer"
 import { Order } from "@/types/order"
 import { OrderStatus, PaymentMethod } from "@/types/enums"
 import { Warehouse } from "@/types"
@@ -22,13 +21,12 @@ import { UIDateTimePicker } from "@/components/ui/datepicker"
 
 interface OrderNewModalProps {
   open: boolean
-  customers: Customer[]
   allWarehouses: Warehouse[]
   onOpenChange: (open: boolean) => void
   createOrder: (orderData: Partial<Order>) => void
 }
 
-export function OrderNewModal({ open, customers, allWarehouses, onOpenChange, createOrder }: OrderNewModalProps) {
+export function OrderNewModal({ open, allWarehouses, onOpenChange, createOrder }: OrderNewModalProps) {
   const { t } = useLanguage()
   const {
     orderData,
@@ -52,7 +50,7 @@ export function OrderNewModal({ open, customers, allWarehouses, onOpenChange, cr
     if (allWarehouses.length > 0 && !orderData.warehouse) {
       setOrderData({ ...orderData, warehouse: allWarehouses.find((wh) => wh.main) })
     }
-  }, [allWarehouses])
+  }, [allWarehouses, orderData.warehouse])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

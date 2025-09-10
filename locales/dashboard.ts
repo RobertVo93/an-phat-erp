@@ -32,6 +32,14 @@ export const dashboardTranslations = {
     en: "Quick Actions",
     vi: "Thao Tác Nhanh",
   },
+  "dashboard.lastYear": {
+    en: "last year",
+    vi: "năm trước",
+  },
+  "dashboard.lastMonth": {
+    en: "last month",
+    vi: "tháng trước",
+  },
   "dashboard.createOrder": {
     en: "Create Order",
     vi: "Tạo Đơn Hàng",

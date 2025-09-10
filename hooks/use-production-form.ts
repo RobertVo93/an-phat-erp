@@ -194,12 +194,6 @@ export function useProductionForm(
         if (!hasValidArray(formData.materials)) {
             newErrors.selectedMaterials = t("production.form.selectedMaterialsRequired")
         }
-        if (!hasValidArray(formData.utilities)) {
-            newErrors.selectedUtilities = t("production.form.selectedUtilitiesRequired")
-        }
-        if (!hasValidArray(formData.labors)) {
-            newErrors.selectedEmployees = t("production.form.selectedEmployeesRequired")
-        }
 
         // check if materials is out of stock
         for (let index = 0; index < (formData.materials?.length || 0); index++) {
