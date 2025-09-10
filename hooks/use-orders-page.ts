@@ -1,9 +1,8 @@
 import { useState, useMemo, useEffect } from "react"
 import type { OrderFilters, OrderSortBy } from "@/types/order"
-import { CustomerStatus, OrderStatus, PaymentMethod, PaymentStatus, WarehouseStatus } from "@/types/enums"
-import { Customer, Order, Warehouse } from "@/types"
+import { OrderStatus, PaymentMethod, PaymentStatus, WarehouseStatus } from "@/types/enums"
+import { Order, Warehouse } from "@/types"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
-import { getCustomers } from "@/lib/httpclient/customer.client"
 import { getOrders as apiGetOrders, createOrder as apiCreateOrder } from "@/lib/httpclient/order.client"
 import { useDebounceSearchTerm } from "@/lib/utils.client"
 import { toast } from "@/components/ui/use-toast"
@@ -14,7 +13,6 @@ export function useOrdersPage() {
   const { t } = useLanguage()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(false)
-  const [allCustomers, setAllCustomers] = useState<Customer[]>([])
   const [allWarehouses, setAllWarehouses] = useState<Warehouse[]>([])
   const [showNewOrderModal, setShowNewOrderModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
@@ -107,8 +105,8 @@ export function useOrdersPage() {
         shippingFee: orderData.shippingFee,
         tax: orderData.tax,
         items: orderData.items || [],
-        customer: orderData.customer,
-        warehouse: orderData.warehouse,
+        customer: {id: orderData.customer?.id},
+        warehouse: {id: orderData.warehouse?.id},
       }
       await apiCreateOrder(newOrder)
       await fetchOrders(apiParams)
@@ -132,8 +130,7 @@ export function useOrdersPage() {
   useEffect(() => {
     const onInit = async () => {
       try {
-        const [cus, wh] = await Promise.all([getCustomers({ status: CustomerStatus.active }), getWarehouses({status: WarehouseStatus.active })])
-        setAllCustomers(cus.data)
+        const [wh] = await Promise.all([getWarehouses({status: WarehouseStatus.active })])
         setAllWarehouses(wh.data)
       } catch (e) {
         console.error(e)
@@ -147,7 +144,6 @@ export function useOrdersPage() {
     total,
     totalPages,
     loading,
-    allCustomers,
     allWarehouses,
     showNewOrderModal,
     showFilterModal,

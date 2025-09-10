@@ -23,7 +23,6 @@ export default function OrdersPage() {
     total,
     totalPages,
     loading,
-    allCustomers,
     allWarehouses,
     showNewOrderModal,
     showFilterModal,
@@ -155,7 +154,6 @@ export default function OrdersPage() {
       </div>
       <OrderNewModal
         open={showNewOrderModal}
-        customers={allCustomers}
         allWarehouses={allWarehouses}
         onOpenChange={setShowNewOrderModal}
         createOrder={createOrder}

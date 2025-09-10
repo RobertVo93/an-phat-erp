@@ -63,7 +63,7 @@ export const OrderItemsList = ({
 							<Input readOnly value={getWarehouseProductTotal(item.id!)} className="text-xs bg-gray-300 pointer-events-none w-20" />
 						</div>
 						<div className="space-y-1">
-							<Label className="text-xs text-gray-500">{t("orders.price")}:</Label>
+							<Label className="text-xs text-gray-500">{t("orders.unitPrice")}:</Label>
 							<MoneyInput
 								value={item.unitCost}
 								onChange={e => updatePrice(index, e || 0)}
