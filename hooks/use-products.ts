@@ -5,8 +5,10 @@ import type { Product, ProductFormData, ProductFilters } from "@/types/product"
 import { getProducts, createProduct as apiCreateProduct, updateProduct as apiUpdateProduct, deleteProduct as apiDeleteProduct } from "@/lib/httpclient/product.client"
 import { debounce } from "lodash"
 import { Collection } from "@/types/collection"
+import { CollectionStatus } from "@/types/enums"
 import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3"
 import { base64ToFile } from "@/lib/utils"
+import { getCollections } from "@/lib/httpclient"
 
 export function useProducts() {
   const [allProducts, setAllProducts] = useState<Product[]>([])
@@ -26,15 +28,18 @@ export function useProducts() {
   const getAllCollections = async () => {
     setLoading(true)
     try {
-      const response = await fetch("/api/collections");
-      const data = await response.json();
-      setAllCollections(data.data)
+      const response = await getCollections({ status: CollectionStatus.active, limit: 1000 })
+      setAllCollections(response.data)
     } catch (e) {
       console.error(e)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    getAllCollections()
+  }, [])
 
   useEffect(() => {
     const debouncedFetchProducts = debounce(async () => {
@@ -197,7 +202,6 @@ export function useProducts() {
     setFilters,
     setCurrentPage,
     setItemsPerPage,
-    getAllCollections,
     handleCreate,
     handleView,
     handleEdit,

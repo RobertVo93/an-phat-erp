@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { OrderStatus, PaymentStatus, PaymentMethod, ProductUnit } from "@/types/enums";
-import { CustomerSchema } from "@/app/api/customers/customer.schema";
-import { WarehouseSchema } from "@/app/api/warehouse/warehouse.schema";
+
+export const RelationIdSchema = z.object({
+  id: z.string().optional(),
+});
 
 export const OrderItemSchema = z.object({
   id: z.string().optional(),
@@ -26,8 +28,8 @@ export const CreateOrderSchema = z.object({
   shippingFee: z.number().optional(),
 
   items: z.array(OrderItemSchema).optional(),
-  customer: CustomerSchema.optional(),
-  warehouse: WarehouseSchema.optional(),
+  customer: RelationIdSchema.optional(),
+  warehouse: RelationIdSchema.optional(),
 });
 
 export const UpdateOrderSchema = CreateOrderSchema.partial(); 

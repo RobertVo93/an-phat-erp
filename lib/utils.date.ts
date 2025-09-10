@@ -67,6 +67,18 @@ export function getEndOfMonth(date: Date | string): Date {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0);
 }
 
+export function getEndOfToday(date: Date | string = new Date()): Date {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return new Date(NaN);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+}
+
+export function getNextDay(date: Date | string = new Date()): Date {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return new Date(NaN);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+}
+
 export function getNextBlockTime(date: Date | string): Date {
   const d = new Date(date);
   if (isNaN(d.getTime())) return new Date(NaN);
@@ -92,4 +104,16 @@ export function getNextBlockTime(date: Date | string): Date {
   } else {
     return new Date(nextYear, nextMonth, nextDay, nextHour, nextBlock, 0);
   }
+}
+
+export function startOfMonthLike(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+export function sameDayLastMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth() - 1, date.getDate())
+}
+
+export function sameDayLastYear(date: Date): Date {
+  return new Date(date.getFullYear() - 1, date.getMonth(), date.getDate())
 }

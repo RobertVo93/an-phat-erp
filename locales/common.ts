@@ -44,6 +44,10 @@ export const commonTranslations = {
     en: "Loading...",
     vi: "Đang tải...",
   },
+  "common.noData": {
+    en: "No data",
+    vi: "Không có dữ liệu",
+  },
   "common.cancel": {
     en: "Cancel",
     vi: "Hủy",

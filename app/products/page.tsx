@@ -36,7 +36,6 @@ export default function ProductsPage() {
     setFilters,
     setCurrentPage,
     setItemsPerPage,
-    getAllCollections,
     handleCreate,
     handleView,
     handleEdit,
@@ -96,7 +95,6 @@ export default function ProductsPage() {
         onSubmit={handleFormSubmit}
         loading={loading}
         allCollections={allCollections}
-        getAllCollections={getAllCollections}
       />
 
       <ProductDeleteModal
@@ -113,7 +111,6 @@ export default function ProductsPage() {
         onOpenChange={setFilterModalOpen}
         onApplyFilters={setFilters}
         allCollections={allCollections}
-        getAllCollections={getAllCollections}
       />
     </ERPLayout>
   )

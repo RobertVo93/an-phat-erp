@@ -16,17 +16,15 @@ interface ProductFilterModalProps {
   onOpenChange: (open: boolean) => void
   onApplyFilters: (filters: ProductFilters) => void
   allCollections: Collection[]
-  getAllCollections: () => void
 }
 
-export function ProductFilterModal({ filters, open, onOpenChange, onApplyFilters, allCollections, getAllCollections }: ProductFilterModalProps) {
+export function ProductFilterModal({ filters, open, onOpenChange, onApplyFilters, allCollections }: ProductFilterModalProps) {
   const { t } = useLanguage()
 
   const [localFilters, setLocalFilters] = useState<ProductFilters>(filters)
 
   useEffect(() => {
     setLocalFilters(filters)
-    getAllCollections()
   }, [filters, open])
 
   const handleApply = () => {

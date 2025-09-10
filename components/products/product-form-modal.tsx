@@ -23,10 +23,9 @@ interface ProductFormModalProps {
   onSubmit: (data: ProductFormData) => Promise<void>
   loading?: boolean
   allCollections: Collection[]
-  getAllCollections: () => void
 }
 
-export function ProductFormModal({ product, open, onOpenChange, onSubmit, loading, allCollections, getAllCollections }: ProductFormModalProps) {
+export function ProductFormModal({ product, open, onOpenChange, onSubmit, loading, allCollections }: ProductFormModalProps) {
   const { t } = useLanguage()
   const isEdit = !!product
 
@@ -61,7 +60,6 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
 
 
   useEffect(() => {
-    getAllCollections()
     if (product) {
       setFormData({
         name: product.name,

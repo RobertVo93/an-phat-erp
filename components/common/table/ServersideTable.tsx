@@ -2,6 +2,7 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowUp, ArrowDown } from "lucide-react"
 import { ServersidePagination } from "./ServersidePagination"
+import { useLanguage } from "@/contexts/language-context"
 
 export interface ServersideTableColumn<T> {
   key: keyof T | string
@@ -22,9 +23,11 @@ interface ServersideTableProps<T> {
   onSort: (key: string) => void
   loading?: boolean
   totalPages: number
+  renderMobileRow?: (row: T) => React.ReactNode
 }
 
 export function ServersideTable<T extends { id: string | number }>(props: ServersideTableProps<T>) {
+  const { t } = useLanguage()
   const {
     columns,
     data,
@@ -37,11 +40,13 @@ export function ServersideTable<T extends { id: string | number }>(props: Server
     onSort,
     loading,
     totalPages,
+    renderMobileRow,
   } = props
 
   return (
     <div className="w-full">
-      <div className="overflow-x-auto border rounded-md">
+      {/* Desktop table */}
+      <div className="overflow-x-auto border rounded-md hidden md:block">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -68,11 +73,11 @@ export function ServersideTable<T extends { id: string | number }>(props: Server
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan={columns.length} className="text-center py-8 text-gray-400">Loading...</td>
+                <td colSpan={columns.length} className="text-center py-8 text-gray-400">{t("common.loading")}</td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="text-center py-8 text-gray-400">No data</td>
+                <td colSpan={columns.length} className="text-center py-8 text-gray-400">{t("common.noData")}</td>
               </tr>
             ) : (
               data.map((row) => (
@@ -87,6 +92,35 @@ export function ServersideTable<T extends { id: string | number }>(props: Server
             )}
           </tbody>
         </table>
+      </div>
+      {/* Mobile cards */}
+      <div className="md:hidden">
+        {loading ? (
+          <div className="w-full text-center py-8 text-gray-400">{t("common.loading")}</div>
+        ) : data.length === 0 ? (
+          <div className="w-full text-center py-8 text-gray-400">{t("common.noData")}</div>
+        ) : (
+          <div className="space-y-2">
+            {data.map((row) => (
+              <div key={row.id} className="border rounded-md p-3 bg-white">
+                {renderMobileRow ? (
+                  renderMobileRow(row)
+                ) : (
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                    {columns.map((col) => (
+                      <div key={col.key as string} className="col-span-2">
+                        <div className="text-[11px] uppercase tracking-wide text-gray-500">{col.title}</div>
+                        <div className="text-sm text-gray-800 mt-0.5">
+                          {col.render ? col.render(row) : (row[col.key as keyof T] as any)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <div className="mt-4">
         <ServersidePagination
