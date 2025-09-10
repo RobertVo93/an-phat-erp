@@ -88,10 +88,6 @@ export const ordersTranslations = {
     en: "Order Items",
     vi: "Sản Phẩm Trong Đơn",
   },
-  "orders.price": {
-    en: "Order price",
-    vi: "Giá đơn hàng",
-  },
   "orders.orderTimeline": {
     en: "Order Timeline",
     vi: "Tiến Trình Đơn Hàng",
@@ -364,7 +360,7 @@ export const ordersTranslations = {
   },
   "orders.stock": {
     en: "In stock",
-    vi: "Trong kho",
+    vi: "Tồn kho",
   },
 
   // Edit Order Modal

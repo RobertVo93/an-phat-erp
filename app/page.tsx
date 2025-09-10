@@ -1,10 +1,10 @@
 import { ERPLayout } from "@/components/erp-layout"
-import { Dashboard } from "@/components/dashboard"
+import { Homepage } from "@/components/homepage/Homepage"
 
 export default function HomePage() {
   return (
     <ERPLayout>
-      <Dashboard />
+      <Homepage />
     </ERPLayout>
   )
 }
