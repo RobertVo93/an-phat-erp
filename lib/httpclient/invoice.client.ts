@@ -1,7 +1,8 @@
 import { Invoice, InvoiceFilters } from "@/types";
+import { withApiBase } from "@/lib/base-path";
 
 export async function getAllInvoices(filters: InvoiceFilters) {
-  const url = new URL("/api/invoice", window.location.origin);
+  const url = new URL(withApiBase("/api/invoice"), window.location.origin);
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value))
   })
@@ -11,7 +12,7 @@ export async function getAllInvoices(filters: InvoiceFilters) {
 }
 
 export async function addInvoice(data: Partial<Invoice>) {
-  const res = await fetch("/api/invoice", {
+  const res = await fetch(withApiBase("/api/invoice"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -22,7 +23,7 @@ export async function addInvoice(data: Partial<Invoice>) {
 }
 
 export async function updateInvoice(id: string, data: Partial<Invoice>) {
-  const res = await fetch(`/api/invoice/${id}`, {
+  const res = await fetch(withApiBase(`/api/invoice/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +34,7 @@ export async function updateInvoice(id: string, data: Partial<Invoice>) {
 }
 
 export async function deleteInvoice(id: string) {
-  const res = await fetch(`/api/invoice/${id}`, {
+  const res = await fetch(withApiBase(`/api/invoice/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

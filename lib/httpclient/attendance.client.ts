@@ -1,7 +1,8 @@
 import { AttendanceRecord, AttendanceFilters } from "@/types";
+import { withApiBase } from "@/lib/base-path";
 
 export async function getAllAttendanceRecords(params: AttendanceFilters = {}) {
-  const url = new URL("/api/attendance", window.location.origin);
+  const url = new URL(withApiBase("/api/attendance"), window.location.origin);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
@@ -11,7 +12,7 @@ export async function getAllAttendanceRecords(params: AttendanceFilters = {}) {
 }
 
 export async function addAttendanceRecord(data: Partial<AttendanceRecord>) {
-  const res = await fetch("/api/attendance", {
+  const res = await fetch(withApiBase("/api/attendance"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -22,7 +23,7 @@ export async function addAttendanceRecord(data: Partial<AttendanceRecord>) {
 }
 
 export async function updateAttendanceRecord(id: string, data: Partial<AttendanceRecord>) {
-  const res = await fetch(`/api/attendance/${id}`, {
+  const res = await fetch(withApiBase(`/api/attendance/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +34,7 @@ export async function updateAttendanceRecord(id: string, data: Partial<Attendanc
 }
 
 export async function deleteAttendanceRecord(id: string) {
-  const res = await fetch(`/api/attendance/${id}`, {
+  const res = await fetch(withApiBase(`/api/attendance/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

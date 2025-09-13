@@ -10,3 +10,5 @@ export function useDebounceSearchTerm<T>(value: T, delay: number): T {
     }, [value, delay])
     return debounced
 }
+
+export { withApiBase } from "@/lib/base-path"

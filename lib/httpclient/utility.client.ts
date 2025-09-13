@@ -1,7 +1,8 @@
 import { Utility, UtilityFilters } from "@/types";
+import { withApiBase } from "@/lib/base-path";
 
 export async function getUtilitiesByFilterClient(filters: UtilityFilters = {}) {
-  const url = new URL("/api/utility", window.location.origin);
+  const url = new URL(withApiBase("/api/utility"), window.location.origin);
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value))
   })
@@ -11,7 +12,7 @@ export async function getUtilitiesByFilterClient(filters: UtilityFilters = {}) {
 }
 
 export async function addUtilityClient(data: Partial<Utility>) {
-  const res = await fetch("/api/utility", {
+  const res = await fetch(withApiBase("/api/utility"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -22,7 +23,7 @@ export async function addUtilityClient(data: Partial<Utility>) {
 }
 
 export async function updateUtilityClient(id: string, data: Partial<Utility>) {
-  const res = await fetch(`/api/utility/${id}`, {
+  const res = await fetch(withApiBase(`/api/utility/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +34,7 @@ export async function updateUtilityClient(id: string, data: Partial<Utility>) {
 }
 
 export async function deleteUtilityClient(id: string) {
-  const res = await fetch(`/api/utility/${id}`, {
+  const res = await fetch(withApiBase(`/api/utility/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

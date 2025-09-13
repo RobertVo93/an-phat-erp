@@ -1,7 +1,8 @@
 import { PayrollFilters } from "@/types/payroll"
+import { withApiBase } from "@/lib/base-path"
 
 export async function getAllPayrollsClient(params: PayrollFilters = {}) {
-  const url = new URL("/api/payroll", window.location.origin)
+  const url = new URL(withApiBase("/api/payroll"), window.location.origin)
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value))
   })
@@ -11,7 +12,7 @@ export async function getAllPayrollsClient(params: PayrollFilters = {}) {
 }
 
 export async function syncPayrollClient(payPeriod: Date) {
-  const url = new URL("/api/payroll/sync", window.location.origin)
+  const url = new URL(withApiBase("/api/payroll/sync"), window.location.origin)
   url.searchParams.append("payPeriod", payPeriod.toISOString())
   const res = await fetch(url.toString(), { credentials: "include" })
   if (!res.ok) throw new Error("Failed to sync payroll records")
@@ -19,7 +20,7 @@ export async function syncPayrollClient(payPeriod: Date) {
 }
 
 export async function approvePayrollClient(id: string) {
-  const res = await fetch(`/api/payroll/${id}`, {
+  const res = await fetch(withApiBase(`/api/payroll/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -29,7 +30,7 @@ export async function approvePayrollClient(id: string) {
 }
 
 export async function deletePayrollClient(id: string) {
-  const res = await fetch(`/api/payroll/${id}`, {
+  const res = await fetch(withApiBase(`/api/payroll/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: '/admin',
+  env: {
+    NEXT_PUBLIC_BASE_PATH: '/admin',
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

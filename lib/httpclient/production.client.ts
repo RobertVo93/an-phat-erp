@@ -1,14 +1,15 @@
 import { ProductionRecord } from "@/types/production";
+import { withApiBase } from "@/lib/base-path";
 
 export async function getAllProductions() {
-  const url = new URL("/api/production", window.location.origin);
+  const url = new URL(withApiBase("/api/production"), window.location.origin);
   const res = await fetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch collections");
   return res.json();
 }
 
 export async function createProduction(data: Partial<ProductionRecord>) {
-  const res = await fetch("/api/production", {
+  const res = await fetch(withApiBase("/api/production"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -19,7 +20,7 @@ export async function createProduction(data: Partial<ProductionRecord>) {
 }
 
 export async function updateProduction(id: string, data: Partial<ProductionRecord>) {
-  const res = await fetch(`/api/production/${id}`, {
+  const res = await fetch(withApiBase(`/api/production/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

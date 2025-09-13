@@ -1,5 +1,6 @@
 import { IUser } from "@/types";
 import { UserPagePermission } from "@/types/user-permission";
+import { withApiBase } from "@/lib/base-path";
 
 export async function getUserPagePermissions(
     page: number = 1,
@@ -20,7 +21,7 @@ export async function getUserPagePermissions(
     if (filters?.search) params.append("search", filters.search);
     if (filters?.role) params.append("role", filters.role);
 
-    const response = await fetch(`/api/permissions?${params.toString()}`);
+    const response = await fetch(withApiBase(`/api/permissions?${params.toString()}`));
     if (!response.ok) {
         throw new Error('Failed to fetch user permissions');
     }
@@ -31,7 +32,7 @@ export async function setUserPagePermissions(
     userId: string,
     permissions: UserPagePermission[]
 ): Promise<UserPagePermission[]> {
-    const response = await fetch('/api/permissions', {
+    const response = await fetch(withApiBase('/api/permissions'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -45,7 +46,7 @@ export async function setUserPagePermissions(
 }
 
 export async function deleteUserPagePermission(userId: string, pageId: string): Promise<void> {
-    const response = await fetch(`/api/permissions/${userId}/${pageId}`, {
+    const response = await fetch(withApiBase(`/api/permissions/${userId}/${pageId}`), {
         method: 'DELETE',
     });
     if (!response.ok) {

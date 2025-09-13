@@ -14,9 +14,10 @@ interface IAuthResponse {
     success?: boolean
     error?: string
 }
+import { withApiBase } from "@/lib/base-path";
 
 export async function loginUser(data: ILoginRequest): Promise<IAuthResponse> {
-    const response = await fetch("/api/auth/login", {
+    const response = await fetch(withApiBase("/api/auth/login"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -33,7 +34,7 @@ export async function loginUser(data: ILoginRequest): Promise<IAuthResponse> {
 }
 
 export async function registerUser(data: IRegisterRequest): Promise<IAuthResponse> {
-    const response = await fetch("/api/auth/register", {
+    const response = await fetch(withApiBase("/api/auth/register"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -50,7 +51,7 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
 }
 
 export async function logoutUser(): Promise<boolean> {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch(withApiBase("/api/auth/logout"), { method: "POST" });
     return true;
 }
 
@@ -73,7 +74,7 @@ export async function getUsers(
     if (filters?.search) params.append("search", filters.search);
     if (filters?.role) params.append("role", filters.role);
 
-    const response = await fetch(`/api/users?${params.toString()}`);
+    const response = await fetch(withApiBase(`/api/users?${params.toString()}`));
     if (!response.ok) {
         throw new Error('Failed to fetch users');
     }
@@ -81,7 +82,7 @@ export async function getUsers(
 }
 
 export async function getUserById(id: string): Promise<IUser> {
-    const response = await fetch(`/api/users/${id}`);
+    const response = await fetch(withApiBase(`/api/users/${id}`));
     if (!response.ok) {
         throw new Error('Failed to fetch user');
     }
@@ -89,7 +90,7 @@ export async function getUserById(id: string): Promise<IUser> {
 }
 
 export async function updateUser(id: string, data: Partial<IUser>): Promise<IUser> {
-    const response = await fetch(`/api/users/${id}`, {
+    const response = await fetch(withApiBase(`/api/users/${id}`), {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
