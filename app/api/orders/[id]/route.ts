@@ -32,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const { id } = await params;
-    const updated = await updateOrderService(id, parseData.data as OrderEntity);
+    const updated = await updateOrderService(id, user.userId, parseData.data as OrderEntity);
     if (!updated) return NextResponse.json({ error: "Cannot update order" }, { status: 400 });
     return NextResponse.json(updated);
   } catch (error) {

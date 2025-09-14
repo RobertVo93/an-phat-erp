@@ -600,4 +600,82 @@ export const ordersTranslations = {
     en: "Browse all products",
     vi: "Duyệt tất cả sản phẩm",
   },
+
+  // order activity log
+  "orders.log.title": {
+    en: "Orders Activity Log",
+    vi: "Nhật Ký Hoạt Động Đơn Hàng"
+  },
+  "orders.log.description": {
+    en: "Tracks user actions on Orders",
+    vi: "Theo dõi hành động của người dùng trên các Đơn Hàng"
+  },
+  "orders.log.updater": {
+    en: "Updater",
+    vi: "Người cập nhật"
+  },
+  "orders.log.fieldChange": {
+    en: "Field changed",
+    vi: "Đã thay đổi"
+  },
+  "orders.log.from": {
+    en: "From",
+    vi: "Từ"
+  },
+  "orders.log.to": {
+    en: "To",
+    vi: "Thành"
+  },
+  "orders.log.customer": {
+    en: "Customer",
+    vi: "Khách Hàng"
+  },
+  "orders.log.warehouse": {
+    en: "Warehouse",
+    vi: "Kho Hàng"
+  },
+  "orders.log.shippingAddress": {
+    en: "Shipping Address",
+    vi: "Địa Chỉ Giao Hàng"
+  },
+  "orders.log.status": {
+    en: "Status",
+    vi: "Trạng Thái"
+  },
+  "orders.log.deliveryDate": {
+    en: "Delevery Date",
+    vi: "Ngày Giao Hàng"
+  },
+  "orders.log.paymentMethod": {
+    en: "Payment Method",
+    vi: "Cách Thanh Toán"
+  },
+  "orders.log.notes": {
+    en: "Notes",
+    vi: "Ghi Chú"
+  },
+  "orders.log.tags": {
+    en: "Tags",
+    vi: "Thẻ"
+  },
+  "orders.log.items": {
+    en: "Items",
+    vi: "Sản Phẩm"
+  },
+  "orders.log.totalAmount": {
+    en: "Total Amount",
+    vi: "Tổng Số Tiền"
+  },
+  "orders.log.items-quantity": {
+    en: "Items Quantity",
+    vi: "Số lượng Hàng"
+  },
+  "orders.log.items-added": {
+    en: "Added Item",
+    vi: "Chọn thêm Hàng"
+  },
+  "orders.log.items-removed": {
+    en: "Removed Item",
+    vi: "Xóa Hàng"
+  },
 }
