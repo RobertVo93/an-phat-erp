@@ -2,11 +2,12 @@ import { useState, useRef, useEffect } from "react"
 import { Order } from "@/types/order"
 import { Customer, Warehouse } from "@/types"
 import { CustomerStatus, OrderStatus, PaymentMethod, PaymentStatus, WarehouseStatus } from "@/types/enums"
-import { getOrderById, updateOrder as apiUpdateOrder } from "@/lib/httpclient/order.client"
+import { getOrderById, updateOrder as apiUpdateOrder, getOrderActivityLogs } from "@/lib/httpclient/order.client"
 import { getCustomers } from "@/lib/httpclient/customer.client"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
+import { IActivityLog } from "@/types/activity-log.interface"
 
 export function useOrder(orderId: string) {
   const { t } = useLanguage()
@@ -16,14 +17,19 @@ export function useOrder(orderId: string) {
   const [orderData, setOrderData] = useState<Order>()
   const [loading, setLoading] = useState<boolean>(false)
   const [subtotal, setSubtotal] = useState<number>(0)
+  const [orderActivityLogs, setOrderActivityLogs] = useState<IActivityLog[]>([])
   const printRef = useRef<HTMLDivElement>(null)
 
   const fetchOrder = async (orderId: string) => {
     try {
       setLoading(true)
-      const res = await getOrderById(orderId)
-      setOrderData(res)
-      setSubtotal((res as Order)?.items!.reduce((sum, item) => sum + item.totalCost!, 0)!)
+      const [order, logs] = await Promise.all([
+        getOrderById(orderId),
+        getOrderActivityLogs(orderId)
+      ]);
+      setOrderData(order)
+      setSubtotal((order as Order)?.items!.reduce((sum, item) => sum + item.totalCost!, 0)!)
+      setOrderActivityLogs(logs)
     } catch (e) {
       console.error(e)
       toast({
@@ -138,8 +144,8 @@ export function useOrder(orderId: string) {
       try {
         setLoading(true)
         const res = await Promise.all([
-          getCustomers({status: CustomerStatus.active}), 
-          getWarehouses({status: WarehouseStatus.active})
+          getCustomers({ status: CustomerStatus.active }),
+          getWarehouses({ status: WarehouseStatus.active })
         ])
         setAllCustomers(res[0].data)
         setAllWarehouses(res[1].data)
@@ -165,6 +171,7 @@ export function useOrder(orderId: string) {
     printRef,
     loading,
     subtotal,
+    orderActivityLogs,
     setShowEditModal,
     handlePrint,
     handleSaveOrder,

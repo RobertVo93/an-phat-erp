@@ -17,6 +17,7 @@ import { UserEntity } from "./entities/user.entity";
 import { UserPagePermissionEntity } from "./entities/user-page-permission.entity";
 import { WarehouseProductEntity } from "./entities/warehouse-product.entity";
 import { ProductionRecordEntity } from "./entities/production-record.entity";
+import { ActivityLogEntity } from "./entities/activity-log.entity";
 import { env } from "@/constants/env";
 
 export const AppDataSource = new DataSource({
@@ -40,6 +41,7 @@ export const AppDataSource = new DataSource({
     UserPagePermissionEntity,
     WarehouseProductEntity,
     ProductionRecordEntity,
+    ActivityLogEntity
   ],
   ssl: { rejectUnauthorized: false }, // required for Neon
   migrations: [__dirname + '/migrations/*{.ts,.js}'],

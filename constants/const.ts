@@ -1,0 +1,1 @@
+export const IGNORE_KEYS = ['id', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy'];

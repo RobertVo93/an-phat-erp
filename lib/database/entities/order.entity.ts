@@ -6,7 +6,8 @@ import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
 import { IOrderItem, Order as IOrder } from "@/types/order";
 import type { Warehouse as IWarehouse, Customer as ICustomer } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
-import { handleCompleteOrder } from "@/lib/services/orderService";
+import { handleCompleteOrder, handleOrderChangeLogs } from "@/lib/services/orderService";
+import { AppDataSource } from "@/lib/database/typeorm";
 
 @Entity({ name: "orders" })
 export class OrderEntity extends BaseEntity implements IOrder {
@@ -72,5 +73,14 @@ export class OrderEntity extends BaseEntity implements IOrder {
     if (this.status === OrderStatus.completed) {
       handleCompleteOrder(this);
     }
+
+    const repo = AppDataSource.getRepository(OrderEntity);
+    // get data before update
+    const previous = await repo.findOne({
+      where: { id: this.id },
+      relations: ["customer", "warehouse"],
+    });
+
+    handleOrderChangeLogs(previous!, this);
   }
 }
