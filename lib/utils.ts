@@ -7,6 +7,7 @@ import { clsx, type ClassValue } from "clsx"
 import { env } from "@/constants/env"
 import { twMerge } from "tailwind-merge"
 import { formatMonthYear } from "@/lib/utils.date"
+import _ from "lodash"
 export * from "@/lib/utils.currency"
 export * from "@/lib/utils.date"
 export * from "@/lib/utils.style"
@@ -109,4 +110,26 @@ export const getSystemPayPeriod = (): string[] => {
     periods.push(formatMonthYear(i));
   }
   return periods;
+}
+
+export const deepDifference = (obj1: any, obj2: any): Record<string, any> => {
+  const result: Record<string, any> = {};
+
+  for (const key of Object.keys(obj1)) {
+    if (!_.isEqual(obj1[key], obj2[key])) {
+      if (_.isObject(obj1[key]) && _.isObject(obj2[key]) && !_.isDate(obj1[key]) && !_.isDate(obj2[key])) {
+        result[key] = deepDifference(obj1[key], obj2[key]);
+      } else {
+        result[key] = { obj1: obj1[key], obj2: obj2[key] };
+      }
+    }
+  }
+
+  for (const key of Object.keys(obj2)) {
+    if (!(key in obj1)) {
+      result[key] = { obj1: undefined, obj2: obj2[key] };
+    }
+  }
+
+  return result;
 }

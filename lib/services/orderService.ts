@@ -1,7 +1,13 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { OrderEntity } from "@/lib/database/entities/order.entity";
-import { ProductEntity, StockChangeEntity } from "@/lib/database/entities";
-import { StockChangeStatus, StockChangeType, Order as IOrder, IOrderItem } from "@/types";
+import { ProductEntity, StockChangeEntity, UserEntity } from "@/lib/database/entities";
+import { StockChangeStatus, StockChangeType, Order as IOrder, IOrderItem, IChangeLog, IActivityLog, ResourceType } from "@/types";
+import { getCustomerById } from "@/lib/services/customerService";
+import { getWarehouseById } from "@/lib/services/warehouseService";
+import { addMultipleActivityLogService } from "@/lib/services/activityLogService";
+import { deepDifference } from "@/lib/utils";
+import { IGNORE_KEYS } from "@/constants";
+import { v4 as uuidv4 } from 'uuid';
 
 export async function getAllOrders({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(OrderEntity);
@@ -52,12 +58,18 @@ export async function createOrderService(data: Partial<IOrder>) {
   return await repo.save(record);
 }
 
-export async function updateOrderService(id: string, data: Partial<IOrder>) {
+export async function updateOrderService(id: string, userId: string, data: Partial<IOrder>) {
   const repo = AppDataSource.getRepository(OrderEntity);
+  const userRepo = AppDataSource.getRepository(UserEntity);
   const existingRecord = await repo.findOne({ where: { id } });
   if (!existingRecord) throw new Error("Order not found");
 
-  repo.merge(existingRecord, data);
+  const user = await userRepo.findOneOrFail({
+    where: { id: userId },
+    select: ["id", "username"],
+  });
+
+  repo.merge(existingRecord, { ...data, updatedBy: user.username })
   await repo.save(existingRecord);
   return existingRecord;
 }
@@ -116,4 +128,64 @@ export async function handleCompleteOrder(record: OrderEntity) {
       }
     }
   });
+}
+
+export async function handleOrderChangeLogs(previous: OrderEntity, current: OrderEntity) {
+  const changes: IChangeLog[] = [];
+  const ignoreKeys = [...IGNORE_KEYS, 'customer', 'warehouse', 'items'];  // ignore relation fields and jsonb fields, they need to handle in specific way
+  const difference = deepDifference(previous, current);
+
+  for (const key in difference) {
+    // Handle jsonb changes
+    if (key === 'items') {
+      changes.push({
+        field: key,
+        oldValue: previous.items?.map((item) => ({ number: item.number, quantity: item.quantity, unitCost: item.unitCost })),
+        newValue: current.items?.map((item) => ({ number: item.number, quantity: item.quantity, unitCost: item.unitCost })),
+      });
+    }
+    // Handle relation fields changes
+    if (key === 'customer' && current.customer?.id !== previous.customer?.id) {
+      const newCustomer = await getCustomerById(current.customer?.id!);
+      changes.push({
+        field: key,
+        oldValue: previous.customer?.number,
+        newValue: newCustomer?.number,
+      });
+      continue;
+    }
+    if (key === 'warehouse' && current.warehouse?.id !== previous.warehouse?.id) {
+      const newWarehouse = await getWarehouseById(current.warehouse?.id!);
+      changes.push({
+        field: key,
+        oldValue: previous.warehouse?.number,
+        newValue: newWarehouse?.number,
+      });
+      continue;
+    }
+    // handle ignore keys
+    if (ignoreKeys.includes(key)) continue;
+
+    // add change log
+    changes.push({
+      field: key,
+      oldValue: difference[key].obj1,
+      newValue: difference[key].obj2,
+    });
+  }
+
+  if (changes.length > 0) {
+    const transactionId = uuidv4();
+    const logs: IActivityLog[] = changes.map((change) => ({
+      resource: ResourceType.order,
+      targetId: current.id,
+      field: change.field,
+      oldValue: change.oldValue,
+      newValue: change.newValue,
+      updatedUser: current.updatedBy,
+      transactionId: transactionId,
+    }));
+    await addMultipleActivityLogService(logs);
+  }
+  return true;
 }
