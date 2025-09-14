@@ -202,3 +202,19 @@ export enum ReportViewMode {
   table = "table",
   chart = "chart"
 }
+
+export enum ResourceType {
+  order = "order",
+  product = "product",
+  customer = "customer",
+  employee = "employee",
+  warehouse = "warehouse",
+  collection = "collection",
+}
+
+export enum OrderLogField {
+  status = "status",
+  deliveryDate = "deliveryDate",
+  paymentMethod = "paymentMethod",
+  items = "items",
+}

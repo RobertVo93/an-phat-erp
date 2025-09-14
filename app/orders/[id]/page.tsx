@@ -14,6 +14,7 @@ import { OrderItemsListDetail } from "@/components/orders/OrderItemsListDetail"
 import { OrderStatus, PaymentStatus } from "@/types"
 import { LoadingOverlay } from "@/components/common/LoadingOverlay"
 import { OrderTimeline } from "@/components/orders/OrderTimeline"
+import { OrderActivityLog } from "@/components/orders/OrderActivityLog"
 
 export default function OrderDetailPage() {
   const { t } = useLanguage()
@@ -26,6 +27,7 @@ export default function OrderDetailPage() {
     printRef,
     loading,
     subtotal,
+    orderActivityLogs,
     setShowEditModal,
     handlePrint,
     handleSaveOrder,
@@ -93,6 +95,8 @@ export default function OrderDetailPage() {
           orderData={orderData}
         />
         <OrderTimeline />
+
+        <OrderActivityLog activityLogs={orderActivityLogs} />
 
         {/* Hidden Print Component */}
         <div className="hidden">

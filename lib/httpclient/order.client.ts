@@ -16,6 +16,11 @@ export async function getOrderById(id: string) {
   return res.json();
 }
 
+export async function getOrderActivityLogs(orderId: string) {
+  const res = await fetch(`/api/orders/${orderId}/activity`);
+  return res.json();
+}
+
 export async function createOrder(data: Partial<Order>) {
   const res = await fetch("/api/orders", {
     method: "POST",
