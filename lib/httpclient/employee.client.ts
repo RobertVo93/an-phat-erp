@@ -1,7 +1,8 @@
 import { Employee, EmployeeFilters } from "@/types";
+import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 
 export async function getEmployee(params: EmployeeFilters = {}) {
-  const url = new URL("/api/employee", window.location.origin);
+  const url = createApiUrl("/api/employee");
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
@@ -11,7 +12,7 @@ export async function getEmployee(params: EmployeeFilters = {}) {
 }
 
 export async function addEmployee(data: Partial<Employee>) {
-  const res = await fetch("/api/employee", {
+  const res = await fetch(apiHref("/api/employee"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -22,7 +23,7 @@ export async function addEmployee(data: Partial<Employee>) {
 }
 
 export async function updateEmployee(id: string, data: Partial<Employee>) {
-  const res = await fetch(`/api/employee/${id}`, {
+  const res = await fetch(apiHref(`/api/employee/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +34,7 @@ export async function updateEmployee(id: string, data: Partial<Employee>) {
 }
 
 export async function deleteEmployee(id: string) {
-  const res = await fetch(`/api/employee/${id}`, {
+  const res = await fetch(apiHref(`/api/employee/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

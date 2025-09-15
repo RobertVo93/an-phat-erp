@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/auth-context"
 import { useLanguage } from "@/contexts/language-context"
 import { loginUser } from "@/lib/httpclient"
+import { ADMIN_ROUTES } from "@/constants/nav"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -31,7 +32,7 @@ export function LoginForm() {
       const res = await loginUser({ email, password })
       if (res.success) {
         login(res.user!)
-        router.push("/"); // or your dashboard
+        router.push(ADMIN_ROUTES.home()); // or your dashboard
       }
     } catch (error) {
       console.error("Error logging in:", error);
@@ -98,7 +99,7 @@ export function LoginForm() {
         </form>
         <div className="mt-4 text-center text-sm">
           {t("login.noAccount")}{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
+          <Link href={ADMIN_ROUTES.register()} className="text-blue-600 hover:underline">
             {t("login.signUp")}
           </Link>
         </div>

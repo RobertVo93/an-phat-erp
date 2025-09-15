@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import { IUser } from "@/types/user"
 import { useRouter } from "next/navigation"
 import { logoutUser } from "@/lib/httpclient"
+import { ADMIN_ROUTES } from "@/constants/nav"
 import { UserRole } from "@/types"
 
 interface AuthContextType {
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem("user")
       await logoutUser()
-      router.push("/login")
+      router.push(ADMIN_ROUTES.login())
     } catch (error) {
       console.error("Error removing from localStorage:", error)
     }

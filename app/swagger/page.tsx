@@ -1,4 +1,5 @@
 "use client";
+import { apiHref } from "@/lib/httpclient/base";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
@@ -9,7 +10,7 @@ export default function SwaggerPage() {
   const [spec, setSpec] = useState(null);
 
   useEffect(() => {
-    fetch("/api/docs")
+    fetch(apiHref("/api/docs"))
       .then((res) => res.json())
       .then(setSpec);
   }, []);

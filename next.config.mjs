@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  assetPrefix: "/admin-static",
   eslint: {
     ignoreDuringBuilds: true,
   },

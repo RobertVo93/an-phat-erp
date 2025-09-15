@@ -3,10 +3,11 @@
 import type React from "react"
 
 import { useAuth } from "@/contexts/auth-context"
+import { ADMIN_ROUTES } from "@/constants/nav"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
-const publicRoutes = ["/login", "/register"]
+const publicRoutes = [ADMIN_ROUTES.login(), ADMIN_ROUTES.register()]
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -18,7 +19,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // Short delay to ensure auth state is loaded
     const timer = setTimeout(() => {
       if (!isAuthenticated && !publicRoutes.includes(pathname)) {
-        router.push("/login")
+        router.push(ADMIN_ROUTES.login())
       }
       setIsChecking(false)
     }, 100)
