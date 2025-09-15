@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ADMIN_ROUTES } from "@/constants/nav"
 import { formatCurrency, formatDate, getOrderStatusColor } from "@/lib/utils"
 import { useLanguage } from "@/contexts/language-context"
 import { Order } from "@/types/order"
@@ -40,7 +41,7 @@ export const OrdersCardList: React.FC<OrdersCardListProps> = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href={`/orders/${order.id}`}>{t("common.view")}</Link>
+                    <Link href={ADMIN_ROUTES.orderDetail(order.id!)}>{t("common.view")}</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

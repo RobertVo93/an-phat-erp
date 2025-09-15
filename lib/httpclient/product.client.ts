@@ -1,7 +1,8 @@
 import { Product, ProductFilters } from "@/types/product";
+import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 
 export async function getProducts(params: ProductFilters = {}) {
-  const url = new URL("/api/products", window.location.origin);
+  const url = createApiUrl("/api/products");
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") {
       if (key === "priceRange" || key === "stockRange") {
@@ -17,12 +18,12 @@ export async function getProducts(params: ProductFilters = {}) {
 }
 
 export async function getProductById(id: string) {
-  const res = await fetch(`/api/products/${id}`);
+  const res = await fetch(apiHref(`/api/products/${id}`));
   return res.json();
 }
 
 export async function createProduct(data: Partial<Product>) {
-  const res = await fetch("/api/products", {
+  const res = await fetch(apiHref("/api/products"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +34,7 @@ export async function createProduct(data: Partial<Product>) {
 }
 
 export async function updateProduct(id: string, data: Partial<Product>) {
-  const res = await fetch(`/api/products/${id}`, {
+  const res = await fetch(apiHref(`/api/products/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -44,7 +45,7 @@ export async function updateProduct(id: string, data: Partial<Product>) {
 }
 
 export async function deleteProduct(id: string) {
-  const res = await fetch(`/api/products/${id}`, {
+  const res = await fetch(apiHref(`/api/products/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

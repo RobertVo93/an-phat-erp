@@ -1,7 +1,8 @@
 import { Customer, CustomerFilters } from "@/types/customer";
+import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 
 export async function getCustomers(params: CustomerFilters = {}) {
-  const url = new URL("/api/customers", window.location.origin);
+  const url = createApiUrl("/api/customers");
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
@@ -11,7 +12,7 @@ export async function getCustomers(params: CustomerFilters = {}) {
 }
 
 export async function createCustomer(data: Partial<Customer>) {
-  const res = await fetch("/api/customers", {
+  const res = await fetch(apiHref("/api/customers"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -22,7 +23,7 @@ export async function createCustomer(data: Partial<Customer>) {
 }
 
 export async function updateCustomer(id: string, data: Partial<Customer>) {
-  const res = await fetch(`/api/customers/${id}`, {
+  const res = await fetch(apiHref(`/api/customers/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +34,7 @@ export async function updateCustomer(id: string, data: Partial<Customer>) {
 }
 
 export async function deleteCustomer(id: string) {
-  const res = await fetch(`/api/customers/${id}`, {
+  const res = await fetch(apiHref(`/api/customers/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

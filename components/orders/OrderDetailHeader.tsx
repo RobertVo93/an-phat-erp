@@ -1,5 +1,6 @@
 import { ArrowLeft, Edit, Printer, Send, MoreVertical, PackageCheck } from "lucide-react"
 import Link from "next/link"
+import { ADMIN_ROUTES } from "@/constants/nav"
 import React from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +22,7 @@ export const OrderDetailHeader = ({ orderData, setShowEditModal, handlePrint, ha
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <Link href="/orders">
+                <Link href={ADMIN_ROUTES.orders()}>
                     <Button variant="outline" size="sm" className="flex items-center gap-2">
                         <ArrowLeft className="h-4 w-4" />
                         <span className="hidden sm:inline">{t("orders.backToOrders")}</span>

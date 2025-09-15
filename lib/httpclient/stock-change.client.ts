@@ -1,7 +1,8 @@
 import { StockChange, StockChangeFilters } from "@/types";
+import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 
 export async function getAllStockChanges(params: StockChangeFilters = {}) {
-  const url = new URL("/api/stock-change", window.location.origin);
+  const url = createApiUrl("/api/stock-change");
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
@@ -11,7 +12,7 @@ export async function getAllStockChanges(params: StockChangeFilters = {}) {
 }
 
 export async function addStockChange(data: Partial<StockChange>) {
-  const res = await fetch("/api/stock-change", {
+  const res = await fetch(apiHref("/api/stock-change"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -22,7 +23,7 @@ export async function addStockChange(data: Partial<StockChange>) {
 }
 
 export async function updateStockChange(id: string, data: Partial<StockChange>) {
-  const res = await fetch(`/api/stock-change/${id}`, {
+  const res = await fetch(apiHref(`/api/stock-change/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +34,7 @@ export async function updateStockChange(id: string, data: Partial<StockChange>) 
 }
 
 export async function deleteStockChange(id: string) {
-  const res = await fetch(`/api/stock-change/${id}`, {
+  const res = await fetch(apiHref(`/api/stock-change/${id}`), {
     method: "DELETE",
     credentials: "include",
   });
