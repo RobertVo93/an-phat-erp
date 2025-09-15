@@ -18,6 +18,68 @@ import {
 } from "lucide-react"
 import { NavItem } from "@/types/nav.interface"
 import { UserRole } from "@/types/enums"
+import { env } from "@/constants";
+
+const DEFAULT_ADMIN_BASE_PATH = env.NEXT_PUBLIC_BASE_ZONE;
+
+export function getAdminBasePath(): string {
+  if (typeof process !== "undefined") {
+    const envValue = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH;
+    if (envValue && envValue.trim().length > 0) {
+      const normalized = `/${envValue.replace(/^\/+|\/+$/g, "")}`;
+      return normalized === "/" ? DEFAULT_ADMIN_BASE_PATH : normalized;
+    }
+  }
+  return DEFAULT_ADMIN_BASE_PATH;
+}
+
+export function adminHref(path: string, query?: string): string {
+  const base = getAdminBasePath();
+  if (!path) return base;
+  const normalizedPath = `/${path.replace(/^\/+/, "")}`;
+  return `${base}${normalizedPath}`.replace(/\/{2,}/g, "/") + (query ? `?${query}` : "");
+}
+
+export const ADMIN_ROUTES = {
+  base: getAdminBasePath(),
+  home: (query?: string) => adminHref("", query),
+  login: () => adminHref("login"),
+  register: () => adminHref("register"),
+
+  orders: (query?: string) => adminHref("orders", query),
+  orderDetail: (id: string) => adminHref(`orders/${id}`),
+
+  products: (query?: string) => adminHref("products", query),
+  productDetail: (id: string) => adminHref(`products/${id}`),
+
+  collections: (query?: string) => adminHref("collections", query),
+  customers: (query?: string) => adminHref("customers", query),
+
+  employee: (query?: string) => adminHref("employee", query),
+  attendance: (query?: string) => adminHref("attendance", query),
+  payroll: (query?: string) => adminHref("payroll", query),
+
+  discounts: (query?: string) => adminHref("discounts", query),
+
+  warehouse: (query?: string) => adminHref("warehouse", query),
+  warehouseDetail: (id: string) => adminHref(`warehouse/${id}`),
+  stockChange: (query?: string) => adminHref("stock-change", query),
+  produce: (query?: string) => adminHref("produce", query),
+
+  utility: (query?: string) => adminHref("utility", query),
+  invoice: (query?: string) => adminHref("invoice", query),
+
+  reportsDaily: (query?: string) => adminHref("reports/daily", query),
+  reportsEmployee: (query?: string) => adminHref("reports/employee", query),
+  reportsOrder: (query?: string) => adminHref("reports/order", query),
+  reportsStock: (query?: string) => adminHref("reports/stock", query),
+  reportsCustomer: (query?: string) => adminHref("reports/customer", query),
+  reportsActivity: (query?: string) => adminHref("reports/activity", query),
+  reportsUtility: (query?: string) => adminHref("reports/utility", query),
+
+  permissions: () => adminHref("permissions"),
+  permissionUser: (id: string) => adminHref(`permissions/user/${id}`),
+};
 
 export const navItems: NavItem[] = [
 	{
@@ -26,11 +88,11 @@ export const navItems: NavItem[] = [
 		title: "Monitoring",
 		translationKey: "nav.monitoring",
 		children: [
-			{ id: "home", name: "home", title: "Home", translationKey: "nav.home", icon: Home, href: "/" },
-			{ id: "orders", name: "orders", title: "Orders", translationKey: "nav.orders", icon: ShoppingCart, href: "/orders" },
-			{ id: "products", name: "products", title: "Products", translationKey: "nav.products", icon: Package, href: "/products" },
-			{ id: "collections", name: "collections", title: "Collections", translationKey: "nav.collections", icon: Layers, href: "/collections" },
-			{ id: "customers", name: "customers", title: "Customers", translationKey: "nav.customers", icon: Users, href: "/customers" },
+			{ id: "home", name: "home", title: "Home", translationKey: "nav.home", icon: Home, href: ADMIN_ROUTES.home() },
+			{ id: "orders", name: "orders", title: "Orders", translationKey: "nav.orders", icon: ShoppingCart, href: ADMIN_ROUTES.orders() },
+			{ id: "products", name: "products", title: "Products", translationKey: "nav.products", icon: Package, href: ADMIN_ROUTES.products() },
+			{ id: "collections", name: "collections", title: "Collections", translationKey: "nav.collections", icon: Layers, href: ADMIN_ROUTES.collections() },
+			{ id: "customers", name: "customers", title: "Customers", translationKey: "nav.customers", icon: Users, href: ADMIN_ROUTES.customers() },
 		],
 	},
 	{
@@ -39,9 +101,9 @@ export const navItems: NavItem[] = [
 		title: "Employee",
 		translationKey: "nav.employee",
 		children: [
-			{ id: "employee", name: "employee", title: "Employee", translationKey: "nav.employee", icon: User, href: "/employee" },
-			{ id: "attendance", name: "attendance", title: "Attendance", translationKey: "nav.attendance", icon: Calendar, href: "/attendance" },
-			{ id: "payroll", name: "payroll", title: "Payroll", translationKey: "nav.payroll", icon: DollarSign, href: "/payroll" },
+			{ id: "employee", name: "employee", title: "Employee", translationKey: "nav.employee", icon: User, href: ADMIN_ROUTES.employee() },
+			{ id: "attendance", name: "attendance", title: "Attendance", translationKey: "nav.attendance", icon: Calendar, href: ADMIN_ROUTES.attendance() },
+			{ id: "payroll", name: "payroll", title: "Payroll", translationKey: "nav.payroll", icon: DollarSign, href: ADMIN_ROUTES.payroll() },
 		],
 	},
 	{
@@ -49,7 +111,7 @@ export const navItems: NavItem[] = [
 		name: "marketing",
 		title: "Marketing",
 		translationKey: "nav.marketing",
-		children: [{ id: "discounts", name: "discounts", title: "Discounts", translationKey: "nav.discounts", icon: Percent, href: "/discounts" }],
+		children: [{ id: "discounts", name: "discounts", title: "Discounts", translationKey: "nav.discounts", icon: Percent, href: ADMIN_ROUTES.discounts() }],
 	},
 	{
 		id: "warehouses",
@@ -57,9 +119,9 @@ export const navItems: NavItem[] = [
 		title: "Warehouses",
 		translationKey: "nav.warehouses",
 		children: [
-			{ id: "warehouse", name: "warehouse", title: "Warehouse", translationKey: "nav.warehouse", icon: Building, href: "/warehouse" },
-			{ id: "stock_change", name: "stock_change", title: "Stock-change", translationKey: "nav.stockChange", icon: Package, href: "/stock-change" },
-			{ id: "produce", name: "produce", title: "Production", translationKey: "nav.produce", icon: Zap, href: "/produce" },
+			{ id: "warehouse", name: "warehouse", title: "Warehouse", translationKey: "nav.warehouse", icon: Building, href: ADMIN_ROUTES.warehouse() },
+			{ id: "stock_change", name: "stock_change", title: "Stock-change", translationKey: "nav.stockChange", icon: Package, href: ADMIN_ROUTES.stockChange() },
+			{ id: "produce", name: "produce", title: "Production", translationKey: "nav.produce", icon: Zap, href: ADMIN_ROUTES.produce() },
 		],
 	},
 	{
@@ -68,8 +130,8 @@ export const navItems: NavItem[] = [
 		title: "Utilities",
 		translationKey: "nav.utilities",
 		children: [
-			{ id: "utility", name: "utility", title: "Utility", translationKey: "nav.utility", icon: Zap, href: "/utility" },
-			{ id: "invoice", name: "invoice", title: "Invoice", translationKey: "nav.invoice", icon: FileText, href: "/invoice" },
+			{ id: "utility", name: "utility", title: "Utility", translationKey: "nav.utility", icon: Zap, href: ADMIN_ROUTES.utility() },
+			{ id: "invoice", name: "invoice", title: "Invoice", translationKey: "nav.invoice", icon: FileText, href: ADMIN_ROUTES.invoice() },
 		],
 	},
 	{
@@ -78,18 +140,18 @@ export const navItems: NavItem[] = [
 		title: "Reports",
 		translationKey: "nav.reports",
 		children: [
-			{ id: "reports_daily", name: "reports_daily", title: "Daily report", translationKey: "nav.dailyReport", icon: Clock, href: "/reports/daily" },
-			{ id: "reports_employee", name: "reports_employee", title: "Employee report", translationKey: "nav.employeeReport", icon: User, href: "/reports/employee" },
-			{ id: "reports_order", name: "reports_order", title: "Order report", translationKey: "nav.orderReport", icon: ShoppingBag, href: "/reports/order" },
-			{ id: "reports_stock", name: "reports_stock", title: "Stock report", translationKey: "nav.stockReport", icon: Box, href: "/reports/stock" },
-			{ id: "reports_customer", name: "reports_customer", title: "Customer report", translationKey: "nav.customerReport", icon: Users, href: "/reports/customer" },
+			{ id: "reports_daily", name: "reports_daily", title: "Daily report", translationKey: "nav.dailyReport", icon: Clock, href: ADMIN_ROUTES.reportsDaily() },
+			{ id: "reports_employee", name: "reports_employee", title: "Employee report", translationKey: "nav.employeeReport", icon: User, href: ADMIN_ROUTES.reportsEmployee() },
+			{ id: "reports_order", name: "reports_order", title: "Order report", translationKey: "nav.orderReport", icon: ShoppingBag, href: ADMIN_ROUTES.reportsOrder() },
+			{ id: "reports_stock", name: "reports_stock", title: "Stock report", translationKey: "nav.stockReport", icon: Box, href: ADMIN_ROUTES.reportsStock() },
+			{ id: "reports_customer", name: "reports_customer", title: "Customer report", translationKey: "nav.customerReport", icon: Users, href: ADMIN_ROUTES.reportsCustomer() },
 			{
 				id: "reports_activity", name: "reports_activity", title: "Operating Report",
 				translationKey: "nav.operatingReport",
 				icon: BarChart2,
-				href: "/reports/activity",
+				href: ADMIN_ROUTES.reportsActivity(),
 			},
-			{ id: "reports_utility", name: "reports_utility", title: "Utility Report", translationKey: "nav.utilityReport", icon: Zap, href: "/reports/utility" },
+			{ id: "reports_utility", name: "reports_utility", title: "Utility Report", translationKey: "nav.utilityReport", icon: Zap, href: ADMIN_ROUTES.reportsUtility() },
 		],
 	},
 ]

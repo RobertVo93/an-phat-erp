@@ -15,6 +15,7 @@ import { ServersideTable, ServersideTableColumn } from "@/components/common/tabl
 import { formatCurrency, formatDate, formatDateTime, getOrderStatusColor } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ADMIN_ROUTES } from "@/constants/nav"
 
 export default function OrdersPage() {
   const { t } = useLanguage()
@@ -100,7 +101,7 @@ export default function OrdersPage() {
       title: t("common.actions"),
       render: (row) => (
         <div className="flex justify-center">
-          <Link href={`/orders/${row.id}`}>
+          <Link href={ADMIN_ROUTES.orderDetail(row.id!)}>
             <Button variant="outline" size="sm">{t("common.view")}</Button>
           </Link>
         </div>

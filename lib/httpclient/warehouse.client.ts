@@ -1,7 +1,8 @@
 import { ProductInWarehouseFilters, Warehouse, WarehouseFilters } from "@/types";
+import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 
 export async function getWarehouses(params: WarehouseFilters = {}) {
-  const url = new URL("/api/warehouse", window.location.origin);
+  const url = createApiUrl("/api/warehouse");
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
@@ -11,12 +12,12 @@ export async function getWarehouses(params: WarehouseFilters = {}) {
 }
 
 export async function getWarehouseById(id: string) {
-  const res = await fetch(`/api/warehouse/${id}`);
+  const res = await fetch(apiHref(`/api/warehouse/${id}`));
   return res.json();
 }
 
 export async function addWarehouse(data: Partial<Warehouse>) {
-  const res = await fetch("/api/warehouse", {
+  const res = await fetch(apiHref("/api/warehouse"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -27,7 +28,7 @@ export async function addWarehouse(data: Partial<Warehouse>) {
 }
 
 export async function updateWarehouse(id: string, data: Partial<Warehouse>) {
-  const res = await fetch(`/api/warehouse/${id}`, {
+  const res = await fetch(apiHref(`/api/warehouse/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -38,7 +39,7 @@ export async function updateWarehouse(id: string, data: Partial<Warehouse>) {
 }
 
 export async function deleteWarehouse(id: string) {
-  const res = await fetch(`/api/warehouse/${id}`, {
+  const res = await fetch(apiHref(`/api/warehouse/${id}`), {
     method: "DELETE",
     credentials: "include",
   });
@@ -52,7 +53,7 @@ export async function transferWarehouse(data: {
   productId: string;
   quantity: number;
 }) {
-  const res = await fetch(`/api/warehouse/transfer`, {
+  const res = await fetch(apiHref(`/api/warehouse/transfer`), {
     method: "POST",
     credentials: "include",
     body: JSON.stringify(data),
@@ -65,7 +66,7 @@ export async function transferWarehouse(data: {
 
 ////Warehouse Product////
 export async function getProductInWarehouseByFiltersClient(params: ProductInWarehouseFilters = {}) {
-  const url = new URL("/api/warehouse-product", window.location.origin);
+  const url = createApiUrl("/api/warehouse-product");
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });

@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { cn, formatDate } from "@/lib/utils"
+import { ADMIN_ROUTES } from "@/constants/nav"
 import { usePermissions } from "@/hooks/use-permissions"
 
 interface UsersTableProps {
@@ -219,7 +220,7 @@ export function UsersTable({ selectedRole, searchQuery }: UsersTableProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => router.push(`/permissions/user/${user.id}`)}
+                        onClick={() => router.push(ADMIN_ROUTES.permissionUser(user.id!))}
                         disabled={user.role === "super_admin"}
                       >
                         <Settings className="h-4 w-4 mr-1" />
