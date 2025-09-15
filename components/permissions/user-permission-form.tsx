@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Save, ArrowLeft, Shield, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { navItems } from "@/constants/nav"
+import { navItems, ADMIN_ROUTES } from "@/constants/nav"
 import { UserRole } from "@/types"
 
 interface UserPermissionFormProps {
@@ -49,7 +49,7 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
         <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
         <h2 className="text-xl font-bold mb-2">User Not Found</h2>
         <p className="text-gray-600 mb-4">The user you're looking for doesn't exist or has been deleted.</p>
-        <Button onClick={() => router.push("/permissions")}>
+        <Button onClick={() => router.push(ADMIN_ROUTES.permissions())}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Users
         </Button>
@@ -95,7 +95,7 @@ export function UserPermissionForm({ userId }: UserPermissionFormProps) {
           </div>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" onClick={() => router.push("/permissions")}>
+          <Button variant="outline" onClick={() => router.push(ADMIN_ROUTES.permissions())}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Users
           </Button>

@@ -8,6 +8,7 @@ import { Warehouse } from "@/types"
 import { useLanguage } from "@/contexts/language-context"
 import { getWarehouseStatusColor } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { ADMIN_ROUTES } from "@/constants/nav"
 
 interface WarehouseListProps {
     warehouses: Warehouse[]
@@ -38,7 +39,7 @@ export const WarehouseList = ({
                                 key={warehouse.id}
                                 className={`flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg space-y-4 lg:space-y-0 cursor-pointer hover:border-slate-400 hover:shadow-lg transition-all duration-300
                                     ${warehouse.main ? "border-red-500" : ""}`}
-                                onClick={() => router.push(`/warehouse/${warehouse.id}`)}
+                                onClick={() => router.push(ADMIN_ROUTES.warehouseDetail(warehouse.id!))}
                             >
                                 <div className="flex-1 space-y-2">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">

@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/sidebar"
 import { Header } from "@/components/header"
 import { useAuth } from "@/contexts/auth-context"
 import { usePathname, useRouter } from "next/navigation"
-import { navItems } from "@/constants/nav"
+import { navItems, ADMIN_ROUTES } from "@/constants/nav"
 import type { UserPagePermission } from "@/types/user-permission"
 import type { NavItem } from "@/types/nav.interface"
 import { getUserById } from "@/lib/httpclient"
@@ -100,7 +100,7 @@ export function ERPLayout({ children }: ERPLayoutProps) {
           <p className="text-gray-600 mb-4">{t("common.accessDenied")}</p>
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded"
-            onClick={() => router.push("/")}
+            onClick={() => router.push(ADMIN_ROUTES.home())}
           >
             {t("common.goHome")}
           </button>

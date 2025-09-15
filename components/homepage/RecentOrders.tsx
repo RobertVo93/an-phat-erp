@@ -7,6 +7,7 @@ import { useLanguage } from "@/contexts/language-context"
 import type { Order } from "@/types/order"
 import { getOrderStatusColor, formatDate, formatLargeCurrency, formatDateTime } from "@/lib/utils"
 import Link from "next/link"
+import { ADMIN_ROUTES } from "@/constants/nav"
 
 interface RecentOrdersProps {
   data: Order[]
@@ -45,7 +46,7 @@ export function RecentOrders(props: RecentOrdersProps) {
       sortable: false,
       render: (row) => (
         <div className="space-y-1">
-          <Link href={`/orders/${row.id}`} className="hover:underline text-blue-500">
+          <Link href={ADMIN_ROUTES.orderDetail(String(row.id))} className="hover:underline text-blue-500">
             <p className="text-sm font-medium">{row.number}</p>
           </Link>
           <p className="text-xs text-muted-foreground">{formatDate(row.createdAt!)}</p>

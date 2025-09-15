@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/utils"
 import { getProductStatusColor } from "@/lib/utils"
 import { Product } from "@/types/product"
 import { useRouter } from "next/navigation"
+import { ADMIN_ROUTES } from "@/constants/nav"
 
 interface ProductListBodyProps {
     t: (key: string) => string
@@ -98,7 +99,7 @@ export function ProductListBody({
                             <div
                                 key={product.id}
                                 className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                                onClick={() => router.push(`/products/${product.id}`)}
+                                onClick={() => router.push(ADMIN_ROUTES.productDetail(product.id!))}
                             >
                                 <div className="flex gap-4">
                                     {/* Product Image */}
