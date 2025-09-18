@@ -1,18 +1,22 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { EmployeeType, EmployeeStatus } from "@/types/enums";
-import { AttendanceRecordEntity } from "@/lib/database/entities/attendance-record.entity";
-import { AttendanceRecord as IAttendanceRecord } from "@/types/attendance";
-import { Employee as IEmployee } from "@/types/employee";
-import { PayrollRecordEntity } from "@/lib/database/entities/payroll-record.entity";
-import { PayrollRecord as IPayrollRecord } from "@/types";
 import { AppDataSource } from "@/lib/database/typeorm";
-import { ProductionRecordEntity } from "@/lib/database/entities/production-record.entity";
-import { ProductionRecord as IProductionRecord } from "@/types/production";
+import { EmployeeType, EmployeeStatus } from "@/types/enums";
+import {
+  AttendanceRecord as IAttendanceRecord,
+  PayrollRecord as IPayrollRecord,
+  ProductionRecord as IProductionRecord,
+  Employee as IEmployee
+} from "@/types";
+import {
+  AttendanceRecordEntity,
+  PayrollRecordEntity,
+  ProductionRecordEntity
+} from "@/lib/database/entities";
 
 @Entity({ name: "employees" })
 export class EmployeeEntity extends BaseEntity implements IEmployee {
-  @Column({ unique: true})
+  @Column({ unique: true })
   number?: string;
 
   @Column({ nullable: false })

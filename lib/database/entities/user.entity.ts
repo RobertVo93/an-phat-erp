@@ -1,9 +1,8 @@
 import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { UserPagePermissionEntity } from "@/lib/database/entities";
 import { UserRole } from "@/types/enums";
-import { IUser } from "@/types/user";
-import { UserPagePermissionEntity } from "@/lib/database/entities/user-page-permission.entity";
-import { UserPagePermission as IUserPagePermission } from "@/types";
+import { UserPagePermission as IUserPagePermission, IUser } from "@/types";
 
 @Entity({ name: "users" })
 export class UserEntity extends BaseEntity implements IUser {

@@ -1,6 +1,5 @@
 export * from "./activity-log.entity";
 export * from "./attendance-record.entity";
-export * from "./base.entity";
 export * from "./collection.entity";
 export * from "./customer.entity";
 export * from "./employee.entity";

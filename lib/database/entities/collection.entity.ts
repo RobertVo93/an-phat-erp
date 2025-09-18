@@ -1,10 +1,9 @@
 import { Entity, Column, ManyToMany, JoinTable, BeforeInsert } from "typeorm";
-import { ProductEntity } from "@/lib/database/entities/product.entity";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { CollectionStatus } from "@/types/enums";
-import { Product as IProduct } from "@/types/product";
-import { Collection as ICollection } from "@/types/collection";
 import { AppDataSource } from "@/lib/database/typeorm";
+import { ProductEntity } from "@/lib/database/entities";
+import { CollectionStatus } from "@/types/enums";
+import { Product as IProduct, Collection as ICollection } from "@/types";
 
 @Entity({ name: "collections" })
 export class CollectionEntity extends BaseEntity implements ICollection {
