@@ -1,7 +1,7 @@
 import { Entity, Column, JoinColumn, ManyToOne } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { UserEntity } from "@/lib/database/entities";
 import { type IUser, UserPagePermission as IUserPagePermission } from "@/types";
-import { UserEntity } from "./user.entity";
 
 @Entity({ name: "user_page_permissions" })
 export class UserPagePermissionEntity extends BaseEntity implements IUserPagePermission {

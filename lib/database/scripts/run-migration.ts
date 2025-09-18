@@ -1,15 +1,12 @@
-import { AppDataSource as dataSource} from '../typeorm';
+import { execSync } from 'child_process';
 
 async function runMigrations() {
   try {
-    await dataSource.initialize();
-
-    console.log('DataSource initialized. Running migrations...');
-    await dataSource.runMigrations();
-
-    console.log('Migrations completed successfully.');
-    await dataSource.destroy();
-  } catch (error) {
+    execSync(`TS_NODE_PROJECT=tsconfig.typeorm.json ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d lib/database/typeorm.ts`, {
+      stdio: 'inherit'
+    });
+  }
+  catch (error) {
     console.error('Error running migrations:', error);
     process.exit(1);
   }

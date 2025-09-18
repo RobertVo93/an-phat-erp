@@ -1,13 +1,10 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
-import { ProductionStatus } from "@/types/enums";
-import { IProductionElement, ProductionRecord as IProductionRecord } from "@/types/production";
-import type { Employee as IEmployee, Product as IProduct } from "@/types";
-import { AppDataSource } from "@/lib/database/typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { ProductEntity } from "@/lib/database/entities/product.entity";
-import { WarehouseEntity } from "@/lib/database/entities/warehouse.entity";
-import { EmployeeEntity } from "@/lib/database/entities/employee.entity";
-import type { Warehouse as IWarehouse } from "@/types";
+import { AppDataSource } from "@/lib/database/typeorm";
+import { ProductionStatus } from "@/types/enums";
+import { IProductionElement, ProductionRecord as IProductionRecord } from "@/types";
+import type { Employee as IEmployee, Product as IProduct, Warehouse as IWarehouse } from "@/types";
+import { ProductEntity, WarehouseEntity, EmployeeEntity } from "@/lib/database/entities";
 import { handleStatusCompleted } from "@/lib/services/productionService";
 
 @Entity({ name: "production_records" })

@@ -1,16 +1,12 @@
-import { AppDataSource as dataSource } from '../typeorm';
+import { execSync } from 'child_process';
 
 async function revertLastMigration() {
   try {
-    await dataSource.initialize();
-
-    console.log('DataSource initialized. Reverting last migration...');
-    await dataSource.undoLastMigration();
-
-    console.log('Reverted last migration successfully (if any).');
-
-    await dataSource.destroy();
-  } catch (error) {
+    execSync(`TS_NODE_PROJECT=tsconfig.typeorm.json ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d lib/database/typeorm.ts`, {
+      stdio: 'inherit'
+    });
+  }
+  catch (error) {
     console.error('Error reverting migration:', error);
     process.exit(1);
   }

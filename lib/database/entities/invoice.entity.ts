@@ -1,7 +1,7 @@
 import { Entity, Column, BeforeInsert } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { InvoiceStatus } from "@/types/enums";
-import { IInvoiceUtility, Invoice as IInvoice } from "@/types/invoice";
+import { IInvoiceUtility, Invoice as IInvoice } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "invoices" })

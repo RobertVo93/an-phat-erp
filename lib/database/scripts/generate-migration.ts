@@ -21,14 +21,14 @@ const formattedDate = now.getFullYear().toString() +
 const migrationsDir = path.join('lib/database/migrations');
 
 // 1. Generate migration with dummy name
-const tempName = 'TempMigration';
+const tempName = customName;
 const tempPath = path.join(migrationsDir, tempName);
 
 console.log(`📦 Generating migration script...`);
 
 try {
-  execSync(`pnpm exec ts-node ./node_modules/typeorm/cli.js migration:generate ${tempPath} -d lib/database/typeorm.ts`, {
-    stdio: 'inherit',
+  execSync(`TS_NODE_PROJECT=tsconfig.typeorm.json ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate ${tempPath} -d lib/database/typeorm.ts`, {
+    stdio: 'inherit'
   });
 
   // 2. Find the newly generated migration
