@@ -1,13 +1,12 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { CustomerEntity } from "@/lib/database/entities/customer.entity";
-import { WarehouseEntity } from "@/lib/database/entities/warehouse.entity";
+import { AppDataSource } from "@/lib/database/typeorm";
+import { CustomerEntity, WarehouseEntity } from "@/lib/database/entities";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
-import { IOrderItem, Order as IOrder } from "@/types/order";
+import { IOrderItem, Order as IOrder } from "@/types";
 import type { Warehouse as IWarehouse, Customer as ICustomer } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
 import { handleCompleteOrder, handleOrderChangeLogs } from "@/lib/services/orderService";
-import { AppDataSource } from "@/lib/database/typeorm";
 
 @Entity({ name: "orders" })
 export class OrderEntity extends BaseEntity implements IOrder {
