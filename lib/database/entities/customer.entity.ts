@@ -1,10 +1,10 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
-import { BaseEntity } from "./base.entity";
-import { CustomerStatus, CustomerType } from "../../../types/enums";
-import { OrderEntity } from "./order.entity";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { CustomerStatus, CustomerType } from "@/types/enums";
+import { OrderEntity } from "@/lib/database/entities/order.entity";
 import { Order as IOrder } from "@/types/order";
 import { Customer as ICustomer } from "@/types/customer";
-import { AppDataSource } from "../typeorm";
+import { AppDataSource } from "@/lib/database/typeorm";
 
 @Entity({ name: "customers" })
 export class CustomerEntity extends BaseEntity implements ICustomer {

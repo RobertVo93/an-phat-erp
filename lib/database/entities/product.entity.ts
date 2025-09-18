@@ -1,14 +1,14 @@
 import { Entity, Column, ManyToMany, OneToMany, BeforeInsert } from "typeorm";
-import { BaseEntity } from "./base.entity";
-import { ProductStatus, ProductUnit } from "../../../types/enums";
-import { CollectionEntity } from "./collection.entity";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { ProductStatus, ProductUnit } from "@/types/enums";
+import { CollectionEntity } from "@/lib/database/entities/collection.entity";
 import { Collection as ICollection } from "@/types/collection";
 import { Product as IProduct } from "@/types/product";
-import { WarehouseProductEntity } from "./warehouse-product.entity";
+import { WarehouseProductEntity } from "@/lib/database/entities/warehouse-product.entity";
 import { WarehouseProduct as IWarehouseProduct } from "@/types/warehouseProduct";
-import { ProductionRecordEntity } from "./production-record.entity";
+import { ProductionRecordEntity } from "@/lib/database/entities/production-record.entity";
 import type { ProductionRecord as IProductionRecord } from "@/types/production";
-import { AppDataSource } from "../typeorm";
+import { AppDataSource } from "@/lib/database/typeorm";
 
 @Entity({ name: "products" })
 export class ProductEntity extends BaseEntity implements IProduct {

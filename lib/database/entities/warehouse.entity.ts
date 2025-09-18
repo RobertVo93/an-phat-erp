@@ -1,16 +1,16 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { WarehouseStatus } from "@/types/enums";
-import { StockChangeEntity } from "./stock-change.entity";
+import { StockChangeEntity } from "@/lib/database/entities/stock-change.entity";
 import { StockChange as IStockChange } from "@/types/stock-change";
 import { Warehouse as IWarehouse } from "@/types/warehouse";
-import { WarehouseProductEntity } from "./warehouse-product.entity";
+import { WarehouseProductEntity } from "@/lib/database/entities/warehouse-product.entity";
 import { WarehouseProduct as IWarehouseProduct } from "@/types/warehouseProduct";
 import type { Order as IOrder } from "@/types/order";
-import { OrderEntity } from "./order.entity";
-import { ProductionRecordEntity } from "./production-record.entity";
+import { OrderEntity } from "@/lib/database/entities/order.entity";
+import { ProductionRecordEntity } from "@/lib/database/entities/production-record.entity";
 import type { ProductionRecord as IProductionRecord } from "@/types/production";
-import { AppDataSource } from "../typeorm";
+import { AppDataSource } from "@/lib/database/typeorm";
 
 @Entity({ name: "warehouses" })
 export class WarehouseEntity extends BaseEntity implements IWarehouse {

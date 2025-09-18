@@ -1,13 +1,13 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
-import { BaseEntity } from "./base.entity";
-import { EmployeeType, EmployeeStatus } from "../../../types/enums";
-import { AttendanceRecordEntity } from "./attendance-record.entity";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { EmployeeType, EmployeeStatus } from "@/types/enums";
+import { AttendanceRecordEntity } from "@/lib/database/entities/attendance-record.entity";
 import { AttendanceRecord as IAttendanceRecord } from "@/types/attendance";
 import { Employee as IEmployee } from "@/types/employee";
-import { PayrollRecordEntity } from "./payroll-record.entity";
+import { PayrollRecordEntity } from "@/lib/database/entities/payroll-record.entity";
 import { PayrollRecord as IPayrollRecord } from "@/types";
-import { AppDataSource } from "../typeorm";
-import { ProductionRecordEntity } from "./production-record.entity";
+import { AppDataSource } from "@/lib/database/typeorm";
+import { ProductionRecordEntity } from "@/lib/database/entities/production-record.entity";
 import { ProductionRecord as IProductionRecord } from "@/types/production";
 
 @Entity({ name: "employees" })

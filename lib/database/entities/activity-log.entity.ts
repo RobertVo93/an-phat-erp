@@ -1,5 +1,5 @@
 import { Entity, Column } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { ResourceType } from "@/types";
 import { IActivityLog } from "@/types/activity-log.interface";
 

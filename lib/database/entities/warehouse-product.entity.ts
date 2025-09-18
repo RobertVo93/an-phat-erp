@@ -1,8 +1,8 @@
 import { WarehouseProduct } from '@/types/warehouseProduct';
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { BaseEntity } from "./base.entity";
-import { WarehouseEntity } from "./warehouse.entity";
-import { ProductEntity } from "./product.entity";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { WarehouseEntity } from "@/lib/database/entities/warehouse.entity";
+import { ProductEntity } from "@/lib/database/entities/product.entity";
 import type { Product as IProduct } from "@/types/product";
 import type { Warehouse as IWarehouse } from "@/types/warehouse";
 

@@ -1,30 +1,45 @@
 # An phat erp system
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+## How to run
+- To install library
+  ```bash
+  pnpm install
+  ```
+- To start the project
+  ```bash
+  docker compose up -d
+  ```
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/robertvokl93-4147s-projects/v0-an-phat-erp-system)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/2IMgC9bLQqH)
 
-## Overview
+## How to generate db migration scripts
+1. open a terminal at root folder
+2. Check your .env file to have the below db information
+```bash
+DATABASE_URL="postgresql://connection-string"
+```
+3. run the command
+```bash
+pnpm migration:gen NameOfMigrationScript
+```
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+## How to apply the migration scripts to your db
+1. open a terminal at root folder
+2. Check your .env file to have the below db information
+```bash
+DATABASE_URL="postgresql://connection-string"
+```
+3. run the command
+```bash
+pnpm migration:run
+```
 
-## Deployment
-
-Your project is live at:
-
-**[https://vercel.com/robertvokl93-4147s-projects/v0-an-phat-erp-system](https://vercel.com/robertvokl93-4147s-projects/v0-an-phat-erp-system)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.dev/chat/projects/2IMgC9bLQqH](https://v0.dev/chat/projects/2IMgC9bLQqH)**
-
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+## How to revert the last migration script to your db
+1. open a terminal at root folder
+2. Check your .env file to have the below db information
+```bash
+DATABASE_URL="postgresql://connection-string"
+```
+3. run the command
+```bash
+pnpm migration:revert
+```
