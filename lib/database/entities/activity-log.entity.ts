@@ -1,7 +1,6 @@
 import { Entity, Column } from "typeorm";
-import { BaseEntity } from "./base.entity";
-import { ResourceType } from "@/types";
-import { IActivityLog } from "@/types/activity-log.interface";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { ResourceType, IActivityLog } from "@/types";
 
 @Entity({ name: "activity_logs" })
 export class ActivityLogEntity extends BaseEntity implements IActivityLog {

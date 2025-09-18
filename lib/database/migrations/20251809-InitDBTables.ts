@@ -1,0 +1,122 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class InitDBTables1758183945483 implements MigrationInterface {
+    name = 'InitDBTables1758183945483'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TYPE "public"."activity_logs_resource_enum" AS ENUM('order', 'product', 'customer', 'employee', 'warehouse', 'collection')`);
+        await queryRunner.query(`CREATE TABLE "activity_logs" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "resource" "public"."activity_logs_resource_enum", "targetId" character varying, "field" character varying, "oldValue" jsonb, "newValue" jsonb, "updatedUser" character varying, "transactionId" character varying, CONSTRAINT "PK_f25287b6140c5ba18d38776a796" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."attendance_records_shift_enum" AS ENUM('morning', 'afternoon', 'evening', 'all')`);
+        await queryRunner.query(`CREATE TYPE "public"."attendance_records_status_enum" AS ENUM('draft', 'completed', 'waitingApproval')`);
+        await queryRunner.query(`CREATE TYPE "public"."attendance_records_substatus_enum" AS ENUM('present', 'absent', 'late', 'overtime', 'leave')`);
+        await queryRunner.query(`CREATE TABLE "attendance_records" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "date" TIMESTAMP, "checkIn" TIMESTAMP, "checkOut" TIMESTAMP, "shift" "public"."attendance_records_shift_enum", "status" "public"."attendance_records_status_enum", "subStatus" "public"."attendance_records_substatus_enum", "notes" character varying, "workHours" integer, "paidAmount" integer, "employee_id" uuid, CONSTRAINT "UQ_eab064813a401a279ac2066b190" UNIQUE ("number"), CONSTRAINT "PK_946920332f5bc9efad3f3023b96" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."customers_status_enum" AS ENUM('active', 'inactive', 'pending')`);
+        await queryRunner.query(`CREATE TYPE "public"."customers_customertype_enum" AS ENUM('vip', 'premium', 'regular')`);
+        await queryRunner.query(`CREATE TABLE "customers" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "name" character varying NOT NULL, "email" character varying, "phone" character varying, "company" character varying, "location" character varying, "lastOrder" TIMESTAMP, "status" "public"."customers_status_enum", "customerType" "public"."customers_customertype_enum", "joinDate" TIMESTAMP, "notes" character varying, CONSTRAINT "UQ_7a34a76424248001dee0027c62e" UNIQUE ("number"), CONSTRAINT "PK_133ec679a801fab5e070f73d3ea" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."employees_employeetype_enum" AS ENUM('fullTime', 'partTime', 'contract', 'intern')`);
+        await queryRunner.query(`CREATE TYPE "public"."employees_status_enum" AS ENUM('active', 'inactive', 'onLeave')`);
+        await queryRunner.query(`CREATE TABLE "employees" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "name" character varying NOT NULL, "email" character varying, "phone" character varying NOT NULL, "position" character varying, "department" character varying, "salary" double precision, "hireDate" TIMESTAMP, "employeeType" "public"."employees_employeetype_enum", "status" "public"."employees_status_enum", "address" character varying, "emergencyContact" character varying, "notes" character varying, CONSTRAINT "UQ_870ec56a14c56d42164652c97ab" UNIQUE ("number"), CONSTRAINT "PK_b9535a98350d5b26e7eb0c26af4" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."invoices_status_enum" AS ENUM('draft', 'sent', 'paid', 'overdue', 'cancelled')`);
+        await queryRunner.query(`CREATE TABLE "invoices" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying, "billingPeriod" character varying, "issueDate" TIMESTAMP, "dueDate" TIMESTAMP, "subtotal" double precision, "taxRate" double precision, "taxAmount" double precision, "otherFees" double precision, "otherFeesDescription" character varying, "total" double precision, "status" "public"."invoices_status_enum", "notes" character varying, "utilities" jsonb, CONSTRAINT "PK_668cef7c22a427fd822cc1be3ce" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "warehouse_products" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "quantity" double precision NOT NULL DEFAULT '0', "warehouse_id" uuid NOT NULL, "product_id" uuid NOT NULL, CONSTRAINT "PK_64fcddc30222be61dc0ef1664c5" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_status_enum" AS ENUM('pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'lackProduct')`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_paymentstatus_enum" AS ENUM('pending', 'paid', 'partial', 'failed', 'refunded')`);
+        await queryRunner.query(`CREATE TYPE "public"."orders_paymentmethod_enum" AS ENUM('creditCard', 'debitCard', 'bankTransfer', 'cash', 'paypal')`);
+        await queryRunner.query(`CREATE TABLE "orders" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "deliveryDate" TIMESTAMP, "totalAmount" double precision, "status" "public"."orders_status_enum", "paymentStatus" "public"."orders_paymentstatus_enum", "paymentMethod" "public"."orders_paymentmethod_enum", "shippingAddress" character varying, "notes" character varying, "tags" text array, "shippingFee" double precision, "tax" double precision, "items" jsonb, "customer_id" uuid, "warehouse_id" uuid, CONSTRAINT "UQ_4e174e347d448617acdf98fef0d" UNIQUE ("number"), CONSTRAINT "PK_710e2d4957aa5878dfe94e4ac2f" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."payroll_records_status_enum" AS ENUM('draft', 'pending', 'processing', 'processed', 'failed')`);
+        await queryRunner.query(`CREATE TABLE "payroll_records" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "baseSalary" double precision, "bonus" double precision, "deductions" double precision, "totalSalary" double precision, "workingShifts" integer, "workingHours" double precision, "payPeriod" character varying NOT NULL, "status" "public"."payroll_records_status_enum" NOT NULL DEFAULT 'draft', "paidAt" TIMESTAMP, "notes" character varying, "attendanceRecords" jsonb, "employeeId" uuid NOT NULL, CONSTRAINT "UQ_bd46ae8c36cc600ba32e70ca0ed" UNIQUE ("number"), CONSTRAINT "PK_869cabe268deb5726e742f2d3f0" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."products_unit_enum" AS ENUM('kg', 'piece', 'other')`);
+        await queryRunner.query(`CREATE TYPE "public"."products_status_enum" AS ENUM('active', 'inactive', 'lowStock', 'outOfStock')`);
+        await queryRunner.query(`CREATE TABLE "products" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "name" character varying NOT NULL, "unit" "public"."products_unit_enum" NOT NULL, "description" character varying, "price" double precision, "cost" double precision, "stock" integer, "minStock" integer, "sku" character varying, "barcode" character varying, "status" "public"."products_status_enum", "supplier" character varying, "image" character varying, CONSTRAINT "PK_0806c755e0aca124e67c0cf6d7d" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."production_records_status_enum" AS ENUM('completed', 'in-progress', 'lack-material', 'paused', 'cancelled')`);
+        await queryRunner.query(`CREATE TABLE "production_records" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "date" TIMESTAMP, "quantity" integer, "status" "public"."production_records_status_enum", "totalCost" double precision, "totalExpense" double precision, "materials" jsonb, "utilities" jsonb, "labors" jsonb, "pic_id" uuid, "product_id" uuid, "warehouse_id" uuid, CONSTRAINT "UQ_cb2049af5c7c17e543d7d626318" UNIQUE ("number"), CONSTRAINT "PK_38d4f7e2c6b6ca67d35dd934cee" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."stock_change_type_enum" AS ENUM('stock-in', 'stock-out')`);
+        await queryRunner.query(`CREATE TYPE "public"."stock_change_status_enum" AS ENUM('draft', 'pending', 'in_transit', 'completed', 'cancelled')`);
+        await queryRunner.query(`CREATE TABLE "stock_change" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "type" "public"."stock_change_type_enum" NOT NULL, "date" TIMESTAMP, "subtotal" double precision, "tax" double precision, "discount" double precision, "totalAmount" double precision, "status" "public"."stock_change_status_enum", "notes" character varying, "receivedBy" character varying, "receivedDate" TIMESTAMP, "supplier" character varying, "stockProducts" jsonb, "warehouse_id" uuid, CONSTRAINT "UQ_da5b9154092fc6f0a5c7bf95d05" UNIQUE ("number"), CONSTRAINT "PK_fea37039797c5c831d079b7858a" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "user_page_permissions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "userId" character varying(255) NOT NULL, "pageId" character varying(255) NOT NULL, "granted" boolean NOT NULL DEFAULT false, "user_id" uuid, CONSTRAINT "PK_704c068ae47cc89ae938a03daf2" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('super_admin', 'admin', 'manager', 'staff', 'customer')`);
+        await queryRunner.query(`CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "email" character varying(255) NOT NULL, "username" character varying(255), "password" character varying(255) NOT NULL, "passwordSalt" character varying(255) NOT NULL, "role" "public"."users_role_enum" NOT NULL DEFAULT 'staff', "active" boolean NOT NULL DEFAULT true, "lastLogin" TIMESTAMP, CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."utilities_unit_enum" AS ENUM('kwh', 'm3', 'gb', 'minutes', 'hours', 'day', 'month', 'year', 'piece', 'other')`);
+        await queryRunner.query(`CREATE TYPE "public"."utilities_status_enum" AS ENUM('draft', 'active', 'inactive', 'overdue', 'disconnected')`);
+        await queryRunner.query(`CREATE TABLE "utilities" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "name" character varying NOT NULL, "provider" character varying, "location" character varying, "unit" "public"."utilities_unit_enum", "costPerUnit" double precision, "status" "public"."utilities_status_enum", "description" character varying, CONSTRAINT "UQ_cc7ebec9992d6e455f15303fec8" UNIQUE ("number"), CONSTRAINT "PK_34584344058bc75ba48ffb84d64" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."warehouses_status_enum" AS ENUM('active', 'maintenance', 'inactive')`);
+        await queryRunner.query(`CREATE TABLE "warehouses" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "name" character varying NOT NULL, "address" character varying, "manager" character varying, "status" "public"."warehouses_status_enum", "phone" character varying, "email" character varying, "description" character varying, "main" boolean NOT NULL DEFAULT false, CONSTRAINT "UQ_ff1087d29fb615dc4d4a00e6446" UNIQUE ("number"), CONSTRAINT "PK_56ae21ee2432b2270b48867e4be" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."collections_status_enum" AS ENUM('active', 'draft', 'archived')`);
+        await queryRunner.query(`CREATE TABLE "collections" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "created_by" character varying, "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_by" character varying, "number" character varying NOT NULL, "name" character varying NOT NULL, "description" character varying, "status" "public"."collections_status_enum", "image" character varying, CONSTRAINT "UQ_bd16c77dba2806773f04e50c6a5" UNIQUE ("number"), CONSTRAINT "PK_21c00b1ebbd41ba1354242c5c4e" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "collection_products" ("collectionsId" uuid NOT NULL, "productsId" uuid NOT NULL, CONSTRAINT "PK_6fae6d061812e3fd7c54e1c27f1" PRIMARY KEY ("collectionsId", "productsId"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_f4999cfd719d1879fbdfd0a79d" ON "collection_products" ("collectionsId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_fce5928dc08b6c151bb6520d47" ON "collection_products" ("productsId") `);
+        await queryRunner.query(`ALTER TABLE "attendance_records" ADD CONSTRAINT "FK_f97d7be854091ef9ab5d75c0de3" FOREIGN KEY ("employee_id") REFERENCES "employees"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "warehouse_products" ADD CONSTRAINT "FK_5d88e688ec4102a78a32a7aa6e2" FOREIGN KEY ("warehouse_id") REFERENCES "warehouses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "warehouse_products" ADD CONSTRAINT "FK_e8fd5d5eff0a010e2b0ffbabfb0" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "orders" ADD CONSTRAINT "FK_772d0ce0473ac2ccfa26060dbe9" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "orders" ADD CONSTRAINT "FK_a1fd4de5944756bdb80799b00bc" FOREIGN KEY ("warehouse_id") REFERENCES "warehouses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "payroll_records" ADD CONSTRAINT "FK_54ffbfa84af17b62537fa0f2d28" FOREIGN KEY ("employeeId") REFERENCES "employees"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "production_records" ADD CONSTRAINT "FK_320434467d9f4fc812d59db4392" FOREIGN KEY ("pic_id") REFERENCES "employees"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "production_records" ADD CONSTRAINT "FK_1ebc0f5624c6156ebb10f47c67d" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "production_records" ADD CONSTRAINT "FK_1f3e0270a763a7d752a73b3725d" FOREIGN KEY ("warehouse_id") REFERENCES "warehouses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "stock_change" ADD CONSTRAINT "FK_a5f57dba9841fbd8eef40c2b24f" FOREIGN KEY ("warehouse_id") REFERENCES "warehouses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "user_page_permissions" ADD CONSTRAINT "FK_a3c4add768f9b53ab92c1043d0a" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "collection_products" ADD CONSTRAINT "FK_f4999cfd719d1879fbdfd0a79d8" FOREIGN KEY ("collectionsId") REFERENCES "collections"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE "collection_products" ADD CONSTRAINT "FK_fce5928dc08b6c151bb6520d476" FOREIGN KEY ("productsId") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "collection_products" DROP CONSTRAINT "FK_fce5928dc08b6c151bb6520d476"`);
+        await queryRunner.query(`ALTER TABLE "collection_products" DROP CONSTRAINT "FK_f4999cfd719d1879fbdfd0a79d8"`);
+        await queryRunner.query(`ALTER TABLE "user_page_permissions" DROP CONSTRAINT "FK_a3c4add768f9b53ab92c1043d0a"`);
+        await queryRunner.query(`ALTER TABLE "stock_change" DROP CONSTRAINT "FK_a5f57dba9841fbd8eef40c2b24f"`);
+        await queryRunner.query(`ALTER TABLE "production_records" DROP CONSTRAINT "FK_1f3e0270a763a7d752a73b3725d"`);
+        await queryRunner.query(`ALTER TABLE "production_records" DROP CONSTRAINT "FK_1ebc0f5624c6156ebb10f47c67d"`);
+        await queryRunner.query(`ALTER TABLE "production_records" DROP CONSTRAINT "FK_320434467d9f4fc812d59db4392"`);
+        await queryRunner.query(`ALTER TABLE "payroll_records" DROP CONSTRAINT "FK_54ffbfa84af17b62537fa0f2d28"`);
+        await queryRunner.query(`ALTER TABLE "orders" DROP CONSTRAINT "FK_a1fd4de5944756bdb80799b00bc"`);
+        await queryRunner.query(`ALTER TABLE "orders" DROP CONSTRAINT "FK_772d0ce0473ac2ccfa26060dbe9"`);
+        await queryRunner.query(`ALTER TABLE "warehouse_products" DROP CONSTRAINT "FK_e8fd5d5eff0a010e2b0ffbabfb0"`);
+        await queryRunner.query(`ALTER TABLE "warehouse_products" DROP CONSTRAINT "FK_5d88e688ec4102a78a32a7aa6e2"`);
+        await queryRunner.query(`ALTER TABLE "attendance_records" DROP CONSTRAINT "FK_f97d7be854091ef9ab5d75c0de3"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_fce5928dc08b6c151bb6520d47"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_f4999cfd719d1879fbdfd0a79d"`);
+        await queryRunner.query(`DROP TABLE "collection_products"`);
+        await queryRunner.query(`DROP TABLE "collections"`);
+        await queryRunner.query(`DROP TYPE "public"."collections_status_enum"`);
+        await queryRunner.query(`DROP TABLE "warehouses"`);
+        await queryRunner.query(`DROP TYPE "public"."warehouses_status_enum"`);
+        await queryRunner.query(`DROP TABLE "utilities"`);
+        await queryRunner.query(`DROP TYPE "public"."utilities_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."utilities_unit_enum"`);
+        await queryRunner.query(`DROP TABLE "users"`);
+        await queryRunner.query(`DROP TYPE "public"."users_role_enum"`);
+        await queryRunner.query(`DROP TABLE "user_page_permissions"`);
+        await queryRunner.query(`DROP TABLE "stock_change"`);
+        await queryRunner.query(`DROP TYPE "public"."stock_change_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."stock_change_type_enum"`);
+        await queryRunner.query(`DROP TABLE "production_records"`);
+        await queryRunner.query(`DROP TYPE "public"."production_records_status_enum"`);
+        await queryRunner.query(`DROP TABLE "products"`);
+        await queryRunner.query(`DROP TYPE "public"."products_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."products_unit_enum"`);
+        await queryRunner.query(`DROP TABLE "payroll_records"`);
+        await queryRunner.query(`DROP TYPE "public"."payroll_records_status_enum"`);
+        await queryRunner.query(`DROP TABLE "orders"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_paymentmethod_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_paymentstatus_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."orders_status_enum"`);
+        await queryRunner.query(`DROP TABLE "warehouse_products"`);
+        await queryRunner.query(`DROP TABLE "invoices"`);
+        await queryRunner.query(`DROP TYPE "public"."invoices_status_enum"`);
+        await queryRunner.query(`DROP TABLE "employees"`);
+        await queryRunner.query(`DROP TYPE "public"."employees_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."employees_employeetype_enum"`);
+        await queryRunner.query(`DROP TABLE "customers"`);
+        await queryRunner.query(`DROP TYPE "public"."customers_customertype_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."customers_status_enum"`);
+        await queryRunner.query(`DROP TABLE "attendance_records"`);
+        await queryRunner.query(`DROP TYPE "public"."attendance_records_substatus_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."attendance_records_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."attendance_records_shift_enum"`);
+        await queryRunner.query(`DROP TABLE "activity_logs"`);
+        await queryRunner.query(`DROP TYPE "public"."activity_logs_resource_enum"`);
+    }
+
+}

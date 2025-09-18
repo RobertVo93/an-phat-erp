@@ -1,9 +1,9 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { EmployeeEntity } from "@/lib/database/entities";
 import { AttendanceShift, AttendanceStatus, AttendanceSubStatus } from "@/types/enums";
-import { EmployeeEntity } from "./employee.entity";
-import type { Employee as IEmployee } from "@/types/employee";
-import { AttendanceRecord as IAttendanceRecord } from "@/types/attendance";
+import type { Employee as IEmployee } from "@/types";
+import { AttendanceRecord as IAttendanceRecord } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "attendance_records" })

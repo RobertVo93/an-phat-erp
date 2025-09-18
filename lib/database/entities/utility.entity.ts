@@ -1,7 +1,7 @@
 import { Entity, Column, BeforeInsert } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { UtilityStatus, UtilityUnit } from "@/types/enums";
-import { Utility as IUtility } from "@/types/utility";
+import { Utility as IUtility } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "utilities" })
