@@ -26,21 +26,23 @@ export const AppDataSource = new DataSource({
   synchronize: env.NODE_ENV === "development", // set to false in production and use migrations
   logging: false,
   entities: [
-    CollectionEntity,
+    // Base entities first (no dependencies)
+    UserEntity,
     CustomerEntity,
     EmployeeEntity,
+    WarehouseEntity,
+    ProductEntity,
+    CollectionEntity,
+    UtilityEntity,
     InvoiceEntity,
     OrderEntity,
-    PayrollRecordEntity,
-    ProductEntity,
-    StockChangeEntity,
-    UtilityEntity,
-    WarehouseEntity,
-    AttendanceRecordEntity,
-    UserEntity,
+    // Dependent entities
     UserPagePermissionEntity,
     WarehouseProductEntity,
     ProductionRecordEntity,
+    AttendanceRecordEntity,
+    PayrollRecordEntity,
+    StockChangeEntity,
     ActivityLogEntity
   ],
   ssl: { rejectUnauthorized: false }, // required for Neon

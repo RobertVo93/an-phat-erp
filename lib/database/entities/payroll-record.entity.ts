@@ -45,7 +45,7 @@ export class PayrollRecordEntity extends BaseEntity implements IPayrollRecord {
   attendanceRecords?: IAttendanceRecord[];
 
   // relations //
-  @ManyToOne(() => EmployeeEntity, { nullable: false })
+  @ManyToOne(() => EmployeeEntity, { nullable: true })
   @JoinColumn({ name: "employeeId" })
   employee?: IEmployee;
   
