@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/language-context"
 import type { PayrollFilters, PayrollSortableKey } from "@/types/payroll"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { PayrollFilterModal } from "./payroll-filter-modal"
+import { PayrollFilterModal } from "@/components/payroll/payroll-filter-modal"
 
 interface PayrollSearchFilterBarProps {
   searchTerm: string

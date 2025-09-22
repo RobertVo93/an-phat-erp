@@ -1,7 +1,7 @@
 import React from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowUp, ArrowDown } from "lucide-react"
-import { ServersidePagination } from "./ServersidePagination"
+import { ServersidePagination } from "@/components/common/table/ServersidePagination"
 import { useLanguage } from "@/contexts/language-context"
 
 export interface ServersideTableColumn<T> {
@@ -24,6 +24,7 @@ interface ServersideTableProps<T> {
   loading?: boolean
   totalPages: number
   renderMobileRow?: (row: T) => React.ReactNode
+  onRecordClick?: (value: any) => void
 }
 
 export function ServersideTable<T extends { id: string | number }>(props: ServersideTableProps<T>) {
@@ -41,6 +42,7 @@ export function ServersideTable<T extends { id: string | number }>(props: Server
     loading,
     totalPages,
     renderMobileRow,
+    onRecordClick,
   } = props
 
   return (
@@ -83,7 +85,12 @@ export function ServersideTable<T extends { id: string | number }>(props: Server
               data.map((row) => (
                 <tr key={row.id} className="hover:bg-gray-50">
                   {columns.map((col) => (
-                    <td key={col.key as string} className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                    <td key={col.key as string} className="px-4 py-3 whitespace-nowrap text-sm text-gray-700"
+                      onClick={() => {
+                        onRecordClick &&
+                        onRecordClick(row.id)
+                      }}  
+                    >
                       {col.render ? col.render(row) : (row[col.key as keyof T] as any)}
                     </td>
                   ))}

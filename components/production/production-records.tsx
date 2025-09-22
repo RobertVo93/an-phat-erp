@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ProductionRecordItem } from "./production-record-item"
+import { ProductionRecordItem } from "@/components/production/production-record-item"
 import type { ProductionRecord } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
 

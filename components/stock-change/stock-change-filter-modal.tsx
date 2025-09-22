@@ -57,11 +57,9 @@ export function StockChangeFilterModal({ isOpen, onClose, onApply, currentFilter
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("stockIn.filter.allStatuses")}</SelectItem>
-                <SelectItem value={StockChangeStatus.draft}>{t("stockIn.status.draft")}</SelectItem>
-                <SelectItem value={StockChangeStatus.pending}>{t("stockIn.status.pending")}</SelectItem>
-                <SelectItem value={StockChangeStatus.inTransit}>{t("stockIn.status.in_transit")}</SelectItem>
-                <SelectItem value={StockChangeStatus.completed}>{t("stockIn.status.completed")}</SelectItem>
-                <SelectItem value={StockChangeStatus.cancelled}>{t("stockIn.status.cancelled")}</SelectItem>
+                {Object.keys(StockChangeStatus).map((status, index) => (
+                  <SelectItem key={index} value={status}>{t(`stockIn.status.${status}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

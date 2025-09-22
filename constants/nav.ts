@@ -42,7 +42,7 @@ export function adminHref(path: string, query?: string): string {
 
 export const ADMIN_ROUTES = {
   base: getAdminBasePath(),
-  home: (query?: string) => adminHref("", query),
+  home: (query?: string) => adminHref("/", query),
   login: () => adminHref("login"),
   register: () => adminHref("register"),
 

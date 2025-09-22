@@ -63,9 +63,9 @@ export function CustomerFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("customers.filter.all")}</SelectItem>
-                <SelectItem value={CustomerStatus.active}>{t("customers.status.active")}</SelectItem>
-                <SelectItem value={CustomerStatus.inactive}>{t("customers.status.inactive")}</SelectItem>
-                <SelectItem value={CustomerStatus.pending}>{t("customers.status.pending")}</SelectItem>
+                {Object.keys(CustomerStatus).map((status, index) => (
+                  <SelectItem key={index} value={status}>{t(`customers.status.${status}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -81,9 +81,9 @@ export function CustomerFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("customers.filter.all")}</SelectItem>
-                <SelectItem value={CustomerType.regular}>{t("customers.type.regular")}</SelectItem>
-                <SelectItem value={CustomerType.premium}>{t("customers.type.premium")}</SelectItem>
-                <SelectItem value={CustomerType.vip}>{t("customers.type.vip")}</SelectItem>
+                {Object.keys(CustomerType).map((type, index) => (
+                  <SelectItem key={index} value={type}>{t(`customers.type.${type}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

@@ -53,9 +53,9 @@ export function CollectionFilterModal({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("collections.form.allStatus")}</SelectItem>
-                <SelectItem value={CollectionStatus.active}>{t("collections.status.active")}</SelectItem>
-                <SelectItem value={CollectionStatus.draft}>{t("collections.status.draft")}</SelectItem>
-                <SelectItem value={CollectionStatus.archived}>{t("collections.status.archived")}</SelectItem>
+                {Object.keys(CollectionStatus).map((status, index) => (
+                  <SelectItem key={index} value={status}>{t(`collections.status.${status}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
