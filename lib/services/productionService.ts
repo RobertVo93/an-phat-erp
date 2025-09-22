@@ -4,6 +4,7 @@ import { ProductionRecordEntity } from "@/lib/database/entities/production-recor
 import { ProductEntity, StockChangeEntity, WarehouseEntity } from "@/lib/database/entities";
 import { CommonService } from "@/lib/services/commonService";
 import { IStockProduct, StockChangeStatus, StockChangeType } from "@/types";
+import { startOfDay, endOfDay } from "date-fns";
 
 export async function getAllProductionRecords({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(ProductionRecordEntity);
@@ -15,8 +16,14 @@ export async function getAllProductionRecords({ page = 1, limit = 20, sortBy = "
 
   // Filtering
   if (filters.status) qb.andWhere("productionRecord.status = :status", { status: filters.status });
-  if (filters.dateFrom) qb.andWhere("productionRecord.date >= :dateFrom", { dateFrom: filters.dateFrom });
-  if (filters.dateTo) qb.andWhere("productionRecord.date <= :dateTo", { dateTo: filters.dateTo });
+  if (filters.dateFrom) {
+    const start = startOfDay(filters.dateFrom);
+    qb.andWhere("productionRecord.date >= :dateFrom", { dateFrom: start });
+  }
+  if (filters.dateTo) {
+    const end = endOfDay(filters.dateTo);
+    qb.andWhere("productionRecord.date <= :dateTo", { dateTo: end });
+  }
   if (filters.product) qb.andWhere("product.id = :product", { product: filters.product });
   if (filters.searchTerm) qb.andWhere("(productionRecord.number ILIKE :searchTerm OR productionRecord.notes ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
 
@@ -30,6 +37,26 @@ export async function getAllProductionRecords({ page = 1, limit = 20, sortBy = "
 
   const [data, total] = await qb.getManyAndCount();
   return { data, total, page, limit };
+}
+
+export async function getTodayProductions() {
+  const repo = AppDataSource.getRepository(ProductionRecordEntity);
+
+  const today = new Date();
+  const start = startOfDay(today);
+  const end = endOfDay(today);
+
+  const qb = repo
+    .createQueryBuilder("productionRecord")
+    .leftJoinAndSelect("productionRecord.pic", "pic")
+    .leftJoinAndSelect("productionRecord.product", "product")
+    .leftJoinAndSelect("productionRecord.warehouse", "warehouse")
+    .where("productionRecord.date BETWEEN :start AND :end", { start, end })
+    .orderBy("productionRecord.date", "DESC");
+
+  const data = await qb.getMany();
+
+  return data
 }
 
 export async function createProductionRecord(

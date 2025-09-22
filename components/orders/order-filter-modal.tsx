@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
 import type { OrderFilters } from "@/types/order"
+import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types"
 
 interface OrderFilterModalProps {
   open: boolean
@@ -52,12 +53,9 @@ export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange 
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("orders.filter.allStatuses")}</SelectItem>
-                <SelectItem value="pending">{t("orders.status.pending")}</SelectItem>
-                <SelectItem value="processing">{t("orders.status.processing")}</SelectItem>
-                <SelectItem value="shipped">{t("orders.status.shipped")}</SelectItem>
-                <SelectItem value="delivered">{t("orders.status.delivered")}</SelectItem>
-                <SelectItem value="completed">{t("orders.status.completed")}</SelectItem>
-                <SelectItem value="cancelled">{t("orders.status.cancelled")}</SelectItem>
+                {Object.keys(OrderStatus).map((status, index) => (
+                  <SelectItem key={index} value={status}>{t(`orders.status.${status}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -74,11 +72,9 @@ export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange 
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("orders.filter.allPaymentStatuses")}</SelectItem>
-                <SelectItem value="pending">{t("orders.paymentStatus.pending")}</SelectItem>
-                <SelectItem value="paid">{t("orders.paymentStatus.paid")}</SelectItem>
-                <SelectItem value="partial">{t("orders.paymentStatus.partial")}</SelectItem>
-                <SelectItem value="failed">{t("orders.paymentStatus.failed")}</SelectItem>
-                <SelectItem value="refunded">{t("orders.paymentStatus.refunded")}</SelectItem>
+                {Object.keys(PaymentStatus).map((status, index) => (
+                  <SelectItem key={index} value={status}>{t(`orders.paymentStatus.${status}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -95,11 +91,9 @@ export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange 
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("orders.filter.allPaymentMethods")}</SelectItem>
-                <SelectItem value="creditCard">{t("orders.paymentMethod.creditCard")}</SelectItem>
-                <SelectItem value="debitCard">{t("orders.paymentMethod.debitCard")}</SelectItem>
-                <SelectItem value="bankTransfer">{t("orders.paymentMethod.bankTransfer")}</SelectItem>
-                <SelectItem value="cash">{t("orders.paymentMethod.cash")}</SelectItem>
-                <SelectItem value="paypal">{t("orders.paymentMethod.paypal")}</SelectItem>
+                {Object.keys(PaymentMethod).map((method, index) => (
+                  <SelectItem key={index} value={method}>{t(`orders.paymentMethod.${method}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

@@ -1,5 +1,5 @@
 import { StockChangeStatus, StockChangeType } from "@/types/enums";
-import { IBase } from "./base.interface";
+import { IBase, IBaseFilters } from "./base.interface";
 import { Warehouse as IWarehouse } from "./warehouse";
 
 
@@ -30,7 +30,8 @@ export interface IStockProduct {
   unit?: string
 }
 
-export interface StockChangeFilters {
+export interface StockChangeFilters extends IBaseFilters {
+  searchTerm?: string,
   status?: string
   supplier?: string
   warehouse?: string

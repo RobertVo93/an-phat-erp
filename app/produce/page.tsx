@@ -26,7 +26,6 @@ export default function ProducePage() {
     availableProducts,
     availableMaterials,
     todayRecords,
-    historyRecords,
     availableUtilities,
     availableEmployees,
     materialCost, 
@@ -87,7 +86,6 @@ export default function ProducePage() {
           {/* Tab Content - History */}
           <TabsContent value="history" className="space-y-4 sm:space-y-6">
             <ProductionHistory
-              historyRecords={historyRecords}
               onViewRecord={handleViewRecord}
               onEditRecord={handleEditRecord}
             />

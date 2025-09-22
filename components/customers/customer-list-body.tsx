@@ -1,104 +1,43 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { MoreVertical, Eye, Edit, Trash2, Mail, Phone, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
+import { Mail, Phone, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Customer, CustomerStatus, CustomerType } from "@/types"
+import { Customer } from "@/types"
 import { formatCurrency, formatDate, getCustomerInitialCharacter, getCustomerStatusColor, getCustomerTypeColor } from "@/lib/utils"
+import { useLanguage } from "@/contexts/language-context"
+import CustomerActions from "@/components/customers/customer-actions"
 
 interface ICustomerListBodyProps {
-    t: (key: string) => string
     customers: Customer[]
-    totalCustomers: number
-    startIndex: number
-    endIndex: number
-    itemsPerPage: number
     totalPages: number
     currentPage: number
     setCurrentPage: (page: number) => void
-    setItemsPerPage: (itemsPerPage: number) => void
     getVisiblePages: () => (string | number)[]
     handleViewCustomer: (customer: Customer) => void
     handleEditCustomer: (customer: Customer) => void
     handleDeleteCustomer: (customer: Customer) => void
+    translateStatus: (status: string) => string
+    translateCustomerType: (type: string) => string
 }
 export const CustomerListBody = ({
-    t,
     customers,
-    totalCustomers,
-    startIndex,
-    endIndex,
-    itemsPerPage,
     totalPages,
     currentPage,
     setCurrentPage,
-    setItemsPerPage,
     getVisiblePages,
     handleViewCustomer,
     handleEditCustomer,
     handleDeleteCustomer,
+    translateStatus,
+    translateCustomerType,
 }: ICustomerListBodyProps) => {
-
-  const translateStatus = (status: string) => {
-    switch (status) {
-      case CustomerStatus.active:
-        return t("customers.status.active")
-      case CustomerStatus.inactive:
-        return t("customers.status.inactive")
-      case CustomerStatus.pending:
-        return t("customers.status.pending")
-      default:
-        return status
-    }
-  }
-
-  const translateCustomerType = (type: string) => {
-    switch (type) {
-      case CustomerType.vip:
-        return t("customers.type.vip")
-      case CustomerType.premium:
-        return t("customers.type.premium")
-      case CustomerType.regular:
-        return t("customers.type.regular")
-      default:
-        return type
-    }
-  }
+    const { t } = useLanguage()
+    
     return (
         <Card>
             <CardHeader className="pb-3">
-                <div className="flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <CardTitle className="text-lg md:text-xl">{t("customers.customerDirectory")}</CardTitle>
-                        <CardDescription className="hidden md:block">
-                            {t("customers.customerDirectoryDescription")}
-                        </CardDescription>
-                    </div>
-                    <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:space-x-2">
-                        <span className="text-xs md:text-sm text-muted-foreground">
-                            {startIndex}-{endIndex} / {totalCustomers}
-                        </span>
-                        <div className="flex items-center space-x-2">
-                            <Select
-                                value={itemsPerPage.toString()}
-                                onValueChange={(value) => setItemsPerPage(Number.parseInt(value))}
-                            >
-                                <SelectTrigger className="w-16 md:w-20 h-8">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="5">5</SelectItem>
-                                    <SelectItem value="10">10</SelectItem>
-                                    <SelectItem value="20">20</SelectItem>
-                                    <SelectItem value="50">50</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <span className="text-xs text-muted-foreground">/{t("customers.pagination.itemsPerPage")}</span>
-                        </div>
-                    </div>
-                </div>
+                
             </CardHeader>
             <CardContent className="pt-0">
                 <div className="space-y-3">
@@ -129,27 +68,12 @@ export const CustomerListBody = ({
                                         </div>
 
                                         {/* Actions Dropdown */}
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => handleViewCustomer(customer)}>
-                                                    <Eye className="mr-2 h-4 w-4" />
-                                                    {t("customers.viewCustomer")}
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    {t("customers.editCustomer")}
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleDeleteCustomer(customer)} className="text-red-600">
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    {t("customers.deleteCustomer")}
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <CustomerActions 
+                                            customer={customer}
+                                            handleViewCustomer={handleViewCustomer}
+                                            handleEditCustomer={handleEditCustomer}
+                                            handleDeleteCustomer={handleDeleteCustomer}
+                                        />
                                     </div>
 
                                     {/* Contact Info Grid */}

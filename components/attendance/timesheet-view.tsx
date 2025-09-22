@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/language-context"
 import { Calendar } from "lucide-react"
 import type { TimesheetData } from "@/types/attendance"
 import { AttendanceShift } from "@/types"
-import { TimesheetShift } from "./TimesheetShift"
+import { TimesheetShift } from "@/components/attendance/TimesheetShift"
 import { AttendanceRecord } from "@/types/attendance"
 
 interface TimesheetViewProps {

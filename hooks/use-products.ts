@@ -52,7 +52,7 @@ export function useProducts() {
           stockRange: filters.stockRange,
           limit: itemsPerPage,
           page: currentPage,
-          sortBy: filters.sortBy || "createdAt",
+          sortBy: filters.sortBy || "name",
           sortOrder: filters.sortOrder || "desc",
           search: searchTerm,
         })

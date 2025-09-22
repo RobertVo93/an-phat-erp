@@ -1,7 +1,7 @@
 import { useLanguage } from "@/contexts/language-context"
 import { Card, CardHeader, CardDescription, CardTitle, CardContent } from "@/components/ui/card"
 import { IActivityLog } from "@/types/activity-log.interface"
-import OrderLogItem from "./OrderLogItem"
+import OrderLogItem from "@/components/orders/OrderLogItem"
 import { useMemo } from "react"
 
 interface Props {

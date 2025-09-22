@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react"
 import { ArrowUp, ArrowDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { IBase } from "@/types/base.interface"
-import { ClientsidePagination } from "./ClientsidePagination"
+import { ClientsidePagination } from "@/components/common/table/ClientsidePagination"
 
 export interface ClientsideTableColumn<T> {
   key: keyof T | string
