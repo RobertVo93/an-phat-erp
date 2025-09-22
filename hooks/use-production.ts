@@ -4,8 +4,7 @@ import { useEffect, useState } from "react"
 import type { ProductionRecord } from "@/types/production"
 import { Employee, EmployeeStatus, Product, ProductStatus, Utility, Warehouse, WarehouseStatus } from "@/types"
 import { getProducts as apiGetProducts } from "@/lib/httpclient"
-import { createProduction, getAllProductions, updateProduction } from "@/lib/httpclient/production.client"
-import { isTodayLocalDatetime } from "@/lib/utils"
+import { createProduction, getTodayProductions, updateProduction } from "@/lib/httpclient/production.client"
 import { getUtilitiesByFilterClient } from "@/lib/httpclient/utility.client"
 import { getEmployee } from '@/lib/httpclient/employee.client';
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
@@ -14,7 +13,6 @@ import { toast } from "@/components/ui/use-toast"
 export function useProduction() {
   const [selectedRecord, setSelectedRecord] = useState<ProductionRecord | null>(null)
   const [todayProductionRecords, setTodayProductionRecords] = useState<ProductionRecord[]>([])
-  const [historyProductionRecords, setHistoryProductionRecords] = useState<ProductionRecord[]>([])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState<ProductionRecord | null>(null)
   const [isNewProductionOpen, setIsNewProductionOpen] = useState(false)
@@ -34,7 +32,9 @@ export function useProduction() {
     try {
       setLoading(true)
       const response = await Promise.all([
-        getAllProductions(),  //TODO: apply server side pagination, filter, sort later
+        // get today's productions
+        getTodayProductions(),
+
         apiGetProducts({
           status: ProductStatus.active,
           limit: 1000,
@@ -48,9 +48,9 @@ export function useProduction() {
         }),
         getWarehouses({
           status: WarehouseStatus.active,
-        })
+        }),
       ])
-      setHistoryProductionRecords(response[0].data as ProductionRecord[])
+      setTodayProductionRecords(response[0] as ProductionRecord[])
       setAvailableProducts((response[1].data as Product[]))
       setAvailableMaterials(response[1].data as Product[])
       setAvailableUtilities(response[2].data as Utility[])
@@ -98,7 +98,7 @@ export function useProduction() {
     try {
       setLoading(true)
       const created = await createProduction(data)
-      setHistoryProductionRecords(prev => [...prev, created])
+      setTodayProductionRecords(prev => [...prev, created])
       closeNewProduction()
     } catch (e) {
       console.error(e)
@@ -116,7 +116,6 @@ export function useProduction() {
     try {
       setLoading(true)
       const updated = await updateProduction(updatedRecord.id!, updatedRecord)
-      setHistoryProductionRecords(prev => prev.map(item => item.id === updated.id ? updated : item))
       setIsEditModalOpen(false)
       setEditingRecord(null)
     } catch (e) {
@@ -163,10 +162,8 @@ export function useProduction() {
   }, [])
 
   useEffect(() => {
-    const todayRecords = historyProductionRecords.filter(item => isTodayLocalDatetime(item.date!))
-    setTodayProductionRecords(todayRecords)
-    calculateTodaySummary(todayRecords)
-  }, [historyProductionRecords])
+    calculateTodaySummary(todayProductionRecords)
+  }, [todayProductionRecords])
 
   return {
     selectedRecord,
@@ -180,7 +177,6 @@ export function useProduction() {
     availableEmployees,
     availableWarehouses,
     todayRecords: todayProductionRecords,
-    historyRecords: historyProductionRecords,
     materialCost: todayMaterialCost,
     utilityCost: todayUtilityCost,
     employeeCost: todayEmployeeCost,

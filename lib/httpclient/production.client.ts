@@ -1,8 +1,18 @@
-import { ProductionRecord } from "@/types/production";
+import { ProductionFilters, ProductionRecord } from "@/types/production";
 import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 
-export async function getAllProductions() {
+export async function getAllProductions(params: ProductionFilters = {}) {
   const url = createApiUrl("/api/production");
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
+  });
+  const res = await fetch(url.toString(), { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch collections");
+  return res.json();
+}
+
+export async function getTodayProductions() {
+  const url = createApiUrl("/api/production/today");
   const res = await fetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch collections");
   return res.json();

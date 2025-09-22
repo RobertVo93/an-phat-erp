@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import type { EmployeeFilters } from "@/types/employee"
 import { useLanguage } from "@/contexts/language-context"
-import { EmployeeStatus, EmployeeType } from "@/types"
+import { EmployeeDepartment, EmployeeStatus, EmployeeType } from "@/types"
 
 interface EmployeeFilterModalProps {
   isOpen: boolean
@@ -63,9 +63,9 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("employees.filter.all")}</SelectItem>
-                <SelectItem value={EmployeeStatus.active}>{t("employees.status.active")}</SelectItem>
-                <SelectItem value={EmployeeStatus.inactive}>{t("employees.status.inactive")}</SelectItem>
-                <SelectItem value={EmployeeStatus.onLeave}>{t("employees.status.onLeave")}</SelectItem>
+                {Object.keys(EmployeeStatus).map((status, index) => (
+                  <SelectItem key={index} value={status}>{t(`employees.status.${status}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -81,10 +81,9 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("employees.filter.all")}</SelectItem>
-                <SelectItem value={EmployeeType.fullTime}>{t("employees.type.fullTime")}</SelectItem>
-                <SelectItem value={EmployeeType.partTime}>{t("employees.type.partTime")}</SelectItem>
-                <SelectItem value={EmployeeType.contract}>{t("employees.type.contract")}</SelectItem>
-                <SelectItem value={EmployeeType.intern}>{t("employees.type.intern")}</SelectItem>
+                {Object.keys(EmployeeType).map((type, index) => (
+                  <SelectItem key={index} value={type}>{t(`employees.type.${type}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -100,12 +99,9 @@ export function EmployeeFilterModal({ isOpen, onClose, onApply, currentFilters }
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("employees.filter.all")}</SelectItem>
-                <SelectItem value="IT">{t("employees.departments.it")}</SelectItem>
-                <SelectItem value="Marketing">{t("employees.departments.marketing")}</SelectItem>
-                <SelectItem value="Finance">{t("employees.departments.finance")}</SelectItem>
-                <SelectItem value="Sales">{t("employees.departments.sales")}</SelectItem>
-                <SelectItem value="HR">{t("employees.departments.hr")}</SelectItem>
-                <SelectItem value="Operations">{t("employees.departments.operations")}</SelectItem>
+                {Object.keys(EmployeeDepartment).map((department, index) => (
+                  <SelectItem key={index} value={department}>{t(`employees.departments.${department}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

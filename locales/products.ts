@@ -368,5 +368,8 @@ export const productsTranslations = {
     en: "Transfer",
     vi: "Chuyển",
   },
-
+  "products.image": {
+    en: "Image",
+    vi: "Ảnh",
+  },
 }

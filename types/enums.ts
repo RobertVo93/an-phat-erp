@@ -176,6 +176,15 @@ export enum EmployeeStatus {
   onLeave = "onLeave"
 }
 
+export enum EmployeeDepartment {
+  it = "it",
+  marketing = "marketing",
+  finance = "finance",
+  sales = "sales",
+  hr = "hr",
+  operations = "operations"
+}
+
 export enum InvoiceStatus {
   draft = "draft",
   sent = "sent",

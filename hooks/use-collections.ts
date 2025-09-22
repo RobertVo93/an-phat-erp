@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react"
 import type { Collection, CollectionFilters } from "@/types/collection"
-import { CollectionStatus } from "@/types/enums"
 import { getCollections, createCollection as apiCreateCollection, updateCollection as apiUpdateCollection, deleteCollection as apiDeleteCollection } from "@/lib/httpclient"
 import debounce from "lodash/debounce"
 import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3"
@@ -141,18 +140,7 @@ export function useCollections() {
     return allCollections.find((col) => col.id === id)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case CollectionStatus.active:
-        return "bg-green-100 text-green-800"
-      case CollectionStatus.draft:
-        return "bg-yellow-100 text-yellow-800"
-      case CollectionStatus.archived:
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
+
 
   const handleView = (collection: Collection) => {
     setViewModal({ open: true, collection })
@@ -184,6 +172,20 @@ export function useCollections() {
     }
   }
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleSort = (field: string): void => {
+    if (filters.sortBy === field) {
+      // setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setFilters(prev => ({ ...prev, sortOrder: filters.sortOrder === "asc" ? "desc" : "asc" }))
+    } else {
+      setFilters(prev => ({ ...prev, sortBy: field, sortOrder: "desc" }))
+    }
+    setCurrentPage(1)
+  };
+
   const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage])
   const endIndex = useMemo(() => Math.min(currentPage * itemsPerPage, totalCollections), [currentPage, itemsPerPage, totalCollections])
   const totalPages = useMemo(() => Math.ceil(totalCollections / itemsPerPage), [totalCollections, itemsPerPage])
@@ -196,14 +198,12 @@ export function useCollections() {
     totalPages,
     totalCollections,
     loading,
-    CollectionStatus,
     startIndex,
     endIndex,
     viewModal,
     deleteModal,
     formModal,
 
-    getStatusColor,
     handleView,
     handleEdit,
     handleDelete,
@@ -217,5 +217,7 @@ export function useCollections() {
     setViewModal,
     setFormModal,
     setDeleteModal,
+    handlePageChange,
+    handleSort
   }
 }

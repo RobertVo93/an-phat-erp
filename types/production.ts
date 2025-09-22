@@ -1,10 +1,10 @@
 import { ProductionElementType, ProductionStatus } from "@/types/enums";
 import { Product } from "./product";
-import { IBase } from "./base.interface";
+import { IBase, IBaseFilters } from "./base.interface";
 import { Warehouse } from "./warehouse";
 import { Employee } from "./employee";
 
-export interface ProductionRecord extends IBase{
+export interface ProductionRecord extends IBase {
   number?: string
   date?: Date
   quantity?: number
@@ -43,3 +43,13 @@ export interface CostBreakdownData {
   value: number
   color: string
 }
+
+export interface ProductionFilters extends IBaseFilters {
+  searchTerm?: string
+  status?: string
+  product?: string
+  dateFrom?: string
+  dateTo?: string
+}
+
+export type ProductionSortBy = "number" | "date" | "status"

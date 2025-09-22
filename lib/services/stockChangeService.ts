@@ -4,14 +4,31 @@ import { StockChange, StockChangeStatus, StockChangeType } from "@/types";
 import { IStockProduct } from "@/types/stock-change";
 import { CommonService } from "@/lib/services/commonService";
 
-export async function getAllStockChanges(): Promise<{ data: StockChange[] }> {
+export async function getAllStockChanges({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(StockChangeEntity);
   const qb = repo
     .createQueryBuilder("stockChange")
     .leftJoinAndSelect("stockChange.warehouse", "warehouse")
 
-  const [data] = await qb.getManyAndCount();
-  return { data };
+  // Filtering
+  if (filters.status) qb.andWhere("stockChange.status = :status", { status: filters.status });
+  if (filters.dateFrom) qb.andWhere("stockChange.date >= :dateFrom", { dateFrom: filters.dateFrom });
+  if (filters.dateTo) qb.andWhere("stockChange.date <= :dateTo", { dateTo: filters.dateTo });
+  if (filters.supplier) qb.andWhere("stockChange.supplier = :supplier", { supplier: filters.supplier });
+  if (filters.amountFrom) qb.andWhere("stockChange.totalAmount >= :amountFrom", { amountFrom: filters.amountFrom });
+  if (filters.amountTo) qb.andWhere("stockChange.totalAmount <= :amountTo", { amountTo: filters.amountTo });
+  if (filters.searchTerm) qb.andWhere("(stockChange.number ILIKE :searchTerm OR stockChange.notes ILIKE :searchTerm or stockChange.receivedBy ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
+  if (filters.warehouse) qb.andWhere("warehouse.name = :warehouse", { warehouse: filters.warehouse });
+
+  // Sorting
+  const allowedSortFields = ["date", "supplier", "totalAmount", "status"];
+  const sortField = allowedSortFields.includes(sortBy) ? sortBy : "date";
+  qb.orderBy(`stockChange.${sortField}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+
+  qb.skip((page - 1) * limit).take(limit);
+
+  const [data, total] = await qb.getManyAndCount();
+  return { data, total, page, limit };
 }
 
 export async function addStockChange(data: StockChange, stockProducts: IStockProduct[]): Promise<StockChange> {

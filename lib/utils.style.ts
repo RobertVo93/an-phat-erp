@@ -15,6 +15,7 @@ import {
   InvoiceStatus,
   AttendanceShift,
   StockChangeStatus,
+  CollectionStatus,
 } from "@/types/enums"
 
 export const getProductStatusColor = (status: string) => {
@@ -242,6 +243,19 @@ export const getInvoiceStatusColor = (status: string) => {
     case InvoiceStatus.overdue:
       return "bg-red-100 text-red-800"
     case InvoiceStatus.cancelled:
+      return "bg-gray-100 text-gray-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+export const getCollectionStatusColor = (status: string) => {
+  switch (status) {
+    case CollectionStatus.active:
+      return "bg-green-100 text-green-800"
+    case CollectionStatus.draft:
+      return "bg-yellow-100 text-yellow-800"
+    case CollectionStatus.archived:
       return "bg-gray-100 text-gray-800"
     default:
       return "bg-gray-100 text-gray-800"

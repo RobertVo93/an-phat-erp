@@ -17,9 +17,8 @@ import { EmployeeViewModal } from "@/components/employees/employee-view-modal"
 import { EmployeeDeleteModal } from "@/components/employees/employee-delete-modal"
 import { EmployeeFilterModal } from "@/components/employees/employee-filter-modal"
 import type { Employee } from "@/types/employee"
-import { EmployeeStatus, EmployeeType } from "@/types"
 import { EmployeeListBody } from "@/components/employees/employee-list-body"
-// import { EmployeeListHighlight } from "@/components/employees/employee-list-highlight"
+import { EmployeeListWebview } from "@/components/employees/employee-list-webview"
 
 export default function EmployeePage() {
   const { t } = useLanguage()
@@ -33,7 +32,6 @@ export default function EmployeePage() {
     sortOrder,
     totalPages,
     totalEmployees,
-    // stats,
     loading,
     isFormModalOpen,
     isViewModalOpen,
@@ -41,8 +39,6 @@ export default function EmployeePage() {
     isFilterModalOpen,
     formMode,
     selectedEmployee,
-    startIndex,
-    endIndex,
 
     setSearchTerm,
     setFilters,
@@ -61,53 +57,6 @@ export default function EmployeePage() {
     handleConfirmDelete,
     handleSort,
   } = useEmployees()
-
-  const translateStatus = (status: string) => {
-    switch (status) {
-      case EmployeeStatus.active:
-        return t("employees.status.active")
-      case EmployeeStatus.inactive:
-        return t("employees.status.inactive")
-      case EmployeeStatus.onLeave:
-        return t("employees.status.onLeave")
-      default:
-        return status
-    }
-  }
-
-  const translateEmployeeType = (type: string) => {
-    switch (type) {
-      case EmployeeType.fullTime:
-        return t("employees.type.fullTime")
-      case EmployeeType.partTime:
-        return t("employees.type.partTime")
-      case EmployeeType.contract:
-        return t("employees.type.contract")
-      case EmployeeType.intern:
-        return t("employees.type.intern")
-      default:
-        return type
-    }
-  }
-
-  const translateDepartment = (department: string) => {
-    switch (department) {
-      case "IT":
-        return t("employees.departments.it")
-      case "Marketing":
-        return t("employees.departments.marketing")
-      case "Finance":
-        return t("employees.departments.finance")
-      case "Sales":
-        return t("employees.departments.sales")
-      case "HR":
-        return t("employees.departments.hr")
-      case "Operations":
-        return t("employees.departments.operations")
-      default:
-        return department
-    }
-  }
 
   return (
     <ERPLayout>
@@ -149,10 +98,33 @@ export default function EmployeePage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" onClick={() => setIsFilterModalOpen(true)} className="w-full sm:w-auto">
-            <Filter className="mr-2 h-4 w-4" />
-            {t("employees.filter")}
-          </Button>
+
+          <div className="flex flex-row space-x-2">
+            <Button variant="outline" onClick={() => setIsFilterModalOpen(true)} className="w-full sm:w-auto">
+              <Filter className="mr-2 h-4 w-4" />
+              {t("employees.filter")}
+            </Button>
+
+            <div className="flex items-center justify-center space-x-2">
+              <Select
+                value={itemsPerPage.toString()}
+                onValueChange={(value) => {
+                  setItemsPerPage(Number.parseInt(value))
+                  setCurrentPage(1)
+                }}
+              >
+                <SelectTrigger className="w-16">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent >
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {/* Sort Controls - Mobile */}
@@ -175,24 +147,34 @@ export default function EmployeePage() {
         </div>
 
         {/* Employee Cards - Mobile First */}
-        <EmployeeListBody
-          t={t}
-          employees={employees}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          totalEmployees={totalEmployees}
-          itemsPerPage={itemsPerPage}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          setItemsPerPage={setItemsPerPage}
-          setCurrentPage={setCurrentPage}
-          handleViewEmployee={handleViewEmployee}
-          handleEditEmployee={handleEditEmployee}
-          handleDeleteEmployee={handleDeleteEmployee}
-          translateStatus={translateStatus}
-          translateDepartment={translateDepartment}
-          translateEmployeeType={translateEmployeeType}
-        />
+        <div className="lg:hidden">
+          <EmployeeListBody
+            employees={employees}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+            handleViewEmployee={handleViewEmployee}
+            handleEditEmployee={handleEditEmployee}
+            handleDeleteEmployee={handleDeleteEmployee}
+          />
+        </div>
+
+        <div className="lg:block hidden">
+          <EmployeeListWebview
+            filters={filters}
+            loading={loading}
+            employees={employees}
+            totalEmployees={totalEmployees}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            handleSort={handleSort}
+            setCurrentPage={setCurrentPage}
+            handleViewEmployee={handleViewEmployee}
+            handleEditEmployee={handleEditEmployee}
+            handleDeleteEmployee={handleDeleteEmployee}
+          />
+        </div>
       </div>
 
       {/* Modals */}

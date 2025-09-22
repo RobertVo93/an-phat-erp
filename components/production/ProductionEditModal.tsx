@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { useLanguage } from "@/contexts/language-context"
-import { ProductionForm } from "./ProductionForm"
+import { ProductionForm } from "@/components/production/ProductionForm"
 import { Employee, Product, Utility, Warehouse } from "@/types"
 import { ProductionRecord } from "@/types/production"
 
