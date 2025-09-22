@@ -10,7 +10,27 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     await ensureDataSource();
-    const result = await getAllStockChanges()
+    const { searchParams } = new URL(req.url);
+    const page = Number(searchParams.get("page")) || 1;
+    const limit = Number(searchParams.get("limit")) || 20;
+    const sortBy = searchParams.get("sortBy") || "date";
+    const sortOrder = searchParams.get("sortOrder") || "desc";
+    const status = searchParams.get("status") || undefined;
+    const supplier = searchParams.get("supplier") || undefined;
+    const dateFrom = searchParams.get("dateFrom") || undefined;
+    const dateTo = searchParams.get("dateTo") || undefined;
+    const amountFrom = searchParams.get("amountFrom") || undefined;
+    const amountTo = searchParams.get("amountTo") || undefined;
+    const warehouse = searchParams.get("warehouse") || undefined;
+    const searchTerm = searchParams.get("searchTerm") || undefined;
+    
+    const result = await getAllStockChanges({
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      filters: { status, searchTerm, supplier, warehouse, dateFrom, dateTo, amountFrom, amountTo },
+    })
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });

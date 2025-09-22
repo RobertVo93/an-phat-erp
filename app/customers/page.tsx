@@ -15,8 +15,10 @@ import { CustomerFormModal } from "@/components/customers/customer-form-modal"
 import { CustomerViewModal } from "@/components/customers/customer-view-modal"
 import { CustomerDeleteModal } from "@/components/customers/customer-delete-modal"
 import { CustomerFilterModal } from "@/components/customers/customer-filter-modal"
-// import { CustomerListHighlight } from "@/components/customers/customer-list-highlight"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { CustomerListBody } from "@/components/customers/customer-list-body"
+import CustomerListWebview from "@/components/customers/customer-list-webview"
+import { CustomerStatus, CustomerType } from "@/types"
 
 
 export default function CustomersPage() {
@@ -56,8 +58,34 @@ export default function CustomersPage() {
     setIsDeleteModalOpen,
     handleSaveCustomer,
     handleConfirmDelete,
-
+    handleSort
   } = useCustomers()
+
+  const translateStatus = (status: string) => {
+    switch (status) {
+      case CustomerStatus.active:
+        return t("customers.status.active")
+      case CustomerStatus.inactive:
+        return t("customers.status.inactive")
+      case CustomerStatus.pending:
+        return t("customers.status.pending")
+      default:
+        return status
+    }
+  }
+
+  const translateCustomerType = (type: string) => {
+    switch (type) {
+      case CustomerType.vip:
+        return t("customers.type.vip")
+      case CustomerType.premium:
+        return t("customers.type.premium")
+      case CustomerType.regular:
+        return t("customers.type.regular")
+      default:
+        return type
+    }
+  }
 
   return (
     <ERPLayout>
@@ -91,37 +119,67 @@ export default function CustomersPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" onClick={() => setIsFilterModalOpen(true)} className="w-full md:w-auto">
-            <Filter className="mr-2 h-4 w-4" />
-            <span className="md:hidden">{t("customers.filter")}</span>
-            <span className="hidden md:inline">{t("customers.filter")}</span>
-          </Button>
+
+          <div className="flex flex-row space-x-2">
+            <Button variant="outline" onClick={() => setIsFilterModalOpen(true)} className="w-full md:w-auto">
+              <Filter className="mr-2 h-4 w-4" />
+              <span className="md:hidden">{t("customers.filter")}</span>
+              <span className="hidden md:inline">{t("customers.filter")}</span>
+            </Button>
+
+            <div className="flex items-center space-x-2">
+              <Select
+                value={itemsPerPage.toString()}
+                onValueChange={(value) => setItemsPerPage(Number.parseInt(value))}
+              >
+                <SelectTrigger className="w-16 md:w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
-        {/* Statistics Cards - Mobile 2x2 Grid */}
-        {/* <CustomerListHighlight
-          t={t}
-          allCustomers={allCustomers}
-          totalRevenue={totalRevenue}
-        /> */}
-
         {/* Main Content Card */}
-        <CustomerListBody
-          t={t}
-          customers={customers}
-          totalCustomers={totalCustomers}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          itemsPerPage={itemsPerPage}
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          setItemsPerPage={setItemsPerPage}
-          getVisiblePages={getVisiblePages}
-          handleViewCustomer={handleViewCustomer}
-          handleEditCustomer={handleEditCustomer}
-          handleDeleteCustomer={handleDeleteCustomer}
-        />
+        <div className="lg:hidden">
+          <CustomerListBody
+            customers={customers}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            getVisiblePages={getVisiblePages}
+            handleViewCustomer={handleViewCustomer}
+            handleEditCustomer={handleEditCustomer}
+            handleDeleteCustomer={handleDeleteCustomer}
+            translateStatus={translateStatus}
+            translateCustomerType={translateCustomerType}
+          />
+        </div>
+
+        <div className="hidden lg:block">
+          <CustomerListWebview
+            customers={customers}
+            totalCustomers={totalCustomers}
+            itemsPerPage={itemsPerPage}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            filters={filters}
+            loading={loading}
+            setCurrentPage={setCurrentPage}
+            translateStatus={translateStatus}
+            translateCustomerType={translateCustomerType}
+            handleViewCustomer={handleViewCustomer}
+            handleEditCustomer={handleEditCustomer}
+            handleDeleteCustomer={handleDeleteCustomer}
+            handleSort={handleSort}
+          />
+        </div>
       </div>
 
       {/* Modals */}

@@ -31,8 +31,8 @@ export function useCustomers() {
         searchTerm: searchTerm,
         page: currentPage,
         limit: itemsPerPage,
-        sortBy: "createdAt",
-        sortOrder: "desc",
+        sortBy: filters.sortBy ?? "createdAt",
+        sortOrder: filters.sortOrder ?? "desc",
       })
 
       // calcualte total spends of customers
@@ -189,6 +189,16 @@ export function useCustomers() {
   const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage])
   const endIndex = useMemo(() => Math.min(currentPage * itemsPerPage, customers.length), [currentPage, itemsPerPage, customers])
 
+  const handleSort = (field: string) => {
+    setFilters(prev => {
+      if (prev.sortBy === field) {
+        return { ...prev, sortBy: field, sortOrder: prev.sortOrder === "asc" ? "desc" : "asc", page: 1 }
+      } else {
+        return { ...prev, sortBy: field, sortOrder: "asc", page: 1 }
+      }
+    })
+  }
+
   return {
     customers,
     allCustomers: customers,
@@ -224,5 +234,6 @@ export function useCustomers() {
     setIsDeleteModalOpen,
     handleSaveCustomer,
     handleConfirmDelete,
+    handleSort
   }
 }

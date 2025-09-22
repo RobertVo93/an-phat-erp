@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,79 +11,108 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon, Search, Eye, Edit, Download, RefreshCw } from "lucide-react"
 import { format } from "date-fns"
-import type { ProductionRecord } from "@/types/production"
+import type { ProductionFilters, ProductionRecord, ProductionSortBy } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductionStatus } from "@/types"
 import { ServersideTable, ServersideTableColumn } from "@/components/common/table/ServersideTable"
 import { formatDate, formatLargeCurrency, getProductionStatusColor } from "@/lib/utils"
+import { useDebounceSearchTerm } from "@/lib/utils.client"
+import { toast } from "@/components/ui/use-toast"
+import { getAllProductions } from "@/lib/httpclient"
 
 interface ProductionHistoryProps {
-  historyRecords: ProductionRecord[]
   onViewRecord: (record: ProductionRecord) => void
   onEditRecord: (record: ProductionRecord) => void
 }
 
 export function ProductionHistory({
-  historyRecords,
   onViewRecord,
   onEditRecord
 }: ProductionHistoryProps) {
   const { t } = useLanguage()
+  const [productions, setProductions] = useState<ProductionRecord[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [productFilter, setProductFilter] = useState<string>("all")
-  const [dateFrom, setDateFrom] = useState<Date>()
-  const [dateTo, setDateTo] = useState<Date>()
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
-
-  // Lọc dữ liệu
-  const filteredData = historyRecords.filter((record) => {
-    const matchesSearch =
-      record.number!.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.product?.name!.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesStatus = statusFilter === "all" || record.status === statusFilter
-    const matchesProduct = !productFilter || productFilter === "all" || record.product?.id === productFilter
-
-    const recordDate = new Date(record.date!)
-    const matchesDateFrom = !dateFrom || recordDate >= dateFrom
-    const matchesDateTo = !dateTo || recordDate <= dateTo
-
-    return matchesSearch && matchesStatus && matchesProduct && matchesDateFrom && matchesDateTo
+  const [filters, setFilters] = useState<ProductionFilters>({
+    status: "all",
+    product: "all"
   })
+  // pagination
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [sortBy, setSortBy] = useState<ProductionSortBy>("number")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
-  // Phân trang
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage)
+  // Debounce searchTerm
+  const debouncedSearchTerm = useDebounceSearchTerm(searchTerm, 500)
+
+  // Build params for API
+  const apiParams = useMemo(() => {
+    return {
+      page: currentPage,
+      limit: pageSize,
+      sortBy,
+      sortOrder,
+      searchTerm: debouncedSearchTerm,
+      status: filters.status === "all" ? undefined : filters.status,
+      product: filters.product === "all" ? undefined : filters.product,
+      dateFrom: filters.dateFrom,
+      dateTo: filters.dateTo,
+    }
+  }, [currentPage, pageSize, sortBy, sortOrder, debouncedSearchTerm, filters])
 
   // Lấy danh sách sản phẩm unique
-  const uniqueProducts = Array.from(
-    new Map(
-      historyRecords
-        .filter(r => r.product?.id)
-        .map(r => [r.product!.id, r.product!])
-    ).values()
-  );
+  const uniqueProducts = useMemo(() => {
+    return Array.from(
+      new Map(
+        productions
+          .filter(r => r.product?.id)
+          .map(r => [r.product!.id, r.product!])
+      ).values()
+    );
+  }, [productions]);
 
   const onChangeProductFileter = (productId: string) => {
-    setProductFilter(productId)
+    setFilters(prev => ({ ...prev, product: productId }))
+  }
+
+  const onChangeStatusFilter = (status: ProductionStatus) => {
+    setFilters(prev => ({ ...prev, status: status }))
+  }
+
+  const onChangeDateFrom = (selectedDate: string | Date) => {
+    setFilters(prev => ({ ...prev, dateFrom: `${selectedDate}` }))
+  }
+
+  const onChangeDateTo = (selectedDate: string | Date) => {
+    setFilters(prev => ({ ...prev, dateTo: `${selectedDate}` }))
+  }
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(field as ProductionSortBy)
+      setSortOrder("desc")
+    }
+    setCurrentPage(1)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
   }
 
   const resetFilters = () => {
-    setSearchTerm("")
-    setStatusFilter("all")
-    setProductFilter("all")
-    setDateFrom(undefined)
-    setDateTo(undefined)
+    setFilters({ status: "all", product: "all" })
     setCurrentPage(1)
   }
 
   const exportData = () => {
     // Xuất dữ liệu CSV
     const headers = ["Mã đơn", "Ngày", "Sản phẩm", "Số lượng", "Trạng thái", "Chi phí"]
-    const csvData = filteredData.map((record) => [
+    const csvData = productions.map((record) => [
       record.id,
       record.date,
       record.product,
@@ -102,7 +131,7 @@ export function ProductionHistory({
   }
 
   // Define columns for ServersideTable
-  const columns: ServersideTableColumn<ProductionRecord>[] = [
+  const columns: ServersideTableColumn<any>[] = [
     {
       key: "number",
       title: t("production.history.sheetCode"),
@@ -150,6 +179,7 @@ export function ProductionHistory({
     {
       key: "actions",
       title: t("common.actions"),
+      sortable: false,
       render: (row) => (
         <div className="flex items-center gap-1">
           <Button
@@ -174,6 +204,29 @@ export function ProductionHistory({
       ),
     },
   ]
+
+  const fetchProductions = async (params: ProductionFilters) => {
+    setLoading(true)
+    try {
+      const res = await getAllProductions(params)
+      setProductions(res.data)
+      setTotal(res.total)
+      setTotalPages(Math.ceil(res.total / (params.limit || 10)))
+    } catch (e) {
+      console.error(e)
+      toast({
+        title: t("common.error.title"),
+        description: t("common.error.cannotLoad"),
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchProductions(apiParams)
+  }, [apiParams])
 
   return (
     <Card>
@@ -213,7 +266,7 @@ export function ProductionHistory({
 
           <div className="space-y-1">
             <Label className="text-xs">{t("production.history.status")}</Label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={filters.status} onValueChange={onChangeStatusFilter}>
               <SelectTrigger className="h-9">
                 <SelectValue />
               </SelectTrigger>
@@ -228,7 +281,7 @@ export function ProductionHistory({
 
           <div className="space-y-1">
             <Label className="text-xs">{t("production.history.product")}</Label>
-            <Select value={productFilter} onValueChange={onChangeProductFileter}>
+            <Select value={filters.product} onValueChange={onChangeProductFileter}>
               <SelectTrigger className="h-9">
                 <SelectValue>
                 </SelectValue>
@@ -256,11 +309,21 @@ export function ProductionHistory({
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-start text-left font-normal h-9">
                   <CalendarIcon className="mr-2 h-3 w-3" />
-                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : t("production.history.selectDate")}
+                  {filters.dateFrom ? format(filters.dateFrom, "dd/MM/yyyy") : t("production.history.selectDate")}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus />
+                <Calendar
+                  mode="single"
+                  selected={new Date(filters.dateFrom!)}
+                  onSelect={(e) => {
+                    if (e) {
+                      // const formatted = format(e, "yyyy-MM-dd HH:mm:ss.SSSSSS");
+                      onChangeDateFrom(e);
+                    }
+                  }}
+                  initialFocus
+                />
               </PopoverContent>
             </Popover>
           </div>
@@ -271,11 +334,21 @@ export function ProductionHistory({
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-start text-left font-normal h-9">
                   <CalendarIcon className="mr-2 h-3 w-3" />
-                  {dateTo ? format(dateTo, "dd/MM/yyyy") : t("production.history.selectDate")}
+                  {filters.dateTo ? format(filters.dateTo, "dd/MM/yyyy") : t("production.history.selectDate")}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus />
+                <Calendar
+                  mode="single"
+                  selected={new Date(filters.dateTo!)}
+                  onSelect={(e) => {
+                    if (e) {
+                      // const formatted = format(e, "yyyy-MM-dd HH:mm:ss.SSSSSS");
+                      onChangeDateTo(e);
+                    }
+                  }}
+                  initialFocus
+                />
               </PopoverContent>
             </Popover>
           </div>
@@ -284,22 +357,22 @@ export function ProductionHistory({
         {/* Thống kê nhanh */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg">
           <div className="text-center">
-            <div className="text-lg font-semibold">{filteredData.length}</div>
+            <div className="text-lg font-semibold">{productions.length}</div>
             <div className="text-xs text-gray-600">{t("production.history.sheetNumber")}</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold">{filteredData.filter((r) => r.status === "completed").length}</div>
+            <div className="text-lg font-semibold">{productions.filter((r) => r.status === ProductionStatus.completed).length}</div>
             <div className="text-xs text-gray-600">{t("production.history.completed")}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold">
-              {filteredData.reduce((sum, r) => sum + r.quantity!, 0).toLocaleString()}
+              {productions.reduce((sum, r) => sum + r.quantity!, 0).toLocaleString()}
             </div>
             <div className="text-xs text-gray-600">{t("production.history.totalProduction")}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold">
-              {(filteredData.reduce((sum, r) => sum + r.totalCost!, 0) / 1000000).toFixed(1)}M
+              {(productions.reduce((sum, r) => sum + r.totalCost!, 0) / 1000000).toFixed(1)}M
             </div>
             <div className="text-xs text-gray-600">{t("production.history.totalExpense")}</div>
           </div>
@@ -307,16 +380,16 @@ export function ProductionHistory({
 
         {/* Bảng dữ liệu */}
         <ServersideTable
-          columns={columns as ServersideTableColumn<{ id: string | number }>[]}
-          data={paginatedData as { id: string | number }[]}
-          total={filteredData.length}
+          columns={columns}
+          data={productions}
+          total={total}
           currentPage={currentPage}
-          pageSize={itemsPerPage}
-          sortBy={""}
-          sortOrder={"asc"}
-          onPageChange={setCurrentPage}
-          onSort={() => { }}
-          loading={false}
+          pageSize={pageSize}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onPageChange={handlePageChange}
+          onSort={handleSort}
+          loading={loading}
           totalPages={totalPages}
         />
       </CardContent>

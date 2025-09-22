@@ -144,11 +144,11 @@ export function useEmployees() {
     }
   }
 
-  const handleSort = (field: keyof Employee) => {
+  const handleSort = (field: string) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
     } else {
-      setSortBy(field)
+      setSortBy(field as keyof Employee)
       setSortOrder("asc")
     }
   }
@@ -169,9 +169,7 @@ export function useEmployees() {
   }, [employees])
   // Pagination
   const totalPages = useMemo(() => Math.ceil(totalEmployees / itemsPerPage), [totalEmployees, itemsPerPage])
-  const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage])
-  const endIndex = useMemo(() => Math.min(currentPage * itemsPerPage, totalEmployees), [currentPage, itemsPerPage, totalEmployees])
-
+  
   return {
     employees,
     searchTerm,
@@ -182,7 +180,6 @@ export function useEmployees() {
     sortOrder,
     totalPages,
     totalEmployees,
-    stats,
     loading,
     isFormModalOpen,
     isViewModalOpen,
@@ -190,8 +187,6 @@ export function useEmployees() {
     isFilterModalOpen,
     formMode,
     selectedEmployee,
-    startIndex,
-    endIndex,
     
     setSearchTerm,
     setFilters,

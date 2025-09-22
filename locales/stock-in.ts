@@ -343,4 +343,16 @@ export const stockInTranslations = {
     en: "Unit cost is required",
     vi: "Đơn giá là bắt buộc",
   },
+  "stockIn.noRecords": {
+    en: "No records found",
+    vi: "Không tìm thấy phiếu nào",
+  },
+  "stockIn.addFirstRecord": {
+    en: "Add your first record",
+    vi: "Thêm phiếu đầu tiên",
+  },
+  "stockIn.number": {
+    en: "Stock Number",
+    vi: "Số Phiếu",
+  },
 }
