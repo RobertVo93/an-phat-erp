@@ -10,11 +10,11 @@ export class WarehouseProductEntity extends BaseEntity implements WarehouseProdu
   quantity!: number;
 
   //////Related fields//////
-  @ManyToOne(() => WarehouseEntity, (warehouse) => warehouse.warehouseProducts, { nullable: false })
+  @ManyToOne(() => WarehouseEntity, (warehouse) => warehouse.warehouseProducts, { nullable: true })
   @JoinColumn({ name: "warehouse_id" })
   warehouse!: IWarehouse;
 
-  @ManyToOne(() => ProductEntity, (product) => product.warehouseProducts, { nullable: false })
+  @ManyToOne(() => ProductEntity, (product) => product.warehouseProducts, { nullable: true })
   @JoinColumn({ name: "product_id" })
   product!: IProduct;
 }
