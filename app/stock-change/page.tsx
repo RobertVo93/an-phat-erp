@@ -20,6 +20,7 @@ import { getStockChangeStatusColor } from "@/lib/utils.style"
 import { Button } from "@/components/ui/button"
 import { StockChangeStatus } from "@/types"
 import { StockChangeList } from "@/components/stock-change/StockChangeList"
+import { StockChangeCompleteModal } from "@/components/stock-change/stock-change-complete-modal"
 
 export default function StockChangePage() {
   const { t } = useLanguage();
@@ -40,6 +41,7 @@ export default function StockChangePage() {
     showViewModal,
     showFilterModal,
     showDeleteModal,
+    showAutoCompleteModal,
     selectedStockChange,
     editingStockChange,
     setSearchTerm,
@@ -48,11 +50,13 @@ export default function StockChangePage() {
     setShowViewModal,
     setShowFilterModal,
     setShowDeleteModal,
+    setShowAutoCompeleteModal,
     setEditingStockChange,
     handleSort,
     handleView,
     handleEdit,
     handleDelete,
+    handleAutoComplete,
     handleSave,
     handleDeleteConfirm,
     handlePageChange,
@@ -132,8 +136,11 @@ export default function StockChangePage() {
             <Button variant="outline" size="sm" onClick={() => handleEdit(row)}>{t("common.edit")}</Button>
           }
           {row.status !== StockChangeStatus.completed &&
-            <Button variant="destructive" size="sm" onClick={() => handleDelete(row)}>{t("common.delete")}</Button>
+            <Button variant="outline" size="sm" onClick={() => handleAutoComplete(row)}>{t("stockIn.form.completeNow")}</Button>
           }
+          {row.status !== StockChangeStatus.completed && (
+            <Button variant="destructive" size="sm" onClick={() => handleDelete(row)}>{t("common.delete")}</Button>
+          )}
         </div>
       ),
     },
@@ -189,7 +196,7 @@ export default function StockChangePage() {
                     onView={handleView}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
-                    StockChangeStatus={StockChangeStatus}
+                    handleAutoComplete={handleAutoComplete}
                   />
                 </div>
               </>
@@ -227,6 +234,16 @@ export default function StockChangePage() {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDeleteConfirm}
         stockChange={selectedStockChange}
+      />
+      <StockChangeCompleteModal
+        isOpen={showAutoCompleteModal}
+        loading={loading}
+        onClose={() => {
+          setShowAutoCompeleteModal(false);
+          setEditingStockChange(null);
+        }}
+        onSave={handleSave}
+        stockChange={editingStockChange!}
       />
     </ERPLayout>
   );
