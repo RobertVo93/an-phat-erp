@@ -20,6 +20,7 @@ export function useStockChange() {
   const [showViewModal, setShowViewModal] = useState<boolean>(false);
   const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [showAutoCompleteModal, setShowAutoCompeleteModal] = useState<boolean>(false)
   const [selectedStockChange, setSelectedStockChange] = useState<StockChange | null>(null);
   const [editingStockChange, setEditingStockChange] = useState<StockChange | null>(null);
 
@@ -240,6 +241,11 @@ export function useStockChange() {
     setShowDeleteModal(true);
   };
 
+  const handleAutoComplete =(stockChange: StockChange): void => {
+    setEditingStockChange(stockChange);
+    setShowAutoCompeleteModal(true);
+  }
+
   const handleSave = async (stockChangeData: Omit<StockChange, "id" | "createdAt" | "updatedAt">): Promise<boolean> => {
     try {
       setLoading(true);
@@ -299,6 +305,7 @@ export function useStockChange() {
     showViewModal,
     showFilterModal,
     showDeleteModal,
+    showAutoCompleteModal,
     selectedStockChange,
     editingStockChange,
     setSearchTerm,
@@ -309,11 +316,13 @@ export function useStockChange() {
     setShowViewModal,
     setShowFilterModal,
     setShowDeleteModal,
+    setShowAutoCompeleteModal,
     setEditingStockChange,
     handleSort,
     handleView,
     handleEdit,
     handleDelete,
+    handleAutoComplete,
     handleSave,
     handleDeleteConfirm,
     handlePageChange,

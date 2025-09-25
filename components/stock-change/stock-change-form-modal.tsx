@@ -13,6 +13,7 @@ import { useLanguage } from "@/contexts/language-context"
 import { IStockProduct, Product, StockChange, StockChangeStatus, StockChangeType, Warehouse } from "@/types"
 import { formatLargeCurrency, formatNumberWithCommas, parseNumberInput } from "@/lib/utils"
 import { env } from "@/constants/env"
+import { UIDateTimePicker } from "@/components/ui/datepicker"
 
 interface StockChangeFormModalProps {
   isOpen: boolean
@@ -180,7 +181,7 @@ export function StockChangeFormModal({
     })
 
     if (isComplete) {
-      if (!formData.receivedBy) {
+      if (!(formData.receivedBy?.trim())) {
         newErrors.receivedBy = t("stockIn.validation.receivedByRequired")
       }
     }
@@ -230,18 +231,15 @@ export function StockChangeFormModal({
               {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type}</p>}
             </div>
 
-            <div>
+            <div >
               <Label htmlFor="date">{t("stockIn.date")}</Label>
-              <Input
-                id="date"
-                type="date"
-                value={
-                  formData.date
-                    ? new Date(formData.date).toLocaleDateString("sv-SE")
-                    : ""
-                }
-                onChange={(e) => setFormData((prev) => ({ ...prev, date: new Date(e.target.value) }))}
-              />
+              <div className="w-full">
+                <UIDateTimePicker
+                  selected={new Date(formData.date!) || null}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, date: e || undefined }))}
+                  timeIntervals={15}
+                />
+              </div>
             </div>
 
             <div>
@@ -447,11 +445,11 @@ export function StockChangeFormModal({
           {/* Received By */}
           <div>
             <Label htmlFor="receivedBy">{t("stockIn.receivedBy")}</Label>
-            <Input 
-              id="receivedBy" 
-              className={errors.receivedBy ? "border-red-500" : ""} 
-              value={formData.receivedBy} 
-              onChange={(e) => setFormData((prev) => ({ ...prev, receivedBy: e.target.value }))} 
+            <Input
+              id="receivedBy"
+              className={errors.receivedBy ? "border-red-500" : ""}
+              value={formData.receivedBy}
+              onChange={(e) => setFormData((prev) => ({ ...prev, receivedBy: e.target.value }))}
             />
             {errors.receivedBy && <p className="text-sm text-red-500 mt-1">{errors.receivedBy}</p>}
           </div>
