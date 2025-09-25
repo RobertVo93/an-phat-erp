@@ -13,7 +13,7 @@ export interface StockChangeListProps {
   onView: (stockChange: StockChange) => void;
   onEdit: (stockChange: StockChange) => void;
   onDelete: (stockChange: StockChange) => void;
-  StockChangeStatus: typeof StockChangeStatus;
+  handleAutoComplete: (stockChange: StockChange) => void
 }
 
 export const StockChangeList: React.FC<StockChangeListProps> = ({
@@ -21,7 +21,7 @@ export const StockChangeList: React.FC<StockChangeListProps> = ({
   onView,
   onEdit,
   onDelete,
-  StockChangeStatus,
+  handleAutoComplete,
 }) => {
   const { t } = useLanguage();
   return (
@@ -53,7 +53,7 @@ export const StockChangeList: React.FC<StockChangeListProps> = ({
                     </DropdownMenuItem>
                   )}
                   {record.status !== StockChangeStatus.completed && (
-                    <DropdownMenuItem onClick={() => {}} className="text-green-600">
+                    <DropdownMenuItem onClick={() => handleAutoComplete(record)} className="text-green-600">
                       <CheckCheck className="mr-2 h-4 w-4" />
                       {t("stockIn.form.autoComplete")}
                     </DropdownMenuItem>
