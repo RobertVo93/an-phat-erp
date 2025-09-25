@@ -247,6 +247,10 @@ export const stockInTranslations = {
     en: "Complete immediately ",
     vi: "Hoàn thành ngay",
   },
+  "stockIn.form.completeNow": {
+    en: "Complete now ",
+    vi: "Hoàn thành ngay",
+  },
   "stockIn.form.cancel": {
     en: "Cancel",
     vi: "Hủy",
@@ -355,4 +359,8 @@ export const stockInTranslations = {
     en: "Stock Number",
     vi: "Số Phiếu",
   },
+  "stockIn.autoComplete.message": {
+    en: "Are you sure you want to complete this stock-change immediately? This action can't be undone!",
+    vi: "Bạn có chắc chắn muốn hoàn thành phiếu này ngay lập tức không? Hành động này không thể hoàn tác!"
+  }
 }
