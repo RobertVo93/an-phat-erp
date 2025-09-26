@@ -1,9 +1,9 @@
 import { Entity, Column, ManyToMany, JoinTable, BeforeInsert } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { AppDataSource } from "@/lib/database/typeorm";
 import { ProductEntity } from "@/lib/database/entities";
 import { CollectionStatus } from "@/types/enums";
 import { Product as IProduct, Collection as ICollection } from "@/types";
+import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "collections" })
 export class CollectionEntity extends BaseEntity implements ICollection {
@@ -30,16 +30,9 @@ export class CollectionEntity extends BaseEntity implements ICollection {
   //////Auto numbering//////
   @BeforeInsert()
   async generateNumber() {
-    const repo = AppDataSource.getRepository(CollectionEntity);
-    const latest = await repo
-      .createQueryBuilder("record")
-      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
-      .getOne();
-
-    const lastNumber = latest?.number
-      ? parseInt(latest.number.replace("COL-", ""), 10)
-      : 0;
-
-    this.number = `COL-${String(lastNumber + 1).padStart(5, "0")}`;
+    if (!this.number) {
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber(CollectionEntity, "COL");
+    }
   }
 } 

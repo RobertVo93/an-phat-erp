@@ -1,6 +1,5 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { AppDataSource } from "@/lib/database/typeorm";
 import { EmployeeType, EmployeeStatus } from "@/types/enums";
 import {
   AttendanceRecord as IAttendanceRecord,
@@ -13,6 +12,7 @@ import {
   PayrollRecordEntity,
   ProductionRecordEntity
 } from "@/lib/database/entities";
+import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "employees" })
 export class EmployeeEntity extends BaseEntity implements IEmployee {
@@ -68,16 +68,9 @@ export class EmployeeEntity extends BaseEntity implements IEmployee {
   //////Auto numbering//////
   @BeforeInsert()
   async generateNumber() {
-    const repo = AppDataSource.getRepository(EmployeeEntity);
-    const latest = await repo
-      .createQueryBuilder("record")
-      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
-      .getOne();
-
-    const lastNumber = latest?.number
-      ? parseInt(latest.number.replace("EMP-", ""), 10)
-      : 0;
-
-    this.number = `EMP-${String(lastNumber + 1).padStart(5, "0")}`;
+    if (!this.number) {
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber(EmployeeEntity, "EMP");
+    }
   }
 }
