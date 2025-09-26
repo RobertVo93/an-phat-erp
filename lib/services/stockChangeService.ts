@@ -69,7 +69,7 @@ export async function transferWarehouse(
     const userRepo = manager.getRepository(UserEntity);
     const productRepo = manager.getRepository(ProductEntity);
     const commonService = new CommonService();
-    const stockChangeNumber = await commonService.getEntityNumber("StockChangeEntity", "STC");
+    const stockChangeNumber = await commonService.getEntityNumber(StockChangeEntity, "STC");
 
     const user = await userRepo.findOneOrFail({
       where: { id: userId },
@@ -120,7 +120,7 @@ export async function transferWarehouse(
 
     // 2. Stock In (destination)
     const stockIn = repo.create({
-      number: await commonService.getEntityNumber("StockChangeEntity", "STC", stockChangeNumber),
+      number: await commonService.getEntityNumber(StockChangeEntity, "STC", stockChangeNumber),
       type: StockChangeType.stockIn,
       status: StockChangeStatus.completed,
       warehouse: { id: destinationWarehouseId },

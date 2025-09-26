@@ -60,7 +60,7 @@ export class OrderEntity extends BaseEntity implements IOrder {
   async generateOrderNumber() {
     if (!this.number) {
       const commonService = new CommonService();
-      this.number = await commonService.getEntityNumber("OrderEntity", "ORD");
+      this.number = await commonService.getEntityNumber(OrderEntity, "ORD");
     }
     if (this.status === OrderStatus.completed) {
       handleCompleteOrder(this);

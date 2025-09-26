@@ -1,6 +1,5 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { AppDataSource } from "@/lib/database/typeorm";
 import { WarehouseStatus } from "@/types/enums";
 import type { Order as IOrder, ProductionRecord as IProductionRecord } from "@/types";
 import {
@@ -14,6 +13,7 @@ import {
   OrderEntity,
   ProductionRecordEntity
 } from "@/lib/database/entities";
+import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "warehouses" })
 export class WarehouseEntity extends BaseEntity implements IWarehouse {
@@ -60,16 +60,9 @@ export class WarehouseEntity extends BaseEntity implements IWarehouse {
   //////Auto numbering//////
   @BeforeInsert()
   async generateNumber() {
-    const repo = AppDataSource.getRepository(WarehouseEntity);
-    const latest = await repo
-      .createQueryBuilder("record")
-      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
-      .getOne();
-
-    const lastNumber = latest?.number
-      ? parseInt(latest.number.replace("WHS-", ""), 10)
-      : 0;
-
-    this.number = `WHS-${String(lastNumber + 1).padStart(5, "0")}`;
+    if (!this.number) {
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber(WarehouseEntity, "WHS");
+    }
   }
 }

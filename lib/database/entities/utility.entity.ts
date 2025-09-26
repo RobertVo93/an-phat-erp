@@ -35,7 +35,7 @@ export class UtilityEntity extends BaseEntity implements IUtility {
   async generateNumber() {
     if (!this.number) {
       const commonService = new CommonService();
-      this.number = await commonService.getEntityNumber("UtilityEntity", "UTL");
+      this.number = await commonService.getEntityNumber(UtilityEntity, "UTL");
     }
   }
 }

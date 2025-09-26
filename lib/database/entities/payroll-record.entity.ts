@@ -54,7 +54,7 @@ export class PayrollRecordEntity extends BaseEntity implements IPayrollRecord {
   async generateNumber() {
     if (!this.number) {
       const commonService = new CommonService();
-      this.number = await commonService.getEntityNumber("PayrollRecordEntity", "PAY");
+      this.number = await commonService.getEntityNumber(PayrollRecordEntity, "PAY");
     }
   }
 }
