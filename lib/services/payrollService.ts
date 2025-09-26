@@ -70,7 +70,7 @@ export async function syncPayrollService(payPeriod: Date) {
   await AppDataSource.transaction(async (manager) => {
     const payrollRepo = manager.getRepository(PayrollRecordEntity);
     const commonService = new CommonService();
-    let currentNumber = await commonService.getEntityNumber("PayrollRecordEntity", "PAY");
+    let currentNumber = await commonService.getEntityNumber(PayrollRecordEntity, "PAY");
     for (const employeeData of Object.entries(attendanceRecordsGroupByEmployee)) {
       const attendanceRecords = employeeData[1];
       const completedWork = attendanceRecords?.filter((attendanceRecord) => attendanceRecord.status === AttendanceStatus.completed && attendanceRecord.subStatus === AttendanceSubStatus.present);
@@ -112,7 +112,7 @@ export async function syncPayrollService(payPeriod: Date) {
           attendanceRecords: attendanceRecords,
           notes: `synced from attendance records at ${formatDate(new Date())}`,
         }
-        currentNumber = await commonService.getEntityNumber("PayrollRecordEntity", "PAY", currentNumber);
+        currentNumber = await commonService.getEntityNumber(PayrollRecordEntity, "PAY", currentNumber);
         payroll = await payrollRepo.create(newPayroll);
         await payrollRepo.save(payroll);
       }

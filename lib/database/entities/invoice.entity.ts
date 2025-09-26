@@ -50,7 +50,7 @@ export class InvoiceEntity extends BaseEntity implements IInvoice {
   async generateOrderNumber() {
     if (!this.number) {
       const commonService = new CommonService();
-      this.number = await commonService.getEntityNumber("InvoiceEntity", "INV");
+      this.number = await commonService.getEntityNumber(InvoiceEntity, "INV");
     }
   }
 } 

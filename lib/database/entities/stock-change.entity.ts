@@ -59,7 +59,7 @@ export class StockChangeEntity extends BaseEntity implements IStockChange {
   async generateNumber() {
     if (!this.number) {
       const commonService = new CommonService();
-      this.number = await commonService.getEntityNumber("StockChangeEntity", "STC");
+      this.number = await commonService.getEntityNumber(StockChangeEntity, "STC");
     }
 
     if (this.status === StockChangeStatus.completed) {

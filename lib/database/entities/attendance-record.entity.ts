@@ -48,7 +48,7 @@ export class AttendanceRecordEntity extends BaseEntity implements IAttendanceRec
   async generateNumber() {
     if (!this.number) {
       const commonService = new CommonService();
-      this.number = await commonService.getEntityNumber("AttendanceRecordEntity", "ATD");
+      this.number = await commonService.getEntityNumber(AttendanceRecordEntity, "ATD");
     }
   }
 }

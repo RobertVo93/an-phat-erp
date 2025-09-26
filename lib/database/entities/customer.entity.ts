@@ -1,9 +1,9 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { AppDataSource } from "@/lib/database/typeorm";
 import { OrderEntity } from "@/lib/database/entities";
 import { CustomerStatus, CustomerType } from "@/types/enums";
 import { Order as IOrder, Customer as ICustomer } from "@/types";
+import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "customers" })
 export class CustomerEntity extends BaseEntity implements ICustomer {
@@ -47,16 +47,9 @@ export class CustomerEntity extends BaseEntity implements ICustomer {
   //////Auto numbering//////
   @BeforeInsert()
   async generateNumber() {
-    const repo = AppDataSource.getRepository(CustomerEntity);
-    const latest = await repo
-      .createQueryBuilder("record")
-      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
-      .getOne();
-
-    const lastNumber = latest?.number
-      ? parseInt(latest.number.replace("CUS-", ""), 10)
-      : 0;
-
-    this.number = `CUS-${String(lastNumber + 1).padStart(5, "0")}`;
+    if (!this.number) {
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber(CustomerEntity, "CUS");
+    }
   }
 }

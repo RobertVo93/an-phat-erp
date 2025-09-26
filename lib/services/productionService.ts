@@ -118,7 +118,7 @@ export async function handleStatusCompleted(record: ProductionRecordEntity) {
     const warehouseRepo = manager.getRepository(WarehouseEntity);
     const warehouse = await warehouseRepo.findOne({ where: { id: record.warehouse?.id } });
     const commonService = new CommonService();
-    const stockChangeNumber = await commonService.getEntityNumber("StockChangeEntity", "STC");
+    const stockChangeNumber = await commonService.getEntityNumber(StockChangeEntity, "STC");
 
     // 1. StockIn for finished product
     if (record.product && record.warehouse) {
@@ -177,7 +177,7 @@ export async function handleStatusCompleted(record: ProductionRecordEntity) {
       }
       if (stockProducts.length > 0 && warehouse) {
         const stockOut = stockChangeRepo.create({
-          number: await commonService.getEntityNumber("StockChangeEntity", "STC", stockChangeNumber),
+          number: await commonService.getEntityNumber(StockChangeEntity, "STC", stockChangeNumber),
           type: StockChangeType.stockOut,
           date: new Date(),
           supplier: `${record.number}`,

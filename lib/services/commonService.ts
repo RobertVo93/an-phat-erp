@@ -1,7 +1,8 @@
 import { AppDataSource } from "@/lib/database/typeorm";
+import { EntityTarget } from "typeorm";
 
 export class CommonService {
-  async getEntityNumber(entity: string, prefix: string, currentNumber?: string) {
+  async getEntityNumber(entity: EntityTarget<any>, prefix: string, currentNumber?: string) {
     let lastNumber = 0;
     if (currentNumber) {
       lastNumber = currentNumber
