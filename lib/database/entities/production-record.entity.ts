@@ -1,11 +1,11 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { AppDataSource } from "@/lib/database/typeorm";
 import { ProductionStatus } from "@/types/enums";
 import { IProductionElement, ProductionRecord as IProductionRecord } from "@/types";
 import type { Employee as IEmployee, Product as IProduct, Warehouse as IWarehouse } from "@/types";
 import { ProductEntity, WarehouseEntity, EmployeeEntity } from "@/lib/database/entities";
 import { handleStatusCompleted } from "@/lib/services/productionService";
+import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "production_records" })
 export class ProductionRecordEntity extends BaseEntity implements IProductionRecord {
@@ -52,17 +52,10 @@ export class ProductionRecordEntity extends BaseEntity implements IProductionRec
   //////Auto numbering//////
   @BeforeInsert()
   async generateNumber() {
-    const repo = AppDataSource.getRepository(ProductionRecordEntity);
-    const latest = await repo
-      .createQueryBuilder("record")
-      .orderBy("CAST(SUBSTRING(record.number FROM 5) AS INTEGER)", "DESC")
-      .getOne();
-
-    const lastNumber = latest?.number
-      ? parseInt(latest.number.replace("PRN-", ""), 10)
-      : 0;
-
-    this.number = `PRN-${String(lastNumber + 1).padStart(5, "0")}`;
+    if (!this.number) {
+      const commonService = new CommonService();
+      this.number = await commonService.getEntityNumber(ProductionRecordEntity, "PRN");
+    }
   }
 
   @BeforeUpdate()

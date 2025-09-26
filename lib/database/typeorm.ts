@@ -23,7 +23,7 @@ import { env } from "@/constants/env";
 export const AppDataSource = new DataSource({
   type: "postgres",
   url: env.DATABASE_URL,
-  synchronize: env.NODE_ENV === "development", // set to false in production and use migrations
+  synchronize: false, // env.NODE_ENV === "development", // set to false in production and use migrations
   logging: false,
   entities: [
     // Base entities first (no dependencies)
