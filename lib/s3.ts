@@ -1,5 +1,6 @@
 import { env } from '@/constants/env'
 import AWS from 'aws-sdk'
+import { apiHref } from "@/lib/httpclient/base";
 
 const s3 = new AWS.S3({
   accessKeyId: env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
@@ -38,7 +39,7 @@ export async function getSignedUploadUrl({ key, contentType }: SignedUrlParams):
 export async function uploadFileToS3(file: File, pathname: string): Promise<string> {
   try {
     // 1. Get signed URL from API
-    const res = await fetch("/api/upload-url", {
+    const res = await fetch(apiHref("/api/upload-url"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename: file.name, contentType: file.type, pathname, file: file }),
