@@ -14,3 +14,5 @@ export * from "./user.entity"
 export * from "./utility.entity";
 export * from "./warehouse-product.entity";
 export * from "./warehouse.entity";
+export * from "./cart.entity"
+export * from "./cart-item.entity"
