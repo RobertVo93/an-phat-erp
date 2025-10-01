@@ -30,52 +30,25 @@ export async function getAllProducts({
   };
 } = {}) {
   const repo = AppDataSource.getRepository(ProductEntity);
+  const qb = repo.createQueryBuilder("product");
 
-  // Step 1: Get all matching product IDs
-  const subQuery = repo
-    .createQueryBuilder("product")
-    .select("product.id", "id")
-    .leftJoin("product.collections", "collection");
+  // Join customer
+  qb.leftJoinAndSelect("product.collections", "collection");
 
-  if (filters.collectionId && filters.collectionId !== "all") {
-    subQuery.andWhere("collection.id = :collectionId", { collectionId: filters.collectionId });
-  }
-  if (filters.status && filters.status !== "all") {
-    subQuery.andWhere("product.status = :status", { status: filters.status });
-  }
-  if (filters.search) {
-    subQuery.andWhere(
-      "(product.name ILIKE :search OR product.description ILIKE :search OR product.sku ILIKE :search OR product.barcode ILIKE :search)",
-      { search: `%${filters.search}%` }
-    );
-  }
-  if (filters.priceRange) {
-    subQuery.andWhere("product.price BETWEEN :min AND :max", { min: filters.priceRange.min, max: filters.priceRange.max });
-  }
-  if (filters.stockRange) {
-    subQuery.andWhere("product.stock BETWEEN :min AND :max", { min: filters.stockRange.min, max: filters.stockRange.max });
-  }
-  const fullIdsQuery = subQuery.orderBy(`product.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+  // Filtering
+  if (filters.collectionId) qb.andWhere("collection.id = :collectionId", { collectionId: filters.collectionId });
+  if (filters.status) qb.andWhere("product.status = :status", { status: filters.status });
+  if (filters.priceRange) qb.andWhere("product.price BETWEEN :min AND :max", { min: filters.priceRange.min, max: filters.priceRange.max });
+  if (filters.stockRange) qb.andWhere("product.stock BETWEEN :min AND :max", { min: filters.stockRange.min, max: filters.stockRange.max });
+  if (filters.search) qb.andWhere("(product.name ILIKE :search OR product.description ILIKE :search OR product.sku ILIKE :search OR product.barcode ILIKE :search)", { search: `%${filters.search}%` });
 
-  const allMatchingIds = await fullIdsQuery.getRawMany();
-  const total = allMatchingIds.length;
+  // Sorting
+  qb.orderBy(`product.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
 
-  const pagedIds = allMatchingIds
-    .slice((page - 1) * limit, page * limit)
-    .map((row) => row.id);
+  // Pagination
+  qb.skip((page - 1) * limit).take(limit);
 
-  if (pagedIds.length === 0) {
-    return { data: [], total, page, limit };
-  }
-
-  // Step 2: Get full product data using filtered IDs
-  const data = await repo
-    .createQueryBuilder("product")
-    .leftJoinAndSelect("product.collections", "collection")
-    .whereInIds(pagedIds)
-    .orderBy(`product.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC")
-    .getMany();
-
+  const [data, total] = await qb.getManyAndCount();
   return { data, total, page, limit };
 }
 
