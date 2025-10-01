@@ -19,6 +19,7 @@ import { WarehouseProductEntity } from "./entities/warehouse-product.entity";
 import { ProductionRecordEntity } from "./entities/production-record.entity";
 import { ActivityLogEntity } from "./entities/activity-log.entity";
 import { env } from "@/constants/env";
+import { CartEntity, CartItemEntity } from "./entities";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -36,6 +37,8 @@ export const AppDataSource = new DataSource({
     UtilityEntity,
     InvoiceEntity,
     OrderEntity,
+    CartEntity,
+    CartItemEntity,
     // Dependent entities
     UserPagePermissionEntity,
     WarehouseProductEntity,
