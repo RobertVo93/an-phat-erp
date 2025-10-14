@@ -4,7 +4,9 @@ import { useState, useEffect, useMemo } from "react"
 import type { Collection, CollectionFilters } from "@/types/collection"
 import { getCollections, createCollection as apiCreateCollection, updateCollection as apiUpdateCollection, deleteCollection as apiDeleteCollection } from "@/lib/httpclient"
 import debounce from "lodash/debounce"
-import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3"
+import { uploadFileClient } from "@/lib/httpclient"
+// import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3"
+import { uploadFileStorage } from "@/lib/storage/storageFactory"
 import { base64ToFile } from "@/lib/utils"
 
 export function useCollections() {
@@ -75,13 +77,14 @@ export function useCollections() {
         // Convert base64 to File
         const file = base64ToFile(newCollection.image, "collection-image.png");
         // Upload to S3
-        const s3Url = await uploadFileToS3(file, "collections");
-        // Replace image field with S3 URL
-        newCollection.image = s3Url;
+        const s3Url = await uploadFileClient(file, "collections");
+        // const presignedUrl = await uploadFileStorage(file, s3Url);
+        // // Replace image field with S3 URL
+        // newCollection.image = presignedUrl;
       }
-      const created = await apiCreateCollection(newCollection)
-      setAllCollections([created, ...allCollections])
-      setTotalCollections((prev) => prev + 1)
+      // const created = await apiCreateCollection(newCollection)
+      // setAllCollections([created, ...allCollections])
+      // setTotalCollections((prev) => prev + 1)
     } catch (err: any) {
       console.error(err.message || "Failed to create collection")
     }
@@ -91,49 +94,49 @@ export function useCollections() {
   }
 
   const updateCollection = async (id: string, updatedCollection: Partial<Collection>) => {
-    try {
-      setLoading(true)
-      const selectedCollection = allCollections.find((col) => col.id === id)
-      if (selectedCollection?.image && selectedCollection?.image !== updatedCollection.image) {
-        // Delete old image from S3
-        await deleteFileFromS3(selectedCollection.image)
-      }
+    // try {
+    //   setLoading(true)
+    //   const selectedCollection = allCollections.find((col) => col.id === id)
+    //   if (selectedCollection?.image && selectedCollection?.image !== updatedCollection.image) {
+    //     // Delete old image from S3
+    //     await deleteFileStorage(selectedCollection.image)
+    //   }
 
-      if (updatedCollection.image?.startsWith("data:")) {
-        // Convert base64 to File
-        const file = base64ToFile(updatedCollection.image, "collection-image.png");
-        // Upload to S3
-        const s3Url = await uploadFileToS3(file, "collections");
-        // Replace image field with S3 URL
-        updatedCollection.image = s3Url;
-      }
-      const updated = await apiUpdateCollection(id, updatedCollection)
-      setAllCollections(allCollections.map((col) => (col.id === id ? { ...col, ...updated } : col)))
-    } catch (err: any) {
-      console.error(err.message || "Failed to update collection")
-    }
-    finally {
-      setLoading(false)
-    }
+    //   if (updatedCollection.image?.startsWith("data:")) {
+    //     // Convert base64 to File
+    //     const file = base64ToFile(updatedCollection.image, "collection-image.png");
+    //     // Upload to S3
+    //     const s3Url = await uploadFileStorage(file, "collections");
+    //     // Replace image field with S3 URL
+    //     updatedCollection.image = s3Url;
+    //   }
+    //   const updated = await apiUpdateCollection(id, updatedCollection)
+    //   setAllCollections(allCollections.map((col) => (col.id === id ? { ...col, ...updated } : col)))
+    // } catch (err: any) {
+    //   console.error(err.message || "Failed to update collection")
+    // }
+    // finally {
+    //   setLoading(false)
+    // }
   }
 
   const deleteCollection = async (id: string) => {
-    try {
-      setLoading(true)
-      await apiDeleteCollection(id)
-      // Delete image from S3
-      const selectedCollection = allCollections.find((col) => col.id === id)
-      if (selectedCollection?.image) {
-        await deleteFileFromS3(selectedCollection.image)
-      }
-      setAllCollections(allCollections.filter((col) => col.id !== id))
-      setTotalCollections((prev) => prev - 1)
-    } catch (err: any) {
-      console.error(err.message || "Failed to delete collection")
-    }
-    finally {
-      setLoading(false)
-    }
+    // try {
+    //   setLoading(true)
+    //   await apiDeleteCollection(id)
+    //   // Delete image from S3
+    //   const selectedCollection = allCollections.find((col) => col.id === id)
+    //   if (selectedCollection?.image) {
+    //     await deleteFileStorage(selectedCollection.image)
+    //   }
+    //   setAllCollections(allCollections.filter((col) => col.id !== id))
+    //   setTotalCollections((prev) => prev - 1)
+    // } catch (err: any) {
+    //   console.error(err.message || "Failed to delete collection")
+    // }
+    // finally {
+    //   setLoading(false)
+    // }
   }
 
   const getCollection = (id: string) => {
