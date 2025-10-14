@@ -10,6 +10,9 @@ export class UserEntity extends BaseEntity implements IUser {
     email?: string;
 
     @Column({ type: "varchar", length: 255, nullable: true })
+    phone?: string;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
     username?: string;
 
     @Column({ type: "varchar", length: 255, nullable: false })

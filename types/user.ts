@@ -5,6 +5,7 @@ import { UserPagePermission } from "./user-permission";
 export interface IUser extends IBase {
   username?: string;
   email?: string;
+  phone?: string;
   password?: string;
   passwordSalt?: string;
   role?: UserRole;
