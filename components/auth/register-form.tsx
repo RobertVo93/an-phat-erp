@@ -12,10 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useLanguage } from "@/contexts/language-context"
 import { registerUser } from "@/lib/httpclient"
 import { ADMIN_ROUTES } from "@/constants/nav"
+import { checkUsernameType } from "@/lib/utils"
+import { UsernameType } from "@/types/enums"
 
 export function RegisterForm() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
+  const [fullName, setFullName] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -31,15 +33,22 @@ export function RegisterForm() {
         setError(t("register.passwordMismatch"))
         return
       }
+      const usernameType = checkUsernameType(username)
+      if (usernameType === UsernameType.invalid) {
+        setError(t("register.wrongFormat"))
+        return
+      }
       setIsLoading(true)
 
-      const res = await registerUser({ email, password, username: name })
+      const res = await registerUser({ fullName, password, username })
       if (res.success) {
         router.push(ADMIN_ROUTES.login())
+      } else {
+        setError(t("register.failed"))
       }
     } catch (error) {
       console.error("Error registering:", error);
-      setError("Registration failed. Please try again.")
+      setError(t("register.failed"))
     }
     finally {
       setIsLoading(false)
@@ -54,26 +63,29 @@ export function RegisterForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+          {error &&
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          }
           <div className="space-y-2">
-            <Label htmlFor="name">{t("register.name")}</Label>
+            <Label htmlFor="fullName">{t("register.name")}</Label>
             <Input
-              id="name"
+              id="fullName"
               type="text"
               placeholder={t("register.namePlaceholder")}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">{t("register.email")}</Label>
+            <Label htmlFor="username">{t("register.username")}</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder={t("register.emailPlaceholder")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="username"
+              type="text"
+              placeholder={t("register.usernamePlaceholder")}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>

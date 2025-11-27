@@ -76,8 +76,8 @@ import { UserService } from "@/lib/services/user.service";
 export async function POST(req: NextRequest) {
     try {
         const userService = new UserService();
-        const { email, password } = await req.json();
-        const user = await userService.verifyUser(email, password);
+        const { username, password } = await req.json();
+        const user = await userService.verifyUser(username, password);
         if (!user) {
             return NextResponse.json({ error: "Email or password is incorrect" }, { status: 401 });
         }

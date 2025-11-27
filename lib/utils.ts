@@ -11,6 +11,7 @@ import _ from "lodash"
 export * from "@/lib/utils.currency"
 export * from "@/lib/utils.date"
 export * from "@/lib/utils.style"
+export * from "@/lib/utils.username"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

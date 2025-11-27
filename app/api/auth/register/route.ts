@@ -70,20 +70,20 @@ import { setUserPagePermissions } from "@/lib/services/userPermissionService";
 export async function POST(req: NextRequest) {
     try {
         const userService = new UserService();
-        const { username, email, password } = await req.json();
+        const { username, fullName, password } = await req.json();
 
         // Check if user already exists
-        const existingUser = await userService.getUserByEmail(email);
+        const existingUser = await userService.getUserByUsername(username);
         if (existingUser) {
             return NextResponse.json(
-                { error: "User with this email already exists" },
+                { error: "User with this username already exists" },
                 { status: 400 }
             );
         }
 
         // Create new user
         const user = await userService.createUser({
-            email,
+            fullName,
             password,
             username,
             role: UserRole.staff,

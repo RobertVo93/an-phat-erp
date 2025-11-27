@@ -1,15 +1,16 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { UserEntity } from "@/lib/database/entities/user.entity";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
-import { UserRole } from "@/types/enums";
+import { UsernameType, UserRole } from "@/types/enums";
 import { IUser } from "@/types/user";
 import { hash, genSalt, compare } from "bcryptjs";
+import { checkUsernameType } from "@/lib/utils";
 
 export class UserService {
   private userRepository = AppDataSource.getRepository(UserEntity);
 
-  async verifyUser(email: string, password: string): Promise<IUser | null> {
-    const user = await this.getUserByEmail(email);
+  async verifyUser(username: string, password: string): Promise<IUser | null> {
+    const user = await this.getUserByUsername(username);
     if (!user) return null;
     const isPasswordValid = await compare(password, user.password!);
     return isPasswordValid ? user : null;
@@ -23,8 +24,13 @@ export class UserService {
       userData.password = await hash(userData.password, salt);
       userData.passwordSalt = salt;
     }
+    const checkUsername = checkUsernameType(userData.username!)
 
-    const user = this.userRepository.create(userData);
+    const user = this.userRepository.create({
+      ...userData,
+      email: checkUsername === UsernameType.email ? userData.username : '',
+      phone: checkUsername === UsernameType.phone ? userData.username : '',
+    });
     return await this.userRepository.save(user);
   }
 
@@ -83,10 +89,10 @@ export class UserService {
     const queryBuilder = AppDataSource.getRepository(UserEntity)
       .createQueryBuilder("user")
 
-    if(relations?.includes("permissions")) {
+    if (relations?.includes("permissions")) {
       queryBuilder.leftJoinAndSelect("user.permissions", "permissions");
     }
-    if(relations?.includes("roles")) {
+    if (relations?.includes("roles")) {
       queryBuilder.leftJoinAndSelect("user.roles", "roles");
     }
     if (search) {

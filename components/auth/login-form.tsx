@@ -15,7 +15,7 @@ import { loginUser } from "@/lib/httpclient"
 import { ADMIN_ROUTES } from "@/constants/nav"
 
 export function LoginForm() {
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -29,7 +29,7 @@ export function LoginForm() {
       setIsLoading(true)
       setError("")
 
-      const res = await loginUser({ email, password })
+      const res = await loginUser({ username, password })
       if (res.success) {
         login(res.user!)
         router.push(ADMIN_ROUTES.home()); // or your dashboard
@@ -59,13 +59,13 @@ export function LoginForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="text-red-500 text-sm text-center">{error}</div>}
           <div className="space-y-2">
-            <Label htmlFor="email">{t("login.email")}</Label>
+            <Label htmlFor="email">{t("login.username")}</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder={t("login.emailPlaceholder")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="username"
+              type="text"
+              placeholder={t("login.usernamePlaceholder")}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
@@ -89,7 +89,7 @@ export function LoginForm() {
               variant="outline"
               className="w-full"
               onClick={() => {
-                setEmail("admin@anphat.com")
+                setUsername("admin@anphat.com")
                 setPassword("admin123")
               }}
             >
