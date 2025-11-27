@@ -19,6 +19,10 @@ export interface Order extends IBase {
   items?: IOrderItem[]
   customer?: ICustomer
   warehouse?: IWarehouse
+  receiverInfo?: {
+    name?: string
+    phone?: string
+  }
 }
 
 export interface IOrderItem {

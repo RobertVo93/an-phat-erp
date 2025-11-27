@@ -62,7 +62,8 @@ export enum PaymentMethod {
   debitCard = "debitCard",
   bankTransfer = "bankTransfer",
   cash = "cash",
-  paypal = "paypal"
+  paypal = "paypal",
+  momo = "momo"
 }
 
 export enum UtilityStatus {
@@ -226,4 +227,11 @@ export enum OrderLogField {
   deliveryDate = "deliveryDate",
   paymentMethod = "paymentMethod",
   items = "items",
+}
+
+export enum UsernameType {
+  phone = "phone",
+  email = "email",
+  normal = "normal",  // not phone nor email
+  invalid = "invalid"
 }
