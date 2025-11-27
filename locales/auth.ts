@@ -4,6 +4,14 @@ export const authTranslations = {
     en: "Sign in to your account",
     vi: "Đăng nhập vào tài khoản của bạn",
   },
+  "login.username": {
+    en: "Username",
+    vi: "Tên đăng nhập",
+  },
+  "login.usernamePlaceholder": {
+    en: "Phone number or Email",
+    vi: "Điện thoại hoặc Email",
+  },
   "login.email": {
     en: "Email",
     vi: "Email",
@@ -54,6 +62,14 @@ export const authTranslations = {
     en: "Enter your email",
     vi: "Nhập email của bạn",
   },
+  "register.username": {
+    en: "Username *",
+    vi: "Tên đăng nhập *",
+  },
+  "register.usernamePlaceholder": {
+    en: "Phone number or Email",
+    vi: "Số điện thoại hoặc Email",
+  },
   "register.password": {
     en: "Password",
     vi: "Mật Khẩu",
@@ -85,5 +101,17 @@ export const authTranslations = {
   "register.passwordMismatch": {
     en: "Passwords do not match",
     vi: "Mật khẩu không khớp",
+  },
+  "register.wrongFormat": {
+    en: "Username should be a Phone Number or an Email",
+    vi: "Tên đăng nhập nên là Số Điện Thoại hoặc Email",
+  },
+  "register.userExisted": {
+    en: "User existed",
+    vi: "Tài khoản đã tồn tại",
+  },
+  "register.failed": {
+    en: "Failed to register user",
+    vi: "Đăng ký tài khoản thất bại",
   },
 }
