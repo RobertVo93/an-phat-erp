@@ -576,6 +576,18 @@ export const ordersTranslations = {
     en: "Company",
     vi: "Công Ty",
   },
+  "orders.modal.purchaser": {
+    en: "Purchaser",
+    vi: "Người đặt",
+  },
+  "orders.modal.receiver": {
+    en: "Receiver",
+    vi: "Người nhận",
+  },
+  "orders.modal.name": {
+    en: "Name",
+    vi: "Tên",
+  },
   "orders.modal.email": {
     en: "Email",
     vi: "Email",

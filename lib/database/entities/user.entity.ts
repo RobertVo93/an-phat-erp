@@ -1,19 +1,22 @@
-import { Entity, Column, OneToMany } from "typeorm";
+import { Entity, Column, OneToMany, OneToOne } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { UserPagePermissionEntity } from "@/lib/database/entities";
+import { CustomerEntity, UserPagePermissionEntity } from "@/lib/database/entities";
 import { UserRole } from "@/types/enums";
-import { UserPagePermission as IUserPagePermission, IUser } from "@/types";
+import type { UserPagePermission as IUserPagePermission, IUser, Customer as ICustomer } from "@/types";
 
 @Entity({ name: "users" })
 export class UserEntity extends BaseEntity implements IUser {
-    @Column({ type: "varchar", length: 255, nullable: false })
+    @Column({ type: "varchar", length: 255, nullable: false, unique: true })
+    username?: string;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    fullName?: string;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
     email?: string;
 
     @Column({ type: "varchar", length: 255, nullable: true })
     phone?: string;
-
-    @Column({ type: "varchar", length: 255, nullable: true })
-    username?: string;
 
     @Column({ type: "varchar", length: 255, nullable: false })
     password?: string;
@@ -32,4 +35,7 @@ export class UserEntity extends BaseEntity implements IUser {
 
     @OneToMany(() => UserPagePermissionEntity, (permission) => permission.user, { cascade: true, nullable: true })
     permissions?: IUserPagePermission[];
+
+    @OneToOne(() => CustomerEntity, (customer) => customer.user, { nullable: true })
+    customer?: CustomerEntity;
 } 

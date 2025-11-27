@@ -2,12 +2,12 @@ import { IUser } from "@/types/user"
 import { apiHref } from "@/lib/httpclient/base"
 
 interface ILoginRequest {
-    email: string
+    username: string
     password: string
 }
 
 interface IRegisterRequest extends ILoginRequest {
-    username: string
+    fullName: string
 }
 
 interface IAuthResponse {

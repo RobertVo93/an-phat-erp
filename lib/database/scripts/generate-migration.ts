@@ -14,9 +14,9 @@ if (!customName) {
 
 // 👇 Format: yyyyddmm
 const now = new Date();
-const formattedDate = now.getFullYear().toString() +
-  String(now.getDate()).padStart(2, '0') +
-  String(now.getMonth() + 1).padStart(2, '0');
+const formattedDate = now.getFullYear().toString()+
+  String(now.getMonth() + 1).padStart(2, '0') +
+  String(now.getDate()).padStart(2, '0');
 
 const migrationsDir = path.join('lib/database/migrations');
 
