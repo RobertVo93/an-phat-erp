@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   try {
     await ensureDataSource();
     const { searchParams } = new URL(req.url);
+    const customerId = searchParams.get("customerId") || undefined
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 20;
     const sortBy = searchParams.get("sortBy") || "deliveryDate";
@@ -26,10 +27,11 @@ export async function GET(req: NextRequest) {
     const searchTerm = searchParams.get("searchTerm") || undefined;
 
     const result = await getAllOrders({
+      customerId,
       page,
       limit,
       sortBy,
-      sortOrder,
+      sortOrder: sortOrder as "asc" | "desc",
       filters: { status, customer, dateFrom, dateTo, searchTerm, paymentStatus, paymentMethod, totalAmountFrom, totalAmountTo },
     });
     return NextResponse.json(result);

@@ -3,7 +3,8 @@ export function formatMonthYear(date?: Date | null): string {
   return date.getMonth() + 1 + "-" + date.getFullYear()
 }
 
-export function formatDate(date: string | Date): string {
+export function formatDate(date?: string | Date): string {
+  if (!date) return ""
   return new Date(date).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: '2-digit',
