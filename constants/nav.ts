@@ -54,6 +54,7 @@ export const ADMIN_ROUTES = {
 
   collections: (query?: string) => adminHref("collections", query),
   customers: (query?: string) => adminHref("customers", query),
+	customerDetail: (id: string) => adminHref(`customers/${id}`),
 
   employee: (query?: string) => adminHref("employee", query),
   attendance: (query?: string) => adminHref("attendance", query),
