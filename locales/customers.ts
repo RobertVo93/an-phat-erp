@@ -269,4 +269,22 @@ export const customersTranslations = {
     en: "Next",
     vi: "Tiếp",
   },
+
+  // customer detail
+  "customers.detail.customerDetail": {
+    en: "Customer Detail",
+    vi: "Chi Tiết Khách Hàng"
+  },
+  "customers.detail.backToCustomers": {
+    en: "Back To Customers Page",
+    vi: "Trở Lại Trang Khách Hàng"
+  },
+  "customers.detail.orders": {
+    en: "Checked-out orders",
+    vi: "Đơn hàng đã đặt"
+  },
+  "customers.detail.noOrders": {
+    en: "No orders placed yet ",
+    vi: "Chưa có đơn hàng nào"
+  },
 }

@@ -7,6 +7,9 @@ import { Customer } from "@/types"
 import { formatCurrency, formatDate, getCustomerInitialCharacter, getCustomerStatusColor, getCustomerTypeColor } from "@/lib/utils"
 import { useLanguage } from "@/contexts/language-context"
 import CustomerActions from "@/components/customers/customer-actions"
+import { useRouter } from "next/navigation"
+import { ADMIN_ROUTES } from "@/constants"
+import { translateCustomerStatus, translateCustomerType } from "@/lib/utils.translate"
 
 interface ICustomerListBodyProps {
     customers: Customer[]
@@ -17,8 +20,6 @@ interface ICustomerListBodyProps {
     handleViewCustomer: (customer: Customer) => void
     handleEditCustomer: (customer: Customer) => void
     handleDeleteCustomer: (customer: Customer) => void
-    translateStatus: (status: string) => string
-    translateCustomerType: (type: string) => string
 }
 export const CustomerListBody = ({
     customers,
@@ -29,20 +30,27 @@ export const CustomerListBody = ({
     handleViewCustomer,
     handleEditCustomer,
     handleDeleteCustomer,
-    translateStatus,
-    translateCustomerType,
 }: ICustomerListBodyProps) => {
     const { t } = useLanguage()
-    
+    const router = useRouter()
+
+    const onOpenCustomer = (customerId: string) => {
+        router.push(ADMIN_ROUTES.customerDetail(customerId))
+    }
+
     return (
         <Card>
             <CardHeader className="pb-3">
-                
+
             </CardHeader>
             <CardContent className="pt-0">
                 <div className="space-y-3">
                     {customers.map((customer) => (
-                        <div key={customer.id} className="border rounded-lg p-3 md:p-4 hover:bg-gray-50 transition-colors">
+                        <div 
+                            key={customer.id} 
+                            className="border rounded-lg p-3 md:p-4 hover:bg-gray-50 transition-colors"
+                            onClick={() => onOpenCustomer(customer.id!)}
+                        >
                             <div className="flex items-start space-x-3">
                                 <Avatar className="h-10 w-10 md:h-12 md:w-12 flex-shrink-0">
                                     <AvatarImage src="/placeholder.svg" alt={customer.name} />
@@ -56,19 +64,19 @@ export const CustomerListBody = ({
                                             <h3 className="text-sm font-medium truncate">{customer.name}</h3>
                                             <div className="flex flex-wrap gap-1 mt-1">
                                                 <Badge className={`text-xs ${getCustomerStatusColor(customer.status!)}`}>
-                                                    {translateStatus(customer.status!)}
+                                                    {translateCustomerStatus(customer.status!, t)}
                                                 </Badge>
                                                 <Badge
                                                     variant="outline"
                                                     className={`text-xs ${getCustomerTypeColor(customer.customerType!)}`}
                                                 >
-                                                    {translateCustomerType(customer.customerType!)}
+                                                    {translateCustomerType(customer.customerType!, t)}
                                                 </Badge>
                                             </div>
                                         </div>
 
                                         {/* Actions Dropdown */}
-                                        <CustomerActions 
+                                        <CustomerActions
                                             customer={customer}
                                             handleViewCustomer={handleViewCustomer}
                                             handleEditCustomer={handleEditCustomer}

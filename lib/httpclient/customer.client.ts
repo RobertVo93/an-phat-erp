@@ -11,6 +11,11 @@ export async function getCustomers(params: CustomerFilters = {}) {
   return res.json();
 }
 
+export async function getCustomerById(id: string) {
+  const res = await fetch(apiHref(`/api/customers/${id}`));
+  return res.json();
+}
+
 export async function createCustomer(data: Partial<Customer>) {
   const res = await fetch(apiHref("/api/customers"), {
     method: "POST",

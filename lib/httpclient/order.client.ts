@@ -2,8 +2,9 @@ import { Order, OrderFilters } from "@/types/order";
 import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 
 
-export async function getOrders(params: OrderFilters = {}) {
+export async function getOrders(params: OrderFilters = {}, id?: string,) {
   const url = createApiUrl("/api/orders");
+  if (id) { url.searchParams.append("customerId", String(id)); }
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
