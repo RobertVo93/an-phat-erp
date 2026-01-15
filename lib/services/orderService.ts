@@ -9,7 +9,23 @@ import { deepDifference } from "@/lib/utils";
 import { IGNORE_KEYS } from "@/constants";
 import { v4 as uuidv4 } from 'uuid';
 
-export async function getAllOrders({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
+interface GetAllOrdersParams {
+  customerId?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  filters?: Record<string, any>;
+}
+
+export async function getAllOrders({
+  customerId,
+  page = 1,
+  limit = 20,
+  sortBy = "date",
+  sortOrder = "desc",
+  filters = {},
+}: GetAllOrdersParams) {
   const repo = AppDataSource.getRepository(OrderEntity);
   const qb = repo.createQueryBuilder("order");
 
@@ -17,6 +33,7 @@ export async function getAllOrders({ page = 1, limit = 20, sortBy = "date", sort
   qb.leftJoinAndSelect("order.customer", "customer");
 
   // Filtering
+  if (customerId !== undefined) qb.andWhere("order.customer_id = :customerId", { customerId });
   if (filters.status) qb.andWhere("order.status = :status", { status: filters.status });
   if (filters.dateFrom) qb.andWhere("order.deliveryDate >= :dateFrom", { dateFrom: filters.dateFrom });
   if (filters.dateTo) qb.andWhere("order.deliveryDate <= :dateTo", { dateTo: filters.dateTo });

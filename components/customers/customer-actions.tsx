@@ -14,7 +14,7 @@ interface Props {
 export default function CustomerActions({
   customer,
   handleViewCustomer, handleEditCustomer, handleDeleteCustomer
-}:Props) {
+}: Props) {
   const { t } = useLanguage()
 
   return (
@@ -25,15 +25,31 @@ export default function CustomerActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleViewCustomer(customer)}>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation()
+            handleViewCustomer(customer)
+          }}
+        >
           <Eye className="mr-2 h-4 w-4" />
           {t("customers.viewCustomer")}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation()
+            handleEditCustomer(customer)
+          }}
+        >
           <Edit className="mr-2 h-4 w-4" />
           {t("customers.editCustomer")}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleDeleteCustomer(customer)} className="text-red-600">
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation()
+            handleDeleteCustomer(customer)
+          }}
+          className="text-red-600"
+        >
           <Trash2 className="mr-2 h-4 w-4" />
           {t("customers.deleteCustomer")}
         </DropdownMenuItem>

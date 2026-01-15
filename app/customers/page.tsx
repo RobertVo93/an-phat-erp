@@ -18,7 +18,6 @@ import { CustomerFilterModal } from "@/components/customers/customer-filter-moda
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { CustomerListBody } from "@/components/customers/customer-list-body"
 import CustomerListWebview from "@/components/customers/customer-list-webview"
-import { CustomerStatus, CustomerType } from "@/types"
 
 
 export default function CustomersPage() {
@@ -60,32 +59,6 @@ export default function CustomersPage() {
     handleConfirmDelete,
     handleSort
   } = useCustomers()
-
-  const translateStatus = (status: string) => {
-    switch (status) {
-      case CustomerStatus.active:
-        return t("customers.status.active")
-      case CustomerStatus.inactive:
-        return t("customers.status.inactive")
-      case CustomerStatus.pending:
-        return t("customers.status.pending")
-      default:
-        return status
-    }
-  }
-
-  const translateCustomerType = (type: string) => {
-    switch (type) {
-      case CustomerType.vip:
-        return t("customers.type.vip")
-      case CustomerType.premium:
-        return t("customers.type.premium")
-      case CustomerType.regular:
-        return t("customers.type.regular")
-      default:
-        return type
-    }
-  }
 
   return (
     <ERPLayout>
@@ -157,8 +130,6 @@ export default function CustomersPage() {
             handleViewCustomer={handleViewCustomer}
             handleEditCustomer={handleEditCustomer}
             handleDeleteCustomer={handleDeleteCustomer}
-            translateStatus={translateStatus}
-            translateCustomerType={translateCustomerType}
           />
         </div>
 
@@ -172,8 +143,6 @@ export default function CustomersPage() {
             filters={filters}
             loading={loading}
             setCurrentPage={setCurrentPage}
-            translateStatus={translateStatus}
-            translateCustomerType={translateCustomerType}
             handleViewCustomer={handleViewCustomer}
             handleEditCustomer={handleEditCustomer}
             handleDeleteCustomer={handleDeleteCustomer}

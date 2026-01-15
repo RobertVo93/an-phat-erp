@@ -4,6 +4,9 @@ import { getCustomerStatusColor, getCustomerTypeColor } from "@/lib/utils"
 import { useLanguage } from "@/contexts/language-context"
 import { ServersideTable, ServersideTableColumn } from "@/components/common/table/ServersideTable"
 import CustomerActions from "@/components/customers/customer-actions"
+import { useRouter } from "next/navigation"
+import { ADMIN_ROUTES } from "@/constants"
+import { translateCustomerStatus, translateCustomerType } from "@/lib/utils.translate"
 
 interface Props {
   customers: Customer[]
@@ -14,8 +17,6 @@ interface Props {
   filters: CustomerFilters
   loading: boolean
   setCurrentPage: (page: number) => void
-  translateStatus: (status: string) => string
-  translateCustomerType: (type: string) => string
   handleViewCustomer: (customer: Customer) => void
   handleEditCustomer: (customer: Customer) => void
   handleDeleteCustomer: (customer: Customer) => void
@@ -31,14 +32,18 @@ export default function CustomerListWebview({
   filters,
   loading,
   setCurrentPage,
-  translateStatus,
-  translateCustomerType,
   handleViewCustomer,
   handleEditCustomer,
   handleDeleteCustomer,
   handleSort
 }: Props) {
   const { t } = useLanguage()
+  const router = useRouter()
+
+  const onOpenCustomer = (customerId: string) => {
+    router.push(ADMIN_ROUTES.customerDetail(customerId))
+  }
+
   const columns: ServersideTableColumn<any>[] = [
     {
       key: "name",
@@ -58,7 +63,7 @@ export default function CustomerListWebview({
       render: (row) => (
         <div className="space-y-1">
           <Badge className={`text-xs ${getCustomerStatusColor(row.status!)}`}>
-            {translateStatus(row.status!)}
+            {translateCustomerStatus(row.status!, t)}
           </Badge>
         </div>
       ),
@@ -73,7 +78,7 @@ export default function CustomerListWebview({
             variant="outline"
             className={`text-xs ${getCustomerTypeColor(row.customerType!)}`}
           >
-            {translateCustomerType(row.customerType!)}
+            {translateCustomerType(row.customerType!, t)}
           </Badge>
         </div>
       ),
@@ -127,6 +132,7 @@ export default function CustomerListWebview({
       sortOrder={filters.sortOrder || "asc"}
       onPageChange={setCurrentPage}
       onSort={handleSort}
+      onRecordClick={onOpenCustomer}
       loading={loading}
       totalPages={totalPages}
     />
