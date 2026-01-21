@@ -4,6 +4,8 @@ import { OrderEntity, UserEntity } from "@/lib/database/entities";
 import { CustomerStatus, CustomerType } from "@/types/enums";
 import type { Order as IOrder, Customer as ICustomer, IUser } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
+import { AddressEntity } from "@/lib/database/entities";
+import { IAddress } from "@/types";
 
 @Entity({ name: "customers" })
 export class CustomerEntity extends BaseEntity implements ICustomer {
@@ -47,6 +49,9 @@ export class CustomerEntity extends BaseEntity implements ICustomer {
   @OneToOne(() => UserEntity, { nullable: true })
   @JoinColumn({ name: "user_id" })
   user?: IUser;
+
+  @OneToMany(() => AddressEntity, (address) => address.customer, { cascade: true })
+  addresses?: IAddress[]
 
   //////Auto numbering//////
   @BeforeInsert()
