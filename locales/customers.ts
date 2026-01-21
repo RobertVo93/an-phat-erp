@@ -284,7 +284,15 @@ export const customersTranslations = {
     vi: "Đơn hàng đã đặt"
   },
   "customers.detail.noOrders": {
-    en: "No orders placed yet ",
+    en: "No orders placed yet",
     vi: "Chưa có đơn hàng nào"
+  },
+  "customers.detail.addresses": {
+    en: "Customer\'s Addresses",
+    vi: "Địa chỉ của khách"
+  },
+  "customers.detail.noAddress": {
+    en: "No Address yet",
+    vi: "Chưa có Địa chỉ"
   },
 }
