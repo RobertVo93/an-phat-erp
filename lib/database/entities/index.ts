@@ -16,3 +16,4 @@ export * from "./warehouse-product.entity";
 export * from "./warehouse.entity";
 export * from "./cart.entity"
 export * from "./cart-item.entity"
+export * from "./address.entity"
