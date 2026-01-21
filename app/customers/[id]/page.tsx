@@ -189,6 +189,28 @@ export default function Page() {
 
         <Card>
           <CardContent className="p-6 space-y-6">
+            <h3 className="text-2xl font-bold">{t('customers.detail.addresses')}</h3>
+            <div className="p-0">
+              {orders.length === 0 ? (
+                <div>
+                  {t('customers.detail.noAddress')}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {customer.addresses?.map((address, index) => (
+                    <Card className="p-4" key={index} >
+                      <div className="font-bold">{address.name} - {address.phone}</div>
+                      <div>{address.street} - {address.ward} - {address.city}</div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6 space-y-6">
             <h3 className="text-2xl font-bold">{t('customers.detail.orders')}</h3>
             <div className="p-0">
               {orders.length === 0 ? (
