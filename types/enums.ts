@@ -235,3 +235,9 @@ export enum UsernameType {
   normal = "normal",  // not phone nor email
   invalid = "invalid"
 }
+
+export enum Gender {
+  male = "male",
+  female = "female",
+  other = "other",
+} 

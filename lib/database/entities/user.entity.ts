@@ -1,7 +1,7 @@
 import { Entity, Column, OneToMany, OneToOne } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { CustomerEntity, UserPagePermissionEntity } from "@/lib/database/entities";
-import { UserRole } from "@/types/enums";
+import { UserRole, Gender } from "@/types/enums";
 import type { UserPagePermission as IUserPagePermission, IUser, Customer as ICustomer } from "@/types";
 
 @Entity({ name: "users" })
@@ -32,6 +32,12 @@ export class UserEntity extends BaseEntity implements IUser {
 
     @Column({ type: "timestamp", nullable: true })
     lastLogin?: Date;
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    avatar?: string;
+
+    @Column({ type: "enum", enum: Gender, default: Gender.male, nullable: false })
+    gender?: Gender;
 
     @OneToMany(() => UserPagePermissionEntity, (permission) => permission.user, { cascade: true, nullable: true })
     permissions?: IUserPagePermission[];
