@@ -1,6 +1,6 @@
 import { Customer as ICustomer } from '@/types';
 import { IBase } from "./base.interface";
-import { UserRole } from "./enums";
+import { UserRole, Gender } from "./enums";
 import { UserPagePermission } from "./user-permission";
 
 export interface IUser extends IBase {
@@ -13,6 +13,8 @@ export interface IUser extends IBase {
   role?: UserRole;
   active?: boolean;
   lastLogin?: Date;
+  avatar?: string
+  gender?: Gender
 
   // Permissions
   permissions?: UserPagePermission[];
