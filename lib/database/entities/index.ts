@@ -17,3 +17,5 @@ export * from "./warehouse.entity";
 export * from "./cart.entity"
 export * from "./cart-item.entity"
 export * from "./address.entity"
+export * from "./notification.entity"
+export * from "./notification-settings.entity"
