@@ -1,486 +1,375 @@
 "use client"
 
-import { getProducts } from "@/lib/httpclient"
-import { getAllProductions } from "@/lib/httpclient/production.client"
-import { Product, ProductionStatus, ProductStatus, ReportPeriod } from "@/types"
-import { ProductionRecord } from "@/types/production"
-import { IReportRow, ReportProductionFilter } from "@/types/report-production.interface"
+import { getProducts, getAllProductions } from "@/lib/httpclient"
+import { 
+  calcGrowth,
+  formatYYYYMMDD, 
+  getEndOfMonth, 
+  getIntervalForPeriod, 
+  getPeriodGroupingKey, 
+  getStartOfMonth, 
+  parsePeriodGroupingKey, 
+  shiftDateByPeriod 
+} from "@/lib/utils"
+import {
+  Product,
+  ProductionRecord,
+  ProductionStatus,
+  ProductStatus,
+  ReportPeriod,
+  ProductionComparisonChartDataset,
+  ProductionMetricKey,
+  ProductionProductPerformance,
+  ReportProductionFilter,
+  ProductionReportRow,
+  ProductionSummary,
+} from "@/types"
+import { isWithinInterval } from "date-fns"
 import { useEffect, useMemo, useState } from "react"
-import type { DateRange } from "react-day-picker"
-import { isWithinInterval, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
-import { getCurrentWeekRange } from "@/lib/period_utils"
-import { useLanguage } from "@/contexts/language-context"
-import { enUS, vi, Locale } from "date-fns/locale"
 
-export function useReportProduction() {
-  const { language } = useLanguage()
-  const [locale, setLocale] = useState<Locale>(enUS)
+type RevenueTotals = {
+  revenue: number
+  cost: number
+  profit: number
+}
+
+type NormalizedRecord = RevenueTotals & {
+  date: Date
+  productId: string | undefined
+  productName: string
+  quantity: number
+}
+
+export function useProductionReport() {
   const [loading, setLoading] = useState<boolean>(false)
   const [rawRecords, setRawRecords] = useState<ProductionRecord[]>([])
-  const [reportRows, setReportRows] = useState<IReportRow[]>([])
-  const [showFilterModal, setShowFilterModal] = useState<boolean>(false)
-  const [filter, setFilter] = useState<ReportProductionFilter>({
-    dateFrom: new Date(),
-    dateTo: new Date()
-  })
-  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>(ReportPeriod.day)
   const [activeProducts, setActiveProducts] = useState<Product[]>([])
-  const [comparingProduct, setComparingProduct] = useState<Product>()
+  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>(ReportPeriod.month)
+  const [filter, setFilter] = useState<ReportProductionFilter>({
+    dateFrom: getStartOfMonth(new Date()),
+    dateTo: getEndOfMonth(new Date()),
+  })
 
-  function getGroupingKey(date: Date, period: ReportPeriod): string {
-    const day = String(date.getDate()).padStart(2, "0")
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const year = String(date.getFullYear())
-
-    switch (period) {
-      case ReportPeriod.day:
-        return `${day}/${month}/${year}`
-      case ReportPeriod.month:
-        return `${month}-${year}`
-      case ReportPeriod.year:
-        return year
-    }
-  }
-
-  function sortByDateKey(a: string, b: string, period: ReportPeriod): number {
-    const parseKey = (key: string): Date => {
-      switch (period) {
-        case ReportPeriod.day:
-          const [day, month, year] = key.split("/").map(Number)
-          return new Date(year, month - 1, day)
-        case ReportPeriod.month:
-          const [m, y] = key.split("-").map(Number)
-          return new Date(y, m - 1)
-        case ReportPeriod.year:
-          return new Date(Number(key), 0)
-      }
-    }
-    return parseKey(a).getTime() - parseKey(b).getTime()
-  }
-
-  function parseProductionRecordsToReport(
-    data: ProductionRecord[],
-    filterProducts: Product[],
-    reportPeriod: ReportPeriod
-  ): IReportRow[] {
-    const grouped: Record<string, IReportRow> = {};
-    const filterProductNames = filterProducts?.map(product => product.name ?? "").filter(name => name) || [];
-
-    if (reportPeriod === ReportPeriod.year) {
-      const startYear = filter.dateFrom.getFullYear();
-      const endYear = filter.dateTo.getFullYear();
-      for (let year = startYear; year <= endYear; year++) {
-        const key = String(year);
-        if (!grouped[key]) {
-          grouped[key] = {
-            date: key,
-            cost: 0,
-            revenue: 0,
-            profit: 0,
-            efficiency: 0,
-            productEfficiencies: {},
-          };
-        }
-      }
-    }
-
-    for (const record of data) {
-      if (!record.date || !record.product || !record.quantity) continue;
-
-      const productName = record.product.name ?? "";
-      if (filterProductNames.length > 0 && !filterProductNames.includes(productName)) continue;
-
-      const date = new Date(record.date);
-      const key = getGroupingKey(date, reportPeriod);
-
-      const unitPrice = record.product.price ?? 0;
-      const totalRevenue = unitPrice * record.quantity;
-      const totalCost = record.totalCost ?? 0;
-      const profit = totalRevenue - totalCost;
-
-      if (!grouped[key]) {
-        grouped[key] = {
-          date: key,
-          cost: 0,
-          revenue: 0,
-          profit: 0,
-          efficiency: 0,
-          productEfficiencies: {},
-        };
-      }
-
-      grouped[key][productName] = ((grouped[key][productName] as number) ?? 0) + record.quantity;
-      grouped[key].cost += totalCost;
-      grouped[key].revenue += totalRevenue;
-      grouped[key].profit += profit;
-
-      grouped[key].productEfficiencies[productName] =
-        totalRevenue > 0 ? Math.round(((totalRevenue - totalCost) / totalRevenue) * 100) : 0;
-    }
-
-    for (const row of Object.values(grouped)) {
-      const filteredEfficiencies = Object.keys(row.productEfficiencies)
-        .filter(product => filterProductNames.length === 0 || filterProductNames.includes(product))
-        .map(product => row.productEfficiencies[product]);
-      row.efficiency =
-        filteredEfficiencies.length > 0
-          ? Math.round(filteredEfficiencies.reduce((sum, eff) => sum + eff, 0) / filteredEfficiencies.length)
-          : 0;
-    }
-
-    return Object.values(grouped).sort((a, b) => sortByDateKey(a.date, b.date, reportPeriod));
-  }
-
-  const onInit = async () => {
-    try {
-      setLoading(true)
-      const res = await getAllProductions()
-      const resData = res.data as ProductionRecord[]
-      setRawRecords(resData)
-
-      const reportRows = parseProductionRecordsToReport(resData, filter.products!, reportPeriod)
-      setReportRows(reportRows)
-
-      const pro = await getProducts()
-      const activeProductList = (pro.data as Product[]).filter((pro) => pro.status === ProductStatus.active)
-      setActiveProducts(activeProductList)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filteredAndSortedProductions = useMemo(() => {
-    const filtered = reportRows.filter((row) => {
-      if (!row.date) return false;
-
-      let rowDate: Date;
-
+  useEffect(() => {
+    const initProducts = async () => {
       try {
-        switch (reportPeriod) {
-          case ReportPeriod.day:
-            const [dayStr, monthStr, yearStr] = row.date.split("/").map(Number);
-            rowDate = new Date(yearStr, monthStr - 1, dayStr);
-            return isWithinInterval(rowDate, { start: filter.dateFrom, end: filter.dateTo });
-          case ReportPeriod.month:
-            const [monthStrM, yearStrM] = row.date.split("-").map(Number);
-            rowDate = new Date(yearStrM, monthStrM - 1, 1);
-            return isWithinInterval(rowDate, { start: startOfMonth(filter.dateFrom), end: endOfMonth(filter.dateTo) });
-          case ReportPeriod.year:
-            rowDate = new Date(Number(row.date), 0, 1);
-            return isWithinInterval(rowDate, { start: startOfYear(filter.dateFrom), end: endOfYear(filter.dateTo) });
-          default:
-            return false;
-        }
-      } catch {
-        console.error(`Error parsing date: ${row.date} for reportPeriod: ${reportPeriod}`);
-        return false;
+        const productsResponse = await getProducts({ status: ProductStatus.active })
+        setActiveProducts(productsResponse.data ?? [])
+      } catch (error) {
+        console.error(error)
       }
-    });
-
-    filtered.sort((a, b) => {
-      let aDate: Date, bDate: Date;
-
-      try {
-        switch (reportPeriod) {
-          case ReportPeriod.day:
-            const [ad, am, ay] = a.date.split("/").map(Number);
-            const [bd, bm, by] = b.date.split("/").map(Number);
-            aDate = new Date(ay, am - 1, ad);
-            bDate = new Date(by, bm - 1, bd);
-            break;
-          case ReportPeriod.month:
-            const [amM, ayM] = a.date.split("-").map(Number);
-            const [bmM, byM] = b.date.split("-").map(Number);
-            aDate = new Date(ayM, amM - 1, 1);
-            bDate = new Date(byM, bmM - 1, 1);
-            break;
-          case ReportPeriod.year:
-            aDate = new Date(Number(a.date), 0, 1);
-            bDate = new Date(Number(b.date), 0, 1);
-            break;
-          default:
-            return 0;
-        }
-
-        return aDate.getTime() - bDate.getTime();
-      } catch {
-        console.error(`Error sorting dates: ${a.date}, ${b.date} for reportPeriod: ${reportPeriod}`);
-        return 0;
-      }
-    });
-
-    return filtered;
-  }, [reportRows, filter, reportPeriod]);
-
-  function getColorByIndex(index: number): string {
-    const colors = [
-      "#FF6B6B",
-      "#4D96FF",
-      "#FFC300",
-      "#8E44AD",
-      "#FF8C42"
-    ]
-
-    return colors[index % colors.length]
-  }
-
-  //filter by daterange
-  const filterReportRows = (
-    data: IReportRow[],
-    dateRange: DateRange,
-    reportPeriod: ReportPeriod
-  ): IReportRow[] => {
-    if (!dateRange.from || !dateRange.to) return data;
-
-    return data.filter((row) => {
-      let rowDate: Date;
-
-      try {
-        if (reportPeriod === ReportPeriod.day) {
-          const [d, m, y] = row.date.split("/").map(Number);
-          rowDate = new Date(y, m - 1, d);
-          return isWithinInterval(rowDate, { start: dateRange.from!, end: dateRange.to! });
-        } else if (reportPeriod === ReportPeriod.month) {
-          const [m, y] = row.date.split("-").map(Number);
-          rowDate = new Date(y, m - 1, 1);
-          return isWithinInterval(rowDate, { start: startOfMonth(dateRange.from!), end: endOfMonth(dateRange.to!) });
-        } else if (reportPeriod === ReportPeriod.year) {
-          rowDate = new Date(Number(row.date), 0, 1);
-          return isWithinInterval(rowDate, { start: startOfYear(dateRange.from!), end: endOfYear(dateRange.to!) });
-        } else {
-          return false;
-        }
-      } catch {
-        console.error(`Error parsing row.date: ${row.date} for reportPeriod: ${reportPeriod}`);
-        return false;
-      }
-    });
-  };
-
-  // calculate comparison
-  const monthlyComparisonData = useMemo(() => {
-    const currentYear = new Date().getFullYear()
-    const lastYear = currentYear - 1
-
-    if (!comparingProduct || !comparingProduct.name) return []
-
-    const productName = comparingProduct.name
-
-    const monthYearTotals: Record<number, Record<number, number>> = {}
-
-    rawRecords.forEach((record) => {
-      if (!record.date || record.status !== ProductionStatus.completed || !record.product || !record.quantity) return
-
-      if (record.product.name !== productName) return
-
-      const date = new Date(record.date)
-      const year = date.getFullYear()
-      const month = date.getMonth() + 1
-
-      if (year !== currentYear && year !== lastYear) return
-
-      if (!monthYearTotals[month]) monthYearTotals[month] = {}
-      if (!monthYearTotals[month][year]) monthYearTotals[month][year] = 0
-
-      monthYearTotals[month][year] += record.quantity
-    })
-
-    const result: {
-      month: string
-      product: string
-      thisYear: number
-      lastYear: number
-      growth: number
-    }[] = []
-
-    for (let m = 1; m <= 12; m++) {
-      const thisYearVal = monthYearTotals[m]?.[currentYear] || 0
-      const lastYearVal = monthYearTotals[m]?.[lastYear] || 0
-      const growth = (lastYearVal && thisYearVal) > 0 ? +(((thisYearVal - lastYearVal) / lastYearVal) * 100).toFixed(1) : 0
-
-      result.push({
-        month: `${m}`,
-        product: productName,
-        thisYear: thisYearVal,
-        lastYear: lastYearVal,
-        growth,
-      })
     }
 
-    return result
-  }, [rawRecords, comparingProduct])
+    initProducts()
+  }, [])
 
-  const productPerformanceData = useMemo(() => {
-    const totals: Record<
-      string,
-      {
-        quantity: number;
-        revenue: number;
-        cost: number;
+  const selectedProductIds = useMemo(() => new Set((filter.products ?? []).map((item) => item.id)), [filter.products])
+
+  const selectedProductsKey = useMemo(
+    () => (filter.products ?? []).map((item) => item.id).filter(Boolean).sort().join(","),
+    [filter.products],
+  )
+
+  useEffect(() => {
+    let isCancelled = false
+    const interval = getIntervalForPeriod(filter.dateFrom, filter.dateTo, reportPeriod)
+    const selectedProductIdsArray = selectedProductsKey ? selectedProductsKey.split(",") : []
+    const serverProductFilter =
+      selectedProductIdsArray.length === 1 ? selectedProductIdsArray[0] : undefined
+
+    const fetchFilteredProductions = async () => {
+      try {
+        setLoading(true)
+
+        const limit = 200
+        let page = 1
+        let allRows: ProductionRecord[] = []
+        let total = 0
+
+        do {
+          const response = await getAllProductions({
+            page,
+            limit,
+            sortBy: "date",
+            sortOrder: "asc",
+            status: ProductionStatus.completed,
+            dateFrom: formatYYYYMMDD(interval.from),
+            dateTo: formatYYYYMMDD(interval.to),
+            product: serverProductFilter,
+          })
+
+          const pageRows = (response.data as ProductionRecord[]) ?? []
+          total = Number(response.total ?? 0)
+          allRows = allRows.concat(pageRows)
+          page += 1
+        } while ((page - 1) * limit < total)
+
+        if (!isCancelled) {
+          setRawRecords(allRows)
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error(error)
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false)
+        }
       }
-    > = {};
+    }
 
-    // Filter records by date range
-    const filteredRecords = rawRecords.filter((record) => {
-      if (!record.date) return false;
-      const recordDate = new Date(record.date);
-      return isWithinInterval(recordDate, { start: filter.dateFrom, end: filter.dateTo });
-    });
+    const timer = setTimeout(fetchFilteredProductions, 200)
 
-    filteredRecords.forEach((record) => {
-      if (
-        !record.date ||
-        record.status !== ProductionStatus.completed ||
-        !record.product ||
-        !record.product.name ||
-        !record.quantity
+    return () => {
+      isCancelled = true
+      clearTimeout(timer)
+    }
+  }, [filter.dateFrom, filter.dateTo, reportPeriod, selectedProductsKey])
+
+  const allCompletedRecords = useMemo<NormalizedRecord[]>(
+    () =>
+      rawRecords
+        .map((record) => {
+          if (!record.date || !record.product?.name || !record.quantity) return null
+
+          const recordDate = new Date(record.date)
+          if (Number.isNaN(recordDate.getTime())) return null
+
+          const revenue = record.totalCost ?? 0
+          const cost = record.totalExpense ?? 0
+
+          return {
+            date: recordDate,
+            productId: record.product.id,
+            productName: record.product.name,
+            quantity: record.quantity,
+            revenue,
+            cost,
+            profit: revenue - cost,
+          }
+        })
+        .filter((record): record is NormalizedRecord => Boolean(record)),
+    [rawRecords],
+  )
+
+  const currentInterval = useMemo(
+    () => getIntervalForPeriod(filter.dateFrom, filter.dateTo, reportPeriod),
+    [filter.dateFrom, filter.dateTo, reportPeriod],
+  )
+
+  const recordMatchesProductFilter = (record: NormalizedRecord): boolean => {
+    if (selectedProductIds.size === 0) return true
+    if (!record.productId) return false
+    return selectedProductIds.has(record.productId)
+  }
+
+  const filteredRecords = useMemo(() => {
+    return allCompletedRecords
+      .filter((record) => recordMatchesProductFilter(record))
+      .filter((record) =>
+        isWithinInterval(record.date, { start: currentInterval.from, end: currentInterval.to }),
       )
-        return;
+  }, [allCompletedRecords, currentInterval.from, currentInterval.to, selectedProductIds])
 
-      const productName = record.product.name;
-      const unitPrice = record.product.price ?? 0;
-      const quantity = record.quantity;
-      const totalCost = record.totalCost ?? 0;
-      const totalRevenue = unitPrice * quantity;
+  const derivedData = useMemo(() => {
+    const groupedProduction = new Map<string, ProductionReportRow>()
+    const groupedProducts = new Map<string, ProductionProductPerformance>()
+    const summaryTotals: RevenueTotals = { revenue: 0, cost: 0, profit: 0 }
 
-      if (!totals[productName]) {
-        totals[productName] = { quantity: 0, revenue: 0, cost: 0 };
+    for (const record of filteredRecords) {
+      summaryTotals.revenue += record.revenue
+      summaryTotals.cost += record.cost
+      summaryTotals.profit += record.profit
+
+      const periodKey = getPeriodGroupingKey(record.date, reportPeriod)
+      const currentPeriod = groupedProduction.get(periodKey)
+      if (!currentPeriod) {
+        groupedProduction.set(periodKey, {
+          date: periodKey,
+          revenue: record.revenue,
+          cost: record.cost,
+          profit: record.profit,
+          efficiency: record.revenue > 0 ? +((record.profit / record.revenue) * 100).toFixed(1) : 0,
+        })
+      } else {
+        currentPeriod.revenue += record.revenue
+        currentPeriod.cost += record.cost
+        currentPeriod.profit += record.profit
+        currentPeriod.efficiency =
+          currentPeriod.revenue > 0 ? +((currentPeriod.profit / currentPeriod.revenue) * 100).toFixed(1) : 0
       }
 
-      totals[productName].quantity += quantity;
-      totals[productName].revenue += totalRevenue;
-      totals[productName].cost += totalCost;
-    });
-
-    const result = Object.entries(totals).map(([product, data]) => {
-      const profit = data.revenue - data.cost;
-      const margin = data.revenue > 0 ? +((profit / data.revenue) * 100).toFixed(1) : 0;
-
-      return {
-        product,
-        quantity: data.quantity,
-        revenue: data.revenue,
-        cost: data.cost,
-        profit,
-        margin,
-      };
-    });
-
-    return result;
-  }, [rawRecords, filter.dateFrom, filter.dateTo]);
-
-  // for summary card
-  const summary = useMemo(() => {
-    const now = new Date()
-    const currentMonth = now.getMonth()
-    const currentYear = now.getFullYear()
-
-    const lastMonthDate = new Date(currentYear, currentMonth - 1, 1)
-    const lastMonth = lastMonthDate.getMonth()
-    const lastMonthYear = lastMonthDate.getFullYear()
-
-    let revenueThisMonth = 0
-    let revenueLastMonth = 0
-    let costThisMonth = 0
-    let costLastMonth = 0
-
-    rawRecords.forEach((record) => {
-      if (
-        !record.date ||
-        record.status !== ProductionStatus.completed ||
-        !record.product ||
-        !record.quantity
-      )
-        return
-
-      const date = new Date(record.date)
-      const unitPrice = record.product.price ?? 0
-      const totalRevenue = unitPrice * record.quantity
-      const totalCost = record.totalCost ?? 0
-
-      if (date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
-        revenueThisMonth += totalRevenue
-        costThisMonth += totalCost
-      } else if (date.getFullYear() === lastMonthYear && date.getMonth() === lastMonth) {
-        revenueLastMonth += totalRevenue
-        costLastMonth += totalCost
+      const currentProduct = groupedProducts.get(record.productName)
+      if (!currentProduct) {
+        groupedProducts.set(record.productName, {
+          product: record.productName,
+          quantity: record.quantity,
+          revenue: record.revenue,
+          cost: record.cost,
+          profit: record.profit,
+          margin: record.revenue > 0 ? +((record.profit / record.revenue) * 100).toFixed(1) : 0,
+        })
+      } else {
+        currentProduct.quantity += record.quantity
+        currentProduct.revenue += record.revenue
+        currentProduct.cost += record.cost
+        currentProduct.profit += record.profit
+        currentProduct.margin =
+          currentProduct.revenue > 0 ? +((currentProduct.profit / currentProduct.revenue) * 100).toFixed(1) : 0
       }
-    })
+    }
 
-    const profitThisMonth = revenueThisMonth - costThisMonth
-    const profitLastMonth = revenueLastMonth - costLastMonth
+    const productionRows = Array.from(groupedProduction.values())
+      .map((row) => ({
+        row,
+        sortValue: parsePeriodGroupingKey(row.date, reportPeriod).getTime(),
+      }))
+      .sort((a, b) => a.sortValue - b.sortValue)
+      .map((item) => item.row)
 
-    const calcGrowth = (thisVal: number, lastVal: number): number | null => {
-      if (thisVal === 0 || lastVal === 0) return null
-      return +(((thisVal - lastVal) / lastVal) * 100).toFixed(1)
+    const productRows = Array.from(groupedProducts.values()).sort((a, b) => b.revenue - a.revenue)
+
+    const summaryData: ProductionSummary = {
+      revenue: { value: summaryTotals.revenue },
+      cost: { value: summaryTotals.cost },
+      profit: { value: summaryTotals.profit },
     }
 
     return {
-      revenue: {
-        thisMonth: revenueThisMonth,
-        lastMonth: revenueLastMonth,
-        growth: calcGrowth(revenueThisMonth, revenueLastMonth),
-      },
-      cost: {
-        thisMonth: costThisMonth,
-        lastMonth: costLastMonth,
-        growth: calcGrowth(costThisMonth, costLastMonth),
-      },
-      profit: {
-        thisMonth: profitThisMonth,
-        lastMonth: profitLastMonth,
-        growth: calcGrowth(profitThisMonth, profitLastMonth),
-      },
+      productionData: productionRows,
+      productPerformanceData: productRows,
+      summary: summaryData,
     }
-  }, [rawRecords])
+  }, [filteredRecords, reportPeriod])
 
-  // change date range
+  const productionData = derivedData.productionData
+  const productPerformanceData = derivedData.productPerformanceData
+  const summary = derivedData.summary
+
+  const comparisonChartData = useMemo<ProductionComparisonChartDataset[]>(() => {
+    const groupedAll = new Map<string, RevenueTotals>()
+
+    for (const record of allCompletedRecords) {
+      if (!recordMatchesProductFilter(record)) continue
+      const key = getPeriodGroupingKey(record.date, reportPeriod)
+      const current = groupedAll.get(key)
+
+      if (!current) {
+        groupedAll.set(key, {
+          revenue: record.revenue,
+          cost: record.cost,
+          profit: record.profit,
+        })
+        continue
+      }
+
+      current.revenue += record.revenue
+      current.cost += record.cost
+      current.profit += record.profit
+    }
+
+    const metricConfig: Array<{ metric: ProductionMetricKey; titleKey: string }> = [
+      { metric: "revenue", titleKey: "rp.page.totalRevenue" },
+      { metric: "cost", titleKey: "rp.page.totalExpense" },
+      { metric: "profit", titleKey: "rp.page.totalProfit" },
+    ]
+
+    return metricConfig.map(({ metric, titleKey }) => {
+      const rows = productionData.map((row) => {
+        const currentDate = parsePeriodGroupingKey(row.date, reportPeriod)
+        const metricCurrent = row[metric]
+
+        const baselineDate1 = shiftDateByPeriod(currentDate, reportPeriod, -1)
+        const baselineKey1 = getPeriodGroupingKey(baselineDate1, reportPeriod)
+        const baseline1 = groupedAll.get(baselineKey1)?.[metric] ?? 0
+
+        const metricRow = {
+          label: row.date,
+          current: metricCurrent,
+          baseline1,
+          baseline1Percent: calcGrowth(metricCurrent, baseline1),
+        }
+
+        if (reportPeriod === ReportPeriod.day) {
+          const baselineDate2 = shiftDateByPeriod(currentDate, ReportPeriod.month, -1)
+          const baselineDate3 = shiftDateByPeriod(currentDate, ReportPeriod.year, -1)
+          const baseline2 = groupedAll.get(getPeriodGroupingKey(baselineDate2, reportPeriod))?.[metric] ?? 0
+          const baseline3 = groupedAll.get(getPeriodGroupingKey(baselineDate3, reportPeriod))?.[metric] ?? 0
+
+          return {
+            ...metricRow,
+            baseline2,
+            baseline3,
+            baseline2Percent: calcGrowth(metricCurrent, baseline2),
+            baseline3Percent: calcGrowth(metricCurrent, baseline3),
+          }
+        }
+
+        if (reportPeriod === ReportPeriod.month) {
+          const baselineDate2 = shiftDateByPeriod(currentDate, ReportPeriod.year, -1)
+          const baseline2 = groupedAll.get(getPeriodGroupingKey(baselineDate2, reportPeriod))?.[metric] ?? 0
+
+          return {
+            ...metricRow,
+            baseline2,
+            baseline2Percent: calcGrowth(metricCurrent, baseline2),
+          }
+        }
+
+        return metricRow
+      })
+
+      if (reportPeriod === ReportPeriod.day) {
+        return {
+          metric,
+          titleKey,
+          baseline1LabelKey: "rp.page.theDateBefore",
+          baseline2LabelKey: "rp.page.samePeriodLastMonth",
+          baseline3LabelKey: "rp.page.samePeriodLastYear",
+          rows,
+        }
+      }
+
+      if (reportPeriod === ReportPeriod.month) {
+        return {
+          metric,
+          titleKey,
+          baseline1LabelKey: "rp.page.samePeriodLastMonth",
+          baseline2LabelKey: "rp.page.samePeriodLastYear",
+          rows,
+        }
+      }
+
+      return {
+        metric,
+        titleKey,
+        baseline1LabelKey: "rp.page.previousPeriod",
+        rows,
+      }
+    })
+  }, [allCompletedRecords, productionData, reportPeriod, selectedProductIds])
+
   const handleDateRangeChange = (range: { from?: Date; to?: Date } | undefined) => {
     if (!range) return
-    setFilter(prev => ({
+
+    setFilter((prev) => ({
       ...prev,
       dateFrom: range.from ?? prev.dateFrom,
-      dateTo: range.to ?? prev.dateTo
+      dateTo: range.to ?? prev.dateTo,
     }))
   }
 
-  useEffect(() => {
-    onInit()
-    const [mon, sun] = getCurrentWeekRange()
-    setFilter({ ...filter, dateFrom: mon, dateTo: sun })
-  }, [])
-
-  useEffect(() => {
-    const completed = rawRecords.filter((r) => r.status === ProductionStatus.completed)
-    const rows = parseProductionRecordsToReport(completed, filter.products!, reportPeriod)
-    setReportRows(rows)
-  }, [rawRecords, filter, reportPeriod])
-
-  useEffect(() => {
-    language === "vi" ? setLocale(vi) : setLocale(enUS)
-  }, [language])
-
   return {
     loading,
-    productionData: filterReportRows(filteredAndSortedProductions, { from: filter.dateFrom, to: filter.dateTo }, reportPeriod),
-    showFilterModal,
     filter,
     activeProducts,
     reportPeriod,
-    monthlyComparisonData,
-    comparingProduct,
-    rawRecords,
+    productionData,
     productPerformanceData,
     summary,
-    locale,
-
-    setComparingProduct,
+    comparisonChartData,
     setFilter,
-    setShowFilterModal,
     setReportPeriod,
-    getColorByIndex,
     handleDateRangeChange,
   }
 }

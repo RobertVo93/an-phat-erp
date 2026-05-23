@@ -9,7 +9,7 @@ import { useEffect, useState } from "react"
 import { Button } from "../ui/button"
 import { Product } from "@/types"
 import { Checkbox } from "@radix-ui/react-checkbox"
-import { getCurrentWeekRange } from "@/lib/period_utils"
+import { getCurrentWeekRange } from "@/lib/utils"
 import { ReportStockFilter } from "@/types/report-stock.interface"
 
 interface Props {

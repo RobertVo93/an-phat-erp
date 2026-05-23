@@ -52,6 +52,34 @@ export const reportProductionTranslations = {
     en: "Comparison",
     vi: "So Sánh"
   },
+  "rp.page.comparisonDescription": {
+    en: "Compare selected period totals with historical baselines",
+    vi: "So sánh tổng số liệu kỳ đã chọn với dữ liệu lịch sử"
+  },
+  "rp.page.baseline": {
+    en: "Baseline",
+    vi: "Mốc so sánh"
+  },
+  "rp.page.currentPeriod": {
+    en: "Current period",
+    vi: "Kỳ hiện tại"
+  },
+  "rp.page.theDateBefore": {
+    en: "Same date before",
+    vi: "Ngày trước đó"
+  },
+  "rp.page.samePeriodLastMonth": {
+    en: "Same period last month",
+    vi: "Cùng kỳ tháng trước"
+  },
+  "rp.page.samePeriodLastYear": {
+    en: "Same period last year",
+    vi: "Cùng kỳ năm trước"
+  },
+  "rp.page.previousPeriod": {
+    en: "Previous period",
+    vi: "Kỳ trước" 
+  },
   "rp.page.products": {
     en: "Products",
     vi: "Sản Phẩm"

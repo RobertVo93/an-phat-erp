@@ -12,6 +12,7 @@ export * from "@/lib/utils.currency"
 export * from "@/lib/utils.date"
 export * from "@/lib/utils.style"
 export * from "@/lib/utils.username"
+export * from "@/lib/utils.report"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
