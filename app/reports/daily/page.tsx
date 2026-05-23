@@ -48,7 +48,7 @@ export default function DailyReportPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Daily Report</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Daily Report (Mock Data)</h2>
             <p className="text-muted-foreground">Comprehensive daily business overview for {dailyData.date}</p>
           </div>
           <div className="flex space-x-2">

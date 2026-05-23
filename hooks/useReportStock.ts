@@ -2,7 +2,7 @@
 
 import { getProducts } from "@/lib/httpclient"
 import { getAllStockChanges } from "@/lib/httpclient/stock-change.client"
-import { getCurrentWeekRange } from "@/lib/period_utils"
+import { getCurrentWeekRange } from "@/lib/utils"
 import { Product, ProductStatus, ReportPeriod, ReportViewMode, StockChange, StockChangeStatus } from "@/types"
 import { IReportStock, ReportStockFilter } from "@/types/report-stock.interface"
 import { useEffect, useState } from "react"

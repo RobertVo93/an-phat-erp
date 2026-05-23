@@ -1,6 +1,6 @@
 "use client"
 
-import { getCurrentWeekRange } from "@/lib/period_utils"
+import { getCurrentWeekRange } from "@/lib/utils"
 import { CustomerStatus, Customer as ICustomer, IReportOrder, Order as IOrder, ReportOrderFilter, ReportPeriod, ReportViewMode, OrderStatus } from "@/types"
 import { useEffect, useState } from "react"
 import { isWithinInterval, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns"
