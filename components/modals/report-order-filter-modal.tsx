@@ -8,7 +8,7 @@ import { useEffect, useState } from "react"
 import { Button } from "../ui/button"
 import { Customer, OrderStatus, PaymentMethod, ReportOrderFilter } from "@/types"
 import { Checkbox } from "@radix-ui/react-checkbox"
-import { getCurrentWeekRange } from "@/lib/period_utils"
+import { getCurrentWeekRange } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Props {

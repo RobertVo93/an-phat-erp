@@ -6,16 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Download, Filter, Zap, Droplets, Thermometer, Wifi, TrendingUp, TrendingDown } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import type { DateRange } from "react-day-picker"
+// import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+// import { CalendarIcon } from "lucide-react"
+// import { format } from "date-fns"
+// import { cn } from "@/lib/utils"
+import { DateRangeValue, Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart } from "recharts"
 
 export default function UtilityReportPage() {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+  const [dateRange, setDateRange] = useState<DateRangeValue | undefined>({
     from: new Date(2023, 9, 1), // October 1, 2023
     to: new Date(2024, 0, 31), // January 31, 2024
   })
@@ -283,11 +282,11 @@ export default function UtilityReportPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Utility Report</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Utility Report (Mock Data)</h2>
             <p className="text-muted-foreground">Comprehensive utility consumption and cost analysis</p>
           </div>
           <div className="flex space-x-2">
-            <Popover>
+            {/* <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className={cn("w-[280px] justify-start text-left font-normal")}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -306,7 +305,6 @@ export default function UtilityReportPage() {
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <CalendarComponent
-                  initialFocus
                   mode="range"
                   defaultMonth={dateRange?.from}
                   selected={dateRange}
@@ -314,7 +312,7 @@ export default function UtilityReportPage() {
                   numberOfMonths={2}
                 />
               </PopoverContent>
-            </Popover>
+            </Popover> */}
             <Select value={reportPeriod} onValueChange={setReportPeriod}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Period" />

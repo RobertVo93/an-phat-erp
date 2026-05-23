@@ -1,74 +1,108 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import DatePicker, { DatePickerProps, registerLocale } from "react-datepicker"
+// @ts-ignore: CSS import without type declarations
+import "react-datepicker/dist/react-datepicker.css"
+import { enUS, vi } from "date-fns/locale"
+import { useLanguage } from "@/contexts/language-context"
+import { Input } from "./input"
+import { CalendarIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+registerLocale("en", enUS)
+registerLocale("vi", vi)
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+export type DateRangeValue = {
+  from?: Date
+  to?: Date
+}
 
-function Calendar({
+type RangePickerCalendarProps = {
+  className?: string
+  startDate: Date | null | undefined
+  endDate: Date | null | undefined
+  mode?: "day" | "month" | "year"
+  showIcon?: boolean
+  showTodayButton?: boolean
+  onDateRangeChange: (range: DateRangeValue | undefined) => void
+}
+function RangePickerCalendar({
   className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
+  startDate, 
+  endDate,
+  mode = "day",
+  showIcon = true,
+  showTodayButton = false,
+  onDateRangeChange,
+}: RangePickerCalendarProps) {
+  const { t, language } = useLanguage()
+  const [localStartDate, setStartDate] = React.useState(startDate);
+  const [localEndDate, setEndDate] = React.useState(endDate);
+
+  React.useEffect(() => {
+    if (startDate || endDate) {
+      setStartDate(startDate);
+      setEndDate(endDate);
+    }
+  }, [startDate, endDate, mode]);
+
+  const onChangeHandler = (dates: [Date | null, Date | null]) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    let endAdjusted = end ?? undefined;
+    if (end) {
+      if (mode === "day") {
+        // set to last millisecond of the day
+        endAdjusted = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999);
+      }
+      else if (mode === "month") {
+        // set to last millisecond of the month
+        endAdjusted = new Date(end.getFullYear(), end.getMonth() + 1, 0, 23, 59, 59, 999);
+      } else if (mode === "year") {
+        // set to last millisecond of the year
+        endAdjusted = new Date(end.getFullYear(), 11, 31, 23, 59, 59, 999);
+      }
+    }
+    setEndDate(endAdjusted ?? null);
+    if (start && endAdjusted) {
+      onDateRangeChange({ from: start, to: endAdjusted })
+    }
+  };
+
   return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      modifiers={{
-        today: (date) => {
-          const today = new Date()
-          return (
-            date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear()
-          )
-        },
-      }}
-      modifiersClassNames={{
-        selected: "bg-blue-600 text-white rounded-full font-semibold",
-        range_middle: "bg-gray-200 text-black",
-        today: "bg-orange-500 text-white border border-orange-600 rounded-full",
-      }}
-      classNames={{
-        months: "flex flex-row space-x-4",
-        month: "space-y-4 w-full",
-        caption: "flex justify-between items-center px-2",
-        caption_label: "text-sm font-medium",
-        nav: "space-x-1 flex items-center",
-        nav_button: cn(
-          buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-        ),
-        table: "w-full border-collapse",
-        head_row: "flex gap-2",
-        head_cell:
-          "text-muted-foreground w-9 font-normal text-[0.8rem] text-center",
-        row: "flex w-full gap-2 my-2",
-        cell:
-          "relative h-9 w-9 text-center text-sm p-0 " +
-          "focus-within:relative focus-within:z-20",
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal m-[0.5px]"
-        ),
-        day_selected: "bg-blue-600 text-white rounded-full font-semibold",
-        day_range_middle: "bg-gray-200 text-black",
-        day_today: "bg-orange-500 text-white border border-orange-600 rounded-full",
-        day_outside:
-          "day-outside text-gray-400 aria-selected:bg-gray-200 aria-selected:text-black",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
+    <DatePicker
+      className={className}
+      wrapperClassName="w-full"
+      showMonthYearPicker={mode === "month"}
+      showYearPicker={mode === "year"}
+      locale={language === "vi" ? vi : enUS}
+      dateFormat="dd/MM/yyyy"
+      customInput={<Input className="!pl-[45px] min-w-[235px] cursor-pointer" />}
+      showIcon={showIcon}
+      icon={<CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />}
+      selectsRange
+      onChange={onChangeHandler}
+      startDate={localStartDate}
+      endDate={localEndDate}
+      selected={localStartDate}
+      {...(showTodayButton ? { todayButton: t("production.today") } : {})}
+    />
+  )
+}
+
+function Calendar(props: DatePickerProps) {
+  const { language } = useLanguage()
+  return (
+    <DatePicker
+      wrapperClassName="w-full"
+      locale={language === "vi" ? vi : enUS}
+      dateFormat="dd/MM/yyyy"
+      customInput={<Input className="!pl-[45px] min-w-[150px] cursor-pointer" />}
+      showIcon
+      icon={<CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />}
       {...props}
     />
   )
 }
-Calendar.displayName = "Calendar"
 
-export { Calendar }
+export { RangePickerCalendar, Calendar }
