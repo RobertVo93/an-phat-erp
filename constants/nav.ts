@@ -65,6 +65,7 @@ export const ADMIN_ROUTES = {
   warehouse: (query?: string) => adminHref("warehouse", query),
   warehouseDetail: (id: string) => adminHref(`warehouse/${id}`),
   stockChange: (query?: string) => adminHref("stock-change", query),
+  stockChangeDetail: (id: string) => adminHref(`stock-change/${id}`),
   produce: (query?: string) => adminHref("produce", query),
 
   utility: (query?: string) => adminHref("utility", query),

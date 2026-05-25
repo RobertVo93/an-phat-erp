@@ -2,9 +2,9 @@ import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } fro
 import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { AppDataSource } from "@/lib/database/typeorm";
 import { StockChangeType, StockChangeStatus } from "@/types/enums";
-import type { Warehouse as IWarehouse } from "@/types";
+import type { Warehouse as IWarehouse, ProductionRecord as IProductionRecord } from "@/types";
 import { StockChange as IStockChange, IStockProduct } from "@/types";
-import { WarehouseEntity, ProductEntity, WarehouseProductEntity } from "@/lib/database/entities";
+import { WarehouseEntity, ProductEntity, WarehouseProductEntity, ProductionRecordEntity } from "@/lib/database/entities";
 import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "stock_change" })
@@ -52,6 +52,10 @@ export class StockChangeEntity extends BaseEntity implements IStockChange {
   @ManyToOne(() => WarehouseEntity, (warehouse: WarehouseEntity) => warehouse.stockChanges, { nullable: true })
   @JoinColumn({ name: "warehouse_id" })
   warehouse?: IWarehouse;
+
+  @ManyToOne(() => ProductionRecordEntity, (pr) => pr.stockChanges, { nullable: true })
+  @JoinColumn({ name: "production_record_id" })
+  productionRecord?: IProductionRecord;
 
 
   //////Auto numbering//////

@@ -1,6 +1,7 @@
 import { StockChangeStatus, StockChangeType } from "@/types/enums";
 import { IBase, IBaseFilters } from "./base.interface";
 import { Warehouse as IWarehouse } from "./warehouse";
+import { ProductionRecord as IProductionRecord } from "./production";
 
 
 export interface StockChange extends IBase {
@@ -9,6 +10,7 @@ export interface StockChange extends IBase {
   date?: Date
   supplier?: string
   warehouse?: IWarehouse;
+  productionRecord?: IProductionRecord;
   status?: StockChangeStatus
   stockProducts?: IStockProduct[]
   subtotal?: number
