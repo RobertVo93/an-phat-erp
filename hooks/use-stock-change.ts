@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import type { StockChange, StockChangeFilters, StockChangeSortBy } from "@/types/stock-change"
-import { getAllStockChanges as apiGetAllStockChanges, addStockChange as apiAddStockChange, updateStockChange as apiUpdateStockChange, deleteStockChange as apiDeleteStockChange } from "@/lib/httpclient/stock-change.client"
+import { getStockChangeByFilter as apiGetAllStockChanges, addStockChange as apiAddStockChange, updateStockChange as apiUpdateStockChange, deleteStockChange as apiDeleteStockChange } from "@/lib/httpclient/stock-change.client"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { getProducts } from "@/lib/httpclient"
 import { Product, ProductStatus, Warehouse, WarehouseStatus } from "@/types"

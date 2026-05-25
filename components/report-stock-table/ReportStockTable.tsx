@@ -1,9 +1,10 @@
 "use client"
 
 import { useLanguage } from "@/contexts/language-context"
-import { formatDate } from "@/lib/utils"
-import { StockChangeStatus, StockChangeType } from "@/types"
+import { formatDate, formatLargeCurrency, formatNumberWithCommas } from "@/lib/utils"
+import { StockChangeType } from "@/types"
 import { IReportStock } from "@/types/report-stock.interface"
+import Link from "next/link"
 import {
   ColumnDef,
   flexRender,
@@ -11,6 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { useMemo } from "react"
+import { ADMIN_ROUTES } from "@/constants"
 
 interface Props {
   data: IReportStock[]
@@ -35,6 +37,23 @@ export default function ReportStockTable({ data }: Props) {
       {
         accessorKey: "productName",
         header: t("rs.table.productName"),
+        cell: ({ row, getValue }) => {
+          const productName = getValue() as string
+          const stockChangeId = row.original.stockChangeId
+
+          if (!stockChangeId) return productName
+
+          return (
+            <Link
+              href={ADMIN_ROUTES.stockChangeDetail(stockChangeId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline-offset-2 hover:underline"
+            >
+              {productName}
+            </Link>
+          )
+        },
       },
       {
         accessorKey: "quantity",
@@ -42,23 +61,27 @@ export default function ReportStockTable({ data }: Props) {
         cell: ({ row }) => {
           const quantity = row.original.quantity
           const unit = row.original.unit
-          return `${quantity} ${t(`rs.table.${unit}`)}`
+          return `${formatNumberWithCommas(quantity)} ${t(`rs.table.${unit}`)}`
         },
       },
       {
         accessorKey: "totalCost",
         header: t("rs.table.totalExpense"),
-        cell: ({ getValue }) => `${(getValue() as number).toLocaleString()} đ`,
+        cell: ({ getValue }) => `${formatLargeCurrency(getValue() as number)}`,
       },
       {
         accessorKey: "type",
         header: t("rs.table.type"),
-        cell: ({ getValue }) => {
+        cell: ({ row, getValue }) => {
           const type = getValue() as StockChangeType
           const colorClass = getTypeColor(type)
+          let display = t(`rs.table.${type}`);
+          if (row.original.isProductionRelated) {
+              display += ` - ${t(`rs.table.production`)}`;
+          }
           return (
             <span className={`px-2 py-1 rounded-full text-sm font-medium ${colorClass}`}>
-              {t(`rs.table.${type}`)}
+              {display}
             </span>
           )
         }
@@ -66,7 +89,7 @@ export default function ReportStockTable({ data }: Props) {
       {
         accessorKey: "date",
         header: t("rs.table.time"),
-        cell: ({ getValue }) => formatDate(getValue() as string)
+        cell: ({ getValue }) => formatDate(getValue() as string, "/")
       },
     ],
     [t]

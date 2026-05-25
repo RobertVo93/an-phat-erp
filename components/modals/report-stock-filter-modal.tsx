@@ -3,13 +3,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { useLanguage } from "@/contexts/language-context"
 import { useEffect, useState } from "react"
 import { Button } from "../ui/button"
 import { Product } from "@/types"
 import { Checkbox } from "@radix-ui/react-checkbox"
-import { getCurrentWeekRange } from "@/lib/utils"
 import { ReportStockFilter } from "@/types/report-stock.interface"
 
 interface Props {
@@ -35,10 +33,8 @@ export function ReportStockFilterModal({
   }
 
   const handleReset = () => {
-    const [mon, sun] = getCurrentWeekRange()
-    setFilter({ dateFrom: mon, dateTo: sun })
-    setCurrentFilter({ dateFrom: mon, dateTo: sun })
-
+    setFilter({ ...filter, products: [] })
+    setCurrentFilter({ ...filter, products: [] })
     onClose()
   }
 
@@ -47,25 +43,9 @@ export function ReportStockFilterModal({
     onClose()
   }
 
-  const updateFilter = (key: keyof ReportStockFilter, value: any) => {
-    switch (key) {
-      case ("products"): {
-        if (!filter.products || filter.products?.length! < 5) {
-          setFilter(({ ...filter, products: value }))
-        }
-        return
-      }
-      case ("dateFrom"): {
-        setFilter(({ ...filter, dateFrom: new Date(value) }))
-        return
-      }
-      case ("dateTo"): {
-        setFilter(({ ...filter, dateTo: new Date(value) }))
-        return
-      }
-      default: {
-        return
-      }
+  const onProductSelect = (value: any) => {
+    if (!filter.products) {
+      setFilter(({ ...filter, products: value }))
     }
   }
 
@@ -85,10 +65,12 @@ export function ReportStockFilterModal({
           <Label>{t("rp.filter.product")}</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start">
-                {filter.products?.length
-                  ? filter.products.map((p) => p.name).join(", ")
-                  : t("rp.filter.searchProduct")}
+              <Button variant="outline" className="w-full min-w-0 justify-start overflow-hidden">
+                <span className="block min-w-0 max-w-[calc(100vw-7rem)] truncate text-left sm:max-w-[22rem]">
+                  {filter.products?.length
+                    ? filter.products.map((p) => p.name).join(", ")
+                    : t("rp.filter.searchProduct")}
+                </span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full max-h-60 overflow-y-auto p-0" align="start">
@@ -99,9 +81,9 @@ export function ReportStockFilterModal({
                     <label key={product.id} className="flex items-center hover:bg-slate-300 cursor-pointer px-2 py-1 transition-all duration-300">
                       <Checkbox
                         checked={false}
-                        onCheckedChange={(checked) => {
+                        onCheckedChange={() => {
                           const selected = filter.products || []
-                          updateFilter("products", [...selected, product])
+                          onProductSelect([...selected, product])
                         }}
                       />
                       <span>{product.name}</span>
@@ -111,7 +93,6 @@ export function ReportStockFilterModal({
             </PopoverContent>
           </Popover>
 
-          {/* Danh sách sản phẩm đã chọn */}
           {filter.products?.length! > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
               {filter.products?.map((product) => (
@@ -119,10 +100,7 @@ export function ReportStockFilterModal({
                   key={product.id}
                   className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full text-sm cursor-pointer hover:bg-gray-200"
                   onClick={() =>
-                    updateFilter(
-                      "products",
-                      filter.products?.filter((p) => p.id !== product.id)
-                    )
+                    onProductSelect(filter.products?.filter((p) => p.id !== product.id))
                   }
                 >
                   <span>{product.name}</span>

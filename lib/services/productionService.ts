@@ -151,6 +151,7 @@ export async function handleStatusCompleted(record: ProductionRecordEntity) {
           ],
           receivedBy: "System",
           warehouse: warehouse,
+          productionRecord: record,
         });
         await stockChangeRepo.save(stockIn);
       }
@@ -190,6 +191,7 @@ export async function handleStatusCompleted(record: ProductionRecordEntity) {
           stockProducts: stockProducts,
           receivedBy: "System",
           warehouse: warehouse,
+          productionRecord: record,
         });
         await stockChangeRepo.save(stockOut);
       }

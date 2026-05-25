@@ -1,6 +1,33 @@
 import { Product, ProductFilters } from "@/types/product";
 import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 
+/**
+ * Get all products matching the filter, without pagination.
+ * @param params 
+ * @returns 
+ */
+export async function getAllProductsByFilter(params: ProductFilters = {}) {
+  const PAGE_LIMIT = 20
+  let page = 1
+  let total = 0
+  let rows: Product[] = []
+
+  do {
+    const response = await getProducts({
+      ...params,
+      page,
+      limit: PAGE_LIMIT,
+    })
+
+    const pageRows = (response.data as Product[]) ?? []
+    total = Number(response.total ?? 0)
+    rows = rows.concat(pageRows)
+    page += 1
+  } while ((page - 1) * PAGE_LIMIT < total)
+
+  return rows
+}
+
 export async function getProducts(params: ProductFilters = {}) {
   const url = createApiUrl("/api/products");
   Object.entries(params).forEach(([key, value]) => {

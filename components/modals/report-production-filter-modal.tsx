@@ -44,7 +44,7 @@ export function ReportProductionFilterModal({
   }
 
   const onProductSelect = (value: any) => {
-    if (!filter.products || filter.products?.length! < 5) {
+    if (!filter.products) {
       setFilter(({ ...filter, products: value }))
     }
   }
