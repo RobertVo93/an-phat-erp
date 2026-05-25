@@ -77,6 +77,10 @@ export const reportStockTranslations = {
     en: "Type",
     vi: "Loại"
   },
+  'rs.table.production': {
+    en: 'Production',
+    vi: 'Sản xuất',
+  },
   "rs.table.time": {
     en: "Date",
     vi: "Thời gian"

@@ -9,6 +9,7 @@ export async function getAllStockChanges({ page = 1, limit = 20, sortBy = "date"
   const qb = repo
     .createQueryBuilder("stockChange")
     .leftJoinAndSelect("stockChange.warehouse", "warehouse")
+    .leftJoinAndSelect("stockChange.productionRecord", "productionRecord")
 
   // Filtering
   if (filters.status) qb.andWhere("stockChange.status = :status", { status: filters.status });
@@ -29,6 +30,15 @@ export async function getAllStockChanges({ page = 1, limit = 20, sortBy = "date"
 
   const [data, total] = await qb.getManyAndCount();
   return { data, total, page, limit };
+}
+
+export async function getStockChangeById(id: string): Promise<StockChange | null> {
+  const repo = AppDataSource.getRepository(StockChangeEntity)
+  const record = await repo.findOne({
+    where: { id },
+    relations: ["warehouse", "productionRecord"],
+  })
+  return record
 }
 
 export async function addStockChange(data: StockChange, stockProducts: IStockProduct[]): Promise<StockChange> {

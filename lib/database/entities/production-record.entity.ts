@@ -1,9 +1,9 @@
-import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
+import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate, OneToMany } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { ProductionStatus } from "@/types/enums";
-import { IProductionElement, ProductionRecord as IProductionRecord } from "@/types";
+import { IProductionElement, ProductionRecord as IProductionRecord, StockChange as IStockChange } from "@/types";
 import type { Employee as IEmployee, Product as IProduct, Warehouse as IWarehouse } from "@/types";
-import { ProductEntity, WarehouseEntity, EmployeeEntity } from "@/lib/database/entities";
+import { ProductEntity, WarehouseEntity, EmployeeEntity, StockChangeEntity } from "@/lib/database/entities";
 import { handleStatusCompleted } from "@/lib/services/productionService";
 import { CommonService } from "@/lib/services/commonService";
 
@@ -37,6 +37,9 @@ export class ProductionRecordEntity extends BaseEntity implements IProductionRec
   labors?: IProductionElement[]
 
   //// Relations ////
+  @OneToMany(() => StockChangeEntity, (stockChange: StockChangeEntity) => stockChange.productionRecord, { nullable: true })
+  stockChanges?: IStockChange[];
+
   @ManyToOne(() => EmployeeEntity, (employee: EmployeeEntity) => employee.productionRecords, { nullable: true })
   @JoinColumn({ name: "pic_id" })
   pic?: IEmployee;

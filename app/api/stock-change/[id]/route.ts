@@ -2,7 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { getUserFromRequest } from "@/lib/auth/jwt";
 import { StockProductArraySchema, UpdateStockChangeSchema } from "../stockChange.schema";
-import { deleteStockChange, updateStockChange } from "@/lib/services/stockChangeService";
+import { deleteStockChange, getStockChangeById, updateStockChange } from "@/lib/services/stockChangeService";
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const user = getUserFromRequest(req)
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  try {
+    await ensureDataSource()
+    const { id } = await params
+    const result = await getStockChangeById(id)
+    if (!result) return NextResponse.json({ error: "Stock-change not found" }, { status: 404 })
+    return NextResponse.json(result)
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 })
+  }
+}
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const user = getUserFromRequest(req);
