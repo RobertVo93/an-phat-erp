@@ -15,7 +15,7 @@ interface InvoiceUtilitiesProps {
     availableUtilities: Utility[]
     error: string
     addUtility: () => void
-    updateUtility: (index: number, field: string, value: any) => void
+    updateUtility: (index: number, field: "id" | "quantity" | "unitCost", value: any) => void
     removeUtility: (index: number) => void
 }
 

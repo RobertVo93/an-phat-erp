@@ -1,5 +1,6 @@
 import { apiHref, createApiUrl } from "@/lib/httpclient/base";
 import { IUtilityUsage, IUtilityUsageFilters } from "@/types";
+import { formatYYYYMMDD } from "@/lib/utils";
 
 /**
  * Get all utility usages matching the filter, without pagination.
@@ -35,7 +36,7 @@ export async function getUtilityUsagesByFilter(
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") {
       if (value instanceof Date) {
-        url.searchParams.append(key, value.toISOString());
+        url.searchParams.append(key, formatYYYYMMDD(value));
       } else {
         url.searchParams.append(key, String(value));
       }

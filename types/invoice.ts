@@ -16,6 +16,7 @@ export interface Invoice extends IBase{
   notes?: string
 
   utilities?: IInvoiceUtility[]
+  utilityUsages?: IInvoiceUtility[]
 }
 
 export interface IInvoiceUtility {

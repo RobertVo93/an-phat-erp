@@ -45,6 +45,9 @@ export class InvoiceEntity extends BaseEntity implements IInvoice {
   @Column({ type: "jsonb", nullable: true })
   utilities?: IInvoiceUtility[];
 
+  @Column({ type: "jsonb", nullable: true })
+  utilityUsages?: IInvoiceUtility[];
+
   //////Auto numbering//////
   @BeforeInsert()
   async generateOrderNumber() {

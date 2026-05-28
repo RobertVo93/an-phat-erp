@@ -1,5 +1,6 @@
 import { InvoiceStatus, UtilityUnit } from "@/types";
 import { z } from "zod";
+import { UtilityUsageStatus } from "@/types/enums";
 
 export const InvoiceUtilitySchema = z.object({
   id: z.string().optional(),
@@ -24,6 +25,7 @@ export const InvoiceSchema = z.object({
   status: z.nativeEnum(InvoiceStatus).optional(),
   notes: z.string().optional(),
   utilities: z.array(InvoiceUtilitySchema).optional(),
+  utilityUsages: z.array(InvoiceUtilitySchema).optional(),
 });
 
 export const UpdateInvoiceSchema = InvoiceSchema.partial();
