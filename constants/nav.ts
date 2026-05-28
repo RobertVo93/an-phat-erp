@@ -15,6 +15,7 @@ import {
 	Home,
 	ShoppingCart,
 	Layers,
+  NotebookPen,
 } from "lucide-react"
 import { NavItem } from "@/types/nav.interface"
 import { UserRole } from "@/types/enums"
@@ -69,6 +70,7 @@ export const ADMIN_ROUTES = {
   produce: (query?: string) => adminHref("produce", query),
 
   utility: (query?: string) => adminHref("utility", query),
+  utilityUsage: (query?: string) => adminHref("utility-usage", query),
   invoice: (query?: string) => adminHref("invoice", query),
 
   reportsDaily: (query?: string) => adminHref("reports/daily", query),
@@ -133,6 +135,7 @@ export const navItems: NavItem[] = [
 		translationKey: "nav.utilities",
 		children: [
 			{ id: "utility", name: "utility", title: "Utility", translationKey: "nav.utility", icon: Zap, href: ADMIN_ROUTES.utility() },
+			{ id: "utility_usage", name: "utility_usage", title: "Usage", translationKey: "nav.usage", icon: NotebookPen, href: ADMIN_ROUTES.utilityUsage() },
 			{ id: "invoice", name: "invoice", title: "Invoice", translationKey: "nav.invoice", icon: FileText, href: ADMIN_ROUTES.invoice() },
 		],
 	},
@@ -182,6 +185,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     "stock_change",
     "produce",
     "utility",
+    "utility_usage",
     "invoice",
     "reports_daily",
     "reports_employee",

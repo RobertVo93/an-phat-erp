@@ -11,6 +11,7 @@ import { PayrollRecordEntity } from "./entities/payroll-record.entity";
 import { ProductEntity } from "./entities/product.entity";
 import { StockChangeEntity } from "./entities/stock-change.entity";
 import { UtilityEntity } from "./entities/utility.entity";
+import { UtilityUsageEntity } from "./entities/utility-usage.entity";
 import { WarehouseEntity } from "./entities/warehouse.entity";
 import { AttendanceRecordEntity } from "./entities/attendance-record.entity";
 import { UserEntity } from "./entities/user.entity";
@@ -35,6 +36,7 @@ export const AppDataSource = new DataSource({
     ProductEntity,
     CollectionEntity,
     UtilityEntity,
+    UtilityUsageEntity,
     InvoiceEntity,
     OrderEntity,
     CartEntity,
