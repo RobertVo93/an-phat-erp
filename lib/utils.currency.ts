@@ -17,7 +17,7 @@ export function formatCurrency(amount: number): string {
 }
 
 // Update formatLargeCurrency to use the new utility and VND symbol
-export const formatLargeCurrency = (amount: number, fixed: number = 2): string => {
+export const formatLargeCurrency = (amount: number, fixed: number = 3): string => {
     if (!amount) return "0 ₫"
     if (amount >= 1_000_000_000) {
         return `${(amount / 1_000_000_000).toFixed(fixed)}B ₫`

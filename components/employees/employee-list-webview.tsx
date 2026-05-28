@@ -81,7 +81,7 @@ export const EmployeeListWebview = ({
       render: (row) => (
         <div className="space-y-1">
           <p className="text-sm font-medium">{row.position}</p>
-          <p className="text-xs text-muted-foreground">{t(`employees.departments.${row.department}`)}</p>
+          <p className="text-xs text-muted-foreground">{t(`employees.departments.${row.department?.toLowerCase()}`)}</p>
         </div>
       ),
     },
