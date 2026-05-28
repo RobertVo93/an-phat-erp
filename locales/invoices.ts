@@ -158,7 +158,7 @@ export const invoicesTranslations = {
   },
   "invoices.readings": {
     en: "Utility Readings",
-    vi: "Chỉ số Tiện ích",
+    vi: "Tiện ích đã ghi nhận",
   },
   "invoices.utilityType": {
     en: "Utility type",

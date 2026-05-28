@@ -14,7 +14,7 @@ export const AttendanceSchema = z.object({
   ),
   shift: z.nativeEnum(AttendanceShift).optional(),
   status: z.nativeEnum(AttendanceStatus).optional(),
-  subStatus: z.nativeEnum(AttendanceSubStatus).optional(),
+  subStatus: z.nativeEnum(AttendanceSubStatus).nullable().optional(),
   workHours: z.number().optional(),
   paidAmount: z.number().optional(),
   notes: z.string().optional(),

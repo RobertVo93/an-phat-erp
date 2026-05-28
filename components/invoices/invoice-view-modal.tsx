@@ -1,10 +1,8 @@
 "use client"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Download, Send, Printer } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { Invoice } from "@/types/invoice"
 import { formatDate, formatLargeCurrency, getInvoiceStatusColor } from "@/lib/utils"
@@ -27,32 +25,15 @@ export function InvoiceViewModal({ isOpen, invoice, onClose, onDownload, onSend,
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle>{t("invoices.view")}</DialogTitle>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={() => onDownload(invoice)}>
-              <Download className="h-4 w-4 mr-2" />
-              {t("invoices.download")}
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => onSend(invoice)}>
-              <Send className="h-4 w-4 mr-2" />
-              {t("invoices.send")}
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => onPrint(invoice)}>
-              <Printer className="h-4 w-4 mr-2" />
-              {t("invoices.print")}
-            </Button>
-          </div>
+          <DialogTitle>{invoice.number}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Header */}
           <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-2xl font-bold">{invoice.number}</h2>
-              <p className="text-muted-foreground">
-                {t("invoices.billingPeriod")}: {invoice.billingPeriod}
-              </p>
-            </div>
+            <p className="text-muted-foreground">
+              {t("invoices.billingPeriod")}: {invoice.billingPeriod}
+            </p>
           </div>
 
           {/* Invoice Details */}
@@ -78,10 +59,11 @@ export function InvoiceViewModal({ isOpen, invoice, onClose, onDownload, onSend,
             </CardContent>
           </Card>
 
-          {/* Utility Readings */}
+          {/* Utilities */}
+          {(invoice.utilityUsages || []).length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>{t("invoices.readings")}</CardTitle>
+              <CardTitle>{t("invoices.utility")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -101,7 +83,7 @@ export function InvoiceViewModal({ isOpen, invoice, onClose, onDownload, onSend,
                       </div>
                       <div>
                         <span className="block">{t("utilities.unit")}:</span>
-                        <span className="font-medium">{utility.unit}</span>
+                        <span className="font-medium">{t(`production.form.${utility.unit}`)}</span>
                       </div>
                       <div>
                         <span className="block">{t("invoices.unitPrice")}:</span>
@@ -113,6 +95,47 @@ export function InvoiceViewModal({ isOpen, invoice, onClose, onDownload, onSend,
               </div>
             </CardContent>
           </Card>
+          )}
+
+          {/* Utility Readings */}
+          {(invoice.utilityUsages || []).length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("invoices.readings")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 max-h-[34rem] overflow-y-auto pr-1">
+                  {invoice.utilityUsages?.map((usage, index) => (
+                    <div key={usage.id || index} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium">{usage.name || usage.number || "-"}</h4>
+                        <span className="font-medium">{formatLargeCurrency(usage.totalCost || 0)}</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground mt-4">
+                        <div>
+                          <span className="block">{t("invoices.detail.consumption")}:</span>
+                          <span className="font-medium">{usage.quantity || 0}</span>
+                        </div>
+                        <div>
+                          <span className="block">{t("utilities.unit")}:</span>
+                          <span className="font-medium">{t(`production.form.${usage.unit}`)}</span>
+                        </div>
+                        <div>
+                          <span className="block">{t("invoices.unitPrice")}:</span>
+                          <span className="font-medium">{formatLargeCurrency(usage.unitCost || 0)}</span>
+                        </div>
+                        <div>
+                          <span className="block">{t("invoices.number")}:</span>
+                          <span className="font-medium">{usage.number || "-"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Totals */}
           <Card>

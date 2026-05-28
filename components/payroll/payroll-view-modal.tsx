@@ -70,7 +70,7 @@ export function PayrollViewModal({ isOpen, onClose, payrollRecord }: PayrollView
       sortable: false,
       render: (record) => (
         <Badge className={getAttendanceStatusColor(record.status!)}>
-          {t(`attendance.status.${record.status?.toLowerCase().replace(" ", "")}`)}
+          {t(`attendance.status.${record.status?.replace(" ", "")}`)}
         </Badge>
       ),
     },
