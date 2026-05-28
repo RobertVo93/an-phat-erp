@@ -206,6 +206,10 @@ export const utilitiesTranslations = {
   },
 
   // Units
+  "utilities.kw": {
+    en: "kW",
+    vi: "kW",
+  },
   "utilities.kwh": {
     en: "kWh",
     vi: "kWh",

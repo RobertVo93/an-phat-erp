@@ -87,6 +87,7 @@ export enum UtilityType {
 }
 
 export enum UtilityUnit {
+  kw = "kw",
   kwh = "kwh",
   m3 = "m3",
   gb = "gb",
@@ -97,6 +98,13 @@ export enum UtilityUnit {
   year = "year",
   piece = "piece",
   other = "other"
+}
+
+export enum UtilityUsageStatus {
+  draft = "draft",
+  waitForApproval = "waitForApproval",
+  approved = "approved",
+  completed = "completed"
 }
 
 export enum ProductStatus {

@@ -12,7 +12,7 @@ export function formatDate(date?: string | Date, symbol?: string): string {
   }).replace(/\//g, symbol || '-')
 }
 
-export function formatDateTime(date: string | Date): string {
+export function formatDateTime(date: string | Date, symbol?: string): string {
   return new Date(date).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: '2-digit',
@@ -20,7 +20,7 @@ export function formatDateTime(date: string | Date): string {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-  }).replace(/\//g, '-')
+  }).replace(/\//g, symbol || '-')
 }
 
 export function formatYYYYMMDD(date: string | Date): string {
@@ -141,3 +141,10 @@ export const getCurrentWeekRange = () => {
 
   return [monday, sunday];
 };
+
+export const getRecentTimeIntervalSlot = (timeInterval: number = 30): Date => {
+  const now = new Date()
+  const roundedMinutes = Math.floor(now.getMinutes() / timeInterval) * timeInterval
+  now.setMinutes(roundedMinutes, 0, 0)
+  return now
+}
