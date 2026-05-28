@@ -80,6 +80,10 @@ export const navTranslations = {
     en: "Invoice",
     vi: "Hóa Đơn",
   },
+  "nav.usage": {
+    en: "Usage",
+    vi: "Sử dụng",
+  },
   "nav.reports": {
     en: "Reports",
     vi: "Báo Cáo",

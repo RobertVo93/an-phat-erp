@@ -12,6 +12,7 @@ export * from "./stock-change.entity";
 export * from "./user-page-permission.entity";
 export * from "./user.entity"
 export * from "./utility.entity";
+export * from "./utility-usage.entity";
 export * from "./warehouse-product.entity";
 export * from "./warehouse.entity";
 export * from "./cart.entity"

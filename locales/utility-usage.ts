@@ -1,0 +1,42 @@
+export const utilityUsageTranslations = {
+  "utilityUsage.title": { en: "Utility Usage", vi: "Sử dụng tiện ích" },
+  "utilityUsage.subtitle": { en: "Record and track utility meter usage by time period", vi: "Ghi nhận và theo dõi chỉ số tiêu thụ tiện ích theo thời gian" },
+  "utilityUsage.newUsage": { en: "New", vi: "Thêm" },
+  "utilityUsage.addTitle": { en: "Create Utility Usage", vi: "Tạo ghi nhận sử dụng" },
+  "utilityUsage.editTitle": { en: "Edit Utility Usage", vi: "Sửa ghi nhận sử dụng" },
+  "utilityUsage.mobileList": { en: "Usage Records", vi: "Danh sách ghi nhận" },
+  "utilityUsage.searchPlaceholder": { en: "Search by number, note, utility", vi: "Tìm theo mã, ghi chú, tiện ích" },
+
+  "utilityUsage.utility": { en: "Utility", vi: "Tiện ích" },
+  "utilityUsage.selectUtility": { en: "Select utility", vi: "Chọn tiện ích" },
+  "utilityUsage.usageTime": { en: "Usage Time", vi: "Thời gian bắt đầu dùng" },
+  "utilityUsage.periodStart": { en: "Period start", vi: "Từ ngày" },
+  "utilityUsage.periodEnd": { en: "Period end", vi: "Đến ngày" },
+  "utilityUsage.amountBefore": { en: "Amount Before", vi: "Chỉ số trước khi dùng" },
+  "utilityUsage.amountAfter": { en: "Amount After", vi: "Chỉ số sau khi dùng" },
+  "utilityUsage.totalUsage": { en: "Total Usage", vi: "Tổng sử dụng" },
+  "utilityUsage.unit": { en: "Unit", vi: "Đơn vị" },
+  "utilityUsage.status": { en: "Status", vi: "Trạng thái" },
+  "utilityUsage.note": { en: "Note", vi: "Ghi chú" },
+  "utilityUsage.approver": { en: "Approver", vi: "Người duyệt" },
+  "utilityUsage.selectApprover": { en: "Select approver", vi: "Chọn người duyệt" },
+
+  "utilityUsage.status.draft": { en: "Draft", vi: "Nháp" },
+  "utilityUsage.status.waitForApproval": { en: "Wait for approval", vi: "Chờ duyệt" },
+  "utilityUsage.status.approved": { en: "Approved", vi: "Đã duyệt" },
+  "utilityUsage.status.completed": { en: "Completed", vi: "Hoàn thành" },
+
+  "utilityUsage.deleteTitle": { en: "Delete Utility Usage", vi: "Xóa ghi nhận sử dụng" },
+  "utilityUsage.deleteMessage": { en: "Are you sure you want to delete this usage record?", vi: "Bạn có chắc chắn muốn xóa ghi nhận này?" },
+
+  "utilityUsage.success.created": { en: "Utility usage created successfully", vi: "Tạo ghi nhận sử dụng thành công" },
+  "utilityUsage.success.updated": { en: "Utility usage updated successfully", vi: "Cập nhật ghi nhận sử dụng thành công" },
+  "utilityUsage.success.deleted": { en: "Utility usage deleted successfully", vi: "Xóa ghi nhận sử dụng thành công" },
+
+  "utilityUsage.validation.utilityRequired": { en: "Utility is required", vi: "Tiện ích là bắt buộc" },
+  "utilityUsage.validation.usageTimeRequired": { en: "Usage time is required", vi: "Thời gian sử dụng là bắt buộc" },
+  "utilityUsage.validation.amountBeforeRequired": { en: "Amount before is required", vi: "Chỉ số trước khi dùng là bắt buộc" },
+  "utilityUsage.validation.amountAfterRequired": { en: "Amount after is required", vi: "Chỉ số sau khi dùng là bắt buộc" },
+  "utilityUsage.validation.amountAfterInvalid": { en: "Amount after must be greater than or equal to amount before", vi: "Chỉ số sau khi dùng phải lớn hơn hoặc bằng chỉ số trước khi dùng" },
+  "utilityUsage.validation.totalUsageInvalid": { en: "Total usage cannot be negative", vi: "Tổng sử dụng không được âm" },
+}

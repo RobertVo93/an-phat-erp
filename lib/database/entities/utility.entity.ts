@@ -1,8 +1,9 @@
-import { Entity, Column, BeforeInsert } from "typeorm";
+import { Entity, Column, BeforeInsert, OneToMany } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { UtilityStatus, UtilityUnit } from "@/types/enums";
-import { Utility as IUtility } from "@/types";
+import { Utility as IUtility, IUtilityUsage } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
+import { UtilityUsageEntity } from "@/lib/database/entities/utility-usage.entity";
 
 @Entity({ name: "utilities" })
 export class UtilityEntity extends BaseEntity implements IUtility {
@@ -29,6 +30,10 @@ export class UtilityEntity extends BaseEntity implements IUtility {
 
   @Column({ nullable: true })
   description?: string;
+
+  ///Relation fields
+  @OneToMany(() => UtilityUsageEntity, (usage) => usage.utility, { nullable: true })
+  usages?: IUtilityUsage[];
 
   //////Auto numbering//////
   @BeforeInsert()
