@@ -23,6 +23,7 @@ import { reportProductionTranslations } from "@/locales/report-production"
 import { reportStockTranslations } from "@/locales/report-stock"
 import { reportOrderTranslations } from "@/locales/report-order"
 import { utilityUsageTranslations } from "@/locales/utility-usage"
+import { settingsTranslations } from "@/locales/settings"
 
 
 type Language = "en" | "vi"
@@ -56,6 +57,7 @@ const translations: Translations = {
   ...reportStockTranslations,
   ...reportOrderTranslations,
   ...utilityUsageTranslations,
+  ...settingsTranslations,
 }
 
 interface LanguageContextType {
