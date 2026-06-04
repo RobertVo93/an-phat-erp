@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/contexts/language-context"
-import type { Setting } from "@/types/setting.interface"
+import type { Setting, SettingKey } from "@/types/setting.interface"
 import { Settings as SettingsIcon } from "lucide-react"
 import { settingConfigTypes, settingKeysByConfigType } from "./setting.constants"
 import { getSettingTypeLabel } from "./setting-type-label"
@@ -20,10 +20,7 @@ export function SettingViewModal({ isOpen, onClose, setting }: SettingViewModalP
   const { t } = useLanguage()
   if (!setting) return null
 
-  const configTypeOptions = setting.configType && !settingConfigTypes.includes(setting.configType)
-    ? [...settingConfigTypes, setting.configType]
-    : settingConfigTypes
-  const keyOptions = setting.configType ? settingKeysByConfigType[setting.configType] || [] : []
+  const keyOptions: SettingKey[] = setting.configType ? [...settingKeysByConfigType[setting.configType]] : []
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -43,7 +40,7 @@ export function SettingViewModal({ isOpen, onClose, setting }: SettingViewModalP
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {configTypeOptions.map((configType) => (
+                {settingConfigTypes.map((configType) => (
                   <SelectItem key={configType} value={configType}>
                     {getSettingTypeLabel(configType, t)}
                   </SelectItem>
@@ -59,13 +56,11 @@ export function SettingViewModal({ isOpen, onClose, setting }: SettingViewModalP
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(keyOptions.includes(setting.key || "") ? keyOptions : [...keyOptions, setting.key || ""])
-                  .filter((key): key is string => Boolean(key))
-                  .map((key) => (
-                    <SelectItem key={key} value={key}>
-                      {getSettingTypeLabel(key, t)}
-                    </SelectItem>
-                  ))}
+                {keyOptions.map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {getSettingTypeLabel(key, t)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

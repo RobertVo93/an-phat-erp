@@ -114,7 +114,7 @@ export function SettingFilterModal({
   )
 }
 
-function getFilterKeys(configType?: string) {
-  if (configType) return settingKeysByConfigType[configType] || settingKeysByConfigType.other
-  return Array.from(new Set(Object.values(settingKeysByConfigType).flat()))
+function getFilterKeys(configType?: SettingConfigType): SettingKey[] {
+  if (configType) return [...settingKeysByConfigType[configType]]
+  return Array.from(new Set(Object.values(settingKeysByConfigType).flat())) as SettingKey[]
 }

@@ -1,19 +1,17 @@
-import { IBaseFilters } from "./base.interface";
+import { IBase, IBaseFilters } from "./base.interface";
+import type { SettingConfigType, SettingKey, SettingValue } from "./setting-definition";
 
-export type SettingConfigType = string;
-export type SettingKey = string;
-export type SettingValue = unknown;
+export type {
+    SettingConfigType,
+    SettingKey,
+    SettingValue,
+} from "./setting-definition";
 
-export interface Setting {
-    id?: string;
+export interface Setting extends IBase{
     configType?: SettingConfigType;
     key?: SettingKey;
     value: SettingValue;
     description?: string;
-    createdAt?: Date | string;
-    createdBy?: string;
-    updatedAt?: Date | string;
-    updatedBy?: string;
 }
 
 export interface SettingFilters extends IBaseFilters {

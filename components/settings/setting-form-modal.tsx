@@ -13,8 +13,6 @@ import { settingConfigTypes, settingKeysByConfigType } from "./setting.constants
 import { getSettingTypeLabel } from "./setting-type-label"
 
 const defaultSetting: Setting = {
-  configType: "",
-  key: "",
   value: "",
   description: "",
 }
@@ -36,16 +34,10 @@ export function SettingFormModal({
   const [formData, setFormData] = useState<Setting>(defaultSetting)
   const [valueText, setValueText] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const availableConfigTypes = useMemo(() => {
-    return setting?.configType && !settingConfigTypes.includes(setting.configType)
-      ? [...settingConfigTypes, setting.configType]
-      : settingConfigTypes
-  }, [setting?.configType])
   const availableKeys = useMemo(() => {
-    const configType = formData.configType || availableConfigTypes[0] || ""
-    const baseKeys = settingKeysByConfigType[configType] || settingKeysByConfigType.other
-    return formData.key && !baseKeys.includes(formData.key) ? [...baseKeys, formData.key] : baseKeys
-  }, [availableConfigTypes, formData.configType, formData.key])
+    const configType = formData.configType || settingConfigTypes[0]
+    return [...settingKeysByConfigType[configType]]
+  }, [formData.configType])
 
   useEffect(() => {
     if (setting) {
@@ -56,7 +48,7 @@ export function SettingFormModal({
       setValueText(formatJsonValue(defaultSetting.value))
     }
     setErrors({})
-  }, [setting, isOpen, availableConfigTypes])
+  }, [setting, isOpen])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -104,7 +96,7 @@ export function SettingFormModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableConfigTypes.map((configType) => (
+                  {settingConfigTypes.map((configType) => (
                     <SelectItem key={configType} value={configType}>
                       {getSettingTypeLabel(configType, t)}
                     </SelectItem>

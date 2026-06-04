@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { getUserFromRequest } from "@/lib/auth/jwt";
 import { getSettingsService } from "@/lib/services/settingService";
+import type { SettingConfigType, SettingKey } from "@/types/setting.interface";
 
 export async function GET(req: NextRequest) {
     const user = getUserFromRequest(req);
@@ -15,8 +16,8 @@ export async function GET(req: NextRequest) {
         const sortBy = searchParams.get("sortBy") || "createdAt";
         const sortOrderParam = searchParams.get("sortOrder");
         const sortOrder = sortOrderParam === "asc" ? "asc" : "desc";
-        const configType = searchParams.get("configType") || undefined;
-        const key = searchParams.get("key") || undefined;
+        const configType = (searchParams.get("configType") || undefined) as SettingConfigType | undefined;
+        const key = (searchParams.get("key") || undefined) as SettingKey | undefined;
         const searchTerm = searchParams.get("searchTerm") || undefined;
 
         const result = await getSettingsService({
