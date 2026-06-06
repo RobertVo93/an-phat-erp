@@ -24,6 +24,10 @@ export const navTranslations = {
     en: "Customers",
     vi: "Khách Hàng",
   },
+  "nav.settings": {
+    en: "Settings",
+    vi: "Cài Đặt",
+  },
   "nav.employee": {
     en: "Employee",
     vi: "Nhân Viên",
