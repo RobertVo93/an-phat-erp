@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/contexts/language-context"
 import { cn } from "@/lib/utils"
-import type { Setting } from "@/types/setting.interface"
+import type { ISetting } from "@/types/setting.interface"
 import { Edit, Eye, MoreVertical } from "lucide-react"
 
 interface SettingActionsProps {
-  setting: Setting
+  setting: ISetting
   className?: string
-  onView: (setting: Setting) => void
-  onEdit: (setting: Setting) => void
+  onView: (setting: ISetting) => void
+  onEdit: (setting: ISetting) => void
 }
 
 export function SettingActions({ setting, className, onView, onEdit }: SettingActionsProps) {

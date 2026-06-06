@@ -2,10 +2,10 @@
 
 import { ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { Setting } from "@/types/setting.interface"
+import type { ISetting } from "@/types/setting.interface"
 
 type SettingValueProps = {
-  setting: Setting
+  setting: ISetting
   className?: string
 }
 
@@ -30,7 +30,7 @@ export function SettingValue({ setting, className }: SettingValueProps) {
   )
 }
 
-function getGoogleMapsUrl(setting: Setting) {
+function getGoogleMapsUrl(setting: ISetting) {
   if (setting.key !== "maps" && setting.configType !== "map") return null
 
   if (typeof setting.value === "string") {
@@ -58,7 +58,7 @@ function getGoogleMapsUrl(setting: Setting) {
   return null
 }
 
-function getDisplayValue(setting: Setting) {
+function getDisplayValue(setting: ISetting) {
   if (typeof setting.value === "string") return setting.value
   if (setting.value === null || setting.value === undefined) return "-"
   if (Array.isArray(setting.value)) return setting.value.join(", ")

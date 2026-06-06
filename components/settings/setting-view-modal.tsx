@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/contexts/language-context"
-import type { Setting, SettingKey } from "@/types/setting.interface"
+import type { ISetting, SettingKey } from "@/types/setting.interface"
 import { Settings as SettingsIcon } from "lucide-react"
 import { settingConfigTypes, settingKeysByConfigType } from "./setting.constants"
 import { getSettingTypeLabel } from "./setting-type-label"
@@ -13,7 +13,7 @@ import { getSettingTypeLabel } from "./setting-type-label"
 interface SettingViewModalProps {
   isOpen: boolean
   onClose: () => void
-  setting: Setting | null
+  setting: ISetting | null
 }
 
 export function SettingViewModal({ isOpen, onClose, setting }: SettingViewModalProps) {

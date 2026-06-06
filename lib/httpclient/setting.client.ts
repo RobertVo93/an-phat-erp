@@ -1,7 +1,7 @@
 import { apiHref, createApiUrl } from "@/lib/httpclient/base";
-import type { Setting, SettingFilters } from "@/types/setting.interface";
+import type { ISetting, ISettingFilters } from "@/types/setting.interface";
 
-export async function getSettingsClient(filters: SettingFilters = {}) {
+export async function getSettingsClient(filters: ISettingFilters = {}) {
     const url = createApiUrl("/api/settings");
     Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
@@ -12,7 +12,7 @@ export async function getSettingsClient(filters: SettingFilters = {}) {
     return res.json();
 }
 
-export async function updateSettingClient(id: string, data: Partial<Setting>) {
+export async function updateSettingClient(id: string, data: Partial<ISetting>) {
     const res = await fetch(apiHref(`/api/settings/${id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

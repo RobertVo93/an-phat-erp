@@ -3,15 +3,15 @@
 import { ServersideTable, type ServersideTableColumn } from "@/components/common/table/ServersideTable"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/contexts/language-context"
-import type { Setting } from "@/types/setting.interface"
+import type { ISetting } from "@/types/setting.interface"
 import { SettingActions } from "./setting-actions"
 import { getSettingTypeLabel } from "./setting-type-label"
 import { SettingValue } from "./setting-value"
 
-type SettingRow = Setting & { id: string | number }
+type SettingRow = ISetting & { id: string | number }
 
 interface SettingTableProps {
-  data: Setting[]
+  data: ISetting[]
   total: number
   currentPage: number
   pageSize: number
@@ -21,8 +21,8 @@ interface SettingTableProps {
   totalPages: number
   onPageChange: (page: number) => void
   onSort: (field: string) => void
-  onView: (setting: Setting) => void
-  onEdit: (setting: Setting) => void
+  onView: (setting: ISetting) => void
+  onEdit: (setting: ISetting) => void
 }
 
 export function SettingTable({

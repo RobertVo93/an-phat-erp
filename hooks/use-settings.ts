@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import type { Setting, SettingFilters } from "@/types/setting.interface"
+import type { ISetting, ISettingFilters } from "@/types/setting.interface"
 import {
   getSettingsClient,
   updateSettingClient,
@@ -14,9 +14,9 @@ export type SettingSortField = "configType" | "key" | "value" | "createdAt"
 
 export function useSettings() {
   const { t } = useLanguage()
-  const [settings, setSettings] = useState<Setting[]>([])
+  const [settings, setSettings] = useState<ISetting[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<SettingFilters>({
+  const [filters, setFilters] = useState<ISettingFilters>({
     page: 1,
     limit: 10,
     sortBy: "createdAt",
@@ -28,13 +28,13 @@ export function useSettings() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
-  const [selectedSetting, setSelectedSetting] = useState<Setting | null>(null)
+  const [selectedSetting, setSelectedSetting] = useState<ISetting | null>(null)
 
   const debounceSearchTerm = useDebounceSearchTerm(searchTerm, 500)
   const hasActiveFilters = useMemo(() => {
     return Object.keys(filters).some((key) => {
       if (key === "page" || key === "limit" || key === "sortBy" || key === "sortOrder") return false
-      const value = filters[key as keyof SettingFilters]
+      const value = filters[key as keyof ISettingFilters]
       return value !== undefined && value !== ""
     })
   }, [filters])
@@ -84,12 +84,12 @@ export function useSettings() {
     setSearchTerm("")
   }
 
-  const handleEditSetting = (setting: Setting) => {
+  const handleEditSetting = (setting: ISetting) => {
     setSelectedSetting(setting)
     setIsFormModalOpen(true)
   }
 
-  const handleViewSetting = (setting: Setting) => {
+  const handleViewSetting = (setting: ISetting) => {
     setSelectedSetting(setting)
     setIsViewModalOpen(true)
   }
@@ -99,7 +99,7 @@ export function useSettings() {
     setIsFormModalOpen(false)
   }
 
-  const updateSetting = async (id: string, updates: Partial<Setting>) => {
+  const updateSetting = async (id: string, updates: Partial<ISetting>) => {
     try {
       setLoading(true)
       await updateSettingClient(id, updates)

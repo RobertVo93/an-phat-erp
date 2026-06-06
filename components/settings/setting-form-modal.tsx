@@ -8,20 +8,20 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/contexts/language-context"
-import type { Setting } from "@/types/setting.interface"
+import type { ISetting } from "@/types/setting.interface"
 import { settingConfigTypes, settingKeysByConfigType } from "./setting.constants"
 import { getSettingTypeLabel } from "./setting-type-label"
 
-const defaultSetting: Setting = {
+const defaultSetting: ISetting = {
   value: "",
   description: "",
 }
 
 interface SettingFormModalProps {
   isOpen: boolean
-  setting: Setting | null
+  setting: ISetting | null
   onClose: () => void
-  onUpdate: (id: string, updates: Partial<Setting>) => void
+  onUpdate: (id: string, updates: Partial<ISetting>) => void
 }
 
 export function SettingFormModal({
@@ -31,7 +31,7 @@ export function SettingFormModal({
   onUpdate,
 }: SettingFormModalProps) {
   const { t } = useLanguage()
-  const [formData, setFormData] = useState<Setting>(defaultSetting)
+  const [formData, setFormData] = useState<ISetting>(defaultSetting)
   const [valueText, setValueText] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const availableKeys = useMemo(() => {

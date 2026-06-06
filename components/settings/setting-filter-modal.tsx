@@ -6,15 +6,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
-import type { SettingConfigType, SettingFilters, SettingKey } from "@/types/setting.interface"
+import type { SettingConfigType, ISettingFilters, SettingKey } from "@/types/setting.interface"
 import { settingConfigTypes, settingKeysByConfigType } from "./setting.constants"
 import { getSettingTypeLabel } from "./setting-type-label"
 
 interface SettingFilterModalProps {
   isOpen: boolean
-  currentFilters: SettingFilters
+  currentFilters: ISettingFilters
   onClose: () => void
-  onApplyFilters: (filters: SettingFilters) => void
+  onApplyFilters: (filters: ISettingFilters) => void
 }
 
 export function SettingFilterModal({
@@ -24,7 +24,7 @@ export function SettingFilterModal({
   onApplyFilters,
 }: SettingFilterModalProps) {
   const { t } = useLanguage()
-  const [filters, setFilters] = useState<SettingFilters>(currentFilters)
+  const [filters, setFilters] = useState<ISettingFilters>(currentFilters)
 
   useEffect(() => {
     setFilters(currentFilters)
@@ -36,7 +36,7 @@ export function SettingFilterModal({
   }
 
   const handleReset = () => {
-    const emptyFilters: SettingFilters = {
+    const emptyFilters: ISettingFilters = {
       page: 1,
       limit: currentFilters.limit || 10,
       sortBy: currentFilters.sortBy || "createdAt",

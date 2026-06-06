@@ -7,14 +7,14 @@ export type {
     SettingValue,
 } from "./setting-definition";
 
-export interface Setting extends IBase{
+export interface ISetting extends IBase{
     configType?: SettingConfigType;
     key?: SettingKey;
-    value: SettingValue;
+    value?: SettingValue;
     description?: string;
 }
 
-export interface SettingFilters extends IBaseFilters {
+export interface ISettingFilters extends IBaseFilters {
     configType?: SettingConfigType;
     key?: SettingKey;
     searchTerm?: string;

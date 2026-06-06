@@ -1,6 +1,6 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { SettingEntity } from "@/lib/database/entities";
-import type { SettingFilters } from "@/types/setting.interface";
+import type { ISettingFilters } from "@/types/setting.interface";
 
 const SETTING_SORT_COLUMNS = ["configType", "key", "value", "createdAt"] as const;
 
@@ -12,7 +12,7 @@ export async function getSettingsService({
     configType,
     key,
     searchTerm,
-}: SettingFilters) {
+}: ISettingFilters) {
     const repo = AppDataSource.getRepository(SettingEntity);
     const qb = repo.createQueryBuilder("setting");
 

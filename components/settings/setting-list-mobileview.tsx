@@ -2,15 +2,15 @@
 
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/contexts/language-context"
-import type { Setting } from "@/types/setting.interface"
+import type { ISetting } from "@/types/setting.interface"
 import { SettingActions } from "./setting-actions"
 import { getSettingTypeLabel } from "./setting-type-label"
 import { SettingValue } from "./setting-value"
 
 interface SettingListMobileViewProps {
-  settings: Setting[]
-  onView: (setting: Setting) => void
-  onEdit: (setting: Setting) => void
+  settings: ISetting[]
+  onView: (setting: ISetting) => void
+  onEdit: (setting: ISetting) => void
 }
 
 export function SettingListMobileView({ settings, onView, onEdit }: SettingListMobileViewProps) {
