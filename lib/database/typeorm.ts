@@ -21,6 +21,7 @@ import { ProductionRecordEntity } from "./entities/production-record.entity";
 import { ActivityLogEntity } from "./entities/activity-log.entity";
 import { env } from "@/constants/env";
 import { AddressEntity, CartEntity, CartItemEntity, NotificationEntity, NotificationSettingsEntity } from "./entities";
+import { SettingEntity } from "./entities/setting.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -43,6 +44,7 @@ export const AppDataSource = new DataSource({
     CartItemEntity,
     NotificationEntity,
     NotificationSettingsEntity,
+    SettingEntity,
     // Dependent entities
     UserPagePermissionEntity,
     WarehouseProductEntity,

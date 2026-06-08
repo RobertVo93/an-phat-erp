@@ -28,3 +28,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+AGENTS.md
+.agent/skills/nextjs-api-route/SKILL.md
+.agent/skills/nextjs-auth-guard/SKILL.md
+.agent/skills/nextjs-component/SKILL.md
+.agent/skills/nextjs-data-fetching/SKILL.md
+.agent/skills/nextjs-form/SKILL.md
+.agent/skills/nextjs-i18n/SKILL.md
+.agent/skills/nextjs-page/SKILL.md
+.agent/skills/nextjs-refactor-large-tsx/SKILL.md
+.agent/skills/nextjs-server-action/SKILL.md
+.agent/skills/nextjs-testing/SKILL.md

@@ -16,6 +16,7 @@ import {
 	ShoppingCart,
 	Layers,
   NotebookPen,
+  Settings,
 } from "lucide-react"
 import { NavItem } from "@/types/nav.interface"
 import { UserRole } from "@/types/enums"
@@ -56,6 +57,7 @@ export const ADMIN_ROUTES = {
   collections: (query?: string) => adminHref("collections", query),
   customers: (query?: string) => adminHref("customers", query),
 	customerDetail: (id: string) => adminHref(`customers/${id}`),
+  settings: (query?: string) => adminHref("settings", query),
 
   employee: (query?: string) => adminHref("employee", query),
   attendance: (query?: string) => adminHref("attendance", query),
@@ -97,6 +99,7 @@ export const navItems: NavItem[] = [
 			{ id: "products", name: "products", title: "Products", translationKey: "nav.products", icon: Package, href: ADMIN_ROUTES.products() },
 			{ id: "collections", name: "collections", title: "Collections", translationKey: "nav.collections", icon: Layers, href: ADMIN_ROUTES.collections() },
 			{ id: "customers", name: "customers", title: "Customers", translationKey: "nav.customers", icon: Users, href: ADMIN_ROUTES.customers() },
+			{ id: "settings", name: "settings", title: "Settings", translationKey: "nav.settings", icon: Settings, href: ADMIN_ROUTES.settings() },
 		],
 	},
 	{
@@ -177,6 +180,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     "products",
     "collections",
     "customers",
+    "settings",
     "employee",
     "attendance",
     "payroll",
@@ -202,6 +206,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     "products",
     "collections",
     "customers",
+    "settings",
     "attendance",
     "warehouse",
     "stock_in",

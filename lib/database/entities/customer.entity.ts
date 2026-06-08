@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, BeforeInsert, OneToOne, JoinColumn } from "typeorm";
+import { Entity, Column, OneToMany, BeforeInsert, OneToOne, JoinColumn, Check } from "typeorm";
 import { BaseEntity } from "@/lib/database/entities/base.entity";
 import { OrderEntity, UserEntity } from "@/lib/database/entities";
 import { CustomerStatus, CustomerType } from "@/types/enums";
@@ -8,6 +8,7 @@ import { AddressEntity } from "@/lib/database/entities";
 import { IAddress } from "@/types";
 
 @Entity({ name: "customers" })
+@Check(`"id" = "user_id"`)
 export class CustomerEntity extends BaseEntity implements ICustomer {
   @Column({ unique: true })
   number?: string;
@@ -46,7 +47,7 @@ export class CustomerEntity extends BaseEntity implements ICustomer {
   @OneToMany(() => OrderEntity, (order) => order.customer, { nullable: true })
   orders!: IOrder[];
 
-  @OneToOne(() => UserEntity, { nullable: true })
+  @OneToOne(() => UserEntity, (user) => user.customer, { nullable: false })
   @JoinColumn({ name: "user_id" })
   user?: IUser;
 
