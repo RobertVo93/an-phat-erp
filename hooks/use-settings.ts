@@ -19,7 +19,7 @@ export function useSettings() {
   const [filters, setFilters] = useState<ISettingFilters>({
     page: 1,
     limit: 10,
-    sortBy: "createdAt",
+    sortBy: "configType",
     sortOrder: "desc",
   })
   const [totalRecords, setTotalRecords] = useState(0)
@@ -78,7 +78,7 @@ export function useSettings() {
     setFilters({
       page: 1,
       limit: 10,
-      sortBy: "createdAt",
+      sortBy: "configType",
       sortOrder: "desc",
     })
     setSearchTerm("")

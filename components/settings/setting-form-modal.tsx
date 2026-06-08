@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/contexts/language-context"
-import type { ISetting } from "@/types/setting.interface"
+import type { ISetting, SettingValue } from "@/types/setting.interface"
 import { settingConfigTypes, settingKeysByConfigType } from "./setting.constants"
 import { getSettingTypeLabel } from "./setting-type-label"
+import { Loader2 } from "lucide-react"
 
 const defaultSetting: ISetting = {
   value: "",
@@ -21,7 +22,7 @@ interface SettingFormModalProps {
   isOpen: boolean
   setting: ISetting | null
   onClose: () => void
-  onUpdate: (id: string, updates: Partial<ISetting>) => void
+  onUpdate: (id: string, updates: Partial<ISetting>) => Promise<void>
 }
 
 export function SettingFormModal({
@@ -31,6 +32,7 @@ export function SettingFormModal({
   onUpdate,
 }: SettingFormModalProps) {
   const { t } = useLanguage()
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<ISetting>(defaultSetting)
   const [valueText, setValueText] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -42,19 +44,20 @@ export function SettingFormModal({
   useEffect(() => {
     if (setting) {
       setFormData(setting)
-      setValueText(formatJsonValue(setting.value))
+      setValueText(formatSettingValueForEdit(setting.value))
     } else {
       setFormData(defaultSetting)
-      setValueText(formatJsonValue(defaultSetting.value))
+      setValueText(formatSettingValueForEdit(defaultSetting.value))
     }
     setErrors({})
+    setSubmitting(false)
   }, [setting, isOpen])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     if (!valueText.trim()) {
       newErrors.value = t("settings.valueRequired")
-    } else {
+    } else if (!isPlainTextSetting(setting?.value)) {
       try {
         JSON.parse(valueText)
       } catch {
@@ -65,18 +68,24 @@ export function SettingFormModal({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
 
-    const parsedValue = JSON.parse(valueText)
+    const parsedValue = parseSettingValueFromInput(valueText, setting?.value)
     const settingData = {
       value: parsedValue,
       description: formData.description,
     }
 
     if (setting?.id) {
-      onUpdate(setting.id, settingData)
+      setSubmitting(true)
+      try {
+        await onUpdate(setting.id, settingData)
+      }
+      finally {
+        setSubmitting(false)
+      }
     }
   }
 
@@ -150,7 +159,8 @@ export function SettingFormModal({
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
               {t("settings.cancel")}
             </Button>
-            <Button type="submit" className="flex-1 sm:flex-none">
+            <Button type="submit" disabled={submitting} className="flex-1 sm:flex-none">
+              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("settings.save")}
             </Button>
           </div>
@@ -161,6 +171,16 @@ export function SettingFormModal({
 
 }
 
-function formatJsonValue(value: unknown) {
+function isPlainTextSetting(value: unknown): value is string {
+  return typeof value === "string"
+}
+
+function formatSettingValueForEdit(value: unknown): string {
+  if (isPlainTextSetting(value)) return value
   return JSON.stringify(value ?? {}, null, 2)
+}
+
+function parseSettingValueFromInput(valueText: string, originalValue: unknown): SettingValue {
+  if (isPlainTextSetting(originalValue)) return valueText
+  return JSON.parse(valueText) as SettingValue
 }
