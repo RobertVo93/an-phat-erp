@@ -70,7 +70,12 @@ export function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">{t("login.password")}</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="password">{t("login.password")}</Label>
+              <Link href={ADMIN_ROUTES.forgotPassword()} className="text-sm text-blue-600 hover:underline">
+                {t("login.forgotPassword")}
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

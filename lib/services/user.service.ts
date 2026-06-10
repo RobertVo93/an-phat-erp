@@ -56,7 +56,9 @@ export class UserService {
     await ensureDataSource();
 
     if (userData.password) {
-      userData.password = await hash(userData.password, 10);
+      const salt = await genSalt(10);
+      userData.password = await hash(userData.password, salt);
+      userData.passwordSalt = salt;
     }
 
     await this.userRepository.update(id, userData);
