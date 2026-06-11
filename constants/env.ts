@@ -7,6 +7,11 @@ export const env = {
   
   // JWT
   JWT_SECRET: process.env.JWT_SECRET || 'adsfpqwergadfnpg_UmYuKibaZf20ljli123asdfgoihjnqbOInkjHUne',
+
+  // MailerSend
+  MAILERSEND_API_TOKEN: process.env.MAILERSEND_API_TOKEN || '',
+  MAILERSEND_FROM_EMAIL: process.env.MAILERSEND_FROM_EMAIL || '',
+  MAILERSEND_FROM_NAME: process.env.MAILERSEND_FROM_NAME || 'An Phat Admin',
   
   // Node Environment
   NODE_ENV: process.env.NODE_ENV || 'development',

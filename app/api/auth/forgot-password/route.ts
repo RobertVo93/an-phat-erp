@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/constants/env";
+import { EmailService } from "@/lib/services/emailService";
 import { PasswordResetService } from "@/lib/services/passwordResetService";
 import { UserService } from "@/lib/services/user.service";
 
@@ -10,7 +11,7 @@ import { UserService } from "@/lib/services/user.service";
  *     tags:
  *       - Authentication
  *     summary: Request password reset
- *     description: Create a password reset token for a username. The reset URL is logged until email/SMS is implemented.
+ *     description: Create a password reset token for a username and send the reset URL by email.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -34,11 +35,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!user.email) {
+      return NextResponse.json(
+        { error: "User does not have an email address" },
+        { status: 400 }
+      );
+    }
+
     const passwordResetService = new PasswordResetService();
     const token = await passwordResetService.createResetToken(user.id);
     const resetUrl = buildResetUrl(req, token);
 
-    console.log("Password reset URL:", resetUrl); // TODO: will implement mail/sms service later
+    const emailService = new EmailService();
+    await emailService.sendPasswordResetEmail({
+      toEmail: user.email,
+      toName: user.fullName || user.username,
+      resetUrl,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
