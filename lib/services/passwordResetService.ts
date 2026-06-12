@@ -57,10 +57,11 @@ export class PasswordResetService {
       throw new PasswordResetRequestError("User does not have an email address", 400);
     }
 
-    const activeResetToken = await this.getActiveUserToken(user.id);
-    if (activeResetToken) {
+    const recentResetToken = await this.getRecentResetToken(user.id);
+    if (recentResetToken) {
       console.log("[PasswordResetService.requestPasswordReset]-already-sent", {
         userId: user.id,
+        cooldownMinutes: env.RESET_EMAIL_RESEND_COOLDOWN_MINUTES,
       });
       return "already_sent";
     }
@@ -159,14 +160,17 @@ export class PasswordResetService {
     await this.passwordResetTokenRepository.delete({ userId });
   }
 
-  private async getActiveUserToken(userId: string): Promise<PasswordResetTokenEntity | null> {
+  private async getRecentResetToken(userId: string): Promise<PasswordResetTokenEntity | null> {
     await ensureDataSource();
+    const cooldownStartedAt = new Date(
+      Date.now() - env.RESET_EMAIL_RESEND_COOLDOWN_MINUTES * 60 * 1000
+    );
 
     return await this.passwordResetTokenRepository.findOne({
       where: {
         userId,
         usedAt: IsNull(),
-        expiresAt: MoreThan(new Date()),
+        createdAt: MoreThan(cooldownStartedAt),
       },
     });
   }

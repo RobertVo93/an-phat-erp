@@ -13,6 +13,7 @@ export const env = {
   MAILERSEND_EMAIL_API_URL: process.env.MAILERSEND_EMAIL_API_URL || 'https://api.mailersend.com/v1/email',
   MAILERSEND_FROM_EMAIL: process.env.MAILERSEND_FROM_EMAIL || '',
   MAILERSEND_FROM_NAME: process.env.MAILERSEND_FROM_NAME || 'An Phat Admin',
+  RESET_EMAIL_RESEND_COOLDOWN_MINUTES: Number(process.env.RESET_EMAIL_RESEND_COOLDOWN_MINUTES || 5),
   
   // Node Environment
   NODE_ENV: process.env.NODE_ENV || 'development',

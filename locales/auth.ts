@@ -145,8 +145,8 @@ export const authTranslations = {
     vi: "Vui lòng kiểm tra email hoặc tin nhắn SMS để nhận liên kết đặt lại mật khẩu.",
   },
   "forgotPassword.alreadySent": {
-    en: "A reset link was already sent. Please check your email.",
-    vi: "Liên kết đặt lại đã được gửi. Vui lòng kiểm tra email của bạn.",
+    en: "A reset link was already sent. Please wait a few minutes before requesting another one.",
+    vi: "Liên kết đặt lại đã được gửi. Vui lòng chờ vài phút trước khi yêu cầu liên kết mới.",
   },
   "forgotPassword.failed": {
     en: "Failed to request password reset",
