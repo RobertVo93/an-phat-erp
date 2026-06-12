@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
 import { formatDate } from "@/lib/utils.date";
 import { Badge } from "@/components/ui/badge";
 import CollectionActions from "@/components/collections/collection-actions";
-import { getCollectionStatusColor } from "@/lib/utils.style";
+import { getCollectionSaleableColor, getCollectionStatusColor } from "@/lib/utils.style";
 
 interface Props {
   collections: Collection[]
@@ -59,6 +59,9 @@ export default function CollectionListMobileView({
                         <Badge className={`${getCollectionStatusColor(collection.status!)} text-xs`}>
                           {t(`collections.status.${collection.status!}`)}
                         </Badge>
+                        <Badge className={`${getCollectionSaleableColor(collection.saleable)} text-xs`}>
+                          {collection.saleable ? t("collections.saleable.yes") : t("collections.saleable.no")}
+                        </Badge>
                       </div>
                     </div>
 
@@ -78,6 +81,7 @@ export default function CollectionListMobileView({
                     <div>
                       <span className="font-medium">{collection.products?.length || 0}</span> {t("collections.products")}
                     </div>
+                    <div>{t("collections.form.saleable")}: {collection.saleable ? t("common.yes") : t("common.no")}</div>
                     <div className="col-span-2 md:col-span-2">{t("collections.createdAt")}: {formatDate(collection.createdAt!)}</div>
                   </div>
                 </div>

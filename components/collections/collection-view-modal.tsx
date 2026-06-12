@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
 import type { Collection } from "@/types/collection"
-import { formatDate, formatCurrency } from "@/lib/utils"
+import { formatDate, formatCurrency, getCollectionSaleableColor } from "@/lib/utils"
 import { CollectionStatus } from "@/types/enums"
 
 interface CollectionViewModalProps {
@@ -70,6 +70,14 @@ export function CollectionViewModal({ collection, open, onOpenChange }: Collecti
                 <div>
                   <label className="text-sm font-medium text-gray-500">{t("collections.createdAt")}</label>
                   <p className="text-sm">{formatDate(collection.createdAt!)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">{t("collections.form.saleable")}</label>
+                  <div className="mt-1">
+                    <Badge className={getCollectionSaleableColor(collection.saleable)}>
+                      {collection.saleable ? t("collections.saleable.yes") : t("collections.saleable.no")}
+                    </Badge>
+                  </div>
                 </div>
               </div>
               <div>

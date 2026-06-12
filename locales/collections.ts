@@ -178,6 +178,22 @@ export const collectionsTranslations = {
     en: "Collection Code",
     vi: "Mã Bộ Sưu Tập",
   },
+  "collections.form.saleable": {
+    en: "Saleable",
+    vi: "Có thể bán",
+  },
+  "collections.form.saleableDescription": {
+    en: "Allow this collection to be shown as a saleable collection in the storefront.",
+    vi: "Cho phép bộ sưu tập này hiển thị như bộ sưu tập có thể bán ở cửa hàng.",
+  },
+  "collections.saleable.yes": {
+    en: "Saleable",
+    vi: "Có thể bán",
+  },
+  "collections.saleable.no": {
+    en: "Not saleable",
+    vi: "Không bán",
+  },
 
   // Actions
   "collections.actions.edit": {

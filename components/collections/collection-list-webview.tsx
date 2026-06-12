@@ -5,7 +5,7 @@ import { ImageIcon } from "lucide-react";
 import { formatDate } from "@/lib/utils.date";
 import { Badge } from "@/components/ui/badge";
 import CollectionActions from "@/components/collections/collection-actions";
-import { getCollectionStatusColor } from "@/lib/utils.style";
+import { getCollectionSaleableColor, getCollectionStatusColor } from "@/lib/utils.style";
 
 interface Props {
   collections: Collection[]
@@ -85,6 +85,16 @@ export default function CollectionListWebview({
             {t(`collections.status.${row.status!}`)}
           </Badge>
         </div>
+      ),
+    },
+    {
+      key: "saleable",
+      title: t("collections.form.saleable"),
+      sortable: true,
+      render: (row) => (
+        <Badge className={getCollectionSaleableColor(row.saleable)}>
+          {row.saleable ? t("collections.saleable.yes") : t("collections.saleable.no")}
+        </Badge>
       ),
     },
     {
