@@ -23,6 +23,8 @@ import { getUserFromRequest } from "@/lib/auth/jwt";
  *           enum: [fashion, electronics, home, office]
  *         image:
  *           type: string
+ *         saleable:
+ *           type: boolean
  * 
  *     UpdateCollectionRequest:
  *       type: object
@@ -39,6 +41,8 @@ import { getUserFromRequest } from "@/lib/auth/jwt";
  *           enum: [fashion, electronics, home, office]
  *         image:
  *           type: string
+ *         saleable:
+ *           type: boolean
  * 
  *     CollectionResponse:
  *       type: object
@@ -58,6 +62,8 @@ import { getUserFromRequest } from "@/lib/auth/jwt";
  *         image:
  *           type: string
  *           nullable: true
+ *         saleable:
+ *           type: boolean
  *         created_at:
  *           type: string
  *           format: date
