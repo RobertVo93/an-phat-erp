@@ -24,9 +24,8 @@ import { reportStockTranslations } from "@/locales/report-stock"
 import { reportOrderTranslations } from "@/locales/report-order"
 import { utilityUsageTranslations } from "@/locales/utility-usage"
 import { settingsTranslations } from "@/locales/settings"
+import type { Language } from "@/types/language"
 
-
-type Language = "en" | "vi"
 
 export interface Translations {
   [key: string]: {

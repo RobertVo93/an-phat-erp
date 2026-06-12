@@ -1,5 +1,6 @@
 import { IUser } from "@/types/user"
 import { apiHref } from "@/lib/httpclient/base"
+import type { Language } from "@/types/language"
 
 interface ILoginRequest {
     username: string
@@ -12,6 +13,7 @@ interface IRegisterRequest extends ILoginRequest {
 
 interface IForgotPasswordRequest {
     username: string
+    language: Language
 }
 
 interface IResetPasswordRequest {
@@ -22,6 +24,7 @@ interface IResetPasswordRequest {
 interface IAuthResponse {
     user?: IUser
     success?: boolean
+    status?: "sent" | "already_sent"
     error?: string
 }
 

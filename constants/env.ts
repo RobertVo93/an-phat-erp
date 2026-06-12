@@ -10,6 +10,7 @@ export const env = {
 
   // MailerSend
   MAILERSEND_API_TOKEN: process.env.MAILERSEND_API_TOKEN || '',
+  MAILERSEND_EMAIL_API_URL: process.env.MAILERSEND_EMAIL_API_URL || 'https://api.mailersend.com/v1/email',
   MAILERSEND_FROM_EMAIL: process.env.MAILERSEND_FROM_EMAIL || '',
   MAILERSEND_FROM_NAME: process.env.MAILERSEND_FROM_NAME || 'An Phat Admin',
   

@@ -17,7 +17,7 @@ export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   const handleSubmit = async (e: React.FormEvent) => {
     try {
@@ -32,9 +32,11 @@ export function ForgotPasswordForm() {
       }
 
       setIsLoading(true)
-      const res = await forgotPassword({ username: normalizedUsername })
+      const res = await forgotPassword({ username: normalizedUsername, language })
       if (res.success) {
-        setSuccess(t("forgotPassword.success"))
+        setSuccess(res.status === "already_sent"
+          ? t("forgotPassword.alreadySent")
+          : t("forgotPassword.success"))
       } else {
         setError(t("forgotPassword.failed"))
       }
