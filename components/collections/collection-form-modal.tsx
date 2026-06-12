@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { useLanguage } from "@/contexts/language-context"
 import type { Collection } from "@/types/collection"
 import { ImageUpload } from "@/components/ui/image-upload"
@@ -29,6 +30,7 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
     status: CollectionStatus.draft,
     createdAt: new Date().toISOString().split("T")[0],
     image: "",
+    saleable: false,
   })
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
         status: collection.status || CollectionStatus.draft,
         createdAt: collection.createdAt as any || new Date().toISOString().split("T")[0],
         image: collection.image || "", // Add image field
+        saleable: collection.saleable ?? false,
       })
     } else {
       setFormData({
@@ -47,6 +50,7 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
         status: CollectionStatus.draft,
         createdAt: new Date().toISOString().split("T")[0],
         image: "",
+        saleable: false,
       })
     }
   }, [collection, open])
@@ -109,6 +113,20 @@ export function CollectionFormModal({ collection, open, onOpenChange, onSave }: 
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder={t("collections.form.descriptionPlaceholder")}
               rows={3}
+            />
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-1">
+              <Label htmlFor="saleable">{t("collections.form.saleable")}</Label>
+              <p className="text-sm text-muted-foreground">
+                {t("collections.form.saleableDescription")}
+              </p>
+            </div>
+            <Switch
+              id="saleable"
+              checked={formData.saleable}
+              onCheckedChange={(checked) => setFormData({ ...formData, saleable: checked })}
             />
           </div>
 

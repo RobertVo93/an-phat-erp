@@ -22,6 +22,9 @@ export class CollectionEntity extends BaseEntity implements ICollection {
   @Column({ nullable: true })
   image?: string;
 
+  @Column({ type: "boolean", default: false })
+  saleable?: boolean;
+
   //////Related fields//////
   @ManyToMany(() => ProductEntity, (product: ProductEntity) => product.collections, { nullable: true })
   @JoinTable({ name: "collection_products" })

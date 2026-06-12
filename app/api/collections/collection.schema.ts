@@ -7,4 +7,5 @@ export const CollectionSchema = z.object({
     description: z.string().optional(),
     status: z.nativeEnum(CollectionStatus).optional(),
     image: z.string().optional(),
+    saleable: z.boolean().optional(),
   });
