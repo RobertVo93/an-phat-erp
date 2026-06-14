@@ -22,6 +22,7 @@ import { ActivityLogEntity } from "./entities/activity-log.entity";
 import { env } from "@/constants/env";
 import { AddressEntity, CartEntity, CartItemEntity, NotificationEntity, NotificationSettingsEntity } from "./entities";
 import { SettingEntity } from "./entities/setting.entity";
+import { PasswordResetTokenEntity } from "./entities/password-reset-token.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -45,6 +46,7 @@ export const AppDataSource = new DataSource({
     NotificationEntity,
     NotificationSettingsEntity,
     SettingEntity,
+    PasswordResetTokenEntity,
     // Dependent entities
     UserPagePermissionEntity,
     WarehouseProductEntity,
