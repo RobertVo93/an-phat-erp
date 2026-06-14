@@ -40,6 +40,10 @@ export const authTranslations = {
     en: "Sign up",
     vi: "Đăng ký",
   },
+  "login.forgotPassword": {
+    en: "Forgot password?",
+    vi: "Quên mật khẩu?",
+  },
 
   // Register translations
   "register.subtitle": {
@@ -113,5 +117,97 @@ export const authTranslations = {
   "register.failed": {
     en: "Failed to register user",
     vi: "Đăng ký tài khoản thất bại",
+  },
+
+  // Forgot password translations
+  "forgotPassword.subtitle": {
+    en: "Reset your password",
+    vi: "Đặt lại mật khẩu",
+  },
+  "forgotPassword.description": {
+    en: "Enter your username to request a reset link.",
+    vi: "Nhập tên đăng nhập để yêu cầu liên kết đặt lại mật khẩu.",
+  },
+  "forgotPassword.username": {
+    en: "Username",
+    vi: "Tên đăng nhập",
+  },
+  "forgotPassword.usernamePlaceholder": {
+    en: "Phone number or Email",
+    vi: "Số điện thoại hoặc Email",
+  },
+  "forgotPassword.submit": {
+    en: "Send reset link",
+    vi: "Gửi liên kết đặt lại",
+  },
+  "forgotPassword.success": {
+    en: "Please check your email or SMS for the reset link.",
+    vi: "Vui lòng kiểm tra email hoặc tin nhắn SMS để nhận liên kết đặt lại mật khẩu.",
+  },
+  "forgotPassword.alreadySent": {
+    en: "A reset link was already sent. Please wait a few minutes before requesting another one.",
+    vi: "Liên kết đặt lại đã được gửi. Vui lòng chờ vài phút trước khi yêu cầu liên kết mới.",
+  },
+  "forgotPassword.failed": {
+    en: "Failed to request password reset",
+    vi: "Yêu cầu đặt lại mật khẩu thất bại",
+  },
+  "forgotPassword.usernameNotFound": {
+    en: "Username does not exist",
+    vi: "Tên đăng nhập không tồn tại",
+  },
+  "forgotPassword.backToLogin": {
+    en: "Back to sign in",
+    vi: "Quay lại đăng nhập",
+  },
+
+  // Reset password translations
+  "resetPassword.subtitle": {
+    en: "Create a new password",
+    vi: "Tạo mật khẩu mới",
+  },
+  "resetPassword.password": {
+    en: "New Password",
+    vi: "Mật khẩu mới",
+  },
+  "resetPassword.passwordPlaceholder": {
+    en: "Enter your new password",
+    vi: "Nhập mật khẩu mới",
+  },
+  "resetPassword.confirmPassword": {
+    en: "Confirm New Password",
+    vi: "Xác nhận mật khẩu mới",
+  },
+  "resetPassword.confirmPasswordPlaceholder": {
+    en: "Confirm your new password",
+    vi: "Xác nhận mật khẩu mới",
+  },
+  "resetPassword.submit": {
+    en: "Reset Password",
+    vi: "Đặt lại mật khẩu",
+  },
+  "resetPassword.success": {
+    en: "Password updated successfully. Redirecting to sign in...",
+    vi: "Cập nhật mật khẩu thành công. Đang chuyển về đăng nhập...",
+  },
+  "resetPassword.failed": {
+    en: "Failed to update new password",
+    vi: "Cập nhật mật khẩu mới thất bại",
+  },
+  "resetPassword.passwordMismatch": {
+    en: "Passwords do not match",
+    vi: "Mật khẩu không khớp",
+  },
+  "resetPassword.invalidLink": {
+    en: "Reset link is missing or invalid",
+    vi: "Liên kết đặt lại bị thiếu hoặc không hợp lệ",
+  },
+  "resetPassword.invalidOrExpiredLink": {
+    en: "Reset link is invalid or expired",
+    vi: "Liên kết đặt lại không hợp lệ hoặc đã hết hạn",
+  },
+  "resetPassword.requestNewLink": {
+    en: "Request a new reset link",
+    vi: "Yêu cầu liên kết đặt lại mới",
   },
 }

@@ -1,5 +1,6 @@
 import { IUser } from "@/types/user"
 import { apiHref } from "@/lib/httpclient/base"
+import type { Language } from "@/types/language"
 
 interface ILoginRequest {
     username: string
@@ -10,9 +11,20 @@ interface IRegisterRequest extends ILoginRequest {
     fullName: string
 }
 
+interface IForgotPasswordRequest {
+    username: string
+    language: Language
+}
+
+interface IResetPasswordRequest {
+    token: string
+    password: string
+}
+
 interface IAuthResponse {
     user?: IUser
     success?: boolean
+    status?: "sent" | "already_sent"
     error?: string
 }
 
@@ -45,6 +57,40 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
     if (!response.ok) {
         const error = await response.json()
         throw new Error(error.message || "Failed to register")
+    }
+
+    return response.json()
+}
+
+export async function forgotPassword(data: IForgotPasswordRequest): Promise<IAuthResponse> {
+    const response = await fetch(apiHref("/api/auth/forgot-password"), {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || error.error || "Failed to request password reset")
+    }
+
+    return response.json()
+}
+
+export async function resetPassword(data: IResetPasswordRequest): Promise<IAuthResponse> {
+    const response = await fetch(apiHref("/api/auth/reset-password"), {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || error.error || "Failed to reset password")
     }
 
     return response.json()
