@@ -7,6 +7,13 @@ export const env = {
   
   // JWT
   JWT_SECRET: process.env.JWT_SECRET || 'adsfpqwergadfnpg_UmYuKibaZf20ljli123asdfgoihjnqbOInkjHUne',
+
+  // MailerSend
+  MAILERSEND_API_TOKEN: process.env.MAILERSEND_API_TOKEN || '',
+  MAILERSEND_EMAIL_API_URL: process.env.MAILERSEND_EMAIL_API_URL || 'https://api.mailersend.com/v1/email',
+  MAILERSEND_FROM_EMAIL: process.env.MAILERSEND_FROM_EMAIL || '',
+  MAILERSEND_FROM_NAME: process.env.MAILERSEND_FROM_NAME || 'An Phat Admin',
+  RESET_EMAIL_RESEND_COOLDOWN_MINUTES: Number(process.env.RESET_EMAIL_RESEND_COOLDOWN_MINUTES || 5),
   
   // Node Environment
   NODE_ENV: process.env.NODE_ENV || 'development',

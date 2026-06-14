@@ -7,7 +7,12 @@ import { ADMIN_ROUTES } from "@/constants/nav"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
-const publicRoutes = [ADMIN_ROUTES.login(), ADMIN_ROUTES.register()]
+const publicRoutes = [
+  ADMIN_ROUTES.login(),
+  ADMIN_ROUTES.register(),
+  ADMIN_ROUTES.forgotPassword(),
+  ADMIN_ROUTES.resetPassword(),
+]
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()

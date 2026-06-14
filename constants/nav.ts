@@ -47,6 +47,8 @@ export const ADMIN_ROUTES = {
   home: (query?: string) => adminHref("/", query),
   login: () => adminHref("login"),
   register: () => adminHref("register"),
+  forgotPassword: () => adminHref("forgot-password"),
+  resetPassword: (token?: string) => adminHref("reset-password", token ? `token=${token}` : undefined),
 
   orders: (query?: string) => adminHref("orders", query),
   orderDetail: (id: string) => adminHref(`orders/${id}`),
