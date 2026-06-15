@@ -6,9 +6,8 @@ import { getProducts, createProduct as apiCreateProduct, updateProduct as apiUpd
 import { debounce } from "lodash"
 import { Collection } from "@/types/collection"
 import { CollectionStatus } from "@/types/enums"
-import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3"
-import { base64ToFile } from "@/lib/utils"
 import { getCollections } from "@/lib/httpclient"
+import { deleteProductImages, prepareProductImagesForSubmit } from "@/lib/product-image-upload"
 
 export function useProducts() {
   const [allProducts, setAllProducts] = useState<Product[]>([])
@@ -81,15 +80,8 @@ export function useProducts() {
         createdAt: new Date().toISOString() as any,
         updatedAt: new Date().toISOString() as any,
       }
-      if (newProduct.image && newProduct.image.startsWith("data:")) {
-        // Convert base64 to File
-        const file = base64ToFile(newProduct.image, "product-image.png");
-        // Upload to S3
-        const s3Url = await uploadFileToS3(file, "products");
-        // Replace image field with S3 URL
-        newProduct.image = s3Url;
-      }
-      const created = await apiCreateProduct(newProduct)
+      const preparedProduct = await prepareProductImagesForSubmit(newProduct)
+      const created = await apiCreateProduct(preparedProduct)
       setAllProducts((prev) => [...prev, created])
     } finally {
       setLoading(false)
@@ -100,22 +92,10 @@ export function useProducts() {
     setLoading(true)
     try {
       const selectedProduct = allProducts.find((pro) => pro.id === id)
-      if (selectedProduct?.image && selectedProduct?.image !== data.image) {
-        // Delete old image from S3
-        await deleteFileFromS3(selectedProduct.image)
-      }
-
-      if (data.image?.startsWith("data:")) {
-        // Convert base64 to File
-        const file = base64ToFile(data.image, "product-image.png");
-        // Upload to S3
-        const s3Url = await uploadFileToS3(file, "products");
-        // Replace image field with S3 URL
-        data.image = s3Url;
-      }
+      const preparedData = await prepareProductImagesForSubmit(data, selectedProduct)
       
       const updatedProduct: Product = {
-        ...data,
+        ...preparedData,
         updatedAt: new Date().toISOString() as any,
       }
       const updated = await apiUpdateProduct(id, updatedProduct)
@@ -129,11 +109,8 @@ export function useProducts() {
     setLoading(true)
     try {
       await apiDeleteProduct(id)
-      // Delete image from S3
       const selectedProduct = allProducts.find((prod) => prod.id === id)
-      if (selectedProduct?.image) {
-        await deleteFileFromS3(selectedProduct.image)
-      }
+      await deleteProductImages(selectedProduct)
       setAllProducts(allProducts.filter((pro) => pro.id !== id))
     } finally {
       setLoading(false)

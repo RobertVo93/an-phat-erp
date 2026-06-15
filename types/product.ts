@@ -16,6 +16,7 @@ export interface Product extends IBase {
   status?: ProductStatus
   supplier?: string
   image?: string
+  subImages?: string[]
   warehouseProducts?: WarehouseProduct[]
 
   collections?: ICollection[]
@@ -34,6 +35,7 @@ export interface ProductFormData {
   status?: ProductStatus
   supplier?: string
   image?: string
+  subImages?: string[]
   
   collections?: ICollection[]
 }

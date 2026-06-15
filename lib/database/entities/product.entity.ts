@@ -52,6 +52,9 @@ export class ProductEntity extends BaseEntity implements IProduct {
   @Column({ nullable: true })
   image?: string;
 
+  @Column({ name: "sub_images", type: "text", array: true, nullable: true })
+  subImages?: string[];
+
   //////Related fields//////
   @ManyToMany(() => CollectionEntity, (collection) => collection.products, { nullable: true })
   collections?: ICollection[];
