@@ -130,6 +130,22 @@ export const productsTranslations = {
     en: "Image",
     vi: "Ảnh",
   },
+  "products.form.subImages": {
+    en: "Sub images",
+    vi: "Ảnh phụ",
+  },
+  "products.form.subImage": {
+    en: "Sub image",
+    vi: "Ảnh phụ",
+  },
+  "products.form.addSubImage": {
+    en: "Add sub image",
+    vi: "Thêm ảnh phụ",
+  },
+  "products.form.noSubImages": {
+    en: "No sub images",
+    vi: "Chưa có ảnh phụ",
+  },
   "products.form.price": {
     en: "Price",
     vi: "Giá Bán",

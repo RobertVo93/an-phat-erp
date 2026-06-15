@@ -41,8 +41,32 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
     status: ProductStatus.active,
     supplier: "",
     image: "",
+    subImages: [],
     collections: [],
   })
+
+  const updateSubImage = (index: number, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      subImages: (prev.subImages || []).map((image, imageIndex) => (
+        imageIndex === index ? value : image
+      )),
+    }))
+  }
+
+  const addSubImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      subImages: [...(prev.subImages || []), ""],
+    }))
+  }
+
+  const removeSubImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      subImages: (prev.subImages || []).filter((_, imageIndex) => imageIndex !== index),
+    }))
+  }
 
   const selectCollection = (collectionId: string) => {
     const collections = formData.collections ?? [];
@@ -73,6 +97,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         status: product.status,
         supplier: product.supplier,
         image: product.image,
+        subImages: product.subImages || [],
         collections: product.collections || [],
       })
     } else {
@@ -87,6 +112,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         status: ProductStatus.active,
         supplier: "",
         image: "",
+        subImages: [],
         collections: [],
       })
     }
@@ -155,6 +181,40 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
             onChange={(value) => setFormData((prev) => ({ ...prev, image: value }))}
             label={t("products.form.image")}
           />
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <Label>{t("products.form.subImages")}</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addSubImage}>
+                {t("products.form.addSubImage")}
+              </Button>
+            </div>
+
+            {(formData.subImages || []).length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(formData.subImages || []).map((subImage, index) => (
+                  <div key={index} className="relative rounded-lg border p-3">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute right-2 top-2 z-10 h-8 w-8 p-0"
+                      onClick={() => removeSubImage(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <ImageUpload
+                      value={subImage}
+                      onChange={(value) => updateSubImage(index, value)}
+                      label={`${t("products.form.subImage")} ${index + 1}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">{t("products.form.noSubImages")}</p>
+            )}
+          </div>
 
           {/* Collections and Status */}
           <div className="grid grid-cols-2 gap-4">
