@@ -9,20 +9,30 @@ interface Props {
 }
 
 export default function ProductDetailInformation({product, t}: Props) {
+  const productImages = [product.image, ...(product.subImages || [])]
+    .filter((image): image is string => typeof image === "string" && image.trim().length > 0)
+
   return (
     <Card>
       <CardContent className="p-6 space-y-6">
         {/* Product Image */}
-        <div className="flex justify-start mb-5">
-          <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-            {product.image ? (
-              <img
-                src={product.image || "/placeholder.svg"}
-                alt={product.name}
-                className="w-full h-full object-cover rounded-lg"
-              />
+        <div className="space-y-3 mb-5">
+          <label className="text-sm font-medium text-gray-500">{t("products.form.image")}</label>
+          <div className="flex flex-wrap gap-3">
+            {productImages.length > 0 ? (
+              productImages.map((image, index) => (
+                <div key={`${image}-${index}`} className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <img
+                    src={image || "/placeholder.svg"}
+                    alt={`${product.name} ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+              ))
             ) : (
-              <span className="text-gray-400 text-sm">{t("products.noImage")}</span>
+              <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                <span className="text-gray-400 text-sm">{t("products.noImage")}</span>
+              </div>
             )}
           </div>
         </div>

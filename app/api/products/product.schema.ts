@@ -15,6 +15,7 @@ export const CreateProductSchema = z.object({
     status: z.nativeEnum(ProductStatus).optional(),
     supplier: z.string().optional(),
     image: z.string().optional(),
+    subImages: z.array(z.string()).optional(),
 });
 
 export const UpdateProductSchema = z.object({
@@ -30,6 +31,7 @@ export const UpdateProductSchema = z.object({
     status: z.nativeEnum(ProductStatus).optional(),
     supplier: z.string().optional(),
     image: z.string().optional(),
+    subImages: z.array(z.string()).optional(),
 });
 
 export const ExtendedProductSchema = CreateProductSchema.extend({
