@@ -142,6 +142,11 @@ export const getCurrentWeekRange = () => {
   return [monday, sunday];
 };
 
+export const getCurrentMonthRange = () => {
+  const today = new Date();
+  return [getStartOfMonth(today), getEndOfMonth(today)];
+};
+
 export const getRecentTimeIntervalSlot = (timeInterval: number = 30): Date => {
   const now = new Date()
   const roundedMinutes = Math.floor(now.getMinutes() / timeInterval) * timeInterval

@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { FormattedCurrency } from "@/components/ui/formatted-currency"
 import { useLanguage } from "@/contexts/language-context"
-import { formatLargeCurrency } from "@/lib/utils"
 import React from "react"
 
 interface ProductionProfitSummaryProps {
@@ -21,11 +21,17 @@ export const ProductionProfitSummary = ({ calculateTotalCost, calculateTotalProf
                 <div className="space-y-2 text-sm">
                     <div className="flex justify-between border-t pt-2 text-base font-semibold">
                         <span>{t("production.form.revenue")}:</span>
-                        <span>{formatLargeCurrency(calculateRevenue())}</span>
+                        <FormattedCurrency
+                            as="span"
+                            value={calculateRevenue()}
+                        />
                     </div>
                     <div className="flex justify-between text-base font-semibold">
                         <span>{t("production.form.totalProfit")}:</span>
-                        <span>{formatLargeCurrency(calculateTotalProfit())}</span>
+                        <FormattedCurrency
+                            as="span"
+                            value={calculateTotalProfit()}
+                        />
                     </div>
                     {(calculateTotalProfit() && calculateTotalCost()) ? (
                         <div className="flex justify-between text-xs text-gray-600">

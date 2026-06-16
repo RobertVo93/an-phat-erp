@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
+import { Language } from "@/types"
 import { navTranslations } from "@/locales/nav"
 import { authTranslations } from "@/locales/auth"
 import { dashboardTranslations } from "@/locales/dashboard"
@@ -24,8 +25,6 @@ import { reportStockTranslations } from "@/locales/report-stock"
 import { reportOrderTranslations } from "@/locales/report-order"
 import { utilityUsageTranslations } from "@/locales/utility-usage"
 import { settingsTranslations } from "@/locales/settings"
-import type { Language } from "@/types/language"
-
 
 export interface Translations {
   [key: string]: {

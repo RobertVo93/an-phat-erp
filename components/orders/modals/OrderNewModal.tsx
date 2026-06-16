@@ -198,10 +198,10 @@ export function OrderNewModal({ open, allWarehouses, onOpenChange, createOrder }
         {/* Order Summary */}
         {orderItems.length > 0 && (
           <OrderSummary
-            subtotal={formatLargeCurrency(subtotal, 2)}
-            tax={formatLargeCurrency(tax, 2)}
-            shipping={formatLargeCurrency(shipping, 2)}
-            total={formatLargeCurrency(total, 2)}
+            subtotal={formatLargeCurrency(subtotal)}
+            tax={formatLargeCurrency(tax)}
+            shipping={formatLargeCurrency(shipping)}
+            total={formatLargeCurrency(total)}
           />
         )}
         {/* Action Buttons */}

@@ -59,15 +59,6 @@ export const getCustomerInitialCharacter = (name: string) => {
     .toUpperCase()
 }
 
-export const formatNumberWithCommas = (value: string | number): string => {
-  if (value === null || value === undefined) return "";
-  const [int, dec] = value.toString().split(".");
-  return (
-    int.replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
-    (dec ? "." + dec : "")
-  );
-}
-
 export const parseNumberInput = (value: string): number => {
   return parseFloat((value || "0").replace(/,/g, ""));
 }

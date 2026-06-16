@@ -8,7 +8,7 @@ import { UserEntity } from "@/lib/database/entities/user.entity";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { EmailService } from "@/lib/services/emailService";
 import { UserService } from "@/lib/services/user.service";
-import type { Language } from "@/types/language";
+import type { Language } from "@/types";
 
 const RESET_TOKEN_EXPIRES_IN_MINUTES = 30;
 const DEFAULT_LANGUAGE: Language = "vi";

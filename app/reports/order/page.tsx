@@ -3,15 +3,12 @@
 import { ERPLayout } from "@/components/erp-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CalendarIcon, ChartArea, Download, Filter, Loader2, Table } from "lucide-react"
+import { ChartArea, Download, Filter, Loader2, Table } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { ReportPeriod, ReportViewMode } from "@/types"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatLargeCurrency } from "@/lib/utils"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
+import { RangePickerCalendar } from "@/components/ui/calendar"
 import { useReportOrder } from "@/hooks/useReportOrder"
 import { ReportOrderFilterModal } from "@/components/modals/report-order-filter-modal"
 import ReportOrderTable from "@/components/report-order-table/ReportOrderTable"
@@ -28,7 +25,6 @@ export default function StockReportPage() {
     reportPeriod,
     data,
     summary,
-    locale,
 
     setViewMode,
     setReportPeriod,
@@ -75,41 +71,13 @@ export default function StockReportPage() {
             </Button>
           </div>
           <div className="flex space-x-2">
-            {/* select period */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn("w-[280px] justify-start text-left font-normal")}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {filter.dateFrom ? (
-                    filter.dateTo ? (
-                      <>
-                        {format(filter.dateFrom, "dd/MM/yyyy", { locale: locale })} -{" "}
-                        {format(filter.dateTo, "dd/MM/yyyy", { locale: locale })}
-                      </>
-                    ) : (
-                      format(filter.dateFrom, "dd/MM/yyyy", { locale: locale })
-                    )
-                  ) : (
-                    <span>{t("rp.page.pickDateRange")}</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  initialFocus
-                  mode="range"
-                  locale={locale}
-                  defaultMonth={filter.dateFrom}
-                  selected={{ from: filter.dateFrom, to: filter.dateTo }}
-                  onSelect={handleDateRangeChange}
-                  numberOfMonths={2}
-                  hideWeekdays
-                />
-              </PopoverContent>
-            </Popover>
+            <RangePickerCalendar
+              onDateRangeChange={handleDateRangeChange}
+              mode={reportPeriod}
+              startDate={filter.dateFrom}
+              endDate={filter.dateTo}
+              showTodayButton
+            />
 
             <Select value={reportPeriod} onValueChange={(value: ReportPeriod) => setReportPeriod(value)}>
               <SelectTrigger className="w-[140px]">
@@ -158,7 +126,7 @@ export default function StockReportPage() {
               <CardTitle className="text-sm font-medium">{t("ro.page.totalValue")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatLargeCurrency(summary.totalValue, 1)}</div>
+              <div className="text-2xl font-bold">{formatLargeCurrency(summary.totalValue)}</div>
               <p className="text-xs text-muted-foreground">{t("ro.page.totalCompletedOrdersValue")}</p>
             </CardContent>
           </Card>

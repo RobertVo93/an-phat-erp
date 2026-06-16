@@ -32,11 +32,11 @@ export function ProductionOverviewTab({ productionData }: ProductionOverviewTabP
             <CartesianGrid strokeDasharray="3 3" />
             <Legend verticalAlign="bottom" height={36} />
             <XAxis dataKey="date" fontSize={12} />
-            <YAxis yAxisId="left" fontSize={12} tickFormatter={(value: number) => formatLargeCurrency(value, 1)} />
+            <YAxis yAxisId="left" fontSize={12} tickFormatter={(value: number) => formatLargeCurrency(value)} />
             <YAxis yAxisId="right" orientation="right" fontSize={12} />
             <Tooltip
               formatter={(value: number | undefined, name: string | undefined) =>
-                name == t("rp.page.efficiency") ? `${value ?? 0}%` : formatLargeCurrency(Number(value ?? 0), 1)
+                name == t("rp.page.efficiency") ? `${value ?? 0}%` : formatLargeCurrency(Number(value ?? 0))
               }
               labelFormatter={(value: any) => `${value}`}
             />

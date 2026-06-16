@@ -72,7 +72,7 @@ export const OrderItemsList = ({
 					</div>
 					<div className="flex justify-between items-center pt-2 border-t">
 						<span className="text-sm font-medium">{t("orders.total")}:</span>
-						<span className="text-sm font-bold">{formatLargeCurrency(item.totalCost || 0, 2)}</span>
+						<span className="text-sm font-bold">{formatLargeCurrency(item.totalCost || 0)}</span>
 					</div>
 				</div>
 			))}

@@ -7,23 +7,25 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Search, Eye, Edit, Download, RefreshCw } from "lucide-react"
-import { format } from "date-fns"
+import { RangePickerCalendar } from "@/components/ui/calendar"
+import { Search, Eye, Edit } from "lucide-react"
 import type { ProductionFilters, ProductionRecord, ProductionSortBy } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductionStatus } from "@/types"
 import { ServersideTable, ServersideTableColumn } from "@/components/common/table/ServersideTable"
-import { formatDate, formatLargeCurrency, getProductionStatusColor } from "@/lib/utils"
+import { formatDate, formatLargeCurrency, formatYYYYMMDD, getCurrentMonthRange, getProductionStatusColor } from "@/lib/utils"
 import { useDebounceSearchTerm } from "@/lib/utils.client"
 import { toast } from "@/components/ui/use-toast"
 import { getAllProductions } from "@/lib/httpclient"
+import { DEFAULT_PAGE_SIZE } from "@/constants"
+import { FormattedNumber } from "@/components/ui/formatted-number"
+import { FormattedCurrency } from "@/components/ui/formatted-currency"
 
 interface ProductionHistoryProps {
   onViewRecord: (record: ProductionRecord) => void
   onEditRecord: (record: ProductionRecord) => void
 }
+const defaultRange = getCurrentMonthRange()
 
 export function ProductionHistory({
   onViewRecord,
@@ -35,13 +37,14 @@ export function ProductionHistory({
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<ProductionFilters>({
     status: "all",
-    product: "all"
+    product: "all",
+    dateFrom: formatYYYYMMDD(defaultRange[0]),
+    dateTo: formatYYYYMMDD(defaultRange[1])
   })
   // pagination
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
   const [sortBy, setSortBy] = useState<ProductionSortBy>("number")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
@@ -52,7 +55,7 @@ export function ProductionHistory({
   const apiParams = useMemo(() => {
     return {
       page: currentPage,
-      limit: pageSize,
+      limit: DEFAULT_PAGE_SIZE,
       sortBy,
       sortOrder,
       searchTerm: debouncedSearchTerm,
@@ -61,7 +64,7 @@ export function ProductionHistory({
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
     }
-  }, [currentPage, pageSize, sortBy, sortOrder, debouncedSearchTerm, filters])
+  }, [currentPage, DEFAULT_PAGE_SIZE, sortBy, sortOrder, debouncedSearchTerm, filters])
 
   // Lấy danh sách sản phẩm unique
   const uniqueProducts = useMemo(() => {
@@ -102,32 +105,6 @@ export function ProductionHistory({
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-  }
-
-  const resetFilters = () => {
-    setFilters({ status: "all", product: "all" })
-    setCurrentPage(1)
-  }
-
-  const exportData = () => {
-    // Xuất dữ liệu CSV
-    const headers = ["Mã đơn", "Ngày", "Sản phẩm", "Số lượng", "Trạng thái", "Chi phí"]
-    const csvData = productions.map((record) => [
-      record.id,
-      record.date,
-      record.product,
-      `${record.quantity}`,
-      record.totalCost!.toLocaleString(),
-    ])
-
-    const csvContent = [headers, ...csvData].map((row) => row.join(",")).join("\n")
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `lich-su-san-xuat-${format(new Date(), "yyyy-MM-dd")}.csv`
-    a.click()
-    window.URL.revokeObjectURL(url)
   }
 
   // Define columns for ServersideTable
@@ -230,28 +207,14 @@ export function ProductionHistory({
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-base sm:text-lg">{t("production.history.title")}</CardTitle>
-            <CardDescription className="text-sm">{t("production.history.list")}</CardDescription>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" size="sm" onClick={resetFilters} className="text-xs">
-              <RefreshCw className="w-3 h-3 mr-1" />
-              {t("production.history.reset")}
-            </Button>
-            <Button variant="outline" size="sm" onClick={exportData} className="text-xs">
-              <Download className="w-3 h-3 mr-1" />
-              {t("production.history.exportExcel")}
-            </Button>
-          </div>
-        </div>
+      <CardHeader className="hidden lg:block">
+        <CardTitle className="text-base sm:text-lg">{t("production.history.title")}</CardTitle>
+        <CardDescription className="text-sm">{t("production.history.list")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-2">
         {/* Bộ lọc */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="space-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+          <div className="space-y-1 lg:col-span-6">
             <Label className="text-xs">{t("production.history.search")}</Label>
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
@@ -264,7 +227,7 @@ export function ProductionHistory({
             </div>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 lg:col-span-2">
             <Label className="text-xs">{t("production.history.status")}</Label>
             <Select value={filters.status} onValueChange={onChangeStatusFilter}>
               <SelectTrigger className="h-9">
@@ -279,7 +242,7 @@ export function ProductionHistory({
             </Select>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 lg:col-span-2">
             <Label className="text-xs">{t("production.history.product")}</Label>
             <Select value={filters.product} onValueChange={onChangeProductFileter}>
               <SelectTrigger className="h-9">
@@ -299,81 +262,33 @@ export function ProductionHistory({
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        {/* Lọc theo ngày */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1">
+          {/* Lọc theo ngày */}
+          <div className="space-y-1 lg:col-span-2">
             <Label className="text-xs">{t("production.history.fromDate")}</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal h-9">
-                  <CalendarIcon className="mr-2 h-3 w-3" />
-                  {filters.dateFrom ? format(filters.dateFrom, "dd/MM/yyyy") : t("production.history.selectDate")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={new Date(filters.dateFrom!)}
-                  onSelect={(e) => {
-                    if (e) {
-                      // const formatted = format(e, "yyyy-MM-dd HH:mm:ss.SSSSSS");
-                      onChangeDateFrom(e);
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs">{t("production.history.toDate")}</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal h-9">
-                  <CalendarIcon className="mr-2 h-3 w-3" />
-                  {filters.dateTo ? format(filters.dateTo, "dd/MM/yyyy") : t("production.history.selectDate")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={new Date(filters.dateTo!)}
-                  onSelect={(e) => {
-                    if (e) {
-                      // const formatted = format(e, "yyyy-MM-dd HH:mm:ss.SSSSSS");
-                      onChangeDateTo(e);
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <RangePickerCalendar
+              startDate={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
+              endDate={filters.dateTo ? new Date(filters.dateTo) : undefined}
+              mode="day"
+              onDateRangeChange={(range) => {
+                onChangeDateFrom(range.from);
+                onChangeDateTo(range.to);
+              }}
+            />
           </div>
         </div>
 
         {/* Thống kê nhanh */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg">
+        <div className="hidden lg:grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg">
           <div className="text-center">
-            <div className="text-lg font-semibold">{productions.length}</div>
-            <div className="text-xs text-gray-600">{t("production.history.sheetNumber")}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-semibold">{productions.filter((r) => r.status === ProductionStatus.completed).length}</div>
-            <div className="text-xs text-gray-600">{t("production.history.completed")}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-semibold">
-              {productions.reduce((sum, r) => sum + r.quantity!, 0).toLocaleString()}
-            </div>
+            <FormattedNumber as="div" className="text-lg font-semibold" value={productions.reduce((sum, r) => sum + r.quantity!, 0)} />
             <div className="text-xs text-gray-600">{t("production.history.totalProduction")}</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold">
-              {(productions.reduce((sum, r) => sum + r.totalCost!, 0) / 1000000).toFixed(1)}M
-            </div>
+            <FormattedCurrency as="div" className="text-lg font-semibold" value={productions.reduce((sum, r) => sum + r.totalCost!, 0)} />
+            <div className="text-xs text-gray-600">{t("production.history.totalRevenue")}</div>
+          </div>
+          <div className="text-center">
+            <FormattedCurrency as="div" className="text-lg font-semibold" value={productions.reduce((sum, r) => sum + r.totalExpense!, 0)} />
             <div className="text-xs text-gray-600">{t("production.history.totalExpense")}</div>
           </div>
         </div>
@@ -384,7 +299,7 @@ export function ProductionHistory({
           data={productions}
           total={total}
           currentPage={currentPage}
-          pageSize={pageSize}
+          pageSize={DEFAULT_PAGE_SIZE}
           sortBy={sortBy}
           sortOrder={sortOrder}
           onPageChange={handlePageChange}

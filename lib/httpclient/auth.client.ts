@@ -1,6 +1,6 @@
 import { IUser } from "@/types/user"
 import { apiHref } from "@/lib/httpclient/base"
-import type { Language } from "@/types/language"
+import type { Language } from "@/types"
 
 interface ILoginRequest {
     username: string
