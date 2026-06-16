@@ -13,8 +13,8 @@ registerLocale("en", enUS)
 registerLocale("vi", vi)
 
 export type DateRangeValue = {
-  from?: Date
-  to?: Date
+  from: Date
+  to: Date
 }
 
 type RangePickerCalendarProps = {
@@ -24,7 +24,7 @@ type RangePickerCalendarProps = {
   mode?: "day" | "month" | "year"
   showIcon?: boolean
   showTodayButton?: boolean
-  onDateRangeChange: (range: DateRangeValue | undefined) => void
+  onDateRangeChange: (range: DateRangeValue) => void
 }
 function RangePickerCalendar({
   className,

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { FormattedCurrency } from "@/components/ui/formatted-currency"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus } from "lucide-react"
@@ -7,7 +7,6 @@ import React from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { Employee } from "@/types"
 import { IProductionElement } from "@/types/production"
-import { formatNumberWithCommas, parseNumberInput } from "@/lib/utils"
 
 interface ProductionLaborsProps {
     selectedEmployees: IProductionElement[]
@@ -64,15 +63,12 @@ export const ProductionLabors = ({
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-xs">{t("production.form.employeeSalary")}</Label>
-                                <Input
+                                <FormattedCurrency
+                                    as="input"
                                     placeholder="1"
-                                    type="text"
-                                    value={formatNumberWithCommas(selectedEmployee.totalCost ?? 0)}
-                                    onChange={(e) => {
-                                        const totalCost = parseNumberInput(e.target.value);
-                                        if (totalCost > 0) {
-                                            updateEmployee(index, "totalCost", totalCost);
-                                        }
+                                    value={selectedEmployee.totalCost}
+                                    onValueChange={(value) => {
+                                        updateEmployee(index, "totalCost", value);
                                     }}
                                     className="h-9"
                                 />

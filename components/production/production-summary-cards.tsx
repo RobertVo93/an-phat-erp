@@ -16,7 +16,7 @@ export function ProductionSummaryCards({
   const { t } = useLanguage()
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+    <div className="hidden lg:grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs sm:text-sm font-medium">{t("production.summary.materialCost")}</CardTitle>

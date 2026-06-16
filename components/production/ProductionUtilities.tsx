@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormattedNumber } from "@/components/ui/formatted-number"
+import { FormattedCurrency } from "@/components/ui/formatted-currency"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus } from "lucide-react"
 import React from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { IProductionElement } from "@/types/production"
 import { Utility } from "@/types"
-import { formatLargeCurrency, formatNumberWithCommas, parseNumberInput } from "@/lib/utils"
+import { formatLargeCurrency } from "@/lib/utils"
 
 interface ProductionUtilitiesProps {
     selectedUtilities: IProductionElement[]
@@ -57,30 +58,25 @@ export const ProductionUtilities = ({ selectedUtilities, addUtility, updateUtili
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-xs">{t("production.form.quantity")}</Label>
-                                <Input
+                                <FormattedNumber
+                                    as="input"
                                     placeholder="1"
-                                    type="text"
-                                    value={formatNumberWithCommas(utility.quantity ?? 0)}
-                                    onChange={(e) => {
-                                        const quantity = parseNumberInput(e.target.value);
-                                        if (quantity > 0) {
-                                            updateUtility(index, "quantity", quantity);
-                                        }
+                                    min={1}
+                                    value={utility.quantity}
+                                    onValueChange={(value) => {
+                                        updateUtility(index, "quantity", value);
                                     }}
                                     className="h-9"
                                 />
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-xs">{t("production.form.unitCost")}</Label>
-                                <Input
+                                <FormattedCurrency
+                                    as="input"
                                     placeholder="1"
-                                    type="text"
-                                    value={formatNumberWithCommas(utility.unitCost ?? 0)}
-                                    onChange={(e) => {
-                                        const unitCost = parseNumberInput(e.target.value);
-                                        if (unitCost > 0) {
-                                            updateUtility(index, "unitCost", unitCost);
-                                        }
+                                    value={utility.unitCost}
+                                    onValueChange={(value) => {
+                                        updateUtility(index, "unitCost", value);
                                     }}
                                     className="h-9"
                                 />

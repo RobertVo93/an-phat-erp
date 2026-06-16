@@ -1,5 +1,5 @@
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormattedNumber } from "@/components/ui/formatted-number"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
 import { getProductionStatusColor } from "@/lib/utils"
@@ -10,14 +10,14 @@ interface ProductionProductSelectorProps {
     selectedProduct: Product | undefined
     quantity: number
     availableProducts: Product[]
-    error: string
+    errors: Record<string, string>
     isEditMode: boolean
     status: ProductionStatus
     setQuantity: (quantity: number) => void
     onSelectProduct: (productId: string) => void
     setStatus: (status: ProductionStatus) => void
 }
-export const ProductionProductSelector = ({ selectedProduct, quantity, setQuantity, availableProducts, onSelectProduct, error, isEditMode, status, setStatus }: ProductionProductSelectorProps) => {
+export const ProductionProductSelector = ({ selectedProduct, quantity, setQuantity, availableProducts, onSelectProduct, errors, isEditMode, status, setStatus }: ProductionProductSelectorProps) => {
     const { t } = useLanguage()
     return (
         <div className={`grid grid-cols-1 sm:grid-cols-${isEditMode ? "3" : "2"} gap-4`}>
@@ -37,22 +37,22 @@ export const ProductionProductSelector = ({ selectedProduct, quantity, setQuanti
                         ))}
                     </SelectContent>
                 </Select>
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {errors?.selectedProduct && <p className="text-sm text-red-500">{errors.selectedProduct}</p>}
             </div>
             <div className="space-y-2 col-span-1">
                 <Label htmlFor="quantity" className="text-sm">
                     {t("production.form.productionQuantity")}
                 </Label>
-                <Input
+                <FormattedNumber
+                    as="input"
                     id="quantity"
                     placeholder={t("production.form.inputQuantity")}
                     value={quantity}
-                    type="number"
                     min={1}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    onValueChange={(value) => setQuantity(value)}
                     className="h-10"
                 />
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {errors?.quantity && <p className="text-sm text-red-500">{errors.quantity}</p>}
             </div>
             <div className="space-y-2 col-span-1" hidden={!isEditMode}>
                 <Label htmlFor="status">{t("production.edit.status")}</Label>

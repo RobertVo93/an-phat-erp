@@ -170,9 +170,7 @@ export function useProductionForm(
     }
 
     const calculateEfficiency = () => {
-        const totalIncome = formData.product?.price! * (formData?.quantity || 0)
-        const efficiency = ((totalIncome! - calculateTotalCost()) / totalIncome!) * 100
-        return efficiency
+        return calculateTotalProfit() / calculateRevenue() * 100
     }
 
     const onSelectProduct = (id: string) => {
