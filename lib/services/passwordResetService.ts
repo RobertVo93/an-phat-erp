@@ -28,7 +28,8 @@ export class PasswordResetService {
   async requestPasswordReset(
     username: string,
     publicOrigin: string,
-    language: unknown
+    language: unknown,
+    resetPath?: unknown
   ): Promise<PasswordResetRequestStatus> {
     const normalizedUsername = username.trim();
     console.log("[PasswordResetService.requestPasswordReset]-start", {
@@ -67,7 +68,7 @@ export class PasswordResetService {
     }
 
     const token = await this.createResetToken(user.id);
-    const resetUrl = this.buildResetUrl(publicOrigin, token);
+    const resetUrl = this.buildResetUrl(publicOrigin, token, resetPath);
     const emailService = new EmailService();
     const emailLanguage = this.getEmailLanguage(language);
 
@@ -175,11 +176,26 @@ export class PasswordResetService {
     });
   }
 
-  private buildResetUrl(publicOrigin: string, token: string): string {
-    const basePath = env.NEXT_PUBLIC_BASE_ZONE.replace(/\/+$/u, "");
-    const resetUrl = new URL(`${basePath}/reset-password`, publicOrigin);
+  private buildResetUrl(publicOrigin: string, token: string, resetPath?: unknown): string {
+    const requestedResetPath = this.getSafeResetPath(resetPath);
+    const defaultBasePath = env.NEXT_PUBLIC_BASE_ZONE.replace(/\/+$/u, "");
+    const path = requestedResetPath || `${defaultBasePath}/reset-password`;
+    const resetUrl = new URL(path, publicOrigin);
     resetUrl.searchParams.set("token", token);
     return resetUrl.toString();
+  }
+
+  private getSafeResetPath(resetPath: unknown): string | null {
+    if (typeof resetPath !== "string") {
+      return null;
+    }
+
+    const normalizedPath = resetPath.trim();
+    if (!normalizedPath.startsWith("/") || normalizedPath.startsWith("//")) {
+      return null;
+    }
+
+    return normalizedPath;
   }
 
   private getEmailLanguage(language: unknown): Language {

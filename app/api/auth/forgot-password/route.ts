@@ -16,13 +16,14 @@ import { getPublicOrigin } from "@/lib/utils.request";
  */
 export async function POST(req: NextRequest) {
   try {
-    const { username, language } = await req.json();
+    const { username, language, resetPath } = await req.json();
     const passwordResetService = new PasswordResetService();
 
     const status = await passwordResetService.requestPasswordReset(
       typeof username === "string" ? username : "",
       getPublicOrigin(req),
-      language
+      language,
+      resetPath
     );
 
     return NextResponse.json({ success: true, status });
