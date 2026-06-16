@@ -1,7 +1,7 @@
 "use client"
 
 import { useLanguage } from "@/contexts/language-context"
-import { formatCurrency, formatDate } from "@/lib/utils"
+import { formatDate, formatLargeCurrency } from "@/lib/utils"
 import { IReportOrder, OrderStatus } from "@/types"
 import {
   ColumnDef,
@@ -87,7 +87,7 @@ export default function ReportOrderTable({ data }: Props) {
       {
         accessorKey: "totalPrice",
         header: t("ro.table.totalPrice"),
-        cell: ({ getValue }) => formatCurrency(Number(getValue())),
+        cell: ({ getValue }) => formatLargeCurrency(Number(getValue())),
       },
       {
         accessorKey: "orderDate",

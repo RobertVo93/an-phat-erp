@@ -248,6 +248,10 @@ export const productionTranslations = {
     en: "Total expense",
     vi: "Tổng chi phí"
   },
+  "production.history.totalRevenue": {
+    en: "Total revenue",
+    vi: "Tổng doanh thu"
+  },
   "production.history.sheetCode": {
     en: "Sheet code",
     vi: "Mã đơn"
@@ -516,14 +520,6 @@ export const productionTranslations = {
   },
 
   // ProductionDetailModal
-  "production.detail.title": {
-    en: "Production Sheet Information",
-    vi: "Chi Tiết Đơn Sản Xuất"
-  },
-  "production.detail.description": {
-    en: "Production's Detail Information",
-    vi: "Thông tin chi tiết cho đợt sản xuất"
-  },
   "production.detail.productionInformation": {
     en: "Production Information",
     vi: "Thông Tin Sản Xuất"

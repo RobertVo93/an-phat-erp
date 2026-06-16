@@ -7,3 +7,5 @@ export interface NavItem {
     href?: string
     children?: NavItem[]
 }
+
+export type Language = "en" | "vi"

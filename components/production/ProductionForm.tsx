@@ -75,7 +75,7 @@ export function ProductionForm(props: ProductionFormProps) {
         setQuantity={(quantity) => setFormData({ ...formData, quantity })}
         availableProducts={availableProducts}
         onSelectProduct={onSelectProduct}
-        error={errors.selectedProduct}
+        errors={errors}
         isEditMode={!!props.record}
         status={formData.status!}
         setStatus={(status) => setFormData({ ...formData, status })}

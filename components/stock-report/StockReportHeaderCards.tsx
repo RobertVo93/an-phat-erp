@@ -49,7 +49,7 @@ export function StockReportHeaderCards({ summary }: StockReportHeaderCardsProps)
           <CardTitle className="text-sm font-medium">{t("rs.page.totalValue")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatLargeCurrency(summary.totalValue, 1)}</div>
+          <div className="text-2xl font-bold">{formatLargeCurrency(summary.totalValue)}</div>
           <p className="text-xs text-muted-foreground">{t("rs.page.currentInventoryValue")}</p>
         </CardContent>
       </Card>

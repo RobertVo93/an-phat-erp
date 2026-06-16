@@ -36,15 +36,15 @@ export function ProductionProductsTab({ productPerformanceData }: ProductionProd
                 </div>
                 <div>
                   <p className="text-gray-600">{t("rp.page.revenue")}</p>
-                  <p className="font-medium">{formatLargeCurrency(product.revenue, 1)}</p>
+                  <p className="font-medium">{formatLargeCurrency(product.revenue)}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">{t("rp.page.expense")}</p>
-                  <p className="font-medium">{formatLargeCurrency(product.cost, 1)}</p>
+                  <p className="font-medium">{formatLargeCurrency(product.cost)}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">{t("rp.page.profit")}</p>
-                  <p className="font-medium text-green-600">{formatLargeCurrency(product.profit, 1)}</p>
+                  <p className="font-medium text-green-600">{formatLargeCurrency(product.profit)}</p>
                 </div>
               </div>
             </div>
