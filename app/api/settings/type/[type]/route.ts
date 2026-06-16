@@ -3,7 +3,7 @@ import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { getSettingsByConfigTypeService } from "@/lib/services/settingService";
 
 export async function GET(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: { type: string } }
 ) {
     try {
