@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { User, Phone, Mail, Calendar, MapPin } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { Warehouse } from "@/types"
-import { formatDateTime, getWarehouseStatusColor, groupWarehouseProductsByProduct } from "@/lib/utils"
+import { formatDateTime, formatNumberWithCommas, getWarehouseStatusColor, groupWarehouseProductsByProduct } from "@/lib/utils"
 
 interface WarehouseViewModalProps {
   isOpen: boolean
@@ -88,11 +88,13 @@ export function WarehouseViewModal({ isOpen, onClose, warehouse }: WarehouseView
           {warehouse.warehouseProducts?.length! > 0 &&
             <div>
               <h4 className="font-medium text-base">{t("warehouse.products")}</h4>
-              {groupWarehouseProductsByProduct(warehouse.warehouseProducts!).map((item, ind) => (
-                <p className="text-sm text-muted-foreground" key={ind}>
-                  {item.product?.name} - {item.totalQuantity} {t("warehouse.items")}
-                </p>
-              ))}
+              <div className="space-y-4 max-h-[34rem] overflow-y-auto pr-1">
+                {groupWarehouseProductsByProduct(warehouse.warehouseProducts!).map((item, ind) => (
+                  <p className="text-sm text-muted-foreground" key={ind}>
+                    {item.product?.name} - {formatNumberWithCommas(item.totalQuantity)} {t("warehouse.items")}
+                  </p>
+                ))}
+              </div>
             </div>
           }
 

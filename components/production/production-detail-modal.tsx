@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useLanguage } from "@/contexts/language-context"
-import { formatDate, formatLargeCurrency } from "@/lib/utils"
+import { formatDate, formatLargeCurrency, formatSystemNumber } from "@/lib/utils"
 import { UtilityUnit } from "@/types"
 import type { ProductionRecord } from "@/types/production"
 
@@ -12,7 +12,6 @@ interface ProductionDetailModalProps {
 }
 
 export function ProductionDetailModal({ record, isOpen, onClose }: ProductionDetailModalProps) {
-  const { t } = useLanguage()
 
   if (!record) return null
 
@@ -20,8 +19,7 @@ export function ProductionDetailModal({ record, isOpen, onClose }: ProductionDet
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("production.detail.title")} - {record.number!}</DialogTitle>
-          <DialogDescription>{t("production.detail.description")} {record.product?.description}</DialogDescription>
+          <DialogTitle>{record.number!}</DialogTitle>
         </DialogHeader>
         <ProductionDetailView record={record} />
       </DialogContent>
@@ -80,7 +78,7 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.quantity")}:</span>
               <span className="font-medium">
-                {record.quantity} {t(`production.recordItem.${record.product?.unit}`)}
+                {formatSystemNumber(record.quantity)} {t(`production.recordItem.${record.product?.unit}`)}
               </span>
             </div>
             <div className="flex justify-between">

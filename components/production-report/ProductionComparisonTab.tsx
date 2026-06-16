@@ -30,8 +30,8 @@ export function ProductionComparisonTab({ comparisonChartData }: ProductionCompa
                 <CartesianGrid strokeDasharray="3 3" />
                 <Legend verticalAlign="bottom" height={36} />
                 <XAxis dataKey="label" fontSize={12} />
-                <YAxis fontSize={12}  tickFormatter={(value: number | undefined) => formatLargeCurrency(value ?? 0, 1)}/>
-                <Tooltip formatter={(value: number | undefined) => formatLargeCurrency(value ?? 0, 1)} labelFormatter={(value) => `${value}`} />
+                <YAxis fontSize={12}  tickFormatter={(value: number | undefined) => formatLargeCurrency(value ?? 0)}/>
+                <Tooltip formatter={(value: number | undefined) => formatLargeCurrency(value ?? 0)} labelFormatter={(value) => `${value}`} />
                 <Bar dataKey="current" fill="#2563eb" name={`1. ${t("rp.page.currentPeriod")}`}>
                   <LabelList
                     dataKey="current"

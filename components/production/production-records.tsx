@@ -13,12 +13,12 @@ export function ProductionRecords({ records, onViewRecord, onEditRecord }: Produ
   const { t } = useLanguage()
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="hidden lg:block">
         <CardTitle className="text-base sm:text-lg">{t("production.record.todayProduction")}</CardTitle>
         <CardDescription className="text-sm">{t("production.record.description")}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-4 pt-3 lg:pt-0">
           {records.map((record) => (
             <ProductionRecordItem key={record.id} record={record} onView={onViewRecord} onEdit={onEditRecord} />
           ))}

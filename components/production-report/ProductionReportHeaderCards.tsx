@@ -19,7 +19,7 @@ export function ProductionReportHeaderCards({ summary }: ProductionReportHeaderC
           <CardTitle className="text-sm font-medium">{t("rp.page.totalRevenue")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatLargeCurrency(summary.revenue.value, 1)}</div>
+          <div className="text-2xl font-bold">{formatLargeCurrency(summary.revenue.value)}</div>
         </CardContent>
       </Card>
 
@@ -28,7 +28,7 @@ export function ProductionReportHeaderCards({ summary }: ProductionReportHeaderC
           <CardTitle className="text-sm font-medium">{t("rp.page.totalExpense")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatLargeCurrency(summary.cost.value, 1)}</div>
+          <div className="text-2xl font-bold">{formatLargeCurrency(summary.cost.value)}</div>
         </CardContent>
       </Card>
 
@@ -37,7 +37,7 @@ export function ProductionReportHeaderCards({ summary }: ProductionReportHeaderC
           <CardTitle className="text-sm font-medium">{t("rp.page.totalProfit")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatLargeCurrency(summary.profit.value, 1)}</div>
+          <div className="text-2xl font-bold">{formatLargeCurrency(summary.profit.value)}</div>
         </CardContent>
       </Card>
     </div>
