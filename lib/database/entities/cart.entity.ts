@@ -1,9 +1,10 @@
 import { Entity, Column, OneToMany } from "typeorm";
-import { CartItemEntity } from "@/lib/database/entities";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { CartItemEntity } from "./cart-item.entity";
+import { BaseEntity } from "./base.entity";
+import type { ICart, ICartItem } from "@/types";
 
 @Entity({ name: "carts" })
-export class CartEntity extends BaseEntity {
+export class CartEntity extends BaseEntity implements ICart {
     @Column({ name: "user_id", nullable: true })
     userId?: string;
 
@@ -14,5 +15,5 @@ export class CartEntity extends BaseEntity {
     totalPrice?: number;
 
     @OneToMany(() => CartItemEntity, item => item.cart, { cascade: true })
-    items?: CartItemEntity[];
+    items?: ICartItem[];
 }

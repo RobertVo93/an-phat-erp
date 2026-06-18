@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { SettingEntity } from "@/lib/database/entities";
+import { SettingEntity } from "@/lib/database/entities/setting.entity";
 import type { ISettingFilters } from "@/types/setting.interface";
 
 const SETTING_SORT_COLUMNS = ["configType", "key", "value", "createdAt"] as const;

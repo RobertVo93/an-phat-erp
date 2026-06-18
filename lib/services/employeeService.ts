@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { EmployeeEntity } from "../database/entities";
+import { EmployeeEntity } from "../database/entities/employee.entity";
 
 export async function getEmployeeByFilter({ page = 1, limit = 20, sortBy = "createdAt", sortOrder = "asc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(EmployeeEntity);

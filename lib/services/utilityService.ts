@@ -1,6 +1,6 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { Utility, UtilityFilters } from "@/types";
-import { UtilityEntity } from "@/lib/database/entities";
+import { UtilityEntity } from "@/lib/database/entities/utility.entity";
 
 export async function getUtilitiesService({ page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc", filters = {} as UtilityFilters }) {
   const repo = AppDataSource.getRepository(UtilityEntity);

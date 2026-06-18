@@ -1,10 +1,10 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { UtilityUsageStatus, UtilityUnit } from "@/types/enums";
 import type { IUser, Utility, IUtilityUsage } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
-import { UserEntity } from "@/lib/database/entities/user.entity";
-import { UtilityEntity } from "@/lib/database/entities/utility.entity";
+import { UserEntity } from "./user.entity";
+import { UtilityEntity } from "./utility.entity";
 
 @Entity({ name: "utility_usage" })
 export class UtilityUsageEntity extends BaseEntity implements IUtilityUsage {

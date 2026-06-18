@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { WarehouseEntity, ProductEntity } from "@/lib/database/entities";
+import { BaseEntity } from "./base.entity";
+import { WarehouseEntity } from "./warehouse.entity";
+import { ProductEntity } from "./product.entity";
 import type { Product as IProduct, Warehouse as IWarehouse } from "@/types";
 import { WarehouseProduct } from '@/types';
 

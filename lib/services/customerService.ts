@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { CustomerEntity } from "@/lib/database/entities";
+import { CustomerEntity } from "@/lib/database/entities/customer.entity";
 
 export async function getAllCustomers({ page = 1, limit = 20, sortBy = "name", sortOrder = "asc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(CustomerEntity);

@@ -1,7 +1,8 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { AppDataSource } from "@/lib/database/typeorm";
-import { CustomerEntity, WarehouseEntity } from "@/lib/database/entities";
+import { CustomerEntity } from "./customer.entity";
+import { WarehouseEntity } from "./warehouse.entity";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "@/types/enums";
 import { IOrderItem, Order as IOrder } from "@/types";
 import type { Warehouse as IWarehouse, Customer as ICustomer } from "@/types";

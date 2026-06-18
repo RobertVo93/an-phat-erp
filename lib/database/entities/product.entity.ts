@@ -1,13 +1,11 @@
 import { Entity, Column, ManyToMany, OneToMany, BeforeInsert } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { AppDataSource } from "@/lib/database/typeorm";
 import { ProductStatus, ProductUnit } from "@/types/enums";
 import type { ProductionRecord as IProductionRecord } from "@/types";
-import { 
-  CollectionEntity, 
-  WarehouseProductEntity, 
-  ProductionRecordEntity 
-} from "@/lib/database/entities";
+import { CollectionEntity } from "./collection.entity";
+import { WarehouseProductEntity } from "./warehouse-product.entity";
+import { ProductionRecordEntity } from "./production-record.entity";
 import { 
   Collection as ICollection, 
   WarehouseProduct as IWarehouseProduct, 

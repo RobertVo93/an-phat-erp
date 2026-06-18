@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { WarehouseEntity } from "@/lib/database/entities";
+import { WarehouseEntity } from "@/lib/database/entities/warehouse.entity";
 import { Warehouse } from "@/types";
 import { WarehouseProductEntity } from "@/lib/database/entities/warehouse-product.entity";
 
