@@ -1,10 +1,11 @@
 import { Entity, Column, OneToMany, BeforeInsert, OneToOne, JoinColumn, Check } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { OrderEntity, UserEntity } from "@/lib/database/entities";
+import { BaseEntity } from "./base.entity";
+import { OrderEntity } from "./order.entity";
+import { UserEntity } from "./user.entity";
 import { CustomerStatus, CustomerType } from "@/types/enums";
 import type { Order as IOrder, Customer as ICustomer, IUser } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
-import { AddressEntity } from "@/lib/database/entities";
+import { AddressEntity } from "./address.entity";
 import { IAddress } from "@/types";
 
 @Entity({ name: "customers" })

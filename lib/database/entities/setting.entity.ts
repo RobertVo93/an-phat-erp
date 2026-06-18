@@ -1,5 +1,5 @@
 import { Entity, Column, Index, Unique } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { ISetting } from "@/types/setting.interface";
 import type { SettingConfigType, SettingKey, SettingValue } from "@/types/setting.interface";
 

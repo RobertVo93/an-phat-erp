@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Check, Loader2 } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { StockChange } from "@/types/stock-change"
-import { formatLargeCurrency } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useEffect, useState } from "react"
 import { StockChangeStatus } from "@/types"
+import { FormattedCurrency } from "@/components/ui/formatted-currency"
 
 interface Props {
   isOpen: boolean
@@ -70,9 +70,7 @@ export function StockChangeCompleteModal({ isOpen, onClose, onSave, stockChange,
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="font-semibold">{stockChange.number}</p>
           <p className="text-sm text-gray-600">{stockChange.supplier}</p>
-          <p className="text-sm text-gray-600">
-            {formatLargeCurrency(stockChange.totalAmount!)}
-          </p>
+          <FormattedCurrency as="span" className="text-sm text-gray-600" value={stockChange.totalAmount}/>
         </div>
 
         <div>

@@ -1,5 +1,5 @@
 import { Entity, Column, BeforeInsert } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { InvoiceStatus } from "@/types/enums";
 import { IInvoiceUtility, Invoice as IInvoice } from "@/types";
 import { CommonService } from "@/lib/services/commonService";

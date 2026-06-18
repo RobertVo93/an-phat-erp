@@ -1,5 +1,5 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { EmployeeType, EmployeeStatus } from "@/types/enums";
 import {
   AttendanceRecord as IAttendanceRecord,
@@ -7,11 +7,9 @@ import {
   ProductionRecord as IProductionRecord,
   Employee as IEmployee
 } from "@/types";
-import {
-  AttendanceRecordEntity,
-  PayrollRecordEntity,
-  ProductionRecordEntity
-} from "@/lib/database/entities";
+import { AttendanceRecordEntity } from "./attendance-record.entity";
+import { PayrollRecordEntity } from "./payroll-record.entity";
+import { ProductionRecordEntity } from "./production-record.entity";
 import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "employees" })

@@ -28,6 +28,14 @@ export const navTranslations = {
     en: "Settings",
     vi: "Cài Đặt",
   },
+  "nav.settingTheme": {
+    en: "Theme Settings",
+    vi: "Cài Đặt Chủ Đề",
+  },
+  "nav.settingPermission": {
+    en: "Permission Settings",
+    vi: "Cài Đặt Quyền",
+  },
   "nav.employee": {
     en: "Employee",
     vi: "Nhân Viên",

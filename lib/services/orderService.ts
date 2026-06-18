@@ -1,6 +1,8 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { OrderEntity } from "@/lib/database/entities/order.entity";
-import { ProductEntity, StockChangeEntity, UserEntity } from "@/lib/database/entities";
+import { ProductEntity } from "@/lib/database/entities/product.entity";
+import { StockChangeEntity } from "@/lib/database/entities/stock-change.entity";
+import { UserEntity } from "@/lib/database/entities/user.entity";
 import { StockChangeStatus, StockChangeType, Order as IOrder, IOrderItem, IChangeLog, IActivityLog, ResourceType } from "@/types";
 import { getCustomerById } from "@/lib/services/customerService";
 import { getWarehouseById } from "@/lib/services/warehouseService";
