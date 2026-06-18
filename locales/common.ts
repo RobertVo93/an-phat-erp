@@ -84,6 +84,10 @@ export const commonTranslations = {
     en: "Close",
     vi: "Đóng",
   },
+  "common.back": {
+    en: "Back",
+    vi: "Quay lại",
+  },
   "common.confirm": {
     en: "Confirm",
     vi: "Xác Nhận",

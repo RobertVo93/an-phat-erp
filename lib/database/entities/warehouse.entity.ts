@@ -1,5 +1,5 @@
 import { Entity, Column, OneToMany, BeforeInsert } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { WarehouseStatus } from "@/types/enums";
 import type { Order as IOrder, ProductionRecord as IProductionRecord } from "@/types";
 import {
@@ -7,12 +7,10 @@ import {
   Warehouse as IWarehouse,
   WarehouseProduct as IWarehouseProduct
 } from "@/types";
-import {
-  StockChangeEntity,
-  WarehouseProductEntity,
-  OrderEntity,
-  ProductionRecordEntity
-} from "@/lib/database/entities";
+import { StockChangeEntity } from "./stock-change.entity";
+import { WarehouseProductEntity } from "./warehouse-product.entity";
+import { OrderEntity } from "./order.entity";
+import { ProductionRecordEntity } from "./production-record.entity";
 import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "warehouses" })

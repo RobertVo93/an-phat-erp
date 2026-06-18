@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { InvoiceEntity } from "@/lib/database/entities";
+import { InvoiceEntity } from "@/lib/database/entities/invoice.entity";
 import type { Invoice as IInvoice, InvoiceFilters } from "@/types"
 
 export async function getAllInvoicesService({ page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc", filters = {} as InvoiceFilters }) {

@@ -1,3 +1,8 @@
+export function toIsoDate(value: Date | string | undefined | null) {
+  if (!value) return undefined
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString()
+}
+
 export function formatMonthYear(date?: Date | null): string {
   if (!date) return ""
   return date.getMonth() + 1 + "-" + date.getFullYear()

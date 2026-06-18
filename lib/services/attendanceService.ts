@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { AttendanceRecordEntity } from "@/lib/database/entities";
+import { AttendanceRecordEntity } from "@/lib/database/entities/attendance-record.entity";
 import { AttendanceRecord } from "@/types";
 
 export async function getAllAttendanceRecords({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {

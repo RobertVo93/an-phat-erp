@@ -1,10 +1,13 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { AppDataSource } from "@/lib/database/typeorm";
 import { StockChangeType, StockChangeStatus } from "@/types/enums";
 import type { Warehouse as IWarehouse, ProductionRecord as IProductionRecord } from "@/types";
 import { StockChange as IStockChange, IStockProduct } from "@/types";
-import { WarehouseEntity, ProductEntity, WarehouseProductEntity, ProductionRecordEntity } from "@/lib/database/entities";
+import { WarehouseEntity } from "./warehouse.entity";
+import { ProductEntity } from "./product.entity";
+import { WarehouseProductEntity } from "./warehouse-product.entity";
+import { ProductionRecordEntity } from "./production-record.entity";
 import { CommonService } from "@/lib/services/commonService";
 
 @Entity({ name: "stock_change" })
