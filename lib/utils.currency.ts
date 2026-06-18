@@ -9,6 +9,11 @@ export const formatNumberWithCommas = (value: string | number | null | undefined
   return int.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (dec ? `.${dec}` : "")
 }
 
+const formatCompactValue = (value: number): string => {
+  const raw = value.toFixed(3).replace(/\.?0+$/, "")
+  return formatNumberWithCommas(raw).replace(".", ",")
+}
+
 // Keep compact rule strict to match UX:
 // - compact only for numbers >= 1,000,000
 // - and only when value is divisible by 1,000
@@ -20,17 +25,14 @@ export function formatSystemNumber(value: number | null | undefined, locale: Lan
   if (abs >= BILLION && abs % MILLION === 0) {
     const suffix = locale === "vi" ? "Tỷ" : "B"
     const billionValue = value / BILLION
-    const raw = billionValue.toFixed(3).replace(/\.?0+$/, "")
-    return `${raw.replace(".", ",")}${suffix}`
+    return `${formatCompactValue(billionValue)}${suffix}`
   }
 
   if (abs >= MILLION && abs % 1_000 === 0) {
     const suffix = locale === "vi" ? "Tr" : "M"
     const millionValue = value / MILLION
 
-    // show up to 3 decimals, trim trailing zeros, and use comma as decimal separator.
-    const raw = millionValue.toFixed(3).replace(/\.?0+$/, "")
-    return `${raw.replace(".", ",")}${suffix}`
+    return `${formatCompactValue(millionValue)}${suffix}`
   }
 
   return formatNumberWithCommas(value)

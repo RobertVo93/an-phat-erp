@@ -1,8 +1,10 @@
 import { Entity, Column, OneToMany, OneToOne } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { CustomerEntity, UserPagePermissionEntity, UtilityUsageEntity } from "@/lib/database/entities";
+import { BaseEntity } from "./base.entity";
+import { UserPagePermissionEntity } from "./user-page-permission.entity";
+import { UtilityUsageEntity } from "./utility-usage.entity";
 import { UserRole, Gender } from "@/types/enums";
-import type { UserPagePermission as IUserPagePermission, IUser, IUtilityUsage } from "@/types";
+import type { Customer as ICustomer, UserPagePermission as IUserPagePermission, IUser, IUtilityUsage } from "@/types";
+import { CustomerEntity } from "./customer.entity";
 
 @Entity({ name: "users" })
 export class UserEntity extends BaseEntity implements IUser {
@@ -44,7 +46,7 @@ export class UserEntity extends BaseEntity implements IUser {
     permissions?: IUserPagePermission[];
 
     @OneToOne(() => CustomerEntity, (customer) => customer.user, { nullable: true })
-    customer?: CustomerEntity;
+    customer?: ICustomer;
 
     @OneToMany(() => UtilityUsageEntity, (usage) => usage.recorder, { nullable: true })
     recordedUtilityUsages?: IUtilityUsage[];

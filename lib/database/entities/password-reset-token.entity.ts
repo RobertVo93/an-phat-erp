@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { UserEntity } from "@/lib/database/entities/user.entity";
+import { BaseEntity } from "./base.entity";
+import { UserEntity } from "./user.entity";
+import type { IUser } from "@/types";
 
 @Entity({ name: "password_reset_tokens" })
 export class PasswordResetTokenEntity extends BaseEntity {
@@ -18,5 +19,5 @@ export class PasswordResetTokenEntity extends BaseEntity {
 
   @ManyToOne(() => UserEntity, { nullable: false, onDelete: "CASCADE" })
   @JoinColumn({ name: "user_id" })
-  user!: UserEntity;
+  user!: IUser;
 }

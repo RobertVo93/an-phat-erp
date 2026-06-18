@@ -1,9 +1,11 @@
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { CartEntity, ProductEntity } from "@/lib/database/entities";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { CartEntity } from "./cart.entity";
+import { ProductEntity } from "./product.entity";
+import { BaseEntity } from "./base.entity";
+import type { ICart, ICartItem, Product as IProduct } from "@/types";
 
 @Entity({ name: "cart_items" })
-export class CartItemEntity extends BaseEntity {
+export class CartItemEntity extends BaseEntity implements ICartItem {
     @Column({ type: "int", default: 1 })
     quantity?: number;
 
@@ -15,9 +17,9 @@ export class CartItemEntity extends BaseEntity {
 
     @ManyToOne(() => CartEntity, cart => cart.items)
     @JoinColumn({ name: "cart_id" })
-    cart?: CartEntity;
+    cart?: ICart;
 
     @ManyToOne(() => ProductEntity)
     @JoinColumn({ name: "product_id" })
-    product?: ProductEntity;
+    product?: IProduct;
 } 

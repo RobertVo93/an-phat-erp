@@ -59,7 +59,7 @@ export const ADMIN_ROUTES = {
   collections: (query?: string) => adminHref("collections", query),
   customers: (query?: string) => adminHref("customers", query),
 	customerDetail: (id: string) => adminHref(`customers/${id}`),
-  settings: (query?: string) => adminHref("settings", query),
+  settingTheme: (query?: string) => adminHref("settings", query),
 
   employee: (query?: string) => adminHref("employee", query),
   attendance: (query?: string) => adminHref("attendance", query),
@@ -85,8 +85,8 @@ export const ADMIN_ROUTES = {
   reportsActivity: (query?: string) => adminHref("reports/activity", query),
   reportsUtility: (query?: string) => adminHref("reports/utility", query),
 
-  permissions: () => adminHref("permissions"),
-  permissionUser: (id: string) => adminHref(`permissions/user/${id}`),
+  settingPermissions: () => adminHref("permissions"),
+  settingPermissionUser: (id: string) => adminHref(`permissions/user/${id}`),
 };
 
 export const navItems: NavItem[] = [
@@ -101,7 +101,6 @@ export const navItems: NavItem[] = [
 			{ id: "products", name: "products", title: "Products", translationKey: "nav.products", icon: Package, href: ADMIN_ROUTES.products() },
 			{ id: "collections", name: "collections", title: "Collections", translationKey: "nav.collections", icon: Layers, href: ADMIN_ROUTES.collections() },
 			{ id: "customers", name: "customers", title: "Customers", translationKey: "nav.customers", icon: Users, href: ADMIN_ROUTES.customers() },
-			{ id: "settings", name: "settings", title: "Settings", translationKey: "nav.settings", icon: Settings, href: ADMIN_ROUTES.settings() },
 		],
 	},
 	{
@@ -161,6 +160,16 @@ export const navItems: NavItem[] = [
 			{ id: "reports_daily", name: "reports_daily", title: "Daily report", translationKey: "nav.dailyReport", icon: Clock, href: ADMIN_ROUTES.reportsDaily() },
 			{ id: "reports_employee", name: "reports_employee", title: "Employee report", translationKey: "nav.employeeReport", icon: User, href: ADMIN_ROUTES.reportsEmployee() },
 			{ id: "reports_utility", name: "reports_utility", title: "Utility Report", translationKey: "nav.utilityReport", icon: Zap, href: ADMIN_ROUTES.reportsUtility() },
+		],
+	},
+  {
+		id: "setting",
+		name: "setting",
+		title: "Settings",
+		translationKey: "nav.settings",
+		children: [
+			{ id: "setting_theme", name: "setting_theme", title: "Theme", translationKey: "nav.settingTheme", icon: ShoppingBag, href: ADMIN_ROUTES.settingTheme() },
+			{ id: "setting_permission", name: "setting_permission", title: "Permission", translationKey: "nav.settingPermission", icon: Settings, href: ADMIN_ROUTES.settingPermissions() },
 		],
 	},
 ]

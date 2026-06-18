@@ -1,9 +1,12 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate, OneToMany } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { ProductionStatus } from "@/types/enums";
 import { IProductionElement, ProductionRecord as IProductionRecord, StockChange as IStockChange } from "@/types";
 import type { Employee as IEmployee, Product as IProduct, Warehouse as IWarehouse } from "@/types";
-import { ProductEntity, WarehouseEntity, EmployeeEntity, StockChangeEntity } from "@/lib/database/entities";
+import { ProductEntity } from "./product.entity";
+import { WarehouseEntity } from "./warehouse.entity";
+import { EmployeeEntity } from "./employee.entity";
+import { StockChangeEntity } from "./stock-change.entity";
 import { handleStatusCompleted } from "@/lib/services/productionService";
 import { CommonService } from "@/lib/services/commonService";
 

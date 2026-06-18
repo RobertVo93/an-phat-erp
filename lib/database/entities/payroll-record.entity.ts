@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, JoinColumn, BeforeInsert } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { EmployeeEntity } from "@/lib/database/entities";
+import { BaseEntity } from "./base.entity";
+import { EmployeeEntity } from "./employee.entity";
 import { PayrollStatus } from "@/types/enums";
 import { PayrollRecord as IPayrollRecord, AttendanceRecord as IAttendanceRecord } from "@/types";
 import type { Employee as IEmployee } from "@/types";

@@ -1,13 +1,13 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { ProductEntity } from "@/lib/database/entities/product.entity";
-import { CollectionEntity } from "../database/entities";
+import { CollectionEntity } from "@/lib/database/entities/collection.entity";
 import { In } from "typeorm";
 import { Product } from "@/types/product";
 
 export async function getAllProducts({
   page = 1,
   limit = 20,
-  sortBy = "created_at",
+  sortBy = "createdAt",
   sortOrder = "desc",
   filters = {} as Record<string, any>,
 }: {

@@ -6,22 +6,36 @@ import { MoreHorizontal, Eye, Edit, Trash2, CheckCheck } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import type { StockChange } from "@/types/stock-change";
 import { StockChangeStatus } from "@/types";
-import { formatDate, formatLargeCurrency, getStockChangeStatusColor } from "@/lib/utils";
+import { formatDate, formatLargeCurrency, formatNumberWithCommas, getStockChangeStatusColor } from "@/lib/utils";
+import Link from "next/link";
+import { ADMIN_ROUTES } from "@/constants";
+import { FormattedCurrency } from "../ui/formatted-currency";
+import { ServersidePagination } from "@/components/common/table/ServersidePagination";
 
 export interface StockChangeListProps {
   records: StockChange[];
+  total: number;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
   onView: (stockChange: StockChange) => void;
   onEdit: (stockChange: StockChange) => void;
   onDelete: (stockChange: StockChange) => void;
   handleAutoComplete: (stockChange: StockChange) => void
+  onPageChange: (page: number) => void;
 }
 
 export const StockChangeList: React.FC<StockChangeListProps> = ({
   records,
+  total,
+  currentPage,
+  pageSize,
+  totalPages,
   onView,
   onEdit,
   onDelete,
   handleAutoComplete,
+  onPageChange,
 }) => {
   const { t } = useLanguage();
   return (
@@ -29,12 +43,21 @@ export const StockChangeList: React.FC<StockChangeListProps> = ({
       {records.map((record) => (
         <div key={record.id} className="p-4 border rounded-lg">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-3">
-            <div className="flex items-center space-x-3">
-              <h3 className="text-sm font-medium">{record.number}</h3>
+            <div className="w-full flex items-center justify-between space-x-3">
+              <h3 className="text-sm font-medium">
+                {record.id ? (
+                  <Link href={ADMIN_ROUTES.stockChangeDetail(record.id)} className="text-blue-600">
+                    {record.number}
+                  </Link>
+                ) : (
+                  record.number
+                )}
+              </h3>
               <Badge className={getStockChangeStatusColor(record.status!)}>{t(`stockIn.status.${record.status}`)}</Badge>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="text-sm font-bold">{formatLargeCurrency(record.totalAmount!)}</div>
+            <div className="w-full flex items-center justify-between gap-2">
+              <FormattedCurrency as="div" className="text-sm font-bold" value={record.totalAmount}/>
+              {/* <div className="text-sm font-bold">{formatLargeCurrency(record.totalAmount!)}</div> */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">
@@ -70,25 +93,14 @@ export const StockChangeList: React.FC<StockChangeListProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs text-muted-foreground mb-3">
-            <div>
+            <div className="w-full flex justify-between">
               <span className="font-medium">{t("stockIn.stockType")}:</span> {t(`stockIn.form.${record.type}`)}
             </div>
-            <div>
+            <div className="w-full flex justify-between">
               <span className="font-medium">{t("stockIn.date")}:</span> {formatDate(`${record.date}`)}
             </div>
-            <div>
-              <span className="font-medium">{t("stockIn.supplier")}:</span> {record.supplier!}
-            </div>
-            <div>
-              <span className="font-medium">{t("stockIn.warehouse")}:</span> {record.warehouse?.name!}
-            </div>
-            {record.number && (
-              <div>
-                <span className="font-medium">{t("stockIn.reference")}:</span> {record.number}
-              </div>
-            )}
             {record.receivedBy && (
-              <div>
+              <div className="w-full flex justify-between">
                 <span className="font-medium">{t("stockIn.receivedBy")}:</span> {record.receivedBy}
               </div>
             )}
@@ -98,10 +110,16 @@ export const StockChangeList: React.FC<StockChangeListProps> = ({
             <p className="text-xs font-medium text-muted-foreground">{t("stockIn.products")}:</p>
             {record.stockProducts && record.stockProducts.slice(0, 3).map((item, index) => (
               <div key={index} className="flex justify-between text-xs bg-gray-50 p-2 rounded">
-                <span>{item.name} / {item.sku}</span>
-                <span>
-                  {item.quantity!.toLocaleString()} × {formatLargeCurrency(item.unitCost!)} = {formatLargeCurrency(item.quantity! * item.unitCost!)}
-                </span>
+                <div className="flex flex-col">
+                  <span>{item.name}</span>
+                  <span>{item.sku}</span>
+                </div>
+                <div className="flex flex-col text-right">
+                  <span>
+                    {formatNumberWithCommas(item.quantity!)} × {formatLargeCurrency(item.unitCost!)}
+                  </span>
+                  <FormattedCurrency as="span" className="text-xs font-bold" value={item.totalCost}/>
+                </div>
               </div>
             ))}
             {record.stockProducts && record.stockProducts.length > 3 && (
@@ -112,6 +130,14 @@ export const StockChangeList: React.FC<StockChangeListProps> = ({
           </div>
         </div>
       ))}
+
+      <ServersidePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+      />
     </div>
   );
 };

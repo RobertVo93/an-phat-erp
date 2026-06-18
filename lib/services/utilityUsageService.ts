@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { UtilityUsageEntity } from "@/lib/database/entities";
+import { UtilityUsageEntity } from "@/lib/database/entities/utility-usage.entity";
 import type { IUtilityUsage, IUtilityUsageFilters } from "@/types";
 import { startOfDay, endOfDay } from "date-fns";
 

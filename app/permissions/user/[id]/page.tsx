@@ -1,6 +1,7 @@
 "use client"
 
 import { UserPermissionForm } from "@/components/permissions/user-permission-form"
+import { ADMIN_ROUTES } from "@/constants"
 import { useAuth } from "@/contexts/auth-context"
 import { redirect } from "next/navigation"
 import { use } from "react"
@@ -16,7 +17,7 @@ export default function UserPermissionsPage({ params }: UserPermissionsPageProps
   const resolvedParams = use(params)
 
   if (!isSuperAdmin) {
-    redirect("/")
+    redirect(ADMIN_ROUTES.home())
   }
 
   return (

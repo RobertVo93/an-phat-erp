@@ -1,6 +1,6 @@
 import { Entity, Column, JoinColumn, ManyToOne } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { UserEntity } from "@/lib/database/entities";
+import { BaseEntity } from "./base.entity";
+import { UserEntity } from "./user.entity";
 import { type IUser, UserPagePermission as IUserPagePermission } from "@/types";
 
 @Entity({ name: "user_page_permissions" })

@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToMany, JoinTable, BeforeInsert } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
-import { ProductEntity } from "@/lib/database/entities";
+import { BaseEntity } from "./base.entity";
+import { ProductEntity } from "./product.entity";
 import { CollectionStatus } from "@/types/enums";
 import { Product as IProduct, Collection as ICollection } from "@/types";
 import { CommonService } from "@/lib/services/commonService";

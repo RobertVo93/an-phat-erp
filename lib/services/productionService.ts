@@ -1,7 +1,9 @@
 import { AppDataSource } from "@/lib/database/typeorm";
 import { IProductionElement, ProductionRecord as IProductionRecord } from "@/types/production";
 import { ProductionRecordEntity } from "@/lib/database/entities/production-record.entity";
-import { ProductEntity, StockChangeEntity, WarehouseEntity } from "@/lib/database/entities";
+import { ProductEntity } from "@/lib/database/entities/product.entity";
+import { StockChangeEntity } from "@/lib/database/entities/stock-change.entity";
+import { WarehouseEntity } from "@/lib/database/entities/warehouse.entity";
 import { CommonService } from "@/lib/services/commonService";
 import { IStockProduct, StockChangeStatus, StockChangeType } from "@/types";
 import { startOfDay, endOfDay } from "date-fns";
