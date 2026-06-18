@@ -220,7 +220,7 @@ export function UsersTable({ selectedRole, searchQuery }: UsersTableProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => router.push(ADMIN_ROUTES.permissionUser(user.id!))}
+                        onClick={() => router.push(ADMIN_ROUTES.settingPermissionUser(user.id!))}
                         disabled={user.role === "super_admin"}
                       >
                         <Settings className="h-4 w-4 mr-1" />

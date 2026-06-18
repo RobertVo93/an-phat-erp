@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Shield } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { redirect } from "next/navigation"
+import { ADMIN_ROUTES } from "@/constants"
 
 export default function PermissionsPage() {
   const { isSuperAdmin } = useAuth()
@@ -14,7 +15,7 @@ export default function PermissionsPage() {
   const [searchQuery, setSearchQuery] = useState("")
 
   if (!isSuperAdmin) {
-    redirect("/")
+    redirect(ADMIN_ROUTES.home())
   }
 
   return (

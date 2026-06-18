@@ -4,9 +4,9 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import type { IAddress, Customer as ICustomer } from "@/types";
-import { CustomerEntity } from "@/lib/database/entities";
+import { CustomerEntity } from "./customer.entity";
 
 @Entity({ name: "addresses" })
 export class AddressEntity extends BaseEntity implements IAddress {

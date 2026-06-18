@@ -1,9 +1,9 @@
 import { Entity, Column, BeforeInsert, OneToMany } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { UtilityStatus, UtilityUnit } from "@/types/enums";
 import { Utility as IUtility, IUtilityUsage } from "@/types";
 import { CommonService } from "@/lib/services/commonService";
-import { UtilityUsageEntity } from "@/lib/database/entities/utility-usage.entity";
+import { UtilityUsageEntity } from "./utility-usage.entity";
 
 @Entity({ name: "utilities" })
 export class UtilityEntity extends BaseEntity implements IUtility {

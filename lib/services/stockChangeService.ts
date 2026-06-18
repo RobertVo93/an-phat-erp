@@ -1,5 +1,7 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { ProductEntity, StockChangeEntity, UserEntity } from "@/lib/database/entities";
+import { ProductEntity } from "@/lib/database/entities/product.entity";
+import { StockChangeEntity } from "@/lib/database/entities/stock-change.entity";
+import { UserEntity } from "@/lib/database/entities/user.entity";
 import { StockChange, StockChangeStatus, StockChangeType } from "@/types";
 import { IStockProduct } from "@/types/stock-change";
 import { CommonService } from "@/lib/services/commonService";

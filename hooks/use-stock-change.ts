@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import type { StockChange, StockChangeFilters, StockChangeSortBy } from "@/types/stock-change"
 import { getStockChangeByFilter as apiGetAllStockChanges, addStockChange as apiAddStockChange, updateStockChange as apiUpdateStockChange, deleteStockChange as apiDeleteStockChange } from "@/lib/httpclient/stock-change.client"
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
@@ -8,14 +8,15 @@ import { getProducts } from "@/lib/httpclient"
 import { Product, ProductStatus, Warehouse, WarehouseStatus } from "@/types"
 import { toast } from "@/hooks/use-toast"
 import { useDebounceSearchTerm } from "@/lib/utils.client"
+import type { IStockChangePageData } from "@/lib/services/stockChangePageService"
 
-export function useStockChange() {
-  const [stockChangeRecords, setStockChangeRecords] = useState<StockChange[]>([])
+export function useStockChange(initialData?: IStockChangePageData) {
+  const [stockChangeRecords, setStockChangeRecords] = useState<StockChange[]>(initialData?.stockChangeRecords || [])
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<StockChangeFilters>({})
+  const [filters, setFilters] = useState<StockChangeFilters>(initialData?.filters || {})
   const [loading, setLoading] = useState<boolean>(false)
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([])
-  const [products, setProdducts] = useState<Product[]>([])
+  const [warehouses, setWarehouses] = useState<Warehouse[]>(initialData?.warehouses || [])
+  const [products, setProdducts] = useState<Product[]>(initialData?.products || [])
   const [showFormModal, setShowFormModal] = useState<boolean>(false);
   const [showViewModal, setShowViewModal] = useState<boolean>(false);
   const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
@@ -25,12 +26,13 @@ export function useStockChange() {
   const [editingStockChange, setEditingStockChange] = useState<StockChange | null>(null);
 
   // pagination
-  const [total, setTotal] = useState(0)
-  const [totalPages, setTotalPages] = useState(1)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-  const [sortBy, setSortBy] = useState<StockChangeSortBy>("date")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [total, setTotal] = useState(initialData?.total || 0)
+  const [totalPages, setTotalPages] = useState(initialData?.totalPages || 1)
+  const [currentPage, setCurrentPage] = useState(initialData?.currentPage || 1)
+  const [pageSize, setPageSize] = useState(initialData?.pageSize || 10)
+  const [sortBy, setSortBy] = useState<StockChangeSortBy>(initialData?.sortBy || "date")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(initialData?.sortOrder || "desc")
+  const hasHydratedInitialStockChanges = useRef(Boolean(initialData))
 
   // Debounce searchTerm
   const debouncedSearchTerm = useDebounceSearchTerm(searchTerm, 500)
@@ -208,11 +210,16 @@ export function useStockChange() {
 
   // fetch when init
   useEffect(() => {
+    if (initialData?.warehouses?.length || initialData?.products?.length) return
     getWarehousesAndProducts()
-  }, [])
+  }, [initialData?.warehouses?.length, initialData?.products?.length])
 
   // Fetch orders when params change
   useEffect(() => {
+    if (hasHydratedInitialStockChanges.current) {
+      hasHydratedInitialStockChanges.current = false
+      return
+    }
     getAllStockChanges(apiParams)
   }, [apiParams])
 

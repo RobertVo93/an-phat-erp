@@ -1,5 +1,5 @@
 import { AppDataSource } from "@/lib/database/typeorm";
-import { PayrollRecordEntity } from "@/lib/database/entities";
+import { PayrollRecordEntity } from "@/lib/database/entities/payroll-record.entity";
 import { PayrollRecord, PayrollStatus, AttendanceRecord, AttendanceStatus, AttendanceSubStatus } from "@/types";
 import { getAllAttendanceRecords } from "@/lib/services/attendanceService";
 import { formatDate, formatMonthYear } from "@/lib/utils";

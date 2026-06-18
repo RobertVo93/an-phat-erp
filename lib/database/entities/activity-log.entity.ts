@@ -1,5 +1,5 @@
 import { Entity, Column } from "typeorm";
-import { BaseEntity } from "@/lib/database/entities/base.entity";
+import { BaseEntity } from "./base.entity";
 import { ResourceType, IActivityLog } from "@/types";
 
 @Entity({ name: "activity_logs" })

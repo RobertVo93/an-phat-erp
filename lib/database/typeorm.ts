@@ -20,7 +20,11 @@ import { WarehouseProductEntity } from "./entities/warehouse-product.entity";
 import { ProductionRecordEntity } from "./entities/production-record.entity";
 import { ActivityLogEntity } from "./entities/activity-log.entity";
 import { env } from "@/constants/env";
-import { AddressEntity, CartEntity, CartItemEntity, NotificationEntity, NotificationSettingsEntity } from "./entities";
+import { AddressEntity } from "./entities/address.entity";
+import { CartEntity } from "./entities/cart.entity";
+import { CartItemEntity } from "./entities/cart-item.entity";
+import { NotificationEntity } from "./entities/notification.entity";
+import { NotificationSettingsEntity } from "./entities/notification-settings.entity";
 import { SettingEntity } from "./entities/setting.entity";
 import { PasswordResetTokenEntity } from "./entities/password-reset-token.entity";
 

@@ -56,8 +56,8 @@ export const stockInTranslations = {
     vi: "Số Phiếu Nhập",
   },
   "stockIn.date": {
-    en: "Date",
-    vi: "Ngày",
+    en: "Handle Date",
+    vi: "Ngày Xử Lý",
   },
   "stockIn.supplier": {
     en: "Supplier",

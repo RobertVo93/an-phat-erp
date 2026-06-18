@@ -7,8 +7,10 @@ import { Separator } from "@/components/ui/separator"
 import { Package, Calendar, User, MapPin, Warehouse, Hash } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import type { StockChange } from "@/types/stock-change"
-import { formatDateTime, formatLargeCurrency, getStockChangeStatusColor } from "@/lib/utils"
+import { formatDateTime, getStockChangeStatusColor } from "@/lib/utils"
 import { env } from "@/constants/env"
+import { FormattedNumber } from "@/components/ui/formatted-number"
+import { FormattedCurrency } from "@/components/ui/formatted-currency"
 
 interface StockChangeViewModalProps {
   isOpen: boolean
@@ -46,8 +48,8 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
                   <div className="flex items-center gap-2">
                     <Hash className="h-4 w-4 text-gray-500" />
                     <div>
-                      <p className="text-sm text-gray-500">{t("stockIn.receiptNumber")}</p>
-                      <p className="font-semibold">{stockChange.number}</p>
+                      <p className="text-sm text-gray-500">{t("stockIn.stockType")}</p>
+                      <p className="font-semibold">{t(`stockIn.form.${stockChange.type}`)}</p>
                     </div>
                   </div>
 
@@ -103,21 +105,23 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
               <div className="space-y-4">
                 {stockChange.stockProducts && stockChange.stockProducts.map((item, index) => (
                   <div key={index} className="p-4 border rounded-lg grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="md:col-span-1">
+                    <div>
                       <h4 className="font-semibold">{item.name}</h4>
                       <p className="text-sm text-gray-500">{item.sku}</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500">{t("stockIn.form.quantity")}</p>
-                      <p className="font-semibold">{item.quantity!.toLocaleString()}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500">{t("stockIn.form.unitCost")}</p>
-                      <p className="font-semibold">{formatLargeCurrency(item.unitCost!)}</p>
+                    <div className="grid grid-cols-2 md:col-span-2">
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500">{t("stockIn.form.quantity")}</p>
+                        <FormattedNumber as="span" className="font-semibold" value={item.quantity} />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500">{t("stockIn.form.unitCost")}</p>
+                        <FormattedNumber as="span" className="font-semibold" value={item.unitCost} />
+                      </div>
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-500">{t("stockIn.form.totalCost")}</p>
-                      <p className="font-semibold">{formatLargeCurrency(item.unitCost! * item.quantity!)}</p>
+                      <FormattedCurrency as="span" className="font-semibold" value={item.unitCost! * item.quantity!} />
                     </div>
                   </div>
                 ))}
@@ -134,26 +138,24 @@ export function StockChangeViewModal({ isOpen, onClose, stockChange }: StockChan
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span>{t("stockIn.form.subtotal")}:</span>
-                  <span className="font-semibold">{formatLargeCurrency(stockChange.subtotal!)}</span>
+                  <FormattedCurrency as="span" className="font-semibold" value={stockChange.subtotal} />
                 </div>
                 {
                   env.NEXT_PUBLIC_TAX_RATE > 0 && (
                     <div className="flex justify-between">
                       <span>{t("stockIn.form.tax")} ({env.NEXT_PUBLIC_TAX_RATE}%) :</span>
-                      <span className="font-semibold">{formatLargeCurrency(stockChange.tax!)}</span>
+                      <FormattedCurrency as="span" className="font-semibold" value={stockChange.tax} />
                     </div>
                   )
                 }
-                {stockChange.discount! > 0 && (
-                  <div className="flex justify-between">
-                    <span>{t("stockIn.form.discount")}:</span>
-                    <span className="font-semibold text-red-600">-{formatLargeCurrency(stockChange.discount!)}</span>
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <span>{t("stockIn.form.discount")}:</span>
+                  <FormattedCurrency as="span" className="font-semibold text-red-600" value={stockChange.discount} />
+                </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold">
                   <span>{t("stockIn.totalAmount")}:</span>
-                  <span>{formatLargeCurrency(stockChange.totalAmount!)}</span>
+                  <FormattedCurrency as="span" value={stockChange.totalAmount} />
                 </div>
               </div>
             </CardContent>
