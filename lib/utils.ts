@@ -3,6 +3,8 @@ import {
   WarehouseProduct,
   IWarehouseSummary,
 } from "@/types"
+import omitBy from "lodash/omitBy";
+import isNil from "lodash/isNil";
 import { clsx, type ClassValue } from "clsx"
 import { env } from "@/constants/env"
 import { twMerge } from "tailwind-merge"
@@ -125,4 +127,16 @@ export const deepDifference = (obj1: any, obj2: any): Record<string, any> => {
   }
 
   return result;
+}
+
+/**
+ * Remove properties with null, undefined, or whitespace-only string values from an object.
+ * @param obj 
+ * @returns cleaned object with empty properties removed
+ */
+export function removeEmptyProperties<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  return omitBy(
+    obj,
+    (value) => isNil(value)
+  ) as Partial<T>;
 }
