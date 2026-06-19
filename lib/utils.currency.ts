@@ -72,8 +72,8 @@ export function formatCurrencyVND(amount: number): string {
   return `${formatNumberWithCommas(amount)} ₫`
 }
 
-export function formatCurrency(amount: number): string {
-  return formatCurrencyVND(amount)
+export function formatCurrency(amount?: number): string {
+  return formatCurrencyVND(amount ?? 0)
 }
 
 export const formatLargeCurrency = (amount: number, locale: Language = "vi"): string => {

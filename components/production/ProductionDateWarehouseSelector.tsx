@@ -1,10 +1,9 @@
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
 import { Warehouse } from "@/types"
-import { formatYYYYMMDD } from "@/lib/utils"
 import React from "react"
+import { Calendar } from "../ui/calendar"
 
 interface ProductionDateWarehouseSelectorProps {
     selectedDate: Date
@@ -26,15 +25,16 @@ export const ProductionDateWarehouseSelector = ({
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-                <Label htmlFor="productionDate" className="text-sm">
+                <Label htmlFor="productionDate" className="text-sm" autoFocus={true}>
                     {t("production.form.productionDate")}
                 </Label>
-                <Input
-                    id="productionDate"
-                    type="date"
+                <Calendar
+                    selected={selectedDate}
+                    onChange={(date) => setSelectedDate(date!)}
+                    dateFormat="dd/MM/yyyy"
+                    showIcon
+                    placeholderText="dd/MM/yyyy"
                     className="h-11"
-                    value={formatYYYYMMDD(selectedDate)}
-                    onChange={(e) => setSelectedDate(new Date(e.target.value))}
                 />
             </div>
             <div className="space-y-2">

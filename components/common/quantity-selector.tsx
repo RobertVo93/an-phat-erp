@@ -18,6 +18,7 @@ interface QuantitySelectorProps {
   inputClassName?: string;
   showDelete?: boolean;
   showAction?: boolean;
+	autoFocus?: boolean
 }
 
 const clampQuantity = (value: number, min: number, max: number): number => {
@@ -39,6 +40,7 @@ export function QuantitySelector({
   inputClassName,
   showDelete,
   showAction,
+  autoFocus,
 }: QuantitySelectorProps) {
   const sanitizedQuantity = useMemo(
     () => clampQuantity(quantity, min, max),
@@ -118,6 +120,7 @@ export function QuantitySelector({
           commitQuantity(localQuantity);
         }}
         allowEmpty
+        autoFocus={autoFocus}
         disabled={disabled}
         className={cn("max-h-[38px] text-center focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0", inputClassName)}
       />

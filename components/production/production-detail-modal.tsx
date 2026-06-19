@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useLanguage } from "@/contexts/language-context"
-import { formatDate, formatLargeCurrency, formatSystemNumber } from "@/lib/utils"
-import { UtilityUnit } from "@/types"
+import { formatCurrency, formatDate, formatSystemNumber } from "@/lib/utils"
 import type { ProductionRecord } from "@/types/production"
+import { FormattedCurrency } from "../ui/formatted-currency"
 
 interface ProductionDetailModalProps {
   record: ProductionRecord | null
@@ -93,7 +93,7 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base sm:text-lg">{t("production.detail.materials")}</CardTitle>
@@ -102,17 +102,18 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
             <div className="space-y-2">
               {record.materials?.map((material, index) => (
                 <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                  <div>
+                  <div className="truncate">
                     <div className="font-medium">{material?.name}</div>
                     <div className="text-xs text-gray-600">
-                      {material.quantity}
+                      {material.quantity} {t(`production.form.${material.unit}`)} x {formatCurrency(material.unitCost)}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">{formatLargeCurrency(material.totalCost!)}</div>
+                    <FormattedCurrency as="div" className="font-bold" value={material.totalCost}/>
                   </div>
                 </div>
               ))}
+              {record.materials?.length === 0 && <div className="w-full flex justify-center">{t('common.noData')}</div>}
             </div>
           </CardContent>
         </Card>
@@ -125,17 +126,18 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
             <div className="space-y-2">
               {record.utilities!.map((utility, index) => (
                 <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                  <div>
+                  <div className="truncate">
                     <div className="font-medium">{utility?.name}</div>
                     <div className="text-xs text-gray-600">
-                      {utility.quantity} {utility?.unit === UtilityUnit.other ? t("production.detail.other") : utility?.unit}
+                      {utility.quantity} {t(`production.form.${utility.unit}`)} x {formatCurrency(utility.unitCost)}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">{formatLargeCurrency(utility.totalCost!)}</div>
+                    <FormattedCurrency as="div" className="font-bold" value={utility.totalCost}/>
                   </div>
                 </div>
               ))}
+              {record.utilities?.length === 0 && <div className="w-full flex justify-center">{t('common.noData')}</div>}
             </div>
           </CardContent>
         </Card>
@@ -151,11 +153,12 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
                   <div>
                     <div className="font-medium">{pl?.name} - {pl?.unit}</div>
                     <div className="text-xs text-gray-600">
-                      {t("production.detail.salary")}: {formatLargeCurrency(pl.totalCost!)}
+                      {t("production.detail.salary")}: {formatCurrency(pl.totalCost)}
                     </div>
                   </div>
                 </div>
               ))}
+              {record.labors?.length === 0 && <div className="w-full flex justify-center">{t('common.noData')}</div>}
             </div>
           </CardContent>
         </Card>
@@ -169,31 +172,23 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.materials")}:</span>
-              <span className="font-medium">
-                {formatLargeCurrency(calculateTotalMaterialCost() || 0)}
-              </span>
+              <FormattedCurrency as="span" className="font-medium" value={calculateTotalMaterialCost()}/>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.utility")}:</span>
-              <span className="font-medium">
-                {formatLargeCurrency(calculateTotalUtilityCost() || 0)}
-              </span>
+              <FormattedCurrency as="span" className="font-medium" value={calculateTotalUtilityCost()}/>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.labor")}:</span>
-              <span className="font-medium">
-                {formatLargeCurrency(calculateTotalSalary())}
-              </span>
+              <FormattedCurrency as="span" className="font-medium" value={calculateTotalSalary()}/>
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="font-semibold">{t("production.detail.totalExpense")}:</span>
-              <span className="font-semibold">{formatLargeCurrency(record.totalExpense!)}</span>
+              <FormattedCurrency as="span" className="font-semibold" value={record.totalExpense}/>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.pricePerUnit")}:</span>
-              <span className="font-medium">
-                {formatLargeCurrency(record.totalExpense! / record.quantity!)}
-              </span>
+              <FormattedCurrency as="span" className="font-medium" value={Math.floor(record.totalExpense! / record.quantity!)}/>
             </div>
           </CardContent>
         </Card>
@@ -205,15 +200,11 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.revenue")}:</span>
-              <span className="font-medium">
-                {formatLargeCurrency(calculateRevenue())}
-              </span>
+              <FormattedCurrency as="span" className="font-medium" value={calculateRevenue()}/>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.profit")}:</span>
-              <span className="font-medium">
-                {formatLargeCurrency(calculateProfit())}
-              </span>
+              <FormattedCurrency as="span" className="font-medium" value={calculateProfit()}/>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.efficiency")}:</span>
