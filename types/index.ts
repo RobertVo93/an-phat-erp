@@ -27,3 +27,6 @@ export * from "./notification-settings.interface"
 export * from "./cart.interface"
 export * from "./cart-item.interface"
 export * from "./stock-change-detail"
+
+export * from "./production-page"
+export * from "./production-detail"

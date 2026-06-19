@@ -1,10 +1,10 @@
 import { Label } from "@/components/ui/label"
-import { FormattedNumber } from "@/components/ui/formatted-number"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
 import { getProductionStatusColor } from "@/lib/utils"
 import { Product, ProductionStatus } from "@/types"
 import React from "react"
+import { QuantitySelector } from "../common/quantity-selector"
 
 interface ProductionProductSelectorProps {
     selectedProduct: Product | undefined
@@ -43,14 +43,13 @@ export const ProductionProductSelector = ({ selectedProduct, quantity, setQuanti
                 <Label htmlFor="quantity" className="text-sm">
                     {t("production.form.productionQuantity")}
                 </Label>
-                <FormattedNumber
-                    as="input"
-                    id="quantity"
-                    placeholder={t("production.form.inputQuantity")}
-                    value={quantity}
-                    min={1}
-                    onValueChange={(value) => setQuantity(value)}
+                <QuantitySelector
+                    quantity={quantity}
+                    showAction={false}
+                    onQuantityChange={(newValue) => setQuantity(newValue)}
                     className="h-10"
+                    inputClassName="text-left"
+                    autoFocus={true}
                 />
                 {errors?.quantity && <p className="text-sm text-red-500">{errors.quantity}</p>}
             </div>

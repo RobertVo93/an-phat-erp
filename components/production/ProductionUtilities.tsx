@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { FormattedNumber } from "@/components/ui/formatted-number"
-import { FormattedCurrency } from "@/components/ui/formatted-currency"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus } from "lucide-react"
 import React from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { IProductionElement } from "@/types/production"
 import { Utility } from "@/types"
-import { formatLargeCurrency } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
+import { QuantitySelector } from "../common/quantity-selector"
 
 interface ProductionUtilitiesProps {
     selectedUtilities: IProductionElement[]
@@ -33,7 +32,7 @@ export const ProductionUtilities = ({ selectedUtilities, addUtility, updateUtili
             <div className="space-y-3">
                 {selectedUtilities.map((utility, index) => (
                     <div key={index} className="border rounded-lg p-3 space-y-3">
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div className="space-y-1">
                                 <Label className="text-xs">{t("production.form.utility")}</Label>
                                 <Select value={utility.id} onValueChange={(value) => updateUtility(index, "id", value)}>
@@ -56,41 +55,38 @@ export const ProductionUtilities = ({ selectedUtilities, addUtility, updateUtili
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">{t("production.form.quantity")}</Label>
-                                <FormattedNumber
-                                    as="input"
-                                    placeholder="1"
-                                    min={1}
-                                    value={utility.quantity}
-                                    onValueChange={(value) => {
-                                        updateUtility(index, "quantity", value);
-                                    }}
-                                    className="h-9"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">{t("production.form.unitCost")}</Label>
-                                <FormattedCurrency
-                                    as="input"
-                                    placeholder="1"
-                                    value={utility.unitCost}
-                                    onValueChange={(value) => {
-                                        updateUtility(index, "unitCost", value);
-                                    }}
-                                    className="h-9"
-                                />
+                            <div className="col-span-2 grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <Label className="text-xs">{t("production.form.quantity")}</Label>
+                                    <QuantitySelector
+                                        quantity={utility.quantity ?? 0}
+                                        showAction={false}
+                                        onQuantityChange={(newValue) => updateUtility(index, "quantity", newValue)}
+                                        className="h-9"
+                                        inputClassName="text-left"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">{t("production.form.unitCost")}</Label>
+                                    <QuantitySelector
+                                        quantity={utility.unitCost ?? 0}
+                                        showAction={false}
+                                        onQuantityChange={(newValue) => updateUtility(index, "unitCost", newValue)}
+                                        className="h-9"
+                                        inputClassName="text-left"
+                                    />
+                                </div>
                             </div>
                         </div>
                         {utility?.id &&
-                            <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div>
+                            <div className="grid grid-cols-3 gap-2 text-xs">
+                                <div className="col-span-1">
                                     <span className="text-gray-600">{t("production.form.unit")}: </span>
                                     <span className="font-medium">{utility.unit && t(`production.form.${utility.unit}`)}</span>
                                 </div>
-                                <div>
+                                <div className="col-span-2">
                                     <span className="text-gray-600">{t("production.form.totalCost")}: </span>
-                                    <span className="font-medium">{formatLargeCurrency(utility.totalCost ?? 0)}</span>
+                                    <span className="font-medium">{formatCurrency(utility.totalCost ?? 0)}</span>
                                 </div>
                             </div>
                         }

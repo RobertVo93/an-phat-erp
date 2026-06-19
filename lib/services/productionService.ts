@@ -8,6 +8,8 @@ import { CommonService } from "@/lib/services/commonService";
 import { IStockProduct, StockChangeStatus, StockChangeType } from "@/types";
 import { startOfDay, endOfDay } from "date-fns";
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export async function getAllProductionRecords({ page = 1, limit = 20, sortBy = "date", sortOrder = "desc", filters = {} as Record<string, any> }) {
   const repo = AppDataSource.getRepository(ProductionRecordEntity);
   const qb = repo
@@ -59,6 +61,18 @@ export async function getTodayProductions() {
   const data = await qb.getMany();
 
   return data
+}
+
+export async function getProductionByIdOrNumber(idOrNumber: string): Promise<IProductionRecord | null> {
+  const repo = AppDataSource.getRepository(ProductionRecordEntity);
+  const where = UUID_PATTERN.test(idOrNumber)
+    ? [{ id: idOrNumber }, { number: idOrNumber }]
+    : [{ number: idOrNumber }];
+
+  return repo.findOne({
+    where,
+    relations: ["pic", "product", "warehouse"],
+  });
 }
 
 export async function createProductionRecord(

@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { FormattedCurrency } from "@/components/ui/formatted-currency"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus } from "lucide-react"
@@ -7,6 +6,7 @@ import React from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { Employee } from "@/types"
 import { IProductionElement } from "@/types/production"
+import { QuantitySelector } from "../common/quantity-selector"
 
 interface ProductionLaborsProps {
     selectedEmployees: IProductionElement[]
@@ -63,14 +63,12 @@ export const ProductionLabors = ({
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-xs">{t("production.form.employeeSalary")}</Label>
-                                <FormattedCurrency
-                                    as="input"
-                                    placeholder="1"
-                                    value={selectedEmployee.totalCost}
-                                    onValueChange={(value) => {
-                                        updateEmployee(index, "totalCost", value);
-                                    }}
+                                <QuantitySelector
+                                    quantity={selectedEmployee.totalCost ?? 0}
+                                    showAction={false}
+                                    onQuantityChange={(newValue) => updateEmployee(index, "totalCost", newValue)}
                                     className="h-9"
+                                    inputClassName="text-left"
                                 />
                             </div>
                         </div>
