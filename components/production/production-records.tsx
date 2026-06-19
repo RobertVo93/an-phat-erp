@@ -13,7 +13,7 @@ export function ProductionRecords({ records, onViewRecord, onEditRecord }: Produ
   const { t } = useLanguage()
   return (
     <Card>
-      <CardHeader className="hidden lg:block">
+      <CardHeader>
         <CardTitle className="text-base sm:text-lg">{t("production.record.todayProduction")}</CardTitle>
         <CardDescription className="text-sm">{t("production.record.description")}</CardDescription>
       </CardHeader>
@@ -23,6 +23,7 @@ export function ProductionRecords({ records, onViewRecord, onEditRecord }: Produ
             <ProductionRecordItem key={record.id} record={record} onView={onViewRecord} onEdit={onEditRecord} />
           ))}
         </div>
+        {records.length === 0 && <div className="w-full flex justify-center">{t('common.noData')}</div>}
       </CardContent>
     </Card>
   )

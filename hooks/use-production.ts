@@ -9,24 +9,25 @@ import { getUtilitiesByFilterClient } from "@/lib/httpclient/utility.client"
 import { getEmployee } from '@/lib/httpclient/employee.client';
 import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { toast } from "@/components/ui/use-toast"
+import type { IProductionPageData } from "@/types/production-page"
 
-export function useProduction() {
+export function useProduction(initialData?: IProductionPageData) {
   const [selectedRecord, setSelectedRecord] = useState<ProductionRecord | null>(null)
-  const [todayProductionRecords, setTodayProductionRecords] = useState<ProductionRecord[]>([])
+  const [todayProductionRecords, setTodayProductionRecords] = useState<ProductionRecord[]>(initialData?.todayRecords ?? [])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState<ProductionRecord | null>(null)
   const [isNewProductionOpen, setIsNewProductionOpen] = useState(false)
-  const [availableProducts, setAvailableProducts] = useState<Product[]>([])
-  const [availableMaterials, setAvailableMaterials] = useState<Product[]>([])
-  const [availableUtilities, setAvailableUtilities] = useState<Utility[]>([])
-  const [availableEmployees, setAvailableEmployees] = useState<Employee[]>([])
-  const [availableWarehouses, setAvailableWarehouses] = useState<Warehouse[]>([])
+  const [availableProducts, setAvailableProducts] = useState<Product[]>(initialData?.availableProducts ?? [])
+  const [availableMaterials, setAvailableMaterials] = useState<Product[]>(initialData?.availableMaterials ?? [])
+  const [availableUtilities, setAvailableUtilities] = useState<Utility[]>(initialData?.availableUtilities ?? [])
+  const [availableEmployees, setAvailableEmployees] = useState<Employee[]>(initialData?.availableEmployees ?? [])
+  const [availableWarehouses, setAvailableWarehouses] = useState<Warehouse[]>(initialData?.availableWarehouses ?? [])
   const [loading, setLoading] = useState<boolean>(false)
 
   // for summary card
-  const [todayMaterialCost, setTodayMaterialCost] = useState<number>(0)
-  const [todayUtilityCost, setTodayUtilityCost] = useState<number>(0)
-  const [todayEmployeeCost, setTodayEmployeeCost] = useState<number>(0)
+  const [todayMaterialCost, setTodayMaterialCost] = useState<number>(initialData?.summary.materialCost ?? 0)
+  const [todayUtilityCost, setTodayUtilityCost] = useState<number>(initialData?.summary.utilityCost ?? 0)
+  const [todayEmployeeCost, setTodayEmployeeCost] = useState<number>(initialData?.summary.employeeCost ?? 0)
 
   const onInit = async () => {
     try {
@@ -97,9 +98,8 @@ export function useProduction() {
   const createNewProduction = async (data: ProductionRecord) => {
     try {
       setLoading(true)
-      const created = await createProduction(data)
-      setTodayProductionRecords(prev => [...prev, created])
-      closeNewProduction()
+      await createProduction(data)
+      window.location.reload()
     } catch (e) {
       console.error(e)
       toast({
@@ -115,9 +115,8 @@ export function useProduction() {
   const handleSaveEdit = async (updatedRecord: ProductionRecord) => {
     try {
       setLoading(true)
-      const updated = await updateProduction(updatedRecord.id!, updatedRecord)
-      setIsEditModalOpen(false)
-      setEditingRecord(null)
+      await updateProduction(updatedRecord.id!, updatedRecord)
+      window.location.reload()
     } catch (e) {
       console.error(e)
       toast({
@@ -158,8 +157,9 @@ export function useProduction() {
   }
 
   useEffect(() => {
+    if (initialData) return
     onInit()
-  }, [])
+  }, [initialData])
 
   useEffect(() => {
     calculateTodaySummary(todayProductionRecords)

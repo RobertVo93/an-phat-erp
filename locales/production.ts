@@ -104,11 +104,11 @@ export const productionTranslations = {
   },
   "production.recordItem.laborExpenses": {
     en: "Labors Expenses",
-    vi: "Chi Phí NC",
+    vi: "Chi Phí Nhân Công",
   },
   "production.recordItem.totalExpense": {
     en: "Total Expenses",
-    vi: "Tổng CP",
+    vi: "Tổng Chi Phí",
   },
   "production.recordItem.expensePerKilo": {
     en: "expense/kg",
@@ -175,6 +175,34 @@ export const productionTranslations = {
   "production.history.searchPlaceholder": {
     en: "Production number, product,...",
     vi: "Mã đơn, sản phẩm..."
+  },
+  "production.history.filter": {
+    en: "Filter",
+    vi: "Lọc"
+  },
+  "production.history.filterTitle": {
+    en: "Filter production records",
+    vi: "Lọc phiếu sản xuất"
+  },
+  "production.history.sort": {
+    en: "Sort",
+    vi: "Sắp xếp"
+  },
+  "production.history.sort.number": {
+    en: "Sheet code",
+    vi: "Mã đơn"
+  },
+  "production.history.sort.date": {
+    en: "Date",
+    vi: "Ngày"
+  },
+  "production.history.allStatuses": {
+    en: "All statuses",
+    vi: "Tất cả trạng thái"
+  },
+  "production.history.allProducts": {
+    en: "All products",
+    vi: "Tất cả sản phẩm"
   },
   "production.history.status": {
     en: "Status",

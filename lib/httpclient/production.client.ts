@@ -18,6 +18,12 @@ export async function getTodayProductions() {
   return res.json();
 }
 
+export async function getProductionByIdOrNumber(idOrNumber: string) {
+  const res = await fetch(apiHref(`/api/production/${encodeURIComponent(idOrNumber)}`), { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch production detail");
+  return res.json();
+}
+
 export async function createProduction(data: Partial<ProductionRecord>) {
   const res = await fetch(apiHref("/api/production"), {
     method: "POST",

@@ -1,104 +1,82 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { RangePickerCalendar } from "@/components/ui/calendar"
-import { Search, Eye, Edit } from "lucide-react"
+import { Eye, Edit, Loader2 } from "lucide-react"
 import type { ProductionFilters, ProductionRecord, ProductionSortBy } from "@/types/production"
 import { useLanguage } from "@/contexts/language-context"
-import { ProductionStatus } from "@/types"
+import { Product, ProductionStatus } from "@/types"
 import { ServersideTable, ServersideTableColumn } from "@/components/common/table/ServersideTable"
-import { formatDate, formatLargeCurrency, formatYYYYMMDD, getCurrentMonthRange, getProductionStatusColor } from "@/lib/utils"
+import { formatDate, getProductionStatusColor } from "@/lib/utils"
 import { useDebounceSearchTerm } from "@/lib/utils.client"
 import { toast } from "@/components/ui/use-toast"
 import { getAllProductions } from "@/lib/httpclient"
-import { DEFAULT_PAGE_SIZE } from "@/constants"
+import { ADMIN_ROUTES, DEFAULT_PAGE_SIZE } from "@/constants"
 import { FormattedNumber } from "@/components/ui/formatted-number"
 import { FormattedCurrency } from "@/components/ui/formatted-currency"
+import Link from "next/link"
+import { ProductionHistoryFilterBar } from "@/components/production/production-history-filter-bar"
+import { ProductionHistoryFilterModal } from "@/components/production/production-history-filter-modal"
+import { ServersidePagination } from "../common/table/ServersidePagination"
+import { ProductionRecordItem } from "./production-record-item"
 
 interface ProductionHistoryProps {
+  products: Product[]
   onViewRecord: (record: ProductionRecord) => void
   onEditRecord: (record: ProductionRecord) => void
 }
-const defaultRange = getCurrentMonthRange()
+type ProductionHistoryRow = ProductionRecord & { id: string }
 
-export function ProductionHistory({
-  onViewRecord,
-  onEditRecord
-}: ProductionHistoryProps) {
+export function ProductionHistory({ products, onViewRecord, onEditRecord }: ProductionHistoryProps) {
   const { t } = useLanguage()
   const [productions, setProductions] = useState<ProductionRecord[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [showFilterModal, setShowFilterModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<ProductionFilters>({
-    status: "all",
-    product: "all",
-    dateFrom: formatYYYYMMDD(defaultRange[0]),
-    dateTo: formatYYYYMMDD(defaultRange[1])
-  })
-  // pagination
+  const [filters, setFilters] = useState<ProductionFilters>({})
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<ProductionSortBy>("number")
+  const [sortBy, setSortBy] = useState<ProductionSortBy>("date")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
-  // Debounce searchTerm
   const debouncedSearchTerm = useDebounceSearchTerm(searchTerm, 500)
 
-  // Build params for API
-  const apiParams = useMemo(() => {
-    return {
-      page: currentPage,
-      limit: DEFAULT_PAGE_SIZE,
-      sortBy,
-      sortOrder,
-      searchTerm: debouncedSearchTerm,
-      status: filters.status === "all" ? undefined : filters.status,
-      product: filters.product === "all" ? undefined : filters.product,
-      dateFrom: filters.dateFrom,
-      dateTo: filters.dateTo,
-    }
-  }, [currentPage, DEFAULT_PAGE_SIZE, sortBy, sortOrder, debouncedSearchTerm, filters])
+  const apiParams = useMemo(() => ({
+    page: currentPage,
+    limit: DEFAULT_PAGE_SIZE,
+    sortBy,
+    sortOrder,
+    searchTerm: debouncedSearchTerm,
+    status: filters.status === "all" ? undefined : filters.status,
+    product: filters.product === "all" ? undefined : filters.product,
+    dateFrom: filters.dateFrom,
+    dateTo: filters.dateTo,
+  }), [currentPage, sortBy, sortOrder, debouncedSearchTerm, filters])
 
-  // Lấy danh sách sản phẩm unique
-  const uniqueProducts = useMemo(() => {
-    return Array.from(
-      new Map(
-        productions
-          .filter(r => r.product?.id)
-          .map(r => [r.product!.id, r.product!])
-      ).values()
-    );
-  }, [productions]);
+  const tableRows = productions.filter((record): record is ProductionHistoryRow => Boolean(record.id))
 
-  const onChangeProductFileter = (productId: string) => {
-    setFilters(prev => ({ ...prev, product: productId }))
+  const handleFiltersChange = (nextFilters: ProductionFilters) => {
+    setFilters(nextFilters)
+    setCurrentPage(1)
   }
 
-  const onChangeStatusFilter = (status: ProductionStatus) => {
-    setFilters(prev => ({ ...prev, status: status }))
-  }
-
-  const onChangeDateFrom = (selectedDate: string | Date) => {
-    setFilters(prev => ({ ...prev, dateFrom: `${selectedDate}` }))
-  }
-
-  const onChangeDateTo = (selectedDate: string | Date) => {
-    setFilters(prev => ({ ...prev, dateTo: `${selectedDate}` }))
-  }
-
-  const handleSort = (field: string) => {
+  const handleSort = (field: ProductionSortBy) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
     } else {
-      setSortBy(field as ProductionSortBy)
+      setSortBy(field)
       setSortOrder("desc")
+    }
+    setCurrentPage(1)
+  }
+
+  const handleTableSort = (field: string) => {
+    if (["number", "date", "status"].includes(field)) {
+      handleSort(field as ProductionSortBy)
+      return
     }
     setCurrentPage(1)
   }
@@ -107,15 +85,19 @@ export function ProductionHistory({
     setCurrentPage(page)
   }
 
-  // Define columns for ServersideTable
-  const columns: ServersideTableColumn<any>[] = [
+  const columns: ServersideTableColumn<ProductionHistoryRow>[] = [
     {
       key: "number",
       title: t("production.history.sheetCode"),
       sortable: true,
       render: (row) => (
         <div className="space-y-1">
-          <p className="text-sm font-medium">{row.number}</p>
+          <Link
+            href={ADMIN_ROUTES.produceDetail(row.number || row.id)}
+            className="text-sm font-medium text-emerald-700 underline-offset-4 hover:underline"
+          >
+            {row.number}
+          </Link>
         </div>
       ),
     },
@@ -137,21 +119,19 @@ export function ProductionHistory({
     {
       key: "product",
       title: t("production.history.product"),
-      render: (row) => (
-        <Badge variant="outline">{row.product!.name}</Badge>
-      ),
+      render: (row) => <Badge variant="outline">{row.product?.name}</Badge>,
     },
     {
       key: "quantity",
       title: t("production.history.quantity"),
       sortable: true,
-      render: (row) => <span className="font-medium">{row.quantity}</span>,
+      render: (row) => <FormattedNumber as="span" className="font-medium" value={row.quantity} />,
     },
     {
       key: "totalCost",
       title: t("production.history.expense"),
       sortable: true,
-      render: (row) => <span className="font-medium">{formatLargeCurrency(row.totalCost!)}</span>,
+      render: (row) => <FormattedCurrency as="span" className="font-medium" value={row.totalExpense} />,
     },
     {
       key: "actions",
@@ -206,108 +186,62 @@ export function ProductionHistory({
   }, [apiParams])
 
   return (
-    <Card>
-      <CardHeader className="hidden lg:block">
-        <CardTitle className="text-base sm:text-lg">{t("production.history.title")}</CardTitle>
-        <CardDescription className="text-sm">{t("production.history.list")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 pt-2">
-        {/* Bộ lọc */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
-          <div className="space-y-1 lg:col-span-6">
-            <Label className="text-xs">{t("production.history.search")}</Label>
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-3 w-3 text-muted-foreground" />
-              <Input
-                placeholder={t("production.history.searchPlaceholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-7 h-9 text-xs"
-              />
-            </div>
-          </div>
+    <>
+      <ProductionHistoryFilterBar
+        searchTerm={searchTerm}
+        onSearchTermChange={setSearchTerm}
+        onShowFilter={() => setShowFilterModal(true)}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
+      />
 
-          <div className="space-y-1 lg:col-span-2">
-            <Label className="text-xs">{t("production.history.status")}</Label>
-            <Select value={filters.status} onValueChange={onChangeStatusFilter}>
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("production.history.all")}</SelectItem>
-                {Object.values(ProductionStatus).map((status) => (
-                  <SelectItem key={status} value={status}>{t(`production.history.${status}`)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <Card>
+        <CardContent className="space-y-4 pt-2 lg:pt-6">
+          {loading ? 
+            (<div className="w-full flex justify-center"><Loader2 className="w-4 h-4 ml-2 animate-spin" /></div>) :
+            <>
+              <div className="hidden lg:block">
+                <ServersideTable
+                  columns={columns}
+                  data={tableRows}
+                  total={total}
+                  currentPage={currentPage}
+                  pageSize={DEFAULT_PAGE_SIZE}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onPageChange={handlePageChange}
+                  onSort={handleTableSort}
+                  loading={loading}
+                  totalPages={totalPages}
+                />
+              </div>
+              <div className="block lg:hidden">
+                <div className="space-y-4 mb-5">
+                  {productions.map((record) => (
+                    <ProductionRecordItem key={record.id} record={record} onView={onViewRecord} onEdit={onEditRecord} />
+                  ))}
+                </div>
+                <ServersidePagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageSize={DEFAULT_PAGE_SIZE}
+                  total={total}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </>
+          }
+        </CardContent>
+      </Card>
 
-          <div className="space-y-1 lg:col-span-2">
-            <Label className="text-xs">{t("production.history.product")}</Label>
-            <Select value={filters.product} onValueChange={onChangeProductFileter}>
-              <SelectTrigger className="h-9">
-                <SelectValue>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("production.history.all")}</SelectItem>
-                {uniqueProducts.map((product) => (
-                  <SelectItem
-                    key={`${product?.id!}-${product?.sku}`}
-                    value={product?.id!}
-                  >
-                    {product?.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Lọc theo ngày */}
-          <div className="space-y-1 lg:col-span-2">
-            <Label className="text-xs">{t("production.history.fromDate")}</Label>
-            <RangePickerCalendar
-              startDate={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
-              endDate={filters.dateTo ? new Date(filters.dateTo) : undefined}
-              mode="day"
-              onDateRangeChange={(range) => {
-                onChangeDateFrom(range.from);
-                onChangeDateTo(range.to);
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Thống kê nhanh */}
-        <div className="hidden lg:grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg">
-          <div className="text-center">
-            <FormattedNumber as="div" className="text-lg font-semibold" value={productions.reduce((sum, r) => sum + r.quantity!, 0)} />
-            <div className="text-xs text-gray-600">{t("production.history.totalProduction")}</div>
-          </div>
-          <div className="text-center">
-            <FormattedCurrency as="div" className="text-lg font-semibold" value={productions.reduce((sum, r) => sum + r.totalCost!, 0)} />
-            <div className="text-xs text-gray-600">{t("production.history.totalRevenue")}</div>
-          </div>
-          <div className="text-center">
-            <FormattedCurrency as="div" className="text-lg font-semibold" value={productions.reduce((sum, r) => sum + r.totalExpense!, 0)} />
-            <div className="text-xs text-gray-600">{t("production.history.totalExpense")}</div>
-          </div>
-        </div>
-
-        {/* Bảng dữ liệu */}
-        <ServersideTable
-          columns={columns}
-          data={productions}
-          total={total}
-          currentPage={currentPage}
-          pageSize={DEFAULT_PAGE_SIZE}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onPageChange={handlePageChange}
-          onSort={handleSort}
-          loading={loading}
-          totalPages={totalPages}
-        />
-      </CardContent>
-    </Card>
+      <ProductionHistoryFilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApply={handleFiltersChange}
+        currentFilters={filters}
+        products={products}
+      />
+    </>
   )
 }
