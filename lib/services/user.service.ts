@@ -28,8 +28,8 @@ export class UserService {
 
     const user = this.userRepository.create({
       ...userData,
-      email: checkUsername === UsernameType.email ? userData.username : '',
-      phone: checkUsername === UsernameType.phone ? userData.username : '',
+      email: checkUsername === UsernameType.email ? userData.username : userData.email || '',
+      phone: checkUsername === UsernameType.phone ? userData.username : userData.phone || '',
     });
     return await this.userRepository.save(user);
   }

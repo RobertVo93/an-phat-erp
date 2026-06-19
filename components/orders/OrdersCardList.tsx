@@ -25,26 +25,19 @@ export const OrdersCardList: React.FC<OrdersCardListProps> = ({
       {orders.map((order) => (
         <Card key={order.id} className="border border-gray-200">
           <CardContent className="p-4">
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center justify-between mb-3">
               <div className="space-y-1">
-                <p className="font-medium text-sm">{order.number}</p>
-                <p className="text-xs text-muted-foreground flex items-center">
-                  <Calendar className="mr-1 h-3 w-3" />
-                  {formatDate(order.createdAt!)}
-                </p>
+                <Link
+                  href={ADMIN_ROUTES.orderDetail(order.id!)}
+                  className="text-sm font-medium text-emerald-700 underline-offset-4 hover:underline"
+                >
+                  {order.number}
+                </Link>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={ADMIN_ROUTES.orderDetail(order.id!)}>{t("common.view")}</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <p className="text-xs text-muted-foreground flex items-center">
+                <Calendar className="mr-1 h-3 w-3" />
+                {formatDate(order.createdAt!)}
+              </p>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">

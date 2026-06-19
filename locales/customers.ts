@@ -32,6 +32,26 @@ export const customersTranslations = {
     en: "Filter",
     vi: "Lọc",
   },
+  "customers.sort": {
+    en: "Sort",
+    vi: "Sắp xếp",
+  },
+  "customers.sort.createdAt": {
+    en: "Created date",
+    vi: "Ngày tạo",
+  },
+  "customers.sort.joinDate": {
+    en: "Joined date",
+    vi: "Ngày tham gia",
+  },
+  "customers.sort.name": {
+    en: "Name",
+    vi: "Tên",
+  },
+  "customers.sort.lastOrder": {
+    en: "Last order",
+    vi: "Đơn cuối",
+  },
   "customers.totalCustomers": {
     en: "Total Customers",
     vi: "Tổng Khách Hàng",

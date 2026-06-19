@@ -7,7 +7,7 @@ import { useLanguage } from "@/contexts/language-context"
 
 import { Mail, Phone, MapPin, Building, Calendar, ShoppingCart, DollarSign } from "lucide-react"
 import { CustomerStatus, CustomerType } from "@/types/enums"
-import { formatCurrency, getCustomerStatusColor, getCustomerTypeColor } from "@/lib/utils"
+import { formatCurrency, formatDate, getCustomerStatusColor, getCustomerTypeColor } from "@/lib/utils"
 
 interface CustomerViewModalProps {
   isOpen: boolean
@@ -102,7 +102,7 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {t("customers.joined")}: {new Date(customer.joinDate!.toString().replace(" ", "T")).toLocaleDateString("sv-SE")}
+                  {t("customers.joined")}: {formatDate(customer.joinDate)}
                 </span>
               </div>
 
@@ -121,7 +121,7 @@ export function CustomerViewModal({ isOpen, onClose, customer }: CustomerViewMod
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  {t("customers.lastOrder")}: {customer.lastOrder ? new Date(customer.lastOrder.toString().replace(" ", "T")).toLocaleDateString("sv-SE") : "N/A"}
+                  {t("customers.lastOrder")}: {formatDate(customer.lastOrder) || "N/A"}
                 </span>
               </div>
             </div>
