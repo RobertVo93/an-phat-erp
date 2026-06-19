@@ -1,23 +1,26 @@
 import { getCustomerById } from "@/lib/httpclient";
 import { Customer, Order, OrderFilters, OrderSortBy } from "@/types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getOrders as apiGetOrders } from "@/lib/httpclient/order.client"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context";
+import type { ICustomerDetailPageData } from "@/lib/services/customerDetailPageService";
 
-export const useCustomer = (id: string) => {
+export const useCustomer = (id: string, initialData?: ICustomerDetailPageData) => {
   const { t } = useLanguage()
   const [loading, setLoading] = useState<boolean>(false)
   const [notFoundError, setNotFoundError] = useState(false);
-  const [customer, setCustomer] = useState<Customer>()
-  const [orders, setOrders] = useState<Order[]>([])
+  const [customer, setCustomer] = useState<Customer | undefined>(initialData?.customer || undefined)
+  const [orders, setOrders] = useState<Order[]>(initialData?.orders || [])
 
   // pagination
-  const [total, setTotal] = useState(0)
-  const [totalPages, setTotalPages] = useState(1)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState<OrderSortBy>("deliveryDate")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [total, setTotal] = useState(initialData?.total || 0)
+  const [totalPages, setTotalPages] = useState(initialData?.totalPages || 1)
+  const [currentPage, setCurrentPage] = useState(initialData?.currentPage || 1)
+  const [pageSize] = useState(initialData?.pageSize || 10)
+  const [sortBy, setSortBy] = useState<OrderSortBy>(initialData?.sortBy || "deliveryDate")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(initialData?.sortOrder || "desc")
+  const hasHydratedInitialOrders = useRef(Boolean(initialData))
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -37,11 +40,11 @@ export const useCustomer = (id: string) => {
   const apiParams = useMemo(() => {
     return {
       page: currentPage,
-      limit: 10,
+      limit: pageSize,
       sortBy,
       sortOrder,
     }
-  }, [currentPage, sortBy, sortOrder])
+  }, [currentPage, pageSize, sortBy, sortOrder])
 
   // apis
   const fetchCustomer = async () => {
@@ -80,6 +83,10 @@ export const useCustomer = (id: string) => {
     if(!customer) {
       fetchCustomer()
     }
+    if (hasHydratedInitialOrders.current) {
+      hasHydratedInitialOrders.current = false
+      return
+    }
     fetchOrders(apiParams)
   }, [apiParams])
 
@@ -91,6 +98,7 @@ export const useCustomer = (id: string) => {
     total,
     totalPages,
     currentPage,
+    pageSize,
     sortBy,
     sortOrder,
 

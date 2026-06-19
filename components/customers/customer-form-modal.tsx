@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Customer } from "@/types/customer"
 import { useLanguage } from "@/contexts/language-context"
 import { CustomerStatus, CustomerType } from "@/types/enums"
+import { Calendar } from "../ui/calendar"
+import { formatYYYYMMDD } from "@/lib/utils.date"
 
 interface CustomerFormModalProps {
   isOpen: boolean
@@ -41,16 +43,16 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
   useEffect(() => {
     if (customer && mode === "edit") {
       setFormData({
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone,
+        name: customer.name || undefined,
+        email: customer.email || undefined,
+        phone: customer.phone || undefined,
         company: customer.company || "",
-        location: customer.location,
-        customerType: customer.customerType as CustomerType,
-        status: customer.status as CustomerStatus,
+        location: customer.location || undefined,
+        customerType: customer.customerType as CustomerType || undefined,
+        status: customer.status as CustomerStatus || undefined,
         notes: customer.notes || "",
-        lastOrder: customer.lastOrder,
-        joinDate: customer.joinDate,
+        lastOrder: customer.lastOrder || undefined,
+        joinDate: customer.joinDate || undefined,
       })
     } else {
       setFormData({
@@ -198,16 +200,12 @@ export function CustomerFormModal({ isOpen, onClose, onSave, customer, mode }: C
 
             <div className="space-y-2">
               <Label htmlFor="joinDate">{t("customers.joined")} *</Label>
-              <Input
-                id="joinDate"
-                type="date"
-                value={
-                  formData.joinDate
-                    ? new Date(formData.joinDate).toLocaleDateString("sv-SE")
-                    : ""
-                }
-                onChange={(e) => handleInputChange("joinDate", e.target.value)}
-                required
+              <Calendar
+                selected={formData.joinDate}
+                onChange={(date) => handleInputChange("joinDate", formatYYYYMMDD(date || ""))}
+                dateFormat="dd/MM/yyyy"
+                showIcon
+                placeholderText="dd/MM/yyyy"
               />
             </div>
           </div>

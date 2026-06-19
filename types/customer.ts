@@ -27,3 +27,5 @@ export interface CustomerFilters extends IBaseFilters {
   searchTerm?: string
   customerType?: string
 }
+
+export type CustomerSortBy = "createdAt" | "joinDate" | "name" | "lastOrder"

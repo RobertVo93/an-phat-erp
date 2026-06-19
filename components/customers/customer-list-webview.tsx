@@ -1,12 +1,14 @@
 import { Badge } from "@/components/ui/badge"
 import { Customer, CustomerFilters } from "@/types"
-import { getCustomerStatusColor, getCustomerTypeColor } from "@/lib/utils"
+import type { CustomerSortBy } from "@/types/customer"
+import { formatDate, getCustomerStatusColor, getCustomerTypeColor } from "@/lib/utils"
 import { useLanguage } from "@/contexts/language-context"
 import { ServersideTable, ServersideTableColumn } from "@/components/common/table/ServersideTable"
 import CustomerActions from "@/components/customers/customer-actions"
 import { useRouter } from "next/navigation"
 import { ADMIN_ROUTES } from "@/constants"
 import { translateCustomerStatus, translateCustomerType } from "@/lib/utils.translate"
+import { CustomLink } from "../common/custom-link"
 
 interface Props {
   customers: Customer[]
@@ -20,8 +22,10 @@ interface Props {
   handleViewCustomer: (customer: Customer) => void
   handleEditCustomer: (customer: Customer) => void
   handleDeleteCustomer: (customer: Customer) => void
-  handleSort: (field: string) => void
+  handleSort: (field: CustomerSortBy) => void
 }
+
+type CustomerTableRow = Customer & { id: string }
 
 export default function CustomerListWebview({
   customers,
@@ -51,7 +55,9 @@ export default function CustomerListWebview({
       sortable: true,
       render: (row) => (
         <div className="space-y-1">
-          <p className="text-sm font-medium">{row.name}</p>
+          <CustomLink href={ADMIN_ROUTES.customerDetail(row.id!)}>
+            <p className="text-sm font-medium">{row.name}</p>
+          </CustomLink>
           <p className="text-xs text-muted-foreground">{row.number}</p>
         </div>
       ),
@@ -59,7 +65,7 @@ export default function CustomerListWebview({
     {
       key: "status",
       title: t("customers.form.status"),
-      sortable: true,
+      sortable: false,
       render: (row) => (
         <div className="space-y-1">
           <Badge className={`text-xs ${getCustomerStatusColor(row.status!)}`}>
@@ -71,7 +77,7 @@ export default function CustomerListWebview({
     {
       key: "customerType",
       title: t("customers.filter.customerType"),
-      sortable: true,
+      sortable: false,
       render: (row) => (
         <div className="space-y-1">
           <Badge
@@ -86,7 +92,7 @@ export default function CustomerListWebview({
     {
       key: "phone",
       title: t("customers.form.contactInfo"),
-      sortable: true,
+      sortable: false,
       render: (row) => (
         <div className="space-y-1">
           <p className="text-sm font-medium">{row.phone}</p>
@@ -97,10 +103,20 @@ export default function CustomerListWebview({
     {
       key: "location",
       title: t("customers.filter.location"),
-      sortable: true,
+      sortable: false,
       render: (row) => (
         <div className="space-y-1">
           <p className="text-sm font-medium">{row.location}</p>
+        </div>
+      ),
+    },
+    {
+      key: "joinDate",
+      title: t("customers.joined"),
+      sortable: true,
+      render: (row) => (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">{formatDate(row.joinDate)}</p>
         </div>
       ),
     },
@@ -120,18 +136,24 @@ export default function CustomerListWebview({
       ),
     },
   ]
+  const tableRows = customers.filter((customer): customer is CustomerTableRow => Boolean(customer.id))
+  const handleTableSort = (field: string) => {
+    if (["createdAt", "joinDate", "name", "lastOrder"].includes(field)) {
+      handleSort(field as CustomerSortBy)
+    }
+  }
 
   return (
     <ServersideTable
       columns={columns}
-      data={customers}
+      data={tableRows}
       total={totalCustomers}
       currentPage={currentPage}
       pageSize={itemsPerPage}
-      sortBy={filters.sortBy || "number"}
-      sortOrder={filters.sortOrder || "asc"}
+      sortBy={filters.sortBy || "createdAt"}
+      sortOrder={filters.sortOrder || "desc"}
       onPageChange={setCurrentPage}
-      onSort={handleSort}
+      onSort={handleTableSort}
       onRecordClick={onOpenCustomer}
       loading={loading}
       totalPages={totalPages}
