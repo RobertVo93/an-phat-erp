@@ -1,29 +1,33 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import type { Customer, CustomerFilters } from "@/types/customer"
+import { useState, useMemo, useEffect, useRef } from "react"
+import type { Customer, CustomerFilters, CustomerSortBy } from "@/types/customer"
 import { debounce } from "lodash"
 import { createCustomer, getCustomers, updateCustomer as apiUpdateCustomer, deleteCustomer as apiDeleteCustomer } from "@/lib/httpclient/customer.client"
 import { CustomerStatus, CustomerType } from "@/types/enums"
+import type { ICustomerPageData } from "@/lib/services/customerPageService"
+import { removeEmptyProperties } from "@/lib/utils"
 
-export function useCustomers() {
-  const [customers, setCustomers] = useState<Customer[]>([])
+export function useCustomers(initialData?: ICustomerPageData) {
+  const [customers, setCustomers] = useState<Customer[]>(initialData?.customers || [])
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<CustomerFilters>({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [filters, setFilters] = useState<CustomerFilters>(initialData?.filters || {})
+  const [currentPage, setCurrentPage] = useState(initialData?.currentPage || 1)
+  const [itemsPerPage, setItemsPerPage] = useState(initialData?.itemsPerPage || 10)
   const [loading, setLoading] = useState(false)
-  const [totalRevenue, setTotalRevenue] = useState<number>(0)
+  const [totalRevenue, setTotalRevenue] = useState<number>(initialData?.totalRevenue || 0)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
-  const [totalCustomers, setTotalCustomers] = useState<number>(0)
+  const [totalCustomers, setTotalCustomers] = useState<number>(initialData?.totalCustomers || 0)
+  const hasHydratedInitialCustomers = useRef(Boolean(initialData))
+  const hasHydratedInitialSearch = useRef(Boolean(initialData))
 
-  const reloadCustomers = async () => {
-    setLoading(true)
+  const reloadCustomers = async (needLoading: boolean = true) => {
+    setLoading(needLoading)
     try {
       const res = await getCustomers({
         status: filters.status as CustomerStatus,
@@ -56,9 +60,13 @@ export function useCustomers() {
   }
 
   useEffect(() => {
+    if (hasHydratedInitialSearch.current) {
+      hasHydratedInitialSearch.current = false
+      return
+    }
     const debouncedFetchProducts = debounce(async () => {
       setCurrentPage(1)
-      reloadCustomers()
+      reloadCustomers(true)
     }, 1000)
 
     debouncedFetchProducts()
@@ -70,7 +78,11 @@ export function useCustomers() {
   }, [searchTerm])
 
   useEffect(() => {
-    reloadCustomers()
+    if (hasHydratedInitialCustomers.current) {
+      hasHydratedInitialCustomers.current = false
+      return
+    }
+    reloadCustomers(true)
   }, [currentPage, itemsPerPage, filters])
 
   const addCustomer = async (customer: Omit<Customer, "id">) => {
@@ -84,7 +96,8 @@ export function useCustomers() {
         updatedAt: new Date().toISOString() as any,
       }
       const created = await createCustomer(newCustomer)
-      setCustomers((prev) => [...prev, created])
+      setCustomers((prev) => [created, ...prev])
+      reloadCustomers(false);
     } catch (e) {
       console.error(e)
     } finally {
@@ -95,10 +108,7 @@ export function useCustomers() {
   const updateCustomer = async (id: string, updates: Partial<Customer>) => {
     try {
       setLoading(true)
-      const updatedCustomer: Customer = {
-        ...updates,
-        updatedAt: new Date().toISOString() as any,
-      }
+      const updatedCustomer: Customer = removeEmptyProperties(updates)
       const updated = await apiUpdateCustomer(id, updatedCustomer)
       setCustomers(customers.map((cus) => (cus.id === id ? { ...cus, ...updated } : cus)))
     } catch (e) {
@@ -113,6 +123,7 @@ export function useCustomers() {
       setLoading(true)
       await apiDeleteCustomer(id)
       setCustomers(customers.filter((customer) => customer.id !== id))
+      reloadCustomers(false);
     } catch (e) {
       console.error(e)
     } finally {
@@ -158,43 +169,16 @@ export function useCustomers() {
     }
   }
 
-  // Smart pagination for mobile
-  const getVisiblePages = () => {
-    const delta = 2
-    const range = []
-    const rangeWithDots = []
-
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i)
-    }
-
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, "...")
-    } else {
-      rangeWithDots.push(1)
-    }
-
-    rangeWithDots.push(...range)
-
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push("...", totalPages)
-    } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages)
-    }
-
-    return rangeWithDots
-  }
-
   const totalPages = useMemo(() => Math.ceil(totalCustomers / itemsPerPage), [totalCustomers, itemsPerPage])
   const startIndex = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage])
   const endIndex = useMemo(() => Math.min(currentPage * itemsPerPage, customers.length), [currentPage, itemsPerPage, customers])
 
-  const handleSort = (field: string) => {
+  const handleSort = (field: CustomerSortBy) => {
     setFilters(prev => {
       if (prev.sortBy === field) {
         return { ...prev, sortBy: field, sortOrder: prev.sortOrder === "asc" ? "desc" : "asc", page: 1 }
       } else {
-        return { ...prev, sortBy: field, sortOrder: "asc", page: 1 }
+        return { ...prev, sortBy: field, sortOrder: "desc", page: 1 }
       }
     })
   }
@@ -223,7 +207,6 @@ export function useCustomers() {
     setFilters,
     setCurrentPage,
     setItemsPerPage,
-    getVisiblePages,
     handleCreateCustomer,
     handleViewCustomer,
     handleEditCustomer,
