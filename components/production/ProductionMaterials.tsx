@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button"
-import { FormattedNumber } from "@/components/ui/formatted-number"
-import { FormattedCurrency } from "@/components/ui/formatted-currency"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus } from "lucide-react"
-import { formatLargeCurrency, formatSystemNumber, groupWarehouseProductsByProduct } from "@/lib/utils"
+import { formatCurrency, formatSystemNumber, groupWarehouseProductsByProduct } from "@/lib/utils"
 import React, { useMemo } from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { IProductionElement } from "@/types/production"
 import { Warehouse } from "@/types"
+import { QuantitySelector } from "../common/quantity-selector"
 
 interface ProductionMaterialsProps {
     selectedMaterials: IProductionElement[]
@@ -36,7 +35,7 @@ export const ProductionMaterials = ({ selectedMaterials, addMaterial, updateMate
             <div className="space-y-3">
                 {selectedMaterials.map((material, index) => (
                     <div key={index} className="border rounded-lg p-3 space-y-3">
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div className="space-y-1">
                                 <Label className="text-xs">{t("production.form.materials")}</Label>
                                 <Select value={material.id} onValueChange={(value) => updateMaterial(index, "id", value)}>
@@ -60,45 +59,42 @@ export const ProductionMaterials = ({ selectedMaterials, addMaterial, updateMate
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">{t("production.form.quantity")}</Label>
-                                <FormattedNumber
-                                    as="input"
-                                    placeholder="1"
-                                    min={1}
-                                    value={material.quantity}
-                                    onValueChange={(value) => {
-                                        updateMaterial(index, "quantity", value);
-                                    }}
-                                    className="h-9"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">{t("production.form.unitCost")}</Label>
-                                <FormattedCurrency
-                                    as="input"
-                                    placeholder="1"
-                                    value={material.unitCost}
-                                    onValueChange={(value) => {
-                                        updateMaterial(index, "unitCost", value);
-                                    }}
-                                    className="h-9"
-                                />
+                            <div className="col-span-2 grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <Label className="text-xs">{t("production.form.quantity")}</Label>
+                                    <QuantitySelector
+                                        quantity={material.quantity ?? 0}
+                                        showAction={false}
+                                        onQuantityChange={(newValue) => updateMaterial(index, "material", newValue)}
+                                        className="h-9"
+                                        inputClassName="text-left"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">{t("production.form.unitCost")}</Label>
+                                    <QuantitySelector
+                                        quantity={material.unitCost ?? 0}
+                                        showAction={false}
+                                        onQuantityChange={(newValue) => updateMaterial(index, "unitCost", newValue)}
+                                        className="h-9"
+                                        inputClassName="text-left"
+                                    />
+                                </div>
                             </div>
                         </div>
                         {material?.id &&
                             <div className="grid grid-cols-3 gap-2 text-xs">
-                                <div>
+                                <div className="flex flex-col md:flex-row md:gap-2">
                                     <span className="text-gray-600">{t("production.form.unit")}: </span>
                                     <span className="font-medium">{t(`production.form.${material.unit}`)}</span>
                                 </div>
-                                <div>
+                                <div className="flex flex-col md:flex-row md:gap-2">
                                     <span className="text-gray-600">{t("production.detail.inStock")}: </span>
                                     <span className="font-medium">{formatSystemNumber(groupWarehouseProducts.find((item) => (item.product.id === material?.id))?.totalQuantity || 0)}</span>
                                 </div>
-                                <div>
+                                <div className="flex flex-col md:flex-row md:gap-2">
                                     <span className="text-gray-600">{t("production.form.totalCost")}: </span>
-                                    <span className="font-medium">{formatLargeCurrency(material.totalCost ?? 0)}</span>
+                                    <span className="font-medium">{formatCurrency(material.totalCost ?? 0)}</span>
                                 </div>
                             </div>
                         }

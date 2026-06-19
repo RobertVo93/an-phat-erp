@@ -30,7 +30,7 @@ function filterNavItemsByPermissions(navItems: NavItem[], permissions: UserPageP
 
 export function ERPLayout({ children }: ERPLayoutProps) {
   const { t } = useLanguage()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const { user, isAdmin } = useAuth()
   const [permissions, setPermissions] = useState<UserPagePermission[]>([])
   const [isLoading, setIsLoading] = useState(false)

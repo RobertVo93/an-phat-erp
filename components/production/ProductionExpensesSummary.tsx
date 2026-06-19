@@ -57,7 +57,7 @@ export const ProductionExpensesSummary = ({ selectedMaterials, selectedUtilities
                             <span>{t("production.form.expensePerUnit")}:</span>
                             <FormattedCurrency
                                 as="span"
-                                value={calculateTotalCost() / quantity}
+                                value={Math.floor(calculateTotalCost() / quantity)}
                             />
                         </div>
                     )}

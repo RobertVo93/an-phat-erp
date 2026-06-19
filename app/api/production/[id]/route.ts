@@ -2,9 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { getUserFromRequest } from "@/lib/auth/jwt";
 import { ProductionSchema } from "../production.schema";
-import { deleteProduction, updateProduction } from "@/lib/services/productionService";
+import { deleteProduction, getProductionByIdOrNumber, updateProduction } from "@/lib/services/productionService";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await ensureDataSource();
+    const { id } = await params;
+    const result = await getProductionByIdOrNumber(decodeURIComponent(id));
+    if (!result) return NextResponse.json({ error: "Production not found" }, { status: 404 });
+    return NextResponse.json(result);
+  } catch (error) {
+    return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });
+  }
+}
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
@@ -32,7 +46,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {

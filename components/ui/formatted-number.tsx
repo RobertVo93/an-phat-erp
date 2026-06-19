@@ -22,6 +22,7 @@ type FormattedNumberInputProps = FormattedNumberBaseProps & {
 	min?: number
 	max?: number
 	allowEmpty?: boolean
+	autoFocus?: boolean
 }
 
 type FormattedNumberDivProps = FormattedNumberBaseProps & {
@@ -64,6 +65,7 @@ export function FormattedNumber(props: FormattedNumberProps) {
 					const parsedValue = parseSystemNumberInput(rawValue)
 					props.onValueChange(clampValue(parsedValue, props.min, props.max))
 				}}
+				autoFocus={props.autoFocus}
 			/>
 		)
 	}
