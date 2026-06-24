@@ -76,13 +76,12 @@ export const OrderDetailHeader = ({ orderData, setShowEditModal, handlePrint, ha
                 </div>
             </div>
             <div className="space-y-2">
-                <div className="flex items-center gap-3">
+                <div className="flex justify-between gap-3">
                     <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                        {t("orders.title")} {orderData?.number}
+                        #{orderData?.number}
                     </h2>
                     <Badge className={getOrderStatusColor(orderData?.status!)}>{getStatusText(orderData?.status!)}</Badge>
                 </div>
-                <p className="text-sm sm:text-base text-muted-foreground">{t("orders.orderDetails")}</p>
             </div>
         </div>
     )

@@ -28,6 +28,10 @@ export const commonTranslations = {
     en: "Products",
     vi: "Sản phẩm",
   },
+  "common.item": {
+    en: "Item",
+    vi: "Sản phẩm",
+  },
   "common.createdAt": {
     en: "Created At",
     vi: "Ngày tạo",

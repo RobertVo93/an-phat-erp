@@ -1,23 +1,11 @@
 "use client"
 
+import { OrderForm } from "@/components/orders/OrderForm"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/contexts/language-context"
-import { Order } from "@/types/order"
-import { OrderStatus, PaymentMethod } from "@/types/enums"
-import { Warehouse } from "@/types"
-import { formatLargeCurrency } from "@/lib/utils"
-import { CustomerSelector, OrderItemSelector } from "@/components/common/selector"
-import { OrderItemsList } from "@/components/orders/OrderItemsList"
-import { OrderSummary } from "@/components/orders/OrderSummary"
 import { useNewOrder } from "@/hooks/use-new-order"
+import { Order, Warehouse } from "@/types"
 import { useEffect } from "react"
-import { UIDateTimePicker } from "@/components/ui/datepicker"
 
 interface OrderNewModalProps {
   open: boolean
@@ -28,7 +16,7 @@ interface OrderNewModalProps {
 
 export function OrderNewModal({ open, allWarehouses, onOpenChange, createOrder }: OrderNewModalProps) {
   const { t } = useLanguage()
-  const {
+  const {  
     orderData,
     orderItems,
     subtotal,
@@ -39,189 +27,48 @@ export function OrderNewModal({ open, allWarehouses, onOpenChange, createOrder }
     setOrderItems,
     onCustomerselect,
     addProduct,
-    updateQuantity,
-    updatePrice,
+    updateProduct,
     removeItem,
     handleSubmit,
-    getWarehouseProductTotal,
   } = useNewOrder(createOrder)
-  
+
   useEffect(() => {
     if (allWarehouses.length > 0 && !orderData.warehouse) {
-      setOrderData({ ...orderData, warehouse: allWarehouses.find((wh) => wh.main) })
+      setOrderData((currentOrder) => ({
+        ...currentOrder,
+        warehouse: allWarehouses.find((warehouse) => warehouse.main),
+      }))
     }
-  }, [allWarehouses, orderData.warehouse])
+  }, [allWarehouses, orderData.warehouse, setOrderData])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("orders.createNewOrder")}</DialogTitle>
           <DialogDescription>{t("orders.fillOrderDetails")}</DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Customer Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t("orders.customerInformation")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <CustomerSelector
-                onCustomerSelect={onCustomerselect}
-                selectedCustomer={orderData.customer}
-              />
-              <div className="space-y-2">
-                <Label htmlFor="shippingAddress">{t("orders.shippingAddress")}</Label>
-                <Textarea
-                  id="shippingAddress"
-                  value={orderData.shippingAddress}
-                  onChange={e => setOrderData({ ...orderData, shippingAddress: e.target.value })}
-                  placeholder={t("orders.enterShippingAddress")}
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-          {/* Order Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t("orders.orderDetails")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="status">{t("orders.status")} *</Label>
-                <Select
-                  value={orderData.status?.toString()}
-                  onValueChange={value => setOrderData({ ...orderData, status: value as OrderStatus })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("orders.selectOrderStatus")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(OrderStatus).map((status, index) => (
-                      <SelectItem value={status} key={index}>{t(`orders.status.${status}`)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-3 flex flex-col">
-                <Label htmlFor="deliveryDateTime">{t("orders.deliveryDateTime")}</Label>
-                <UIDateTimePicker
-                  id="deliveryDateTime"
-                  placeholder={t("orders.deliveryDateTime")}
-                  selected={orderData.deliveryDate || null}
-                  onChange={e => setOrderData({ ...orderData, deliveryDate: e || undefined })}
-                  timeIntervals={15}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="warehouse">{t("orders.warehouse")} *</Label>
-                <Select
-                  value={orderData.warehouse?.id}
-                  onValueChange={value => {
-                    setOrderData({ ...orderData, warehouse: allWarehouses.find(wh => wh.id === value) })
-                    setOrderItems([])
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("orders.selectWarehouse")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allWarehouses.map((wh, ind) => (
-                      <SelectItem value={wh.id!} key={ind}>{wh.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tags">{t("orders.tags")}</Label>
-                <Input
-                  id="tags"
-                  value={orderData.tags}
-                  onChange={e => setOrderData({ ...orderData, tags: [...orderData.tags!, e.target.value] })}
-                  placeholder={t("orders.tagsPlaceholder")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="paymentMethod">{t("orders.paymentMethod")} *</Label>
-                <Select
-                  value={orderData.paymentMethod?.toString()}
-                  onValueChange={value => setOrderData({ ...orderData, paymentMethod: value as PaymentMethod })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("orders.selectPaymentMethod")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(PaymentMethod).map((paymentMethod, index) => (
-                      <SelectItem value={paymentMethod} key={index}>{t(`orders.paymentMethod.${paymentMethod}`)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">{t("orders.orderNotes")}</Label>
-                <Textarea
-                  id="notes"
-                  value={orderData.notes}
-                  onChange={e => setOrderData({ ...orderData, notes: e.target.value })}
-                  placeholder={t("orders.specialInstructions")}
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        {/* Products Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t("orders.orderItems")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <OrderItemSelector
-              selectedRecords={orderItems}
-              warehouseId={orderData.warehouse?.id || ""}
-              onRecordSelect={addProduct}
-            />
-            {orderItems.length > 0 ? (
-              <OrderItemsList
-                orderItems={orderItems}
-                updateQuantity={updateQuantity}
-                updatePrice={updatePrice}
-                removeItem={removeItem}
-                getWarehouseProductTotal={getWarehouseProductTotal}
-              />
-            ) : (
-              <div className="text-center py-8 text-gray-500">{t("orders.noItemsAdded")}</div>
-            )}
-          </CardContent>
-        </Card>
-        {/* Order Summary */}
-        {orderItems.length > 0 && (
-          <OrderSummary
-            subtotal={formatLargeCurrency(subtotal)}
-            tax={formatLargeCurrency(tax)}
-            shipping={formatLargeCurrency(shipping)}
-            total={formatLargeCurrency(total)}
-          />
-        )}
-        {/* Action Buttons */}
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={() => handleSubmit(onOpenChange)}
-            disabled={
-              !orderData.customer ||
-              !orderData.status ||
-              !orderData.paymentMethod ||
-              orderItems.length === 0 ||
-              !orderData.warehouse
-            }
-          >
-            {t("orders.createOrder")}
-          </Button>
-        </div>
+        <OrderForm
+          orderData={orderData}
+          orderItems={orderItems}
+          allWarehouses={allWarehouses}
+          subtotal={subtotal}
+          tax={tax}
+          shipping={shipping}
+          total={total}
+          submitLabel={t("orders.createOrder")}
+          setOrderData={setOrderData}
+          onCustomerSelect={onCustomerselect}
+          onWarehouseSelect={(warehouse) => {
+            setOrderData({ ...orderData, warehouse })
+            setOrderItems([])
+          }}
+          addProduct={addProduct}
+          updateProduct={updateProduct}
+          removeItem={removeItem}
+          onCancel={() => onOpenChange(false)}
+          onSubmit={() => handleSubmit(onOpenChange)}
+        />
       </DialogContent>
     </Dialog>
   )

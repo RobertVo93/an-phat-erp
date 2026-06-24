@@ -1,2 +1,2 @@
 export * from "./CustomerSelector"
-export * from "./OrderItemSelector"
+export * from "./order-item-selector"
