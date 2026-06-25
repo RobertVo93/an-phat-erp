@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react"
 import { Customer } from "@/types/customer"
-import { Product } from "@/types/product"
 import { Order, IOrderItem } from "@/types/order"
 import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
 import { groupWarehouseProductsByProduct, getNextBlockTime } from "@/lib/utils"
@@ -36,23 +35,35 @@ export function useNewOrder(createOrder: (orderData: Partial<Order>) => void) {
         })
     }
 
-    const addProduct = (newItem: IOrderItem) => {
-        setOrderItems([...orderItems, newItem])
+    const addProduct = () => {
+        setOrderItems([...orderItems, {}])
     }
 
-    const updateQuantity = (index: number, quantity: number, stock: number) => {
-        if (quantity <= 0 || quantity > stock) return
+    const updateProduct = (index: number, field: "id" | "quantity" | "unitCost", value: string | number) => {
         const updatedItems = [...orderItems]
-        updatedItems[index].quantity = quantity
-        updatedItems[index].totalCost = quantity * updatedItems[index].unitCost!
-        setOrderItems(updatedItems)
-    }
-
-    const updatePrice = (index: number, price: number) => {
-        if (price < 0) return
-        const updatedItems = [...orderItems]
-        updatedItems[index].unitCost = price
-        updatedItems[index].totalCost = updatedItems[index].quantity! * price
+        if (field === "id") {
+            const warehouseProducts = groupWarehouseProductsByProduct(orderData.warehouse?.warehouseProducts || [])
+            const productSummary = warehouseProducts.find((item) => item.product?.id === value)
+            if (productSummary) {
+                updatedItems[index] = {
+                    ...updatedItems[index],
+                    id: productSummary.product.id,
+                    name: productSummary.product.name,
+                    number: productSummary.product.sku,
+                    unit: productSummary.product.unit,
+                    quantity: 1,
+                    unitCost: productSummary.product.cost,
+                    totalCost: productSummary.product.cost,
+                    product: productSummary.product,
+                }
+            }
+        } else if (field === "quantity") {
+            updatedItems[index].quantity = Number.parseFloat(String(value)) || 0
+            updatedItems[index].totalCost = updatedItems[index].quantity! * (updatedItems[index].unitCost ?? 0)
+        } else {
+            updatedItems[index].unitCost = Number.parseFloat(String(value)) || 0
+            updatedItems[index].totalCost = (updatedItems[index].quantity ?? 0) * updatedItems[index].unitCost!
+        }
         setOrderItems(updatedItems)
     }
 
@@ -73,11 +84,6 @@ export function useNewOrder(createOrder: (orderData: Partial<Order>) => void) {
         onOpenChange(false)
     }
 
-    const getWarehouseProductTotal = (productId: string) => {
-        return groupWarehouseProductsByProduct(orderData.warehouse?.warehouseProducts!)
-            .find((wp) => (wp.product.id === productId))?.totalQuantity || 0
-    }
-
     return {
         orderData,
         orderItems,
@@ -89,10 +95,8 @@ export function useNewOrder(createOrder: (orderData: Partial<Order>) => void) {
         setOrderItems,
         onCustomerselect,
         addProduct,
-        updateQuantity,
-        updatePrice,
+        updateProduct,
         removeItem,
         handleSubmit,
-        getWarehouseProductTotal,
     }
 }

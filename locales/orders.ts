@@ -20,6 +20,10 @@ export const ordersTranslations = {
     en: "Filter",
     vi: "Lọc",
   },
+  "orders.sort": {
+    en: "Sort",
+    vi: "Sắp xếp",
+  },
   "orders.allOrders": {
     en: "All Orders",
     vi: "Tất Cả Đơn Hàng",
@@ -30,7 +34,7 @@ export const ordersTranslations = {
   },
   "orders.number": {
     en: "Order Number",
-    vi: "Số Đơn Hàng",
+    vi: "Mã Đơn Hàng",
   },
   "orders.customer": {
     en: "Customer",

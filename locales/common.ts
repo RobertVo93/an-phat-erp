@@ -28,6 +28,10 @@ export const commonTranslations = {
     en: "Products",
     vi: "Sản phẩm",
   },
+  "common.item": {
+    en: "Item",
+    vi: "Sản phẩm",
+  },
   "common.createdAt": {
     en: "Created At",
     vi: "Ngày tạo",
@@ -39,6 +43,10 @@ export const commonTranslations = {
   "common.page": {
     en: "page",
     vi: "trang",
+  },
+  "common.itemsPerPage": {
+    en: "Items per page",
+    vi: "Số dòng mỗi trang",
   },
   "common.loading": {
     en: "Loading...",

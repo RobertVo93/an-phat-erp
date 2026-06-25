@@ -34,8 +34,8 @@ export default function OrderLogItem({ logs }: Props) {
               </TableRow>
           </TableHeader>
           <TableBody>
-            {value.map((item: IOrderItem) => (
-              <TableRow key={item.id}>
+            {value.map((item: IOrderItem, index: number) => (
+              <TableRow key={item.id || index}>
                 <TableCell>{item.number}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
                 <TableCell>{formatLargeCurrency(item.unitCost!)}</TableCell>

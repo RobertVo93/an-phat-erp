@@ -1,14 +1,12 @@
-import { Calendar, MoreVertical } from "lucide-react"
-import Link from "next/link"
+import { Calendar } from "lucide-react"
 import React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ADMIN_ROUTES } from "@/constants/nav"
-import { formatCurrency, formatDate, getOrderStatusColor } from "@/lib/utils"
+import { formatCurrency, formatDate, formatDateTime, getOrderStatusColor } from "@/lib/utils"
 import { useLanguage } from "@/contexts/language-context"
 import { Order } from "@/types/order"
+import { CustomLink } from "../common/custom-link"
 
 interface OrdersCardListProps {
   orders: Order[]
@@ -27,12 +25,7 @@ export const OrdersCardList: React.FC<OrdersCardListProps> = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="space-y-1">
-                <Link
-                  href={ADMIN_ROUTES.orderDetail(order.id!)}
-                  className="text-sm font-medium text-emerald-700 underline-offset-4 hover:underline"
-                >
-                  {order.number}
-                </Link>
+                <CustomLink href={ADMIN_ROUTES.orderDetail(order.id!)} text={order.number}/>
               </div>
               <p className="text-xs text-muted-foreground flex items-center">
                 <Calendar className="mr-1 h-3 w-3" />
@@ -42,11 +35,11 @@ export const OrdersCardList: React.FC<OrdersCardListProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{t("orders.expectedDelivery")}:</span>
-                <span className="text-sm font-medium text-red-500">{order.deliveryDate ? formatDate(order.deliveryDate) : "-"}</span>
+                <span className="text-sm font-medium text-red-500">{order.deliveryDate ? formatDateTime(order.deliveryDate) : "-"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{t("orders.customer")}:</span>
-                <span className="text-sm font-medium">{order.customer?.name}</span>
+                <CustomLink href={ADMIN_ROUTES.customerDetail(order.customer?.id!)} text={order.customer?.name}/>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{t("orders.amount")}:</span>

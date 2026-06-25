@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import React from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { Order } from "@/types"
-import { formatLargeCurrency } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 
 interface OrderSummaryCardProps {
     subtotal: number
@@ -21,23 +21,21 @@ export const OrderSummaryCard = ({ subtotal, orderData }: OrderSummaryCardProps)
                 <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">{t("orders.subtotal")}:</span>
-                        <span>{formatLargeCurrency(subtotal)}</span>
+                        <span>{formatCurrency(subtotal)}</span>
                     </div>
-                    {
-                        orderData?.tax && (
+                    {!!orderData?.tax && (
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">{t("orders.tax")}:</span>
-                                <span>{formatLargeCurrency(orderData?.tax!)}</span>
+                                <span>{formatCurrency(orderData?.tax!)}</span>
                             </div>
-                        )
-                    }
+                    )}
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">{t("orders.shipping")}:</span>
-                        <span>{orderData?.shippingFee! === 0 ? t("orders.free") : formatLargeCurrency(orderData?.shippingFee!)}</span>
+                        <span>{orderData?.shippingFee! === 0 ? t("orders.free") : formatCurrency(orderData?.shippingFee!)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
                         <span>{t("orders.total")}:</span>
-                        <span>{formatLargeCurrency(orderData?.totalAmount!)}</span>
+                        <span>{formatCurrency(orderData?.totalAmount!)}</span>
                     </div>
                 </div>
             </CardContent>
