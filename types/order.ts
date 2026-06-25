@@ -2,6 +2,7 @@ import { OrderStatus, PaymentStatus, PaymentMethod, ProductUnit } from "@/types/
 import { IBase, IBaseFilters } from "./base.interface";
 import { Customer as ICustomer } from "./customer";
 import { Warehouse as IWarehouse } from "./warehouse";
+import { Product } from "./product";
 
 export interface Order extends IBase {
   number?: string
@@ -33,6 +34,7 @@ export interface IOrderItem {
   unitCost?: number
   unit?: ProductUnit
   number?: string
+  product?: Product
 }
 
 export interface OrderFilters extends IBaseFilters{
@@ -47,4 +49,4 @@ export interface OrderFilters extends IBaseFilters{
   customer?: string
 }
 
-export type OrderSortBy = "deliveryDate" | "totalAmount" | "customer" | "number"
+export type OrderSortBy = "deliveryDate" | "totalAmount" | "customer" | "number" | "orderDate"
