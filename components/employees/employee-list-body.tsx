@@ -2,17 +2,20 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { getEmployeeStatusColor, getEmployeeTypeColor } from "@/lib/utils"
 import { Employee } from "@/types/employee"
-import { Building, ChevronLeft, ChevronRight, Mail, Phone, Users } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Building, Mail, Phone, Users } from "lucide-react"
 import EmployeeActions from "@/components/employees/employee-actions"
 import { useLanguage } from "@/contexts/language-context"
+import { CustomLink } from "@/components/common/custom-link"
+import { ADMIN_ROUTES } from "@/constants/nav"
+import { ServersidePagination } from "@/components/common/table/ServersidePagination"
 
 interface EmployeeListBodyProps {
     employees: Employee[]
     currentPage: number
     totalPages: number
+    pageSize: number
+    totalEmployees: number
     setCurrentPage: (currentPage: number) => void
-    handleViewEmployee: (employee: Employee) => void
     handleEditEmployee: (employee: Employee) => void
     handleDeleteEmployee: (employee: Employee) => void
 }
@@ -20,8 +23,9 @@ export const EmployeeListBody = ({
     employees,
     currentPage,
     totalPages,
+    pageSize,
+    totalEmployees,
     setCurrentPage,
-    handleViewEmployee,
     handleEditEmployee,
     handleDeleteEmployee,
 }: EmployeeListBodyProps) => {
@@ -35,7 +39,9 @@ export const EmployeeListBody = ({
                         <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2 mb-2">
-                                    <h3 className="font-semibold text-base truncate">{employee.name}</h3>
+                                    <CustomLink href={ADMIN_ROUTES.employeeDetail(employee.number || employee.id || "")}>
+                                        {employee.name}
+                                    </CustomLink>
                                     <Badge className={getEmployeeStatusColor(employee.status!)} variant="secondary">
                                         {t(`employees.status.${employee.status}`)}
                                     </Badge>
@@ -45,7 +51,7 @@ export const EmployeeListBody = ({
                                     <div className="flex items-center space-x-2">
                                         <Building className="h-3 w-3 flex-shrink-0" />
                                         <span className="truncate">
-                                            {employee.position} - {t(`employees.departments.${employee.department}`)}
+                                            {employee.position} - {t(`employees.departments.${employee.department?.toLowerCase()}`)}
                                         </span>
                                     </div>
 
@@ -73,7 +79,6 @@ export const EmployeeListBody = ({
                             {/* Actions Dropdown */}
                             <EmployeeActions
                                 employee={employee}
-                                handleViewEmployee={handleViewEmployee}
                                 handleEditEmployee={handleEditEmployee}
                                 handleDeleteEmployee={handleDeleteEmployee}
                             />
@@ -91,57 +96,15 @@ export const EmployeeListBody = ({
                 )}
             </div>
 
-            {/* Pagination - Mobile Optimized */}
-            <Card className="p-4 mt-2">
-                <div className="flex items-center justify-center space-x-1">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                        className="px-2"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-
-                    <div className="flex items-center space-x-1">
-                        {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-                            let pageNumber: number
-                            if (totalPages <= 3) {
-                                pageNumber = i + 1
-                            } else if (currentPage <= 2) {
-                                pageNumber = i + 1
-                            } else if (currentPage >= totalPages - 1) {
-                                pageNumber = totalPages - 2 + i
-                            } else {
-                                pageNumber = currentPage - 1 + i
-                            }
-
-                            return (
-                                <Button
-                                    key={pageNumber}
-                                    variant={currentPage === pageNumber ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setCurrentPage(pageNumber)}
-                                    className="w-8 h-8 p-0"
-                                >
-                                    {pageNumber}
-                                </Button>
-                            )
-                        })}
-                    </div>
-
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                        disabled={currentPage === totalPages}
-                        className="px-2"
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </Card>
+            <div className="mt-4">
+                <ServersidePagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    pageSize={pageSize}
+                    total={totalEmployees}
+                    onPageChange={setCurrentPage}
+                />
+            </div>
         </>
     )
 }

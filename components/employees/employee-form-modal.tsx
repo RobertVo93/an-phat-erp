@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Employee } from "@/types/employee"
 import { useLanguage } from "@/contexts/language-context"
 import { EmployeeStatus, EmployeeType } from "@/types"
+import { QuantitySelector } from "@/components/common/quantity-selector"
+import { Calendar } from "@/components/ui/calendar"
 
 interface EmployeeFormModalProps {
   isOpen: boolean
@@ -38,6 +40,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const salaryRef = useRef(formData.salary ?? 0)
 
   useEffect(() => {
     if (employee && mode === "edit") {
@@ -71,6 +74,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
         notes: "",
       })
     }
+    salaryRef.current = employee?.salary ?? 0
     setErrors({})
   }, [employee, mode, isOpen])
 
@@ -100,6 +104,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
 
     const employeeData = {
       ...formData,
+      salary: salaryRef.current,
       ...(mode === "edit" && employee ? { id: employee.id } : {}),
     }
 
@@ -107,16 +112,29 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
     onClose()
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    if (field === "salary") {
-      setFormData((prev) => ({ ...prev, [field]: Number(value) }))
-    } else {
-      setFormData((prev) => ({ ...prev, [field]: value }))
-    }
+  const clearFieldError = (field: string) => {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }))
     }
   }
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    clearFieldError(field)
+  }
+
+  const handleSalaryChange = (salary: number) => {
+    salaryRef.current = salary
+    setFormData((prev) => ({ ...prev, salary }))
+    clearFieldError("salary")
+  }
+
+  const handleHireDateChange = (hireDate: Date | null) => {
+    setFormData((prev) => ({ ...prev, hireDate: hireDate ?? undefined }))
+    clearFieldError("hireDate")
+  }
+
+  const selectedHireDate = formData.hireDate ? new Date(formData.hireDate) : null
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -221,24 +239,26 @@ export function EmployeeFormModal({ isOpen, onClose, onSave, employee, mode }: E
 
               <div className="space-y-2">
                 <Label htmlFor="salary">{t("employees.form.salary")}</Label>
-                <Input
+                <QuantitySelector
                   id="salary"
-                  value={formData.salary}
-                  type="number"
-                  onChange={(e) => handleInputChange("salary", e.target.value)}
-                  placeholder="0 ₫"
-                  className={errors.salary ? "border-red-500" : ""}
+                  quantity={formData.salary ?? 0}
+                  min={0}
+                  max={Number.MAX_SAFE_INTEGER}
+                  showAction={false}
+                  onQuantityChange={handleSalaryChange}
+                  className="h-10"
+                  inputClassName={errors.salary ? "border-red-500 text-left" : "text-left"}
                 />
                 {errors.salary && <p className="text-sm text-red-500">{errors.salary}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="hireDate">{t("employees.form.hireDate")} *</Label>
-                <Input
-                  id="hireDate"
-                  type="date"
-                  value={new Date(formData.hireDate!).toLocaleDateString("sv-SE")}
-                  onChange={(e) => handleInputChange("hireDate", e.target.value)}
+                <Calendar
+                  selected={selectedHireDate && !Number.isNaN(selectedHireDate.getTime()) ? selectedHireDate : null}
+                  onChange={handleHireDateChange}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/MM/yyyy"
                   className={errors.hireDate ? "border-red-500" : ""}
                 />
                 {errors.hireDate && <p className="text-sm text-red-500">{errors.hireDate}</p>}
