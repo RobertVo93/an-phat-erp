@@ -8,16 +8,21 @@ import { getWarehouses } from "@/lib/httpclient/warehouse.client"
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
 import { IActivityLog } from "@/types/activity-log.interface"
+import type { IOrderDetailPageData } from "@/lib/services/orderDetailPageService"
 
-export function useOrder(orderId: string) {
+const calculateSubtotal = (order?: Order) => order?.items?.reduce((sum, item) => sum + (item.totalCost ?? 0), 0) ?? 0
+
+export function useOrder(orderId: string, initialData?: IOrderDetailPageData) {
   const { t } = useLanguage()
-  const [allCustomers, setAllCustomers] = useState<Customer[]>([])
-  const [allWarehouses, setAllWarehouses] = useState<Warehouse[]>([])
+  const [allCustomers, setAllCustomers] = useState<Customer[]>(initialData?.allCustomers || [])
+  const [allWarehouses, setAllWarehouses] = useState<Warehouse[]>(initialData?.allWarehouses || [])
   const [showEditModal, setShowEditModal] = useState(false)
-  const [orderData, setOrderData] = useState<Order>()
+  const [orderData, setOrderData] = useState<Order | undefined>(initialData?.order || undefined)
   const [loading, setLoading] = useState<boolean>(false)
-  const [subtotal, setSubtotal] = useState<number>(0)
-  const [orderActivityLogs, setOrderActivityLogs] = useState<IActivityLog[]>([])
+  const [subtotal, setSubtotal] = useState<number>(calculateSubtotal(initialData?.order || undefined))
+  const [orderActivityLogs, setOrderActivityLogs] = useState<IActivityLog[]>(initialData?.orderActivityLogs || [])
+  const hasHydratedInitialOrder = useRef(Boolean(initialData?.order))
+  const hasHydratedInitialOptions = useRef(Boolean(initialData))
   const printRef = useRef<HTMLDivElement>(null)
 
   const fetchOrder = async (orderId: string) => {
@@ -28,7 +33,7 @@ export function useOrder(orderId: string) {
         getOrderActivityLogs(orderId)
       ]);
       setOrderData(order)
-      setSubtotal((order as Order)?.items!.reduce((sum, item) => sum + item.totalCost!, 0)!)
+      setSubtotal(calculateSubtotal(order as Order))
       setOrderActivityLogs(logs)
     } catch (e) {
       console.error(e)
@@ -134,12 +139,11 @@ export function useOrder(orderId: string) {
   }
 
   useEffect(() => {
-    if (orderId) {
-      fetchOrder(orderId)
+    if (hasHydratedInitialOptions.current) {
+      hasHydratedInitialOptions.current = false
+      return
     }
-  }, [orderId])
 
-  useEffect(() => {
     const initialize = async () => {
       try {
         setLoading(true)

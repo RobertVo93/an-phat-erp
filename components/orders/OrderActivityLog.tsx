@@ -21,7 +21,7 @@ export const OrderActivityLog = ({ activityLogs }: Props) => {
   }, [activityLogs])
 
   return (
-    <Card>
+    <Card className="hidden lg:block">
       <CardHeader>
         <CardTitle className="text-lg">{t("orders.log.title")}</CardTitle>
         <CardDescription>{t("orders.log.description")}</CardDescription>

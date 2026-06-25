@@ -3,7 +3,7 @@ import { OrderEntity } from "@/lib/database/entities/order.entity";
 import { ProductEntity } from "@/lib/database/entities/product.entity";
 import { StockChangeEntity } from "@/lib/database/entities/stock-change.entity";
 import { UserEntity } from "@/lib/database/entities/user.entity";
-import { StockChangeStatus, StockChangeType, Order as IOrder, IOrderItem, IChangeLog, IActivityLog, ResourceType } from "@/types";
+import { StockChangeStatus, StockChangeType, Order as IOrder, IOrderItem, IChangeLog, IActivityLog, ResourceType, OrderFilters } from "@/types";
 import { getCustomerById } from "@/lib/services/customerService";
 import { getWarehouseById } from "@/lib/services/warehouseService";
 import { addMultipleActivityLogService } from "@/lib/services/activityLogService";
@@ -17,7 +17,7 @@ interface GetAllOrdersParams {
   limit?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  filters?: Record<string, any>;
+  filters?: OrderFilters;
 }
 
 export async function getAllOrders({
@@ -37,18 +37,45 @@ export async function getAllOrders({
   // Filtering
   if (customerId !== undefined) qb.andWhere("order.customer_id = :customerId", { customerId });
   if (filters.status) qb.andWhere("order.status = :status", { status: filters.status });
-  if (filters.dateFrom) qb.andWhere("order.deliveryDate >= :dateFrom", { dateFrom: filters.dateFrom });
-  if (filters.dateTo) qb.andWhere("order.deliveryDate <= :dateTo", { dateTo: filters.dateTo });
+  if (filters.customer) {
+    qb.andWhere(
+      "(customer.name ILIKE :customer OR customer.number ILIKE :customer OR customer.email ILIKE :customer)",
+      { customer: `%${filters.customer}%` },
+    );
+  }
+  if (filters.dateFrom) qb.andWhere("order.deliveryDate >= CAST(:dateFrom AS date)", { dateFrom: filters.dateFrom });
+  if (filters.dateTo) {
+    qb.andWhere("order.deliveryDate < CAST(:dateTo AS date) + INTERVAL '1 day'", { dateTo: filters.dateTo });
+  }
   if (filters.paymentStatus) qb.andWhere("order.paymentStatus = :paymentStatus", { paymentStatus: filters.paymentStatus });
   if (filters.paymentMethod) qb.andWhere("order.paymentMethod = :paymentMethod", { paymentMethod: filters.paymentMethod });
-  if (filters.totalAmountFrom) qb.andWhere("order.totalAmount >= :totalAmountFrom", { totalAmountFrom: filters.totalAmountFrom });
-  if (filters.totalAmountTo) qb.andWhere("order.totalAmount <= :totalAmountTo", { totalAmountTo: filters.totalAmountTo });
-  if (filters.searchTerm) qb.andWhere("(order.number ILIKE :searchTerm OR order.notes ILIKE :searchTerm or order.shippingAddress ILIKE :searchTerm)", { searchTerm: `%${filters.searchTerm}%` });
+  if (filters.totalAmountFrom !== undefined) {
+    qb.andWhere("order.totalAmount >= :totalAmountFrom", { totalAmountFrom: filters.totalAmountFrom });
+  }
+  if (filters.totalAmountTo !== undefined) {
+    qb.andWhere("order.totalAmount <= :totalAmountTo", { totalAmountTo: filters.totalAmountTo });
+  }
+  if (filters.searchTerm) {
+    qb.andWhere(
+      "(order.number ILIKE :searchTerm OR order.notes ILIKE :searchTerm OR order.shippingAddress ILIKE :searchTerm OR customer.name ILIKE :searchTerm)",
+      { searchTerm: `%${filters.searchTerm}%` },
+    );
+  }
 
   // Sorting
-  const allowedSortFields = ["deliveryDate", "totalAmount", "customer", "number"];
-  const sortField = allowedSortFields.includes(sortBy) ? sortBy : "deliveryDate";
-  qb.orderBy(`order.${sortField}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+  const normalizedSortOrder = sortOrder.toUpperCase() as "ASC" | "DESC";
+  if (sortBy === "customer") {
+    qb.orderBy("customer.name", normalizedSortOrder);
+  } else {
+    const sortFieldMap: Record<string, string> = {
+      orderDate: "createdAt",
+      deliveryDate: "deliveryDate",
+      totalAmount: "totalAmount",
+      number: "number",
+    };
+    const sortField = sortFieldMap[sortBy] || "createdAt";
+    qb.orderBy(`order.${sortField}`, normalizedSortOrder);
+  }
 
   // Pagination
   qb.skip((page - 1) * limit).take(limit);

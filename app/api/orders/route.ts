@@ -22,8 +22,10 @@ export async function GET(req: NextRequest) {
     const customer = searchParams.get("customer") || undefined;
     const dateFrom = searchParams.get("dateFrom") || undefined;
     const dateTo = searchParams.get("dateTo") || undefined;
-    const totalAmountFrom = searchParams.get("totalAmountFrom") || undefined;
-    const totalAmountTo = searchParams.get("totalAmountTo") || undefined;
+    const totalAmountFromParam = searchParams.get("totalAmountFrom");
+    const totalAmountToParam = searchParams.get("totalAmountTo");
+    const totalAmountFrom = totalAmountFromParam ? Number(totalAmountFromParam) : undefined;
+    const totalAmountTo = totalAmountToParam ? Number(totalAmountToParam) : undefined;
     const searchTerm = searchParams.get("searchTerm") || undefined;
 
     const result = await getAllOrders({
@@ -56,4 +58,4 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     return NextResponse.json({ error: (error instanceof Error ? error.message : String(error)) }, { status: 500 });
   }
-} 
+}

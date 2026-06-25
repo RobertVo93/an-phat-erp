@@ -24,7 +24,6 @@ export function formatDateTime(date: string | Date, symbol?: string): string {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
   }).replace(/\//g, symbol || '-')
 }
 
@@ -37,6 +36,18 @@ export function formatYYYYMMDD(date: string | Date): string {
   const day = String(d.getDate()).padStart(2, '0')
 
   return `${year}-${month}-${day}`
+}
+
+/**
+ * Combine with formatYYYYMMDD to support calendar picker convert between str and date
+ * @param value 
+ * @returns 
+ */
+export const parseFilterDate = (value?: string): Date | null => {
+  if (!value) return null
+
+  const date = new Date(`${value}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? null : date
 }
 
 export function formatLocalDatetime(date: Date | string) {
