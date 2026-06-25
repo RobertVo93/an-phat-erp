@@ -44,6 +44,10 @@ export const commonTranslations = {
     en: "page",
     vi: "trang",
   },
+  "common.itemsPerPage": {
+    en: "Items per page",
+    vi: "Số dòng mỗi trang",
+  },
   "common.loading": {
     en: "Loading...",
     vi: "Đang tải...",

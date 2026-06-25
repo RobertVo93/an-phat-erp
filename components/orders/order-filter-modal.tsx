@@ -1,12 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { QuantitySelector } from "@/components/common/quantity-selector"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useLanguage } from "@/contexts/language-context"
+import { formatYYYYMMDD, parseFilterDate } from "@/lib/utils.date"
 import type { OrderFilters } from "@/types/order"
 import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types"
 
@@ -20,6 +23,12 @@ interface OrderFilterModalProps {
 export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange }: OrderFilterModalProps) {
   const { t } = useLanguage()
   const [localFilters, setLocalFilters] = useState<OrderFilters>(filters)
+
+  useEffect(() => {
+    if (open) {
+      setLocalFilters(filters)
+    }
+  }, [filters, open])
 
   const handleApply = () => {
     onFiltersChange(localFilters)
@@ -104,20 +113,28 @@ export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t("orders.filter.dateFrom")}</Label>
-                <Input
-                  type="date"
-                  className="h-11"
-                  value={localFilters.dateFrom || ""}
-                  onChange={(e) => setLocalFilters((prev) => ({ ...prev, dateFrom: e.target.value || undefined }))}
+                <Calendar
+                  selected={parseFilterDate(localFilters.dateFrom)}
+                  maxDate={parseFilterDate(localFilters.dateTo) ?? undefined}
+                  onChange={(date) => setLocalFilters((prev) => ({
+                    ...prev,
+                    dateFrom: date ? formatYYYYMMDD(date) : undefined,
+                  }))}
+                  isClearable
+                  placeholderText="dd/MM/yyyy"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t("orders.filter.dateTo")}</Label>
-                <Input
-                  type="date"
-                  className="h-11"
-                  value={localFilters.dateTo || ""}
-                  onChange={(e) => setLocalFilters((prev) => ({ ...prev, dateTo: e.target.value || undefined }))}
+                <Calendar
+                  selected={parseFilterDate(localFilters.dateTo)}
+                  minDate={parseFilterDate(localFilters.dateFrom) ?? undefined}
+                  onChange={(date) => setLocalFilters((prev) => ({
+                    ...prev,
+                    dateTo: date ? formatYYYYMMDD(date) : undefined,
+                  }))}
+                  isClearable
+                  placeholderText="dd/MM/yyyy"
                 />
               </div>
             </div>
@@ -129,32 +146,32 @@ export function OrderFilterModal({ open, onOpenChange, filters, onFiltersChange 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t("orders.filter.amountMin")}</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
+                <QuantitySelector
+                  quantity={localFilters.totalAmountFrom ?? 0}
+                  min={0}
+                  max={localFilters.totalAmountTo ?? Number.MAX_SAFE_INTEGER}
+                  showAction={false}
+                  onQuantityChange={(value) => setLocalFilters((prev) => ({
+                    ...prev,
+                    totalAmountFrom: value === 0 ? undefined : value,
+                  }))}
                   className="h-11"
-                  value={localFilters.totalAmountFrom || ""}
-                  onChange={(e) =>
-                    setLocalFilters((prev) => ({
-                      ...prev,
-                      totalAmountFrom: e.target.value ? Number(e.target.value) : undefined,
-                    }))
-                  }
+                  inputClassName="text-left"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t("orders.filter.amountMax")}</Label>
-                <Input
-                  type="number"
-                  placeholder="999999999"
+                <QuantitySelector
+                  quantity={localFilters.totalAmountTo ?? 0}
+                  min={0}
+                  max={Number.MAX_SAFE_INTEGER}
+                  showAction={false}
+                  onQuantityChange={(value) => setLocalFilters((prev) => ({
+                    ...prev,
+                    totalAmountTo: value === 0 ? undefined : value,
+                  }))}
                   className="h-11"
-                  value={localFilters.totalAmountTo || ""}
-                  onChange={(e) =>
-                    setLocalFilters((prev) => ({
-                      ...prev,
-                      totalAmountTo: e.target.value ? Number(e.target.value) : undefined,
-                    }))
-                  }
+                  inputClassName="text-left"
                 />
               </div>
             </div>

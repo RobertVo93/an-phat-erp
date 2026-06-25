@@ -49,4 +49,4 @@ export interface OrderFilters extends IBaseFilters{
   customer?: string
 }
 
-export type OrderSortBy = "deliveryDate" | "totalAmount" | "customer" | "number"
+export type OrderSortBy = "deliveryDate" | "totalAmount" | "customer" | "number" | "orderDate"

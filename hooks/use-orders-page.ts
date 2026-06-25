@@ -1,97 +1,121 @@
-import { useState, useMemo, useEffect } from "react"
-import type { OrderFilters, OrderSortBy } from "@/types/order"
-import { OrderStatus, PaymentMethod, PaymentStatus, WarehouseStatus } from "@/types/enums"
-import { Order, Warehouse } from "@/types"
-import { getWarehouses } from "@/lib/httpclient/warehouse.client"
-import { getOrders as apiGetOrders, createOrder as apiCreateOrder } from "@/lib/httpclient/order.client"
-import { useDebounceSearchTerm } from "@/lib/utils.client"
+"use client"
+
 import { toast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/contexts/language-context"
+import { createOrder as apiCreateOrder } from "@/lib/httpclient/order.client"
+import type { IOrderPageData } from "@/lib/services/orderPageService"
+import type { Order, OrderFilters, OrderSortBy } from "@/types"
+import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useState, useTransition } from "react"
 
+const FILTER_QUERY_KEYS: Array<keyof Pick<
+  OrderFilters,
+  "status" | "paymentStatus" | "paymentMethod" | "customer" | "dateFrom" | "dateTo" | "totalAmountFrom" | "totalAmountTo"
+>> = [
+  "status",
+  "paymentStatus",
+  "paymentMethod",
+  "customer",
+  "dateFrom",
+  "dateTo",
+  "totalAmountFrom",
+  "totalAmountTo",
+]
 
-export function useOrdersPage() {
+type QueryValue = string | number | undefined
+
+export function useOrdersPage(initialData: IOrderPageData) {
   const { t } = useLanguage()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(false)
-  const [allWarehouses, setAllWarehouses] = useState<Warehouse[]>([])
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
+  const [isCreating, setIsCreating] = useState(false)
   const [showNewOrderModal, setShowNewOrderModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<OrderFilters>({})
-  // pagination
-  const [total, setTotal] = useState(0)
-  const [totalPages, setTotalPages] = useState(1)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-  const [sortBy, setSortBy] = useState<OrderSortBy>("deliveryDate")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [searchTerm, setSearchTerm] = useState(initialData.filters.searchTerm ?? "")
 
-  // Debounce searchTerm
-  const debouncedSearchTerm = useDebounceSearchTerm(searchTerm, 500)
+  const updateUrl = (
+    updates: Record<string, QueryValue>,
+    options: { replace?: boolean; clearKeys?: string[] } = {},
+  ) => {
+    const params = new URLSearchParams(searchParams.toString())
 
-  // Build params for API
-  const apiParams = useMemo(() => {
-    return {
-      page: currentPage,
-      limit: pageSize,
-      sortBy,
-      sortOrder,
-      searchTerm: debouncedSearchTerm,
-      status: filters.status === "all" ? undefined : filters.status,
-      paymentStatus: filters.paymentStatus === "all" ? undefined : filters.paymentStatus,
-      paymentMethod: filters.paymentMethod === "all" ? undefined : filters.paymentMethod,
-      customer: filters.customer,
-      dateFrom: filters.dateFrom,
-      dateTo: filters.dateTo,
-      totalAmountFrom: filters.totalAmountFrom,
-      totalAmountTo: filters.totalAmountTo,
-    }
-  }, [currentPage, pageSize, sortBy, sortOrder, debouncedSearchTerm, filters])
+    options.clearKeys?.forEach((key) => params.delete(key))
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === undefined || value === "") {
+        params.delete(key)
+      } else {
+        params.set(key, String(value))
+      }
+    })
 
-  const activeFiltersCount = useMemo(() => Object.values(filters).filter(
-    (value) => value !== undefined && value !== "" && value !== null,
-  ).length, [filters])
+    const query = params.toString()
+    const href = query ? `${pathname}?${query}` : pathname
 
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-    } else {
-      setSortBy(field as OrderSortBy)
-      setSortOrder("desc")
-    }
-    setCurrentPage(1)
+    startTransition(() => {
+      if (options.replace) {
+        router.replace(href, { scroll: false })
+      } else {
+        router.push(href, { scroll: false })
+      }
+    })
+  }
+
+  useEffect(() => {
+    const currentSearchTerm = searchParams.get("searchTerm") ?? ""
+    if (searchTerm === currentSearchTerm) return
+
+    const timeout = window.setTimeout(() => {
+      updateUrl(
+        {
+          searchTerm: searchTerm.trim() || undefined,
+          page: 1,
+        },
+        { replace: true },
+      )
+    }, 500)
+
+    return () => window.clearTimeout(timeout)
+  }, [searchTerm, searchParams])
+
+  const activeFiltersCount = useMemo(
+    () => FILTER_QUERY_KEYS.filter((key) => {
+      const value = initialData.filters[key]
+      return value !== undefined && value !== "" && value !== null
+    }).length,
+    [initialData.filters],
+  )
+
+  const handleSort = (field: OrderSortBy) => {
+    updateUrl({
+      sortBy: field,
+      sortOrder: initialData.sortBy === field && initialData.sortOrder === "desc" ? "asc" : "desc",
+      page: 1,
+    })
   }
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page)
+    updateUrl({ page })
+  }
+
+  const handlePageSizeChange = (pageSize: number) => {
+    updateUrl({ limit: pageSize, page: 1 })
   }
 
   const handleFiltersChange = (newFilters: OrderFilters) => {
-    setFilters(newFilters)
-    setCurrentPage(1)
-  }
+    const updates = FILTER_QUERY_KEYS.reduce<Record<string, QueryValue>>((result, key) => {
+      const value = newFilters[key]
+      result[key] = value === "all" ? undefined : value
+      return result
+    }, { page: 1 })
 
-  const fetchOrders = async (params: OrderFilters) => {
-    setLoading(true)
-    try {
-      const res = await apiGetOrders(params)
-      setOrders(res.data)
-      setTotal(res.total)
-      setTotalPages(Math.ceil(res.total / (params.limit || 10)))
-    } catch (e) {
-      console.error(e)
-      toast({
-        title: t("common.error.title"),
-        description: t("common.error.cannotLoad"),
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
+    updateUrl(updates, { clearKeys: FILTER_QUERY_KEYS })
   }
 
   const createOrder = async (orderData: Partial<Order>) => {
-    setLoading(true)
+    setIsCreating(true)
     try {
       const newOrder: Order = {
         deliveryDate: orderData.deliveryDate,
@@ -105,59 +129,42 @@ export function useOrdersPage() {
         shippingFee: orderData.shippingFee,
         tax: orderData.tax,
         items: orderData.items || [],
-        customer: {id: orderData.customer?.id},
-        warehouse: {id: orderData.warehouse?.id},
+        customer: { id: orderData.customer?.id },
+        warehouse: { id: orderData.warehouse?.id },
       }
       await apiCreateOrder(newOrder)
-      await fetchOrders(apiParams)
-    } catch (e) {
-      console.error(e)
+      startTransition(() => router.refresh())
+    } catch (error) {
+      console.error(error)
       toast({
         title: t("common.error.title"),
         description: t("common.error.cannotAdd"),
         variant: "destructive",
       })
     } finally {
-      setLoading(false)
+      setIsCreating(false)
     }
   }
 
-  // Fetch orders when params change
-  useEffect(() => {
-    fetchOrders(apiParams)
-  }, [apiParams])
-
-  useEffect(() => {
-    const onInit = async () => {
-      try {
-        const [wh] = await Promise.all([getWarehouses({status: WarehouseStatus.active })])
-        setAllWarehouses(wh.data)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-    onInit()
-  }, [])
-
   return {
-    orders,
-    total,
-    totalPages,
-    loading,
-    allWarehouses,
+    orders: initialData.orders,
+    total: initialData.total,
+    totalPages: initialData.totalPages,
+    loading: isPending || isCreating,
+    allWarehouses: initialData.warehouses,
     showNewOrderModal,
     showFilterModal,
     searchTerm,
-    filters,
-    currentPage,
-    pageSize,
-    sortBy,
-    sortOrder,
+    filters: initialData.filters,
+    currentPage: initialData.currentPage,
+    pageSize: initialData.pageSize,
+    sortBy: initialData.sortBy,
+    sortOrder: initialData.sortOrder,
     activeFiltersCount,
     setShowNewOrderModal,
     setShowFilterModal,
     setSearchTerm,
-    setPageSize,
+    setPageSize: handlePageSizeChange,
     handleSort,
     handlePageChange,
     handleFiltersChange,

@@ -38,6 +38,18 @@ export function formatYYYYMMDD(date: string | Date): string {
   return `${year}-${month}-${day}`
 }
 
+/**
+ * Combine with formatYYYYMMDD to support calendar picker convert between str and date
+ * @param value 
+ * @returns 
+ */
+export const parseFilterDate = (value?: string): Date | null => {
+  if (!value) return null
+
+  const date = new Date(`${value}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
 export function formatLocalDatetime(date: Date | string) {
   const dateData = new Date(date);
   const offset = dateData.getTimezoneOffset();

@@ -20,6 +20,10 @@ interface ServersideTableProps<T> {
   sortBy: string
   sortOrder: "asc" | "desc"
   onPageChange: (page: number) => void
+  showPageSize?: boolean
+  pageSizeOptions?: number[]
+  onPageSizeChange?: (pageSize: number) => void
+  resetPageOnPageSizeChange?: boolean
   onSort: (key: string) => void
   loading?: boolean
   totalPages: number
@@ -38,6 +42,10 @@ export function ServersideTable<T extends { id: string | number }>(props: Server
     sortBy,
     sortOrder,
     onPageChange,
+    showPageSize,
+    pageSizeOptions,
+    onPageSizeChange,
+    resetPageOnPageSizeChange,
     onSort,
     loading,
     totalPages,
@@ -136,6 +144,10 @@ export function ServersideTable<T extends { id: string | number }>(props: Server
           pageSize={pageSize}
           total={total}
           onPageChange={onPageChange}
+          showPageSize={showPageSize}
+          pageSizeOptions={pageSizeOptions}
+          onPageSizeChange={onPageSizeChange}
+          resetPageOnPageSizeChange={resetPageOnPageSizeChange}
         />
       </div>
     </div>
