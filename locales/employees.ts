@@ -28,6 +28,14 @@ export const employeesTranslations = {
     en: "Filter",
     vi: "Lọc",
   },
+  "employees.sort": {
+    en: "Sort",
+    vi: "Sắp xếp",
+  },
+  "employees.sort.createdAt": {
+    en: "Created date",
+    vi: "Ngày tạo",
+  },
   "employees.totalEmployees": {
     en: "Total Employees",
     vi: "Tổng Nhân Viên",
@@ -237,7 +245,30 @@ export const employeesTranslations = {
     en: "Work Information",
     vi: "Thông Tin Công Việc",
   },
-
+  "employees.detail.profile": {
+    en: "Employee profile",
+    vi: "Hồ sơ nhân viên",
+  },
+  "employees.detail.profileDescription": {
+    en: "Contact details and employment information",
+    vi: "Thông tin liên hệ và công việc",
+  },
+  "employees.detail.recentAttendance": {
+    en: "Recent attendance",
+    vi: "Chấm công gần đây",
+  },
+  "employees.detail.recentProduction": {
+    en: "Recent production",
+    vi: "Sản xuất gần đây",
+  },
+  "employees.detail.noAttendance": {
+    en: "No attendance records",
+    vi: "Chưa có dữ liệu chấm công",
+  },
+  "employees.detail.noProduction": {
+    en: "No production records",
+    vi: "Chưa có dữ liệu sản xuất",
+  },
   // Filter translations
   "employees.filter.title": {
     en: "Filter Employees",

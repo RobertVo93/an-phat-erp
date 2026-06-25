@@ -34,6 +34,15 @@ export interface EmployeeFilters extends IBaseFilters {
   salaryMax?: number
 }
 
+export type EmployeeSortBy =
+  | "createdAt"
+  | "name"
+  | "position"
+  | "department"
+  | "salary"
+  | "status"
+  | "employeeType"
+
 export interface EmployeeStats {
   totalEmployees: number
   activeEmployees: number
