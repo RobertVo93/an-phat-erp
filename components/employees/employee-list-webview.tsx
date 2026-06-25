@@ -4,6 +4,9 @@ import { Employee, EmployeeFilters } from "@/types/employee"
 import { useLanguage } from "@/contexts/language-context"
 import { ServersideTable, ServersideTableColumn } from "@/components/common/table/ServersideTable"
 import EmployeeActions from "@/components/employees/employee-actions"
+import { CustomLink } from "@/components/common/custom-link"
+import { ADMIN_ROUTES } from "@/constants/nav"
+import type { EmployeeSortBy } from "@/types/employee"
 
 interface EmployeeListBodyProps {
   filters: EmployeeFilters
@@ -14,9 +17,9 @@ interface EmployeeListBodyProps {
   totalPages: number
   loading: boolean
 
-  handleSort: (field: string) => void
+  handleSort: (field: EmployeeSortBy) => void
   setCurrentPage: (currentPage: number) => void
-  handleViewEmployee: (employee: Employee) => void
+  setItemsPerPage: (pageSize: number) => void
   handleEditEmployee: (employee: Employee) => void
   handleDeleteEmployee: (employee: Employee) => void
 }
@@ -31,21 +34,25 @@ export const EmployeeListWebview = ({
   loading,
   handleSort,
   setCurrentPage,
-  handleViewEmployee,
+  setItemsPerPage,
   handleEditEmployee,
   handleDeleteEmployee,
 }: EmployeeListBodyProps) => {
   const { t } = useLanguage()
+  type EmployeeTableRow = Employee & { id: string }
+  const tableRows = employees.filter((employee): employee is EmployeeTableRow => Boolean(employee.id))
 
   // Define columns for ServersideTable
-  const columns: ServersideTableColumn<any>[] = [
+  const columns: ServersideTableColumn<EmployeeTableRow>[] = [
     {
       key: "name",
       title: t("employees.form.name"),
       sortable: true,
       render: (row) => (
         <div className="space-y-1">
-          <p className="text-sm font-medium">{row.name}</p>
+          <CustomLink href={ADMIN_ROUTES.employeeDetail(row.number || row.id || "")}>
+            {row.name}
+          </CustomLink>
           <p className="text-xs text-muted-foreground">{row.number}</p>
         </div>
       ),
@@ -113,7 +120,6 @@ export const EmployeeListWebview = ({
         <div className="space-y-1">
           <EmployeeActions
             employee={row}
-            handleViewEmployee={handleViewEmployee}
             handleEditEmployee={handleEditEmployee}
             handleDeleteEmployee={handleDeleteEmployee}
           />
@@ -125,7 +131,7 @@ export const EmployeeListWebview = ({
   return (
     <ServersideTable
       columns={columns}
-      data={employees}
+      data={tableRows}
       total={totalEmployees}
       currentPage={currentPage}
       pageSize={itemsPerPage}
@@ -134,7 +140,9 @@ export const EmployeeListWebview = ({
       loading={loading}
       totalPages={totalPages}
       onPageChange={setCurrentPage}
-      onSort={handleSort}
+      onSort={(field) => handleSort(field as EmployeeSortBy)}
+      showPageSize
+      onPageSizeChange={setItemsPerPage}
     />
   )
 }

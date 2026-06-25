@@ -1,110 +1,80 @@
 "use client"
 
-import { debounce } from "lodash"
-import { useState, useMemo, useEffect } from "react"
-import type { Employee, EmployeeFilters, EmployeeStats } from "@/types/employee"
-import { EmployeeStatus, EmployeeType } from "@/types"
-import { getEmployee as apiGetEmployee, addEmployee as apiAddEmployee, updateEmployee as apiUpdateEmployee, deleteEmployee as apiDeleteEmployee } from "@/lib/httpclient/employee.client"
+import {
+  addEmployee as apiAddEmployee,
+  deleteEmployee as apiDeleteEmployee,
+  updateEmployee as apiUpdateEmployee,
+} from "@/lib/httpclient/employee.client"
+import type { IEmployeePageData } from "@/lib/services/employeePageService"
+import type { Employee, EmployeeFilters, EmployeeSortBy } from "@/types/employee"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState, useTransition } from "react"
 
-export function useEmployees() {
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState<EmployeeFilters>({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [sortBy, setSortBy] = useState<keyof Employee>("name")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-  const [loading, setLoading] = useState<boolean>(false)
+const FILTER_QUERY_KEYS: Array<keyof Pick<
+  EmployeeFilters,
+  "status" | "employeeType" | "department" | "position" | "hireDateFrom" | "hireDateTo" | "salaryMin" | "salaryMax"
+>> = [
+  "status",
+  "employeeType",
+  "department",
+  "position",
+  "hireDateFrom",
+  "hireDateTo",
+  "salaryMin",
+  "salaryMax",
+]
+
+type QueryValue = string | number | undefined
+
+export function useEmployees(initialData: IEmployeePageData) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
+  const [isMutating, setIsMutating] = useState(false)
+  const [searchTerm, setSearchTerm] = useState(initialData.filters.name ?? "")
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
-  const [totalEmployees, setTotalEmployees] = useState(0)
 
-  const reloadEmployees = async () => {
-    setLoading(true)
-    try {
-      const res = await apiGetEmployee({
-        name: searchTerm,
-        status: filters.status as EmployeeStatus,
-        employeeType: filters.employeeType as EmployeeType,
-        department: filters.department as string,
-        position: filters.position as string,
-        hireDateFrom: filters.hireDateFrom as string,
-        hireDateTo: filters.hireDateTo as string,
-        salaryMin: filters.salaryMin as number,
-        salaryMax: filters.salaryMax as number,
-        page: currentPage,
-        limit: itemsPerPage,
-        sortBy: "createdAt",
-        sortOrder: "desc",
-      })
+  const updateUrl = (
+    updates: Record<string, QueryValue>,
+    options: { replace?: boolean; clearKeys?: string[] } = {},
+  ) => {
+    const params = new URLSearchParams(searchParams.toString())
+    options.clearKeys?.forEach((key) => params.delete(key))
 
-      setEmployees(res.data)
-      setTotalEmployees(res.total)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === undefined || value === "") {
+        params.delete(key)
+      } else {
+        params.set(key, String(value))
+      }
+    })
+
+    const query = params.toString()
+    const href = query ? `${pathname}?${query}` : pathname
+    startTransition(() => {
+      if (options.replace) {
+        router.replace(href, { scroll: false })
+      } else {
+        router.push(href, { scroll: false })
+      }
+    })
   }
 
   useEffect(() => {
-    const debouncedFetchProducts = debounce(async () => {
-      setCurrentPage(1)
-      reloadEmployees()
-    }, 1000)
+    const currentSearch = searchParams.get("name") ?? ""
+    if (searchTerm === currentSearch) return
 
-    debouncedFetchProducts()
+    const timeout = window.setTimeout(() => {
+      updateUrl({ name: searchTerm.trim() || undefined, page: 1 }, { replace: true })
+    }, 500)
 
-    // Cleanup function to cancel any pending debounced calls
-    return () => {
-      debouncedFetchProducts.cancel()
-    }
-  }, [searchTerm])
-
-  useEffect(() => {
-    reloadEmployees()
-  }, [currentPage, itemsPerPage, filters])
-  
-  // CRUD operations
-  const addEmployee = async (employeeData: Omit<Employee, "id">) => {
-    try {
-      setLoading(true)
-      const added = await apiAddEmployee(employeeData)
-      setEmployees((prev) => [...prev, added])
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateEmployee = async (id: string, employeeData: Partial<Employee>) => {
-    try {
-      setLoading(true)
-      const updated = await apiUpdateEmployee(id, employeeData)
-      setEmployees((prev) => prev.map((emp) => emp.id === id ? updated : emp))
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const deleteEmployee = async (id: string) => {
-    try {
-      setLoading(true)
-      await apiDeleteEmployee(id)
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id))
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
+    return () => window.clearTimeout(timeout)
+  }, [searchTerm, searchParams])
 
   const handleCreateEmployee = () => {
     setSelectedEmployee(null)
@@ -118,88 +88,89 @@ export function useEmployees() {
     setIsFormModalOpen(true)
   }
 
-  const handleViewEmployee = (employee: Employee) => {
-    setSelectedEmployee(employee)
-    setIsViewModalOpen(true)
-  }
-
   const handleDeleteEmployee = (employee: Employee) => {
     setSelectedEmployee(employee)
     setIsDeleteModalOpen(true)
   }
 
-  const handleSaveEmployee = (employeeData: Omit<Employee, "id"> | Employee) => {
-    if (formMode === "create") {
-      addEmployee(employeeData as Omit<Employee, "id">)
-    } else if (formMode === "edit" && selectedEmployee) {
-      updateEmployee(selectedEmployee.id!, employeeData)
+  const handleSaveEmployee = async (employeeData: Omit<Employee, "id"> | Employee) => {
+    try {
+      setIsMutating(true)
+      if (formMode === "create") {
+        await apiAddEmployee(employeeData)
+      } else if (selectedEmployee?.id) {
+        await apiUpdateEmployee(selectedEmployee.id, employeeData)
+      }
+      startTransition(() => router.refresh())
+    } catch (error) {
+      console.error("[useEmployees] Failed to save employee", error)
+    } finally {
+      setIsMutating(false)
     }
   }
 
-  const handleConfirmDelete = () => {
-    if (selectedEmployee) {
-      deleteEmployee(selectedEmployee.id!)
+  const handleConfirmDelete = async () => {
+    if (!selectedEmployee?.id) return
+
+    try {
+      setIsMutating(true)
+      await apiDeleteEmployee(selectedEmployee.id)
       setIsDeleteModalOpen(false)
       setSelectedEmployee(null)
+      startTransition(() => router.refresh())
+    } catch (error) {
+      console.error("[useEmployees] Failed to delete employee", error)
+    } finally {
+      setIsMutating(false)
     }
   }
 
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-    } else {
-      setSortBy(field as keyof Employee)
-      setSortOrder("asc")
-    }
+  const handleSort = (field: EmployeeSortBy) => {
+    updateUrl({
+      sortBy: field,
+      sortOrder: initialData.sortBy === field && initialData.sortOrder === "desc" ? "asc" : "desc",
+      page: 1,
+    })
   }
 
-  // Statistics
-  const stats: EmployeeStats = useMemo(() => {
-    const totalEmployees = employees.length
-    const activeEmployees = employees.filter((emp) => emp.status === EmployeeStatus.active).length
-    const departments = new Set(employees.map((emp) => emp.department)).size
-    const onLeave = employees.filter((emp) => emp.status === EmployeeStatus.onLeave).length
+  const setCurrentPage = (page: number) => updateUrl({ page })
+  const setItemsPerPage = (limit: number) => updateUrl({ limit, page: 1 })
 
-    return {
-      totalEmployees,
-      activeEmployees,
-      departments,
-      onLeave,
-    }
-  }, [employees])
-  // Pagination
-  const totalPages = useMemo(() => Math.ceil(totalEmployees / itemsPerPage), [totalEmployees, itemsPerPage])
-  
+  const setFilters = (filters: EmployeeFilters) => {
+    const updates = FILTER_QUERY_KEYS.reduce<Record<string, QueryValue>>((result, key) => {
+      const value = filters[key]
+      result[key] = value === "all" ? undefined : value
+      return result
+    }, { page: 1 })
+
+    updateUrl(updates, { clearKeys: FILTER_QUERY_KEYS })
+  }
+
   return {
-    employees,
+    employees: initialData.employees,
     searchTerm,
-    filters,
-    currentPage,
-    itemsPerPage,
-    sortBy,
-    sortOrder,
-    totalPages,
-    totalEmployees,
-    loading,
+    filters: initialData.filters,
+    currentPage: initialData.currentPage,
+    itemsPerPage: initialData.itemsPerPage,
+    sortBy: initialData.sortBy,
+    sortOrder: initialData.sortOrder,
+    totalPages: initialData.totalPages,
+    totalEmployees: initialData.totalEmployees,
+    loading: isPending || isMutating,
     isFormModalOpen,
-    isViewModalOpen,
     isDeleteModalOpen,
     isFilterModalOpen,
     formMode,
     selectedEmployee,
-    
     setSearchTerm,
     setFilters,
     setCurrentPage,
     setItemsPerPage,
-    setSortOrder,
     setIsFormModalOpen,
-    setIsViewModalOpen,
     setIsDeleteModalOpen,
     setIsFilterModalOpen,
     handleCreateEmployee,
     handleEditEmployee,
-    handleViewEmployee,
     handleDeleteEmployee,
     handleSaveEmployee,
     handleConfirmDelete,

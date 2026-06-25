@@ -62,6 +62,7 @@ export const ADMIN_ROUTES = {
   settingTheme: (query?: string) => adminHref("settings", query),
 
   employee: (query?: string) => adminHref("employee", query),
+  employeeDetail: (idOrNumber: string) => adminHref(`employee/${encodeURIComponent(idOrNumber)}`),
   attendance: (query?: string) => adminHref("attendance", query),
   payroll: (query?: string) => adminHref("payroll", query),
 
