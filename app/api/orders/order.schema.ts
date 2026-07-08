@@ -34,4 +34,4 @@ export const CreateOrderSchema = z.object({
   warehouse: RelationIdSchema.optional(),
 });
 
-export const UpdateOrderSchema = CreateOrderSchema.partial(); 
+export const UpdateOrderSchema = CreateOrderSchema.partial();

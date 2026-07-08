@@ -3,6 +3,7 @@ import { Customer } from "@/types/customer"
 import { Order, IOrderItem } from "@/types/order"
 import { groupWarehouseProductsByProduct } from "@/lib/utils"
 import { env } from "@/constants/env"
+import { getProductPriceByQuantity } from "@/lib/product-pricing"
 
 export function useEditOrder(order: Order, onUpdate: (orderData: Partial<Order>) => void) {
     const [orderData, setOrderData] = useState<Order>(order)
@@ -44,8 +45,13 @@ export function useEditOrder(order: Order, onUpdate: (orderData: Partial<Order>)
                 }
             }
         } else if (field === "quantity") {
-            updated[index].quantity = Number.parseFloat(String(value)) || 0
-            updated[index].totalCost = updated[index].quantity! * updated[index].unitCost!
+            const quantity = Number.parseFloat(String(value)) || 0
+            const product = groupWarehouseProductsByProduct(orderData.warehouse?.warehouseProducts!)
+            .find((wp) => wp.product.id === updated[index].id)?.product
+            const unitCost = getProductPriceByQuantity(product!, Number.parseFloat(String(value)) || 0)
+            updated[index].quantity = quantity
+            updated[index].unitCost = unitCost
+            updated[index].totalCost = quantity * unitCost
         }
         else if (field === "unitCost") {
             updated[index].unitCost = Number.parseFloat(String(value)) || 0

@@ -9,7 +9,8 @@ import { ProductionRecordEntity } from "./production-record.entity";
 import { 
   Collection as ICollection, 
   WarehouseProduct as IWarehouseProduct, 
-  Product as IProduct 
+  Product as IProduct,
+  ProductTierPrice,
 } from "@/types";
 
 @Entity({ name: "products" })
@@ -25,6 +26,9 @@ export class ProductEntity extends BaseEntity implements IProduct {
 
   @Column({ type: "float", nullable: true })
   price?: number;
+
+  @Column({ name: "tier_prices", type: "jsonb", nullable: true })
+  tierPrices?: ProductTierPrice[];
 
   @Column({ type: "float", nullable: true })
   cost?: number;
