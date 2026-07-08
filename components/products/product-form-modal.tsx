@@ -2,19 +2,22 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Product, ProductFormData } from "@/types/product"
+import type { Product, ProductFormData, ProductTierPrice } from "@/types/product"
 import { useLanguage } from "@/contexts/language-context"
 import { Loader2, X } from "lucide-react"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { Collection } from "@/types/collection"
 import { ProductStatus, ProductUnit } from "@/types/enums";
+import { normalizeTierPrices } from "@/lib/product-pricing"
+import { QuantitySelector } from "@/components/common/quantity-selector"
+import { formatNumberWithCommas, parseSystemNumberInput } from "@/lib/utils"
 
 interface ProductFormModalProps {
   product?: Product | null
@@ -25,15 +28,24 @@ interface ProductFormModalProps {
   allCollections: Collection[]
 }
 
+type ProductTierPriceForm = Omit<ProductTierPrice, "price"> & {
+  price?: number
+}
+
+type ProductFormState = Omit<ProductFormData, "tierPrices"> & {
+  tierPrices?: ProductTierPriceForm[]
+}
+
 export function ProductFormModal({ product, open, onOpenChange, onSubmit, loading, allCollections }: ProductFormModalProps) {
   const { t } = useLanguage()
   const isEdit = !!product
 
-  const [formData, setFormData] = useState<ProductFormData>({
+  const [formData, setFormData] = useState<ProductFormState>({
     name: "",
     unit: ProductUnit.other,
     description: "",
     price: 0,
+    tierPrices: normalizeTierPrices(undefined, 0),
     cost: 0,
     stock: 0,
     minStock: 0,
@@ -44,6 +56,83 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
     subImages: [],
     collections: [],
   })
+  const priceRef = useRef(formData.price ?? 0)
+  const costRef = useRef(formData.cost ?? 0)
+  const stockRef = useRef(formData.stock ?? 0)
+  const minStockRef = useRef(formData.minStock ?? 0)
+  const [tierPriceError, setTierPriceError] = useState("")
+  const lastTier = (formData.tierPrices || [])[(formData.tierPrices || []).length - 1]
+  const cannotAddTierPrice = Boolean(
+    lastTier && (lastTier.maxQuantity === undefined || lastTier.maxQuantity <= lastTier.minQuantity)
+  )
+  const numberInputMax = Number.MAX_SAFE_INTEGER
+
+  const syncQuantityRefs = (data: ProductFormState) => {
+    priceRef.current = data.price ?? 0
+    costRef.current = data.cost ?? 0
+    stockRef.current = data.stock ?? 0
+    minStockRef.current = data.minStock ?? 0
+  }
+
+  const normalizeFormTierPrices = (
+    tierPrices?: ProductTierPriceForm[],
+    productPrice = 0,
+  ): ProductTierPriceForm[] => {
+    const sourceTiers = tierPrices && tierPrices.length > 0
+      ? tierPrices
+      : normalizeTierPrices(undefined, productPrice)
+    const hasOrder = sourceTiers.every((tier) => typeof tier.order === "number")
+    const orderedTiers = sourceTiers.slice().sort((a, b) => {
+      if (hasOrder) return a.order - b.order
+
+      return a.minQuantity - b.minQuantity
+    })
+
+    return orderedTiers.map((tier, index) => {
+      const previousTier = orderedTiers[index - 1]
+      const minQuantity = index === 0
+        ? 1
+        : previousTier?.maxQuantity !== undefined
+          ? previousTier.maxQuantity + 1
+          : tier.minQuantity
+
+      return {
+        ...tier,
+        minQuantity,
+        order: index + 1,
+      }
+    })
+  }
+
+  const updateProductPrice = (price: number) => {
+    priceRef.current = price
+    setFormData((prev) => {
+      const shouldSyncDefaultTierPrice = (prev.tierPrices?.[0]?.price ?? prev.price ?? 0) === (prev.price ?? 0)
+
+      return {
+        ...prev,
+        price,
+        tierPrices: normalizeFormTierPrices(prev.tierPrices, price).map((tier, index) => (
+          index === 0 && shouldSyncDefaultTierPrice ? { ...tier, price } : tier
+        )),
+      }
+    })
+  }
+
+  const updateCost = (cost: number) => {
+    costRef.current = cost
+    setFormData((prev) => ({ ...prev, cost }))
+  }
+
+  const updateStock = (stock: number) => {
+    stockRef.current = stock
+    setFormData((prev) => ({ ...prev, stock }))
+  }
+
+  const updateMinStock = (minStock: number) => {
+    minStockRef.current = minStock
+    setFormData((prev) => ({ ...prev, minStock }))
+  }
 
   const updateSubImage = (index: number, value: string) => {
     setFormData((prev) => ({
@@ -68,6 +157,52 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
     }))
   }
 
+  const addTierPrice = () => {
+    setFormData((prev) => {
+      const tiers = normalizeFormTierPrices(prev.tierPrices, prev.price || 0)
+      const lastTier = tiers[tiers.length - 1]
+      const nextMinQuantity = lastTier?.maxQuantity !== undefined ? lastTier.maxQuantity + 1 : undefined
+
+      if (nextMinQuantity === undefined) return prev
+
+      return {
+        ...prev,
+        tierPrices: normalizeFormTierPrices([
+          ...tiers,
+          {
+            minQuantity: nextMinQuantity,
+            price: undefined,
+            order: tiers.length + 1,
+          },
+        ], prev.price || 0),
+      }
+    })
+  }
+
+  const updateTierPrice = (
+    index: number,
+    field: "minQuantity" | "maxQuantity" | "price",
+    value: number | undefined,
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      tierPrices: normalizeFormTierPrices((prev.tierPrices || []).map((tier, tierIndex) => {
+        if (tierIndex !== index) return tier
+
+        return { ...tier, [field]: value }
+      }), prev.price || 0),
+    }))
+  }
+
+  const removeTierPrice = (index: number) => {
+    if (index === 0) return
+
+    setFormData((prev) => ({
+      ...prev,
+      tierPrices: normalizeFormTierPrices((prev.tierPrices || []).filter((_, tierIndex) => tierIndex !== index), prev.price || 0),
+    }))
+  }
+
   const selectCollection = (collectionId: string) => {
     const collections = formData.collections ?? [];
 
@@ -85,11 +220,12 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
 
   useEffect(() => {
     if (product) {
-      setFormData({
+      const nextFormData = {
         name: product.name,
         unit: product.unit,
         description: product.description,
         price: product.price || 0,
+        tierPrices: normalizeTierPrices(product.tierPrices, product.price || 0),
         cost: product.cost || 0,
         stock: product.stock || 0,
         minStock: product.minStock || 0,
@@ -99,12 +235,16 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         image: product.image,
         subImages: product.subImages || [],
         collections: product.collections || [],
-      })
+      }
+      syncQuantityRefs(nextFormData)
+      setFormData(nextFormData)
     } else {
-      setFormData({
+      const nextFormData = {
         name: "",
+        unit: ProductUnit.other,
         description: "",
         price: 0,
+        tierPrices: normalizeTierPrices(undefined, 0),
         cost: 0,
         stock: 0,
         minStock: 0,
@@ -114,13 +254,45 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         image: "",
         subImages: [],
         collections: [],
-      })
+      }
+      syncQuantityRefs(nextFormData)
+      setFormData(nextFormData)
     }
   }, [product, open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await onSubmit(formData)
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+
+    const currentFormData = {
+      ...formData,
+      price: priceRef.current,
+      cost: costRef.current,
+      stock: stockRef.current,
+      minStock: minStockRef.current,
+    }
+    const tierPrices = normalizeFormTierPrices(currentFormData.tierPrices, currentFormData.price || 0)
+    const invalidTier = tierPrices.find((tier, index) => (
+      (tier.maxQuantity !== undefined && tier.maxQuantity <= tier.minQuantity)
+      || (index < tierPrices.length - 1 && tier.maxQuantity === undefined)
+      || tier.price === undefined
+    ))
+
+    if (invalidTier) {
+      setTierPriceError(t("products.form.tierPriceRangeError"))
+      return
+    }
+
+    setTierPriceError("")
+    await onSubmit({
+      ...currentFormData,
+      tierPrices: tierPrices.map((tier) => ({
+        ...tier,
+        price: tier.price!,
+      })),
+    })
     onOpenChange(false)
   }
 
@@ -289,50 +461,138 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price">{t("products.form.price")} *</Label>
-              <Input
+              <QuantitySelector
                 id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.price}
-                onChange={(e) => setFormData((prev) => ({ ...prev, price: Number.parseFloat(e.target.value) || 0 }))}
-                required
+                quantity={formData.price ?? 0}
+                min={0}
+                max={numberInputMax}
+                showAction={false}
+                onQuantityChange={updateProductPrice}
+                inputClassName="text-left"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cost">{t("products.form.cost")} *</Label>
-              <Input
+              <QuantitySelector
                 id="cost"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.cost}
-                onChange={(e) => setFormData((prev) => ({ ...prev, cost: Number.parseFloat(e.target.value) || 0 }))}
-                required
+                quantity={formData.cost ?? 0}
+                min={0}
+                max={numberInputMax}
+                showAction={false}
+                onQuantityChange={updateCost}
+                inputClassName="text-left"
               />
             </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <Label>{t("products.form.tierPrices")}</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addTierPrice} disabled={cannotAddTierPrice}>
+                {t("products.form.addTierPrice")}
+              </Button>
+            </div>
+
+            {(formData.tierPrices || []).length > 0 ? (
+              <div className="space-y-3">
+                {(formData.tierPrices || []).map((tier, index) => (
+                  <div key={index} className="grid grid-cols-1 gap-3 rounded-lg border p-3 md:grid-cols-[80px_1fr_1fr_1fr_auto] md:items-end">
+                    <div className="space-y-2">
+                      <Label>{t("products.form.tierOrder")}</Label>
+                      <QuantitySelector
+                        quantity={tier.order}
+                        min={1}
+                        max={numberInputMax}
+                        showAction={false}
+                        disabled
+                        onQuantityChange={() => undefined}
+                        inputClassName="bg-gray-100 text-left"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t("products.form.minQuantity")}</Label>
+                      <QuantitySelector
+                        quantity={tier.minQuantity}
+                        min={1}
+                        max={numberInputMax}
+                        showAction={false}
+                        disabled
+                        onQuantityChange={() => undefined}
+                        inputClassName="bg-gray-100 text-left"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t("products.form.maxQuantity")}</Label>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        value={formatNumberWithCommas(tier.maxQuantity)}
+                        onChange={(e) => updateTierPrice(
+                          index,
+                          "maxQuantity",
+                          e.target.value.trim() ? parseSystemNumberInput(e.target.value) : undefined,
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t("products.form.tierPrice")}</Label>
+                      <Input
+                        type="text"
+                        inputMode="decimal"
+                        value={formatNumberWithCommas(tier.price)}
+                        onChange={(e) => updateTierPrice(
+                          index,
+                          "price",
+                          e.target.value.trim() ? parseSystemNumberInput(e.target.value) : undefined,
+                        )}
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="h-10 w-10 p-0"
+                      onClick={() => removeTierPrice(index)}
+                      disabled={index === 0}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">{t("products.form.noTierPrices")}</p>
+            )}
+            {tierPriceError && (
+              <p className="text-sm text-red-500">{tierPriceError}</p>
+            )}
           </div>
 
           {/* Stock Information */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="stock">{t("products.form.stock")}</Label>
-              <Input
+              <QuantitySelector
                 id="stock"
-                type="number"
-                min="0"
-                value={formData.stock}
-                onChange={(e) => setFormData((prev) => ({ ...prev, stock: Number.parseInt(e.target.value) || 0 }))}
+                quantity={formData.stock ?? 0}
+                min={0}
+                max={numberInputMax}
+                showAction={false}
+                onQuantityChange={updateStock}
+                inputClassName="text-left"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="minStock">{t("products.form.minStock")}</Label>
-              <Input
+              <QuantitySelector
                 id="minStock"
-                type="number"
-                min="0"
-                value={formData.minStock}
-                onChange={(e) => setFormData((prev) => ({ ...prev, minStock: Number.parseInt(e.target.value) || 0 }))}
+                quantity={formData.minStock ?? 0}
+                min={0}
+                max={numberInputMax}
+                showAction={false}
+                onQuantityChange={updateMinStock}
+                inputClassName="text-left"
               />
             </div>
           </div>

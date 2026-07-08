@@ -4,6 +4,7 @@ import { Order, IOrderItem } from "@/types/order"
 import { OrderStatus, PaymentMethod, PaymentStatus } from "@/types/enums"
 import { groupWarehouseProductsByProduct, getNextBlockTime } from "@/lib/utils"
 import { env } from "@/constants/env"
+import { getProductPriceByQuantity } from "@/lib/product-pricing"
 
 const defaultOrderData: Partial<Order> = {
     customer: undefined,
@@ -58,8 +59,13 @@ export function useNewOrder(createOrder: (orderData: Partial<Order>) => void) {
                 }
             }
         } else if (field === "quantity") {
-            updatedItems[index].quantity = Number.parseFloat(String(value)) || 0
-            updatedItems[index].totalCost = updatedItems[index].quantity! * (updatedItems[index].unitCost ?? 0)
+            const quantity = Number.parseFloat(String(value)) || 0
+            const product = groupWarehouseProductsByProduct(orderData.warehouse?.warehouseProducts!)
+            .find((wp) => wp.product.id === updatedItems[index].id)?.product
+            const unitCost = getProductPriceByQuantity(product!, quantity)
+            updatedItems[index].quantity = quantity
+            updatedItems[index].unitCost = unitCost
+            updatedItems[index].totalCost = quantity * unitCost
         } else {
             updatedItems[index].unitCost = Number.parseFloat(String(value)) || 0
             updatedItems[index].totalCost = (updatedItems[index].quantity ?? 0) * updatedItems[index].unitCost!
