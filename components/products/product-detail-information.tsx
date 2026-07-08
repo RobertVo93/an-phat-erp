@@ -2,7 +2,7 @@ import { formatCurrency, formatDateTime, getProductStatusColor } from "@/lib/uti
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Product } from "@/types"
-import { getSortedTierPrices } from "@/lib/product-pricing"
+import { getOrderedTierPrices } from "@/lib/product-pricing"
 
 interface Props {
   product: Product
@@ -12,7 +12,7 @@ interface Props {
 export default function ProductDetailInformation({product, t}: Props) {
   const productImages = [product.image, ...(product.subImages || [])]
     .filter((image): image is string => typeof image === "string" && image.trim().length > 0)
-  const tierPrices = getSortedTierPrices(product.tierPrices)
+  const tierPrices = getOrderedTierPrices(product.tierPrices)
 
   return (
     <Card>

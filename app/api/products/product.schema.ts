@@ -2,28 +2,51 @@ import { ProductStatus, ProductUnit } from "@/types/enums";
 import { z } from "zod";
 import { CollectionSchema } from "../collections/collection.schema";
 
-export const ProductTierPriceSchema = z.object({
+const productTierPriceSchema = z.object({
     minQuantity: z.number().int().min(1),
     maxQuantity: z.number().int().min(1).optional(),
     price: z.number().min(0),
-}).refine((tier) => tier.maxQuantity === undefined || tier.maxQuantity >= tier.minQuantity, {
-    message: "maxQuantity must be greater than or equal to minQuantity",
+    order: z.number().int().min(1),
+}).refine((tier) => tier.maxQuantity === undefined || tier.maxQuantity > tier.minQuantity, {
+    message: "maxQuantity must be greater than minQuantity",
     path: ["maxQuantity"],
 });
 
-export const ProductTierPricesSchema = z.array(ProductTierPriceSchema).superRefine((tiers, ctx) => {
-    const sortedTiers = tiers.slice().sort((a, b) => a.minQuantity - b.minQuantity);
+export const ProductTierPricesSchema = z.array(productTierPriceSchema).superRefine((tiers, ctx) => {
+    for (let index = 0; index < tiers.length; index += 1) {
+        const tier = tiers[index];
+        const previousTier = tiers[index - 1];
 
-    for (let index = 1; index < sortedTiers.length; index += 1) {
-        const previousTier = sortedTiers[index - 1];
-        const currentTier = sortedTiers[index];
-
-        if (previousTier.maxQuantity === undefined || currentTier.minQuantity <= previousTier.maxQuantity) {
+        if (tier.order !== index + 1) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: "tier price ranges must not overlap",
+                message: "tier price order must match its position",
+                path: [index, "order"],
+            });
+        }
+
+        if (index === 0 && tier.minQuantity !== 1) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "first tier price minQuantity must be 1",
                 path: [index, "minQuantity"],
             });
+        }
+
+        if (index > 0) {
+            if (previousTier.maxQuantity === undefined) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "only the last tier price can have empty maxQuantity",
+                    path: [index - 1, "maxQuantity"],
+                });
+            } else if (tier.minQuantity !== previousTier.maxQuantity + 1) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "tier price minQuantity must follow previous maxQuantity",
+                    path: [index, "minQuantity"],
+                });
+            }
         }
     }
 });

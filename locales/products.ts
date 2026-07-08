@@ -158,6 +158,10 @@ export const productsTranslations = {
     en: "Add tier",
     vi: "Thêm mức giá",
   },
+  "products.form.tierOrder": {
+    en: "Order",
+    vi: "Thứ tự",
+  },
   "products.form.noTierPrices": {
     en: "No tier prices",
     vi: "Chưa có giá theo số lượng",

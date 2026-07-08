@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Product } from "@/types/product"
 import { useLanguage } from "@/contexts/language-context"
 import { formatCurrency, getProductStatusColor } from "@/lib/utils"
-import { getSortedTierPrices } from "@/lib/product-pricing"
+import { getOrderedTierPrices } from "@/lib/product-pricing"
 
 interface ProductViewModalProps {
   product: Product | null
@@ -17,7 +17,7 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
   const { t } = useLanguage()
 
   if (!product) return null
-  const tierPrices = getSortedTierPrices(product.tierPrices)
+  const tierPrices = getOrderedTierPrices(product.tierPrices)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
