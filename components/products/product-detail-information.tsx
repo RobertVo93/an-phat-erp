@@ -12,7 +12,7 @@ interface Props {
 export default function ProductDetailInformation({product, t}: Props) {
   const productImages = [product.image, ...(product.subImages || [])]
     .filter((image): image is string => typeof image === "string" && image.trim().length > 0)
-  const tierPrices = getOrderedTierPrices(product.tierPrices)
+  const tierPrices = getOrderedTierPrices(product.tierPrices).filter((tier) => tier.minQuantity > 1)
 
   return (
     <Card>

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -56,12 +56,23 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
     subImages: [],
     collections: [],
   })
+  const priceRef = useRef(formData.price ?? 0)
+  const costRef = useRef(formData.cost ?? 0)
+  const stockRef = useRef(formData.stock ?? 0)
+  const minStockRef = useRef(formData.minStock ?? 0)
   const [tierPriceError, setTierPriceError] = useState("")
   const lastTier = (formData.tierPrices || [])[(formData.tierPrices || []).length - 1]
   const cannotAddTierPrice = Boolean(
     lastTier && (lastTier.maxQuantity === undefined || lastTier.maxQuantity <= lastTier.minQuantity)
   )
   const numberInputMax = Number.MAX_SAFE_INTEGER
+
+  const syncQuantityRefs = (data: ProductFormState) => {
+    priceRef.current = data.price ?? 0
+    costRef.current = data.cost ?? 0
+    stockRef.current = data.stock ?? 0
+    minStockRef.current = data.minStock ?? 0
+  }
 
   const normalizeFormTierPrices = (
     tierPrices?: ProductTierPriceForm[],
@@ -94,6 +105,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
   }
 
   const updateProductPrice = (price: number) => {
+    priceRef.current = price
     setFormData((prev) => {
       const shouldSyncDefaultTierPrice = (prev.tierPrices?.[0]?.price ?? prev.price ?? 0) === (prev.price ?? 0)
 
@@ -105,6 +117,21 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         )),
       }
     })
+  }
+
+  const updateCost = (cost: number) => {
+    costRef.current = cost
+    setFormData((prev) => ({ ...prev, cost }))
+  }
+
+  const updateStock = (stock: number) => {
+    stockRef.current = stock
+    setFormData((prev) => ({ ...prev, stock }))
+  }
+
+  const updateMinStock = (minStock: number) => {
+    minStockRef.current = minStock
+    setFormData((prev) => ({ ...prev, minStock }))
   }
 
   const updateSubImage = (index: number, value: string) => {
@@ -193,7 +220,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
 
   useEffect(() => {
     if (product) {
-      setFormData({
+      const nextFormData = {
         name: product.name,
         unit: product.unit,
         description: product.description,
@@ -208,9 +235,11 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         image: product.image,
         subImages: product.subImages || [],
         collections: product.collections || [],
-      })
+      }
+      syncQuantityRefs(nextFormData)
+      setFormData(nextFormData)
     } else {
-      setFormData({
+      const nextFormData = {
         name: "",
         unit: ProductUnit.other,
         description: "",
@@ -225,13 +254,26 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
         image: "",
         subImages: [],
         collections: [],
-      })
+      }
+      syncQuantityRefs(nextFormData)
+      setFormData(nextFormData)
     }
   }, [product, open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const tierPrices = normalizeFormTierPrices(formData.tierPrices, formData.price || 0)
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+
+    const currentFormData = {
+      ...formData,
+      price: priceRef.current,
+      cost: costRef.current,
+      stock: stockRef.current,
+      minStock: minStockRef.current,
+    }
+    const tierPrices = normalizeFormTierPrices(currentFormData.tierPrices, currentFormData.price || 0)
     const invalidTier = tierPrices.find((tier, index) => (
       (tier.maxQuantity !== undefined && tier.maxQuantity <= tier.minQuantity)
       || (index < tierPrices.length - 1 && tier.maxQuantity === undefined)
@@ -245,7 +287,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
 
     setTierPriceError("")
     await onSubmit({
-      ...formData,
+      ...currentFormData,
       tierPrices: tierPrices.map((tier) => ({
         ...tier,
         price: tier.price!,
@@ -437,7 +479,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
                 min={0}
                 max={numberInputMax}
                 showAction={false}
-                onQuantityChange={(newValue) => setFormData((prev) => ({ ...prev, cost: newValue }))}
+                onQuantityChange={updateCost}
                 inputClassName="text-left"
               />
             </div>
@@ -537,7 +579,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
                 min={0}
                 max={numberInputMax}
                 showAction={false}
-                onQuantityChange={(newValue) => setFormData((prev) => ({ ...prev, stock: newValue }))}
+                onQuantityChange={updateStock}
                 inputClassName="text-left"
               />
             </div>
@@ -549,7 +591,7 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
                 min={0}
                 max={numberInputMax}
                 showAction={false}
-                onQuantityChange={(newValue) => setFormData((prev) => ({ ...prev, minStock: newValue }))}
+                onQuantityChange={updateMinStock}
                 inputClassName="text-left"
               />
             </div>

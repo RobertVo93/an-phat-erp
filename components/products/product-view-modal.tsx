@@ -17,7 +17,7 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
   const { t } = useLanguage()
 
   if (!product) return null
-  const tierPrices = getOrderedTierPrices(product.tierPrices)
+  const tierPrices = getOrderedTierPrices(product.tierPrices).filter((tier) => tier.minQuantity > 1)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
