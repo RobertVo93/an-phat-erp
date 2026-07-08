@@ -150,6 +150,34 @@ export const productsTranslations = {
     en: "Price",
     vi: "Giá Bán",
   },
+  "products.form.tierPrices": {
+    en: "Tier prices",
+    vi: "Giá theo số lượng",
+  },
+  "products.form.addTierPrice": {
+    en: "Add tier",
+    vi: "Thêm mức giá",
+  },
+  "products.form.noTierPrices": {
+    en: "No tier prices",
+    vi: "Chưa có giá theo số lượng",
+  },
+  "products.form.minQuantity": {
+    en: "Min quantity",
+    vi: "Số lượng từ",
+  },
+  "products.form.maxQuantity": {
+    en: "Max quantity",
+    vi: "Số lượng đến",
+  },
+  "products.form.tierPrice": {
+    en: "Tier price",
+    vi: "Giá mức",
+  },
+  "products.form.tierPriceRangeError": {
+    en: "Max quantity must be greater than min quantity.",
+    vi: "Số lượng đến phải lớn hơn số lượng từ.",
+  },
   "products.form.cost": {
     en: "Cost",
     vi: "Giá Vốn",

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Product } from "@/types/product"
 import { useLanguage } from "@/contexts/language-context"
 import { formatCurrency, getProductStatusColor } from "@/lib/utils"
+import { getSortedTierPrices } from "@/lib/product-pricing"
 
 interface ProductViewModalProps {
   product: Product | null
@@ -16,6 +17,7 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
   const { t } = useLanguage()
 
   if (!product) return null
+  const tierPrices = getSortedTierPrices(product.tierPrices)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,6 +93,23 @@ export function ProductViewModal({ product, open, onOpenChange }: ProductViewMod
               <p className="text-lg">{formatCurrency(product.cost!)}</p>
             </div>
           </div>
+
+          {tierPrices.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-gray-500">{t("products.form.tierPrices")}</label>
+              <div className="mt-2 space-y-2">
+                {tierPrices.map((tier, index) => (
+                  <div key={index} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+                    <span>
+                      {tier.minQuantity}
+                      {tier.maxQuantity ? ` - ${tier.maxQuantity}` : "+"}
+                    </span>
+                    <span className="font-semibold text-green-600">{formatCurrency(tier.price)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Stock Information */}
           <div className="grid grid-cols-2 gap-4">

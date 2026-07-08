@@ -3,6 +3,7 @@ import { IBase, IBaseFilters } from "./base.interface";
 import { Customer as ICustomer } from "./customer";
 import { Warehouse as IWarehouse } from "./warehouse";
 import { Product } from "./product";
+import { ProductTierPrice } from "./product";
 
 export interface Order extends IBase {
   number?: string
@@ -32,6 +33,7 @@ export interface IOrderItem {
   quantity?: number
   totalCost?: number
   unitCost?: number
+  tierPrices?: ProductTierPrice[]
   unit?: ProductUnit
   number?: string
   product?: Product

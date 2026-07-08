@@ -3,11 +3,18 @@ import { IBase, IBaseFilters } from "./base.interface";
 import { Collection as ICollection } from "./collection";
 import { WarehouseProduct } from "./warehouseProduct";
 
+export interface ProductTierPrice {
+  minQuantity: number
+  maxQuantity?: number
+  price: number
+}
+
 export interface Product extends IBase {
   name?: string
   unit?: ProductUnit
   description?: string
   price?: number
+  tierPrices?: ProductTierPrice[]
   cost?: number
   stock?: number
   minStock?: number
@@ -27,6 +34,7 @@ export interface ProductFormData {
   unit?: ProductUnit
   description?: string
   price?: number
+  tierPrices?: ProductTierPrice[]
   cost?: number
   stock?: number
   minStock?: number

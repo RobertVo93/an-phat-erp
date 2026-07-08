@@ -26,6 +26,9 @@ export class ProductEntity extends BaseEntity implements IProduct {
   @Column({ type: "float", nullable: true })
   price?: number;
 
+  @Column({ name: "tier_prices", type: "jsonb", nullable: true })
+  tierPrices?: IProduct["tierPrices"];
+
   @Column({ type: "float", nullable: true })
   cost?: number;
 

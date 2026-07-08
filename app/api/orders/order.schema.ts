@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { OrderStatus, PaymentStatus, PaymentMethod, ProductUnit } from "@/types/enums";
 import { ExtendedProductSchema } from "../products/product.schema";
+import { ProductTierPricesSchema } from "../products/product.schema";
 
 export const RelationIdSchema = z.object({
   id: z.string().optional(),
@@ -12,6 +13,7 @@ export const OrderItemSchema = z.object({
   quantity: z.number().optional(),
   totalCost: z.number().optional(),
   unitCost: z.number().optional(),
+  tierPrices: ProductTierPricesSchema.optional(),
   unit: z.nativeEnum(ProductUnit).optional(),
   number: z.string().optional(),
   product: ExtendedProductSchema.optional(),
