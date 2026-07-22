@@ -506,6 +506,10 @@ export const productionTranslations = {
     en: "kwh",
     vi: "kwh"
   },
+  "production.form.kw": {
+    en: "kw",
+    vi: "kw"
+  },
   "production.form.m3": {
     en: "m³",
     vi: "m³",

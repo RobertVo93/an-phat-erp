@@ -100,7 +100,8 @@ export function useProductionForm(
                     unit: findUtility.unit,
                     type: ProductionElementType.utility,
                     number: findUtility.id,   // TODO: update it as number later
-                    unitCost: findUtility.costPerUnit
+                    unitCost: findUtility.costPerUnit,
+                    quantity: 1,
                 }
             }
         } else if (field === "quantity") {

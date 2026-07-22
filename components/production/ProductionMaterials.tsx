@@ -65,7 +65,7 @@ export const ProductionMaterials = ({ selectedMaterials, addMaterial, updateMate
                                     <QuantitySelector
                                         quantity={material.quantity ?? 0}
                                         showAction={false}
-                                        onQuantityChange={(newValue) => updateMaterial(index, "material", newValue)}
+                                        onQuantityChange={(newValue) => updateMaterial(index, "quantity", newValue)}
                                         className="h-9"
                                         inputClassName="text-left"
                                     />
