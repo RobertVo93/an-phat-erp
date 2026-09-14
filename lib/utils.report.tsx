@@ -10,6 +10,7 @@ import {
   startOfDay,
   startOfMonth,
   startOfYear,
+  subYears,
 } from "date-fns"
 
 type DeltaLabelProps = {
@@ -96,4 +97,11 @@ export const getIntervalForPeriod = (dateFrom: Date, dateTo: Date, period: Repor
   }
 
   return normalized
+}
+
+export const getOneYearFromProvidedDate = (date: Date): { from: Date; to: Date } => {
+  return {
+    from: startOfMonth(subYears(date, 1)),
+    to: endOfMonth(date),
+  }
 }

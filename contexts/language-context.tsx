@@ -21,6 +21,7 @@ import { stockInTranslations } from "@/locales/stock-in"
 import { commonTranslations } from "@/locales/common"
 import { productionTranslations } from "@/locales/production"
 import { reportProductionTranslations } from "@/locales/report-production"
+import { reportProductionV2Translations } from "@/locales/report-production-v2"
 import { reportStockTranslations } from "@/locales/report-stock"
 import { reportOrderTranslations } from "@/locales/report-order"
 import { utilityUsageTranslations } from "@/locales/utility-usage"
@@ -52,6 +53,7 @@ const translations: Translations = {
   ...commonTranslations,
   ...productionTranslations,
   ...reportProductionTranslations,
+  ...reportProductionV2Translations,
   ...reportStockTranslations,
   ...reportOrderTranslations,
   ...utilityUsageTranslations,
