@@ -59,6 +59,30 @@ export const reportProductionV2Translations = {
     en: "Change (%)",
     vi: "Thay đổi (%)",
   },
+  "rp.v2.efficiencyComparisonTitle": {
+    en: "Monthly efficiency comparison",
+    vi: "So sánh hiệu suất theo tháng",
+  },
+  "rp.v2.efficiencyComparisonDescription": {
+    en: "Monthly efficiency for the selected period compared with the same months one year earlier",
+    vi: "Hiệu suất theo tháng của kỳ đã chọn so với cùng kỳ năm trước",
+  },
+  "rp.v2.currentEfficiency": {
+    en: "Current period efficiency",
+    vi: "Hiệu suất kỳ hiện tại",
+  },
+  "rp.v2.previousEfficiency": {
+    en: "Same period last year efficiency",
+    vi: "Hiệu suất cùng kỳ năm trước",
+  },
+  "rp.v2.noEfficiencyData": {
+    en: "No efficiency data",
+    vi: "Không có dữ liệu hiệu suất",
+  },
+  "rp.v2.noEfficiencyDataDescription": {
+    en: "Revenue must be greater than zero to calculate efficiency.",
+    vi: "Doanh thu phải lớn hơn 0 để tính hiệu suất.",
+  },
   "rp.v2.noData": {
     en: "No production data",
     vi: "Không có dữ liệu sản xuất",

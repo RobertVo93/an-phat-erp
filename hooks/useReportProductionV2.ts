@@ -98,6 +98,11 @@ function calculateChange(current: number, previous: number): number | null {
   return +(((current - previous) / Math.abs(previous)) * 100).toFixed(1)
 }
 
+function calculateEfficiency(revenue: number, cost: number): number | null {
+  if (revenue <= 0) return null
+  return +(((revenue - cost) / revenue) * 100).toFixed(1)
+}
+
 function createMetricComparison(
   currentValue: number,
   previousValue: number,
@@ -338,6 +343,10 @@ export function useProductionReportV2(): IUseProductionReportV2Result {
         revenue: createMetricComparison(currentTotals.revenue, previousTotals.revenue),
         cost: createMetricComparison(currentTotals.cost, previousTotals.cost),
         profit: createMetricComparison(currentTotals.profit, previousTotals.profit),
+        efficiency: {
+          currentValue: calculateEfficiency(currentTotals.revenue, currentTotals.cost),
+          previousValue: calculateEfficiency(previousTotals.revenue, previousTotals.cost),
+        },
       }
     })
   }, [currentInterval, currentRecords, previousRecords])

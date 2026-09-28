@@ -26,11 +26,17 @@ export interface IProductionMetricComparisonV2 {
   changePercentage: number | null
 }
 
+export interface IProductionEfficiencyComparisonV2 {
+  currentValue: number | null
+  previousValue: number | null
+}
+
 export interface IProductionMonthlyComparisonRowV2 {
   date: string
   revenue: IProductionMetricComparisonV2
   cost: IProductionMetricComparisonV2
   profit: IProductionMetricComparisonV2
+  efficiency: IProductionEfficiencyComparisonV2
 }
 
 export interface IProductionReportPeriodLabelsV2 {

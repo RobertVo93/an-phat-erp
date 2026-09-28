@@ -5,6 +5,7 @@ import {
   IProductionMonthlyComparisonRowV2,
   IProductionReportPeriodLabelsV2,
 } from "@/types/report-production-v2.interface"
+import { ProductionEfficiencyComparisonChartV2 } from "./ProductionEfficiencyComparisonChartV2"
 import { ProductionMetricComparisonChartV2 } from "./ProductionMetricComparisonChartV2"
 import { ProductionMetricTrendingChartV2 } from "./ProductionMetricTrendingChartV2"
 
@@ -40,6 +41,14 @@ export function ProductionRevenueTabV2({
       />
 
       <ProductionMetricTrendingChartV2
+        data={data}
+        periodLabels={periodLabels}
+        loading={loading}
+        hasData={hasData}
+        hasError={hasError}
+      />
+
+      <ProductionEfficiencyComparisonChartV2
         data={data}
         periodLabels={periodLabels}
         loading={loading}
