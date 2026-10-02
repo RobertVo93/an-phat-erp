@@ -45,7 +45,7 @@ export function adminHref(path: string, query?: string): string {
 export const ADMIN_ROUTES = {
   base: getAdminBasePath(),
   home: (query?: string) => adminHref("/", query),
-  login: () => adminHref("login"),
+  login: (query?: string) => adminHref("login", query),
   register: () => adminHref("register"),
   forgotPassword: () => adminHref("forgot-password"),
   resetPassword: (token?: string) => adminHref("reset-password", token ? `token=${token}` : undefined),

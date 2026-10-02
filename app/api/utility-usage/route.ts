@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     const created = await addUtilityUsageService({
       ...parse.data,
-      createdBy: user.id || user.username,
+      createdBy: user.userId,
     });
 
     return NextResponse.json(created, { status: 201 });

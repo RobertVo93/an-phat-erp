@@ -1,6 +1,6 @@
 import { IUser } from "@/types/user"
-import { apiHref } from "@/lib/httpclient/base"
-import type { Language } from "@/types"
+import { ApiError, apiFetch, apiHref, authRequestHeaders } from "@/lib/httpclient/base"
+import type { IAuthSession, Language } from "@/types"
 
 interface ILoginRequest {
     username: string
@@ -23,23 +23,24 @@ interface IResetPasswordRequest {
 
 interface IAuthResponse {
     user?: IUser
+    session?: IAuthSession
     success?: boolean
     status?: "sent" | "already_sent"
     error?: string
 }
 
 export async function loginUser(data: ILoginRequest): Promise<IAuthResponse> {
+    // Raw fetch on purpose: a 401 here means wrong credentials, not an expired session.
     const response = await fetch(apiHref("/api/auth/login"), {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: authRequestHeaders({ "Content-Type": "application/json" }),
+        credentials: "include",
         body: JSON.stringify(data),
     })
 
     if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || "Failed to login")
+        const error = await response.json().catch(() => ({}))
+        throw new ApiError(error.error || "Failed to login", response.status, error.code)
     }
 
     return response.json()
@@ -97,8 +98,16 @@ export async function resetPassword(data: IResetPasswordRequest): Promise<IAuthR
 }
 
 export async function logoutUser(): Promise<boolean> {
-    await fetch(apiHref("/api/auth/logout"), { method: "POST" });
-    return true;
+    try {
+        const response = await fetch(apiHref("/api/auth/logout"), {
+            method: "POST",
+            headers: authRequestHeaders(),
+            credentials: "include",
+        });
+        return response.ok;
+    } catch {
+        return false;
+    }
 }
 
 export async function getUsers(
@@ -120,7 +129,7 @@ export async function getUsers(
     if (filters?.search) params.append("search", filters.search);
     if (filters?.role) params.append("role", filters.role);
 
-    const response = await fetch(apiHref(`/api/users?${params.toString()}`));
+    const response = await apiFetch(apiHref(`/api/users?${params.toString()}`));
     if (!response.ok) {
         throw new Error('Failed to fetch users');
     }
@@ -128,7 +137,7 @@ export async function getUsers(
 }
 
 export async function getUserById(id: string): Promise<IUser> {
-    const response = await fetch(apiHref(`/api/users/${id}`));
+    const response = await apiFetch(apiHref(`/api/users/${id}`));
     if (!response.ok) {
         throw new Error('Failed to fetch user');
     }
@@ -136,7 +145,7 @@ export async function getUserById(id: string): Promise<IUser> {
 }
 
 export async function updateUser(id: string, data: Partial<IUser>): Promise<IUser> {
-    const response = await fetch(apiHref(`/api/users/${id}`), {
+    const response = await apiFetch(apiHref(`/api/users/${id}`), {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",

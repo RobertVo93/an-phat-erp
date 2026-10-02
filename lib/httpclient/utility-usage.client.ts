@@ -1,4 +1,4 @@
-import { apiHref, createApiUrl } from "@/lib/httpclient/base";
+import { apiHref, createApiUrl, apiFetch } from "@/lib/httpclient/base";
 import { IUtilityUsage, IUtilityUsageFilters } from "@/types";
 import { formatYYYYMMDD } from "@/lib/utils";
 
@@ -43,13 +43,13 @@ export async function getUtilityUsagesByFilter(
     }
   });
 
-  const res = await fetch(url.toString(), { credentials: "include" });
+  const res = await apiFetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch utility usages");
   return res.json();
 }
 
 export async function getUtilityUsageById(idOrNumber: string) {
-  const res = await fetch(apiHref(`/api/utility-usage/${idOrNumber}`), {
+  const res = await apiFetch(apiHref(`/api/utility-usage/${idOrNumber}`), {
     credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to fetch utility usage detail");
@@ -57,7 +57,7 @@ export async function getUtilityUsageById(idOrNumber: string) {
 }
 
 export async function addUtilityUsage(data: Partial<IUtilityUsage>) {
-  const res = await fetch(apiHref("/api/utility-usage"), {
+  const res = await apiFetch(apiHref("/api/utility-usage"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -71,7 +71,7 @@ export async function updateUtilityUsage(
   id: string,
   data: Partial<IUtilityUsage>
 ) {
-  const res = await fetch(apiHref(`/api/utility-usage/${id}`), {
+  const res = await apiFetch(apiHref(`/api/utility-usage/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -82,7 +82,7 @@ export async function updateUtilityUsage(
 }
 
 export async function deleteUtilityUsage(id: string) {
-  const res = await fetch(apiHref(`/api/utility-usage/${id}`), {
+  const res = await apiFetch(apiHref(`/api/utility-usage/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

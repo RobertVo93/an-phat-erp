@@ -3,6 +3,7 @@ import { UserService } from "@/lib/services/user.service";
 import { getUserFromRequest } from "@/lib/auth/jwt";
 import { NextRequest } from "next/server";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
+import { toPublicUser } from "@/lib/auth/public-user";
 /**
  * @swagger
  * components:
@@ -129,7 +130,7 @@ export async function GET(req: NextRequest) {
     const {users, total} = await userService.getUsersWithRelations(search, role, sortBy, sortOrder, skip, limit);
 
     return NextResponse.json({
-      data:users,
+      data: users.map((item) => toPublicUser(item)),
       pagination: {
         total,
         page,

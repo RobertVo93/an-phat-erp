@@ -6,7 +6,8 @@ export const env = {
   DATABASE_URL: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/anphat_erp?sslmode=disable',
   
   // JWT
-  JWT_SECRET: process.env.JWT_SECRET || 'adsfpqwergadfnpg_UmYuKibaZf20ljli123asdfgoihjnqbOInkjHUne',
+  // Legacy and no longer used to sign tokens. Kept only so session-config can refuse to reuse its value.
+  JWT_SECRET: process.env.JWT_SECRET || '',
 
   // MailerSend
   MAILERSEND_API_TOKEN: process.env.MAILERSEND_API_TOKEN || '',
@@ -14,6 +15,14 @@ export const env = {
   MAILERSEND_FROM_EMAIL: process.env.MAILERSEND_FROM_EMAIL || '',
   MAILERSEND_FROM_NAME: process.env.MAILERSEND_FROM_NAME || 'An Phat Admin',
   RESET_EMAIL_RESEND_COOLDOWN_MINUTES: Number(process.env.RESET_EMAIL_RESEND_COOLDOWN_MINUTES || 5),
+
+  // Admin session (access + refresh tokens). Server-only; validated and clamped in lib/auth/session-config.ts
+  AUTH_ACCESS_TOKEN_SECRET: process.env.AUTH_ACCESS_TOKEN_SECRET || '',
+  AUTH_ACCESS_TOKEN_TTL_SECONDS: Number(process.env.AUTH_ACCESS_TOKEN_TTL_SECONDS || 900),
+  AUTH_REFRESH_TOKEN_TTL_SECONDS: Number(process.env.AUTH_REFRESH_TOKEN_TTL_SECONDS || 2592000),
+  AUTH_REFRESH_TOKEN_RENEW_BEFORE_SECONDS: Number(process.env.AUTH_REFRESH_TOKEN_RENEW_BEFORE_SECONDS || 604800),
+  AUTH_REFRESH_TOKEN_REUSE_GRACE_SECONDS: Number(process.env.AUTH_REFRESH_TOKEN_REUSE_GRACE_SECONDS || 60),
+  AUTH_COOKIE_SECURE: process.env.AUTH_COOKIE_SECURE || 'auto',
   
   // Node Environment
   NODE_ENV: process.env.NODE_ENV || 'development',

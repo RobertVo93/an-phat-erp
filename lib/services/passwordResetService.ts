@@ -8,6 +8,8 @@ import { UserEntity } from "@/lib/database/entities/user.entity";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { EmailService } from "@/lib/services/emailService";
 import { UserService } from "@/lib/services/user.service";
+import { revokeUserRefreshTokensService } from "@/lib/services/refreshTokenService";
+import { RefreshTokenRevokeReason } from "@/types/enums";
 import type { Language } from "@/types";
 
 const RESET_TOKEN_EXPIRES_IN_MINUTES = 30;
@@ -137,6 +139,9 @@ export class PasswordResetService {
       if (!updateResult.affected) {
         return false;
       }
+
+      // End every admin session of this user; rolls back with the reset if it fails.
+      await revokeUserRefreshTokensService(resetToken.userId, RefreshTokenRevokeReason.password_reset, manager);
 
       await resetTokenRepository.delete(resetToken.id);
 

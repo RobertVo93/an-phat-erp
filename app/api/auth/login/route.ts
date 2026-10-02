@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { signJwt } from "@/lib/auth/jwt";
+import crypto from "crypto";
+import { ensureDataSource } from "@/lib/database/ensureDataSource";
+import { signAccessToken } from "@/lib/auth/jwt";
+import { getAdminSessionDenial } from "@/lib/auth/session-policy";
+import {
+    NO_STORE_HEADERS,
+    buildSessionResponse,
+    clearLegacyAccessCookie,
+    getRefreshTokenFromRequest,
+    setAccessTokenCookie,
+    setRefreshTokenCookie,
+} from "@/lib/auth/session-cookies";
+import { getAuthRequestGuardError } from "@/lib/utils.request";
 import { UserService } from "@/lib/services/user.service";
+import {
+    cleanupExpiredRefreshTokensService,
+    createRefreshTokenService,
+    revokeRefreshTokenFamilyService,
+} from "@/lib/services/refreshTokenService";
+import { RefreshTokenRevokeReason } from "@/types/enums";
+import { LoginSchema } from "../auth.schema";
 
 /**
  * @swagger
@@ -9,7 +28,7 @@ import { UserService } from "@/lib/services/user.service";
  *     tags:
  *       - Authentication
  *     summary: Login user
- *     description: Authenticate user with email and password
+ *     description: "Authenticate a staff user. Sets the admin_access_token and admin_refresh_token httpOnly cookies. Requires the X-Admin-Auth: 1 header."
  *     requestBody:
  *       required: true
  *       content:
@@ -74,30 +93,62 @@ import { UserService } from "@/lib/services/user.service";
  *                   type: string
  */
 export async function POST(req: NextRequest) {
+    const guardError = getAuthRequestGuardError(req);
+    if (guardError) return guardError;
+
     try {
-        const userService = new UserService();
-        const { username, password } = await req.json();
-        const user = await userService.verifyUser(username, password);
-        if (!user) {
-            return NextResponse.json({ error: "Email or password is incorrect" }, { status: 401 });
+        const parse = LoginSchema.safeParse(await req.json().catch(() => null));
+        if (!parse.success) {
+            return NextResponse.json(
+                { error: "Invalid input", details: parse.error.errors },
+                { status: 400, headers: NO_STORE_HEADERS }
+            );
         }
-        const token = signJwt({ userId: user.id });
-        const res = NextResponse.json({
-            success: true,
-            user: {
-                id: user.id,
-                email: user.email,
-                username: user.username,
-                role: user.role,
-                active: user.active,
-                lastLogin: user.lastLogin,
+
+        await ensureDataSource();
+        const userService = new UserService();
+        const user = await userService.verifyUser(parse.data.username, parse.data.password);
+        if (!user?.id) {
+            return NextResponse.json(
+                { error: "Email or password is incorrect" },
+                { status: 401, headers: NO_STORE_HEADERS }
+            );
+        }
+        // Checked after the password so the 403 does not reveal which usernames exist.
+        if (getAdminSessionDenial(user)) {
+            return NextResponse.json(
+                { error: "Account is not allowed to sign in", code: "account_not_allowed" },
+                { status: 403, headers: NO_STORE_HEADERS }
+            );
+        }
+
+        // A browser that logs in again ends its previous session family.
+        const previousRefreshToken = getRefreshTokenFromRequest(req);
+        if (previousRefreshToken) {
+            try {
+                await revokeRefreshTokenFamilyService(previousRefreshToken, RefreshTokenRevokeReason.superseded);
+            } catch (error) {
+                console.error("[api/auth/login] Failed to revoke the previous session", { error });
             }
+        }
+
+        // Sign first so a missing secret fails before any refresh row is written.
+        const familyId = crypto.randomUUID();
+        const access = signAccessToken(user.id, familyId);
+        const refreshToken = await createRefreshTokenService({ userId: user.id, passwordHash: user.password, familyId });
+
+        const res = buildSessionResponse(user, access.expiresInSeconds, refreshToken.expiresAt);
+        await userService.updateLastLogin(user.id);
+        setAccessTokenCookie(res, req, access.token, access.expiresInSeconds);
+        setRefreshTokenCookie(res, req, refreshToken.token, refreshToken.expiresAt);
+        clearLegacyAccessCookie(res);
+
+        cleanupExpiredRefreshTokensService().catch((error) => {
+            console.error("[api/auth/login] Failed to clean up expired refresh tokens", { error });
         });
-        await userService.updateLastLogin(user.id!);
-        res.cookies.set("token", token, { httpOnly: true, path: "/", sameSite: "lax" });
         return res;
     } catch (error) {
-        console.error("Error logging in:", error);
-        return NextResponse.json({ error: "Failed to login" }, { status: 500 });
+        console.error("[api/auth/login] Failed to login", { error });
+        return NextResponse.json({ error: "Failed to login" }, { status: 500, headers: NO_STORE_HEADERS });
     }
-} 
+}

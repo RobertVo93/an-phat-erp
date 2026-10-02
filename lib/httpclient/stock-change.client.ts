@@ -1,5 +1,5 @@
 import { StockChange, StockChangeFilters } from "@/types";
-import { apiHref, createApiUrl } from "@/lib/httpclient/base";
+import { apiHref, createApiUrl, apiFetch } from "@/lib/httpclient/base";
 
 /**
  * Get all stock changes matching the filter, without pagination.
@@ -33,19 +33,19 @@ export async function getStockChangeByFilter(params: StockChangeFilters = {}) {
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
   });
-  const res = await fetch(url.toString(), { credentials: "include" });
+  const res = await apiFetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch stock-changes");
   return res.json();
 }
 
 export async function getStockChangeById(id: string) {
-  const res = await fetch(apiHref(`/api/stock-change/${id}`), { credentials: "include" })
+  const res = await apiFetch(apiHref(`/api/stock-change/${id}`), { credentials: "include" })
   if (!res.ok) throw new Error("Failed to fetch stock-change detail")
   return res.json()
 }
 
 export async function addStockChange(data: Partial<StockChange>) {
-  const res = await fetch(apiHref("/api/stock-change"), {
+  const res = await apiFetch(apiHref("/api/stock-change"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -56,7 +56,7 @@ export async function addStockChange(data: Partial<StockChange>) {
 }
 
 export async function updateStockChange(id: string, data: Partial<StockChange>) {
-  const res = await fetch(apiHref(`/api/stock-change/${id}`), {
+  const res = await apiFetch(apiHref(`/api/stock-change/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -67,7 +67,7 @@ export async function updateStockChange(id: string, data: Partial<StockChange>) 
 }
 
 export async function deleteStockChange(id: string) {
-  const res = await fetch(apiHref(`/api/stock-change/${id}`), {
+  const res = await apiFetch(apiHref(`/api/stock-change/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

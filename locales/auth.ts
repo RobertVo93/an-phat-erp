@@ -44,6 +44,22 @@ export const authTranslations = {
     en: "Forgot password?",
     vi: "Quên mật khẩu?",
   },
+  "login.sessionExpired": {
+    en: "Your session has expired. Please sign in again.",
+    vi: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+  },
+  "login.invalidCredentials": {
+    en: "Incorrect username or password.",
+    vi: "Tên đăng nhập hoặc mật khẩu không đúng.",
+  },
+  "login.accountNotAllowed": {
+    en: "This account is not allowed to sign in to the admin site.",
+    vi: "Tài khoản này không được phép đăng nhập vào trang quản trị.",
+  },
+  "login.failed": {
+    en: "Login failed. Please try again.",
+    vi: "Đăng nhập thất bại. Vui lòng thử lại.",
+  },
 
   // Register translations
   "register.subtitle": {

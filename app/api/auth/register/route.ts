@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { signJwt } from "@/lib/auth/jwt";
 import { UserService } from "@/lib/services/user.service";
 import { UserRole } from "@/types/enums";
 import { setUserPagePermissions } from "@/lib/services/userPermissionService";
@@ -94,19 +93,8 @@ export async function POST(req: NextRequest) {
             { pageId: "home", granted: true },
         ]);
 
-        // Generate JWT token
-        const token = signJwt({ userId: user.id });
-
-        // Set cookie and return response
-        const res = NextResponse.json({ success: true });
-
-        res.cookies.set("token", token, {
-            httpOnly: true,
-            path: "/",
-            sameSite: "lax"
-        });
-
-        return res;
+        // No session cookie: the register form sends the user to the login page.
+        return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Registration error:", error);
         return NextResponse.json(

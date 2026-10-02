@@ -1,5 +1,5 @@
 import { Product, ProductFilters } from "@/types/product";
-import { apiHref, createApiUrl } from "@/lib/httpclient/base";
+import { apiHref, createApiUrl, apiFetch } from "@/lib/httpclient/base";
 
 /**
  * Get all products matching the filter, without pagination.
@@ -39,18 +39,18 @@ export async function getProducts(params: ProductFilters = {}) {
       }
     }
   });
-  const res = await fetch(url.toString(), { credentials: "include" });
+  const res = await apiFetch(url.toString(), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch products");
   return res.json();
 }
 
 export async function getProductById(id: string) {
-  const res = await fetch(apiHref(`/api/products/${id}`));
+  const res = await apiFetch(apiHref(`/api/products/${id}`));
   return res.json();
 }
 
 export async function createProduct(data: Partial<Product>) {
-  const res = await fetch(apiHref("/api/products"), {
+  const res = await apiFetch(apiHref("/api/products"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -61,7 +61,7 @@ export async function createProduct(data: Partial<Product>) {
 }
 
 export async function updateProduct(id: string, data: Partial<Product>) {
-  const res = await fetch(apiHref(`/api/products/${id}`), {
+  const res = await apiFetch(apiHref(`/api/products/${id}`), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -72,7 +72,7 @@ export async function updateProduct(id: string, data: Partial<Product>) {
 }
 
 export async function deleteProduct(id: string) {
-  const res = await fetch(apiHref(`/api/products/${id}`), {
+  const res = await apiFetch(apiHref(`/api/products/${id}`), {
     method: "DELETE",
     credentials: "include",
   });

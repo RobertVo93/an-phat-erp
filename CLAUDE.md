@@ -43,6 +43,8 @@ docker compose exec admin pnpm migration:run
 - `.env.example` lists the env keys. Env vars are read through `constants/env.ts` (`env.X`); the one exception is `NEXT_PUBLIC_ADMIN_BASE_PATH`, read directly in `constants/nav.ts#getAdminBasePath`. Mismatch: the example file has `NEXT_PUBLIC_PAY_PERIOD_START`, but the code reads `NEXT_PUBLIC_SYSTEM_PAY_PERIOD_START`. `NEXT_PUBLIC_*` values are inlined at build time.
 - Legacy: `env.JWT_SECRET` and `env.DATABASE_URL` have hard-coded fallbacks in `env.ts`. Leave them alone and do not copy the pattern.
 - `node_modules` may be missing in a fresh codespace. Run `pnpm install` before `tsc` or migrations.
+- `AUTH_ACCESS_TOKEN_SECRET` is required (32+ characters, no fallback, different from the legacy `JWT_SECRET`). Without it every login fails with 500. For quick session tests, set tiny `AUTH_*_SECONDS` values in `.env` and recreate the container.
+- Migration CLI: run it on the host (Node 22). Under the Docker image's Node 18 it fails, because `uuid@13` is ESM-only. Point `DATABASE_URL` at the local database for that one command: `.env`'s active `DATABASE_URL` may be a shared remote (Neon) database, and `migration:gen`/`migration:revert` must never run against it.
 
 ## 3. Directory structure
 
@@ -65,7 +67,9 @@ constants/  index.ts barrel (`@/constants`) · env.ts · nav.ts (ADMIN_ROUTES, a
 contexts/   auth-context.tsx (useAuth) · language-context.tsx (useLanguage, registers locale files)
 hooks/      use-<feature>.ts page/data hooks; useReport<X>.ts report hooks (camelCase); use-toast.ts (the REAL toast store)
 lib/
-  auth/jwt.ts                signJwt / verifyJwt / getUserFromRequest
+  auth/jwt.ts                signAccessToken / verifyAccessToken / getUserFromRequest (sync, no DB)
+  auth/session-*.ts          server: session-config (env, clamps), session-cookies (set/clear), session-policy (role allowlist)
+  auth/client-session.ts     browser: admin_session metadata, buildLoginHref, redirectToLogin; return-path.ts validates ?next=
   database/typeorm.ts        AppDataSource (explicit entities array); ensureDataSource.ts
   database/entities/         <kebab>.entity.ts + index.ts barrel (24 entities + base.entity.ts)
   database/migrations/       YYYYMMDD-Name.ts, auto-loaded by the glob in typeorm.ts (no registration);  database/scripts/ CLI wrappers
@@ -98,9 +102,14 @@ In this pattern reads skip `/api`; only mutations use it.
 - **Reports** have no report endpoints. Hooks page through list APIs with a `do { ... } while ((page-1)*LIMIT < total)` loop (`getAll<X>ByFilter`, or inline in `hooks/useReportProductionV2.ts`) and aggregate in memory with date-fns (`components/production-report-v2/*`). Known bug: `useReportOrder` calls `getOrders()` with no params, so it only sees the API's default 20 rows. Do not copy it.
 
 **Auth.**
-- **Login:** `POST /api/auth/login` `{username,password}` → `UserService.verifyUser` (bcryptjs) → `signJwt({ userId })` (7d) → httpOnly cookie `token` (path `/`, sameSite lax).
-- **API check:** `getUserFromRequest(req)` reads the cookie or `Authorization: Bearer` and verifies the signature only. The payload is `{ userId, iat, exp }`, so **use `user.userId`**; `user.id` and `user.username` are undefined. No route checks roles or page permissions.
-- **Client:** `AuthProvider` keeps the user in localStorage `"user"`, not the cookie, and exposes `useAuth()` → `{ user, login, logout, isAuthenticated, isAdmin, isSuperAdmin }`. `AuthGuard` redirects to `ADMIN_ROUTES.login()` unless the path is in its `publicRoutes`. **New public pages must be added there.**
+- **Login:** `POST /api/auth/login` `{username,password}` → `UserService.verifyUser` (bcryptjs) → only active `super_admin`/`admin`/`manager`/`staff` (`lib/auth/session-policy.ts`, else 403 `account_not_allowed`) → two httpOnly `SameSite=Strict` cookies:
+  - `admin_access_token`: 15-min JWT `{ userId, sid, typ: "access" }` (HS256, pinned iss/aud), signed with `AUTH_ACCESS_TOKEN_SECRET`, Path `<base>` (`/admin`).
+  - `admin_refresh_token`: opaque 30-day token, only its sha256 stored in `refresh_tokens` (`lib/services/refreshTokenService.ts`), Path `<base>/api/auth`. The browser matches Path against the `/admin/...` URL, not the rewritten one.
+  - Lifetimes come from the `AUTH_*` env keys (`lib/auth/session-config.ts`); `.env.example` documents them.
+- **Refresh:** `POST /api/auth/refresh` (cookie-authenticated, no access token needed) issues a new access token and, when the refresh token has 7 days or less left, a new refresh token. Rotations stay in one session family; every change to a family runs under a Postgres advisory lock. A replayed old token revokes the family (`reuse_detected`). Password fingerprint, `active` and role are re-checked on every refresh. 401 `{ code }` ends the session; 5xx is transient. Logout, re-login, password reset and deactivation through `PUT /api/users/[id]` revoke sessions.
+- **Login, refresh and logout** require the header `X-Admin-Auth: 1` and reject `Sec-Fetch-Site` other than `same-origin` (`getAuthRequestGuardError` in `lib/utils.request.ts`). forgot/reset-password stay unguarded for ecom.
+- **API check:** `getUserFromRequest(req)` reads `admin_access_token` or `Authorization: Bearer` and verifies it (`IAccessTokenPayload`). **Use `user.userId`.** No route checks roles or page permissions except `PUT /api/users/[id]` (active super admin).
+- **Client:** `AuthProvider` keeps the user in localStorage `"user"` plus lifetimes in `admin_session` (no secrets), and exposes `useAuth()` → `{ user, login, logout, isAuthenticated, isAdmin, isSuperAdmin }`. It refreshes on load, focus and visibility, redirects an idle tab when the refresh token expires, and follows other tabs through `storage` events. An expired session goes to `ADMIN_ROUTES.login("reason=session_expired&next=…")` and returns to that page after login. `AuthGuard` redirects to login (with `next`) unless the path is an auth page (`getAuthPagePaths()` in `lib/auth/return-path.ts`). **New public pages must be added there.**
 - **Page permissions:** `ERPLayout` fetches `getUserById(user.id).permissions` (`UserPagePermission {userId,pageId,granted}`), filters the sidebar, and shows "access denied" when `pathname` equals a nav child `href` whose `id` is not granted. admin and super_admin bypass the check.
   - The pageId is `navItems[].children[].id` in `constants/nav.ts`.
   - Detail pages and pages without a nav entry are always allowed.
@@ -112,7 +121,7 @@ In this pattern reads skip `/api`; only mutations use it.
 - Cross-zone navigation (to ecom or pos) must be a full page load (`<a href>` / `window.location.href`), not `next/link`.
 - To build absolute URLs on the server, use `getPublicOrigin(req)` (`lib/utils.request.ts`; it honours `x-forwarded-*` from the ecom proxy).
 - Root-relative public assets (`/app-logo.png`) are actually served from `../ecom/public/`. A new admin asset must be copied there too, or referenced through `adminHref("x.png")`.
-- All zones share one origin, so cookies and localStorage are shared. The `language` key is intentionally shared with ecom. New localStorage keys need a prefix, e.g. `admin_`.
+- All zones share one origin, so cookies and localStorage are shared. The `language` key is intentionally shared with ecom. New localStorage keys need a prefix, e.g. `admin_` (`admin_session`, `admin_session_end`). Admin cookies are scoped to `/admin` and `/admin/api/auth`, so ecom and pos never receive them; the legacy `token` cookie is only cleared.
 
 **Cross-app contracts.** ecom calls these endpoints; keep them **public** and keep their request/response shapes: `/api/auth/forgot-password`, `/api/auth/reset-password`, `/api/settings/type/[type]`.
 - ecom logs in separately with next-auth against the same `users` table. Sessions are not shared.
@@ -139,7 +148,7 @@ In this pattern reads skip `/api`; only mutations use it.
 | Mock pages | `/discounts`, `/reports/{daily,employee,utility}`: static, English, no backend | do not copy |
 | Settings `/settings` (nav "Theme") | Key/value ecom settings (brand, map, contact), jsonb value | `types/setting-definition.ts`, `components/settings/*`, `settingService.ts`, `setting.entity.ts` |
 | Permissions `/permissions`, `/permissions/user/[id]` | Super-admin only: per-user page grants keyed by nav `id` | `components/permissions/*`, `hooks/use-user-permissions.ts`, `userPermissionService.ts`, `app/api/permissions` |
-| Auth `/login`, `/register`, `/forgot-password`, `/reset-password` | JWT login; MailerSend reset (sha256 token, 30 min) | `app/api/auth/**`, `lib/services/{user.service,passwordResetService,emailService}.ts`, `components/auth/*` |
+| Auth `/login`, `/register`, `/forgot-password`, `/reset-password` | Access + refresh-token sessions (see §4 Auth); MailerSend reset (sha256 token, 30 min) | `app/api/auth/**`, `lib/auth/*`, `lib/services/{user.service,refreshTokenService,passwordResetService,emailService}.ts`, `refresh-token.entity.ts`, `contexts/auth-context.tsx`, `components/auth/*` |
 | Swagger `/swagger` | API docs (only about 15 of 44 routes are documented) | `lib/swagger.ts`, `app/api/docs`, `app/swagger/page.tsx` |
 
 `cart`, `cart-item`, `notification` and `notification-settings` entities are ecom-only tables. They are registered here only so that migrations cover them.
@@ -218,10 +227,11 @@ In this pattern reads skip `/api`; only mutations use it.
 **HTTP client (`lib/httpclient/<kebab>.client.ts`)**
 - Copy `utility-usage.client.ts`. It is the only client with the target names, the `Date` handling and the `getAll...` loop. `employee.client.ts` has the same fetch shape, but its list function is called `getEmployee` and it has no `getById`, so don't copy its names.
 - GET: `createApiUrl("/api/x")`, append non-empty params (`Date` → `formatYYYYMMDD`).
-- Mutations: `fetch(apiHref(...), { method, headers: {"Content-Type":"application/json"}, credentials: "include", body })`.
+- **Use `apiFetch` from `@/lib/httpclient/base`, not `fetch`,** for every authenticated admin API call. It refreshes an expired session and retries once. Raw `fetch` is only for the auth flows in `auth.client.ts` (login, register, forgot/reset password, logout) and cross-origin URLs (the presigned S3 PUT).
+- Mutations: `apiFetch(apiHref(...), { method, headers: {"Content-Type":"application/json"}, credentials: "include", body })`.
 - **Every** function sends `credentials: "include"`, checks `res.ok` and throws. DELETE returns the `Response`; never call `.json()` on a 204.
 - Name functions `get<X>sByFilter / get<X>ById / add<X> / update<X> / delete<X>`, and add a `getAll<X>sByFilter` loop if reports need every row. Add the file to `lib/httpclient/index.ts` and check that no exported name clashes, since the barrel re-exports every client flat.
-- Never write `fetch("/api/...")` without `apiHref`.
+- Never write `fetch("/api/...")` or `apiFetch("/api/...")` without `apiHref`.
 
 **UI**
 - **Pages.** Authenticated pages wrap their content in `<ERPLayout>`; auth pages don't. The page header is an `h2.text-2xl.font-bold.tracking-tight sm:text-3xl` title, a `text-muted-foreground` description, and a primary `Button` with `<Plus className="mr-2 h-4 w-4" />`. Page bodies use `space-y-4|6`.
@@ -346,12 +356,13 @@ In this pattern reads skip `/api`; only mutations use it.
   - Mutating GETs (`payroll/sync`); duplicated create/update schemas; string-matching error messages to pick a status.
 - **Auth and security:**
   - `user.id || user.username` from the JWT (`utility-usage` routes; always undefined).
-  - New unauthenticated routes. `upload-url` and `users/[id]` PUT are known holes, and `register` is public and creates staff.
+  - New unauthenticated routes. `upload-url` is a known hole, and `register` is public and creates staff (they cannot sign in once deactivated). `/api/auth/refresh` is intentionally cookie-authenticated.
   - Returning `UserEntity` without stripping `password`/`passwordSalt` (they are not `select: false`).
   - Trusting localStorage `user` or `isAdmin` for anything security-relevant. The API enforces no roles, so add a server-side role check for sensitive new endpoints (for example, load the user by `user.userId` and check `role`).
   - `NEXT_PUBLIC_*` secrets, or new client imports of `lib/s3.ts` (it ships AWS keys to the browser). New S3 work belongs server-side (copy `../ecom/lib/s3.server.ts`, SDK v3) behind an authenticated route.
   - Committing secrets or printing values from `docker-compose.yml` or `.env`.
-  - Server pages that load sensitive data have no auth today. If you add a check, verify the `token` cookie with `verifyJwt` inside the page, never inside services. No exemplar exists.
+  - Server pages that load sensitive data have no auth today. If you add a check, verify the `admin_access_token` cookie with `verifyAccessToken` inside the page, never inside services. A Server Component cannot refresh (it cannot set cookies), so redirect to the login page with `next` instead. No exemplar exists.
+  - Side effects before the auth check: `apiFetch` replays a request once after a refresh, so every handler must call `getUserFromRequest` before anything else.
 - **UI legacy:**
   - Full `"use client"` pages with inline column defs (`app/payroll/page.tsx`) or `useParams` in pages (`app/products/[id]/page.tsx`); pages without `ERPLayout` (`app/permissions/*`); mock pages.
   - `toast` from `@/components/ui/use-toast`; sonner; react-hook-form; TanStack or `ui/data-table`; the shadcn `ui/sidebar` or `ui/chart`.
