@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const { id } = await params;
     const updated = await updateUtilityUsageService(id, {
       ...parse.data,
-      updatedBy: user.id || user.username,
+      updatedBy: user.userId,
     });
 
     return NextResponse.json(updated);

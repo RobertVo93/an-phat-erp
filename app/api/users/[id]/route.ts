@@ -4,7 +4,9 @@ import { UserSchema } from "../user.schema";
 import { ensureDataSource } from "@/lib/database/ensureDataSource";
 import { getUserFromRequest } from "@/lib/auth/jwt";
 import { toPublicUser } from "@/lib/auth/public-user";
-import { UserRole } from "@/types/enums";
+import { getAdminSessionDenial } from "@/lib/auth/session-policy";
+import { revokeUserRefreshTokensService } from "@/lib/services/refreshTokenService";
+import { RefreshTokenRevokeReason, UserRole } from "@/types/enums";
 
 interface IUserRouteContext {
   params: Promise<{ id: string }>
@@ -122,6 +124,12 @@ export async function PUT(req: NextRequest, { params }: IUserRouteContext) {
     const updatedUser = await userService.updateUser(id, parse.data);
     if (!updatedUser) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    // Deactivated or moved to a non-staff role: end their admin sessions now instead of at the next refresh.
+    const denial = getAdminSessionDenial(updatedUser);
+    if (denial) {
+      await revokeUserRefreshTokensService(id, RefreshTokenRevokeReason[denial]);
     }
 
     return NextResponse.json(toPublicUser(updatedUser));
