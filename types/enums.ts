@@ -256,3 +256,14 @@ export enum NotificationType {
   message = "message",
   promotion = "promotion",
 }
+
+export enum RefreshTokenRevokeReason {
+  logout = "logout",
+  rotated = "rotated",
+  reuse_detected = "reuse_detected",
+  password_changed = "password_changed",
+  password_reset = "password_reset",
+  user_inactive = "user_inactive",
+  role_not_allowed = "role_not_allowed",
+  superseded = "superseded",
+}

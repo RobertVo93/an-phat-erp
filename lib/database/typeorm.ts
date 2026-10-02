@@ -27,6 +27,7 @@ import { NotificationEntity } from "./entities/notification.entity";
 import { NotificationSettingsEntity } from "./entities/notification-settings.entity";
 import { SettingEntity } from "./entities/setting.entity";
 import { PasswordResetTokenEntity } from "./entities/password-reset-token.entity";
+import { RefreshTokenEntity } from "./entities/refresh-token.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -51,6 +52,7 @@ export const AppDataSource = new DataSource({
     NotificationSettingsEntity,
     SettingEntity,
     PasswordResetTokenEntity,
+    RefreshTokenEntity,
     // Dependent entities
     UserPagePermissionEntity,
     WarehouseProductEntity,
