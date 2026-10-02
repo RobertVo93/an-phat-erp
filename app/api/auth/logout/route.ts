@@ -12,7 +12,7 @@ import { RefreshTokenRevokeReason } from "@/types/enums";
  *     tags:
  *       - Authentication
  *     summary: Logout user
- *     description: Revoke this browser's session family and clear the session cookies. Requires the X-Admin-Auth: 1 header.
+ *     description: "Revoke this browser's session family and clear the session cookies. Requires the X-Admin-Auth: 1 header."
  *     responses:
  *       200:
  *         description: Logout successful

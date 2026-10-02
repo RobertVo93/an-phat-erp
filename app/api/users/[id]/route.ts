@@ -56,8 +56,6 @@ interface IUserRouteContext {
  *         description: User not found
  *       500:
  *         description: Internal server error
- * 
- * /api/users/{id}:
  *   get:
  *     summary: Get user by ID
  *     tags: [Users]

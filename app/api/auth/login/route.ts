@@ -28,7 +28,7 @@ import { LoginSchema } from "../auth.schema";
  *     tags:
  *       - Authentication
  *     summary: Login user
- *     description: Authenticate a staff user. Sets the admin_access_token and admin_refresh_token httpOnly cookies. Requires the X-Admin-Auth: 1 header.
+ *     description: "Authenticate a staff user. Sets the admin_access_token and admin_refresh_token httpOnly cookies. Requires the X-Admin-Auth: 1 header."
  *     requestBody:
  *       required: true
  *       content:
