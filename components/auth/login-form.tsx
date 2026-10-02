@@ -50,12 +50,6 @@ export function LoginForm() {
         <CardDescription>{t("login.subtitle")}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-sm font-medium text-blue-800 mb-1">Demo Credentials:</p>
-          <p className="text-xs text-blue-600">Email: admin@anphat.com</p>
-          <p className="text-xs text-blue-600">Password: admin123</p>
-          <p className="text-xs text-blue-500 mt-1">Or use any email/password to login</p>
-        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="text-red-500 text-sm text-center">{error}</div>}
           <div className="space-y-2">
@@ -88,19 +82,6 @@ export function LoginForm() {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? t("common.loading") : t("login.signIn")}
           </Button>
-          <div className="mt-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setUsername("admin@anphat.com")
-                setPassword("admin123")
-              }}
-            >
-              Use Demo Credentials
-            </Button>
-          </div>
         </form>
         <div className="mt-4 text-center text-sm">
           {t("login.noAccount")}{" "}

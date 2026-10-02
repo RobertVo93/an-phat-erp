@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signJwt } from "@/lib/auth/jwt";
 import { UserService } from "@/lib/services/user.service";
+import { getAdminSessionDenial } from "@/lib/auth/session-policy";
 
 /**
  * @swagger
@@ -80,6 +81,13 @@ export async function POST(req: NextRequest) {
         const user = await userService.verifyUser(username, password);
         if (!user) {
             return NextResponse.json({ error: "Email or password is incorrect" }, { status: 401 });
+        }
+        // Checked after the password so the 403 does not reveal which usernames exist.
+        if (getAdminSessionDenial(user)) {
+            return NextResponse.json(
+                { error: "Account is not allowed to sign in", code: "account_not_allowed" },
+                { status: 403 }
+            );
         }
         const token = signJwt({ userId: user.id });
         const res = NextResponse.json({
