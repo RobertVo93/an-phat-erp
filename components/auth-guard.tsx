@@ -3,34 +3,30 @@
 import type React from "react"
 
 import { useAuth } from "@/contexts/auth-context"
-import { ADMIN_ROUTES } from "@/constants/nav"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-
-const publicRoutes = [
-  ADMIN_ROUTES.login(),
-  ADMIN_ROUTES.register(),
-  ADMIN_ROUTES.forgotPassword(),
-  ADMIN_ROUTES.resetPassword(),
-]
+import { buildLoginHref, getCurrentPath } from "@/lib/auth/client-session"
+import { isAuthPagePath } from "@/lib/auth/return-path"
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
+  const isPublicRoute = isAuthPagePath(pathname)
 
   useEffect(() => {
     // Short delay to ensure auth state is loaded
     const timer = setTimeout(() => {
-      if (!isAuthenticated && !publicRoutes.includes(pathname)) {
-        router.push(ADMIN_ROUTES.login())
+      if (!isAuthenticated && !isPublicRoute) {
+        // Keep the deep link so the user lands back here after login.
+        router.replace(buildLoginHref({ next: getCurrentPath() }))
       }
       setIsChecking(false)
     }, 100)
 
     return () => clearTimeout(timer)
-  }, [isAuthenticated, pathname, router])
+  }, [isAuthenticated, isPublicRoute, router])
 
   // Show nothing while checking auth state
   if (isChecking) {
@@ -38,7 +34,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   // If not authenticated and not on a public route, don't render children
-  if (!isAuthenticated && !publicRoutes.includes(pathname)) {
+  if (!isAuthenticated && !isPublicRoute) {
     return null
   }
 

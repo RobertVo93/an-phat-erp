@@ -51,11 +51,12 @@ export function ERPLayout({ children }: ERPLayoutProps) {
     }
   }, [])
 
+  // Keyed on the id so a silent session refresh does not re-fetch permissions.
   useEffect(() => {
-    if (user && user.id) {
+    if (user?.id) {
       getPermissions(user.id)
     }
-  }, [user,])
+  }, [user?.id, getPermissions])
 
   useEffect(() => {
     if (!user) return

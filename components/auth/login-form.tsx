@@ -12,9 +12,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/auth-context"
 import { useLanguage } from "@/contexts/language-context"
 import { loginUser } from "@/lib/httpclient"
+import { ApiError, waitForPendingRefresh, withAuthLock } from "@/lib/httpclient/base"
 import { ADMIN_ROUTES } from "@/constants/nav"
+import type { LoginReason } from "@/lib/auth/return-path"
 
-export function LoginForm() {
+interface ILoginFormProps {
+  nextPath?: string
+  reason?: LoginReason
+}
+
+export function LoginForm({ nextPath, reason }: ILoginFormProps) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -29,14 +36,25 @@ export function LoginForm() {
       setIsLoading(true)
       setError("")
 
-      const res = await loginUser({ username, password })
-      if (res.success) {
-        login(res.user!)
-        router.push(ADMIN_ROUTES.home()); // or your dashboard
+      // Serialized with refreshes from other tabs so a late refresh response cannot clear the new cookies.
+      await waitForPendingRefresh()
+      const res = await withAuthLock(() => loginUser({ username, password }))
+      if (res.success && res.user && res.session) {
+        login(res.user, res.session)
+        router.replace(nextPath ?? ADMIN_ROUTES.home())
       }
     } catch (error) {
       console.error("Error logging in:", error);
-      setError("Login failed. Please try again.")
+      if (error instanceof ApiError && error.status === 401) {
+        setError(t("login.invalidCredentials"))
+      } else if (error instanceof ApiError && error.code === "account_not_allowed") {
+        setError(t("login.accountNotAllowed"))
+      } else {
+        if (error instanceof ApiError && error.code === "cross_site") {
+          console.error("[auth] Login was blocked by the same-origin guard; check the proxy forwards the X-Admin-Auth header.")
+        }
+        setError(t("login.failed"))
+      }
     }
     finally {
       setIsLoading(false)
@@ -52,6 +70,9 @@ export function LoginForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+          {!error && reason === "session_expired" && (
+            <div role="status" className="text-amber-600 text-sm text-center">{t("login.sessionExpired")}</div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">{t("login.username")}</Label>
             <Input

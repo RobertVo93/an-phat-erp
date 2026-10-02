@@ -1,4 +1,4 @@
-import { apiHref, createApiUrl } from "@/lib/httpclient/base";
+import { apiHref, createApiUrl, apiFetch } from "@/lib/httpclient/base";
 import type { ISetting, ISettingFilters } from "@/types/setting.interface";
 
 export async function getSettingsClient(filters: ISettingFilters = {}) {
@@ -7,13 +7,13 @@ export async function getSettingsClient(filters: ISettingFilters = {}) {
         if (value !== undefined && value !== "") url.searchParams.append(key, String(value));
     });
 
-    const res = await fetch(url.toString(), { credentials: "include" });
+    const res = await apiFetch(url.toString(), { credentials: "include" });
     if (!res.ok) throw new Error("Failed to fetch settings");
     return res.json();
 }
 
 export async function updateSettingClient(id: string, data: Partial<ISetting>) {
-    const res = await fetch(apiHref(`/api/settings/${id}`), {
+    const res = await apiFetch(apiHref(`/api/settings/${id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
