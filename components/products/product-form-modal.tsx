@@ -203,6 +203,29 @@ export function ProductFormModal({ product, open, onOpenChange, onSubmit, loadin
     }))
   }
 
+  const updateSubImage = (index: number, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      subImages: (prev.subImages || []).map((image, imageIndex) => (
+        imageIndex === index ? value : image
+      )),
+    }))
+  }
+
+  const addSubImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      subImages: [...(prev.subImages || []), ""],
+    }))
+  }
+
+  const removeSubImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      subImages: (prev.subImages || []).filter((_, imageIndex) => imageIndex !== index),
+    }))
+  }
+
   const selectCollection = (collectionId: string) => {
     const collections = formData.collections ?? [];
 
