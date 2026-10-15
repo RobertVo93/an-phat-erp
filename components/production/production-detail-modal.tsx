@@ -47,19 +47,14 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
     }, 0);
   }
 
-  const calculateRevenue = () => {
-    return record.product?.price! * record.quantity!
-  };
-
   const calculateProfit = () => {
-    const totalCost = calculateTotalMaterialCost()! + calculateTotalUtilityCost()! + calculateTotalSalary()!
-    return record.product?.price! * record.quantity! - totalCost
+    return record.totalCost! - record.totalExpense!
   }
 
   const calculateEfficiency = () => {
-    const totalCost = calculateTotalMaterialCost()! + calculateTotalUtilityCost()! + calculateTotalSalary()!
-    const totalIncome = record.product?.price! * record?.quantity!
-    const efficiency = ((totalIncome! - totalCost) / totalIncome!) * 100  // ((total income - total expense) / total income) * 100
+    const totalExpense = record.totalExpense!
+    const totalIncome = record.totalCost!
+    const efficiency = ((totalIncome! - totalExpense) / totalIncome!) * 100  // ((total income - total expense) / total income) * 100
     return efficiency
   }
 
@@ -200,7 +195,7 @@ function ProductionDetailView({ record }: { record: ProductionRecord }) {
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.revenue")}:</span>
-              <FormattedCurrency as="span" className="font-medium" value={calculateRevenue()}/>
+              <FormattedCurrency as="span" className="font-medium" value={record?.totalCost}/>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t("production.detail.profit")}:</span>
